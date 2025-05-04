@@ -1,0 +1,127 @@
+package app;
+
+/**
+ *
+ * @author repp
+ */
+public class JavaFXApplication extends ApplicationController {
+    
+    /**
+     * The implementation of this method is a work-around to inheritance not being fully implemented in java
+     * for static methods.  While child classes can inherit a static method from a parent class, there is no
+     * way to know within the inherited method for which class it is being executed.  Also, there is no good
+     * way to know within any static method what the name of the current class is without using a Throwable.
+     */
+    public static void main(String[] args) {
+        if (args.length == 0) {
+            args[0] = new Throwable().getStackTrace()[0].getClassName();
+        }
+        ApplicationController.main(args);
+    }
+
+    @Override
+    public void close() {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+
+    @Override
+    public void displayApplication() {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+
+    @Override
+    public void displaySplash() {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public void displayView(String name) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public void displayView(ApplicationView view) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public void initialize(ApplicationView view) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public void displayMessageBox(String text) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public void displayText(String text, Integer row, Integer column) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public void displayText(String text, Integer row, Integer column, int color) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public void displayText(String text, Integer row, Integer column, Color color) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public void displayButton(String name, String text, int row, int column, ApplicationView listener) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public void displayOpenFileButton(String name, String text, int row, int column, ApplicationView listener) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public int displayImage(String fileName, int row, int column) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public int displayGif(String fileName, int row, int column) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public void setTimer(String name, int seconds, ApplicationView listener) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public int getTextColumns() {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public int getTextRows() {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public int getColumns(String fileName) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public int getRows(String fileName) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public int getButtonColumns(String buttonText) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public int getButtonRows() {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+}

@@ -1,0 +1,740 @@
+[title]
+"BIG CHUNG, Destroyer of Worlds"
+[author]
+Wayne Chung Enterprises
+[credits]
+Business Manager: Wayne Chung
+Executive Producer: Wayne Chung
+Power of Attorney: Wayne Chung
+Development: Mylee and Mr. Chris
+Creative Design: Zara and Greyson
+[opening music]
+epic.mp3
+[gif]
+dragon.gif
+"[scene id=0,0,0]"
+"name=INTRODUCTION"
+"color=0,0,0"
+"sound=suspense.mp3"
+[variables]
+isCatTamed=0
+isDragonDead=0
+isNightOwlDefeated=0
+longRangeWeapon=
+shortRangeWeapon=
+[scene 1]
+<story-sound suspense.mp3>
+"<twin>: <quote>Ahh!!!  <player>!!!  Save me!!!<quote>"
+<press-any-key>
+<br>
+"<player>: <quote>I don't know if I can, but I will try!!!<quote>"
+<press-any-key>
+<br>
+"<twin>: <quote><player> he got me!!!  A big black cat got me!!!<quote>"
+<press-any-key>
+<br>
+"You set down the game controller you were holding (and what a shame, you were about to beat the Ender Dragon) and run toward the sound of your twin's voice just in time to see the door to the leprechaun closet in the back bedroom slam shut.  You run to the closet door, open it, and what you see next takes your breath away..."
+<press-any-key>
+<br>
+"Sticking your head into what was supposed to be a small closet you look around at what appears to be the surface of a cloud floating high above Pendleton, Indiana.  You wonder if this is perhaps a magic portal."
+<press-any-key>
+<br>
+"You cautiously tap the cloud with your hand and discover that it's firm enough to walk on.  You then oh so very carefully put one foot into the closet, lower your head, and step through the doorway so you can get a better look..."
+<press-any-key>
+<turn-page>
+[scene 2]
+<image clouds.png+elevator-doors.png>
+<br><br>
+"You are now standing on the surface of a cloud floating high up in the sky.  You look around and see nothing but the large poofy white cloud, the blue sky, the bright yellow sun... and... what appears to be elevator doors in the middle of the cloud."
+<press-any-key>
+<br>
+"Anxiety and fear grip you.  But you have no choice.  You must save <twin>.  And so..."
+<press-any-key>
+<br>
+<play-sound elevator-open.mp3>
+"You press the elevator button to open the door.  And... you step inside..."
+<press-any-key>
+<stop-sound elevator-open.mp3>
+<turn-page>
+[scene 3]
+<story-sound elevator.wav>
+<image mylee.jpg>
+<br>
+"MYLEE: <quote>Oh hey kid.<quote>"
+<press-any-key>
+<br>
+"You're confused for a moment.  Inside the elevator there's a cat perched up on a shelf by the main elevator switch.  Is a cat operating this elevator?  And... did that cat just talk???"
+<press-any-key>
+<br>
+"MYLEE: <quote>You're wondering if I just talked even though I'm a cat.  And the answer is 'yes'.  Yes I did.<quote>"
+<press-any-key>
+<br>
+"Wait, what?  Can this talking cat read your mind?"
+<press-any-key>
+<br>
+"MYLEE: <quote>And you're probably wondering now if I can read your mind.  The answer to that is... no.  And I definitely wouldn't want to if I could.  You humans are just too weird.<quote>"
+<press-any-key>
+<br>
+"Weird is right."
+<press-any-key>
+<br>
+"MYLEE: <quote>Enough talk, human.  You look confused.  How about you ask me some questions.<quote>"
+<press-any-key>
+<turn-page>
+[scene 4]
+"MYLEE: <quote>You look like you're new to this so I'll help you out.  See that 'Ask MYLEE' prompt below?  It's giving you some choices.  Pick one.  You can learn about this game before you begin your quest.<quote>"
+"<story-prompt Ask MYLEE:WHO ARE YOU+WHERE IS MY TWIN+WHO IS BIG CHUNG+NOTHING>"
+[[WHO ARE YOU]]
+<br>
+"MYLEE: <quote>I'm Mylee Marie!<quote>"
+<press-any-key>
+<br>
+"..."
+<press-any-key>
+<br>
+"You wait a moment for MYLEE to say more but she doesn't.  Okay... at least you got her name.  Perhaps it's time to ask another question?"
+<press-any-key>
+[[WHERE IS MY TWIN]]
+<br>
+"MYLEE: <quote>Oh you poor kid.  I'm afraid your twin was captured by my younger brother, BIG CHUNG.  It is a shame.<quote>"
+<press-any-key>
+<br>
+"<player>: <quote>Why is that?<quote>"
+<press-any-key>
+<br>
+"MYLEE: <quote>You'd have to understand my brother to know why that is...<quote>"
+<press-any-key>
+[[WHO IS BIG CHUNG]]
+<br>
+"MYLEE: <quote>Oh he's quite the cat!  His appetite is as big as they come.  Some day he may eat the whole world.  (He's done it before.)  But for now it seems like he's settled on your twin.<quote>"
+<press-any-key>
+<br>
+"<player>: <quote>He's going to eat <twin>???<quote>"
+<press-any-key>
+<br>
+"MYLEE: <quote>Perhaps.  But you might have some time.  He just ate an entire Red Lobster restaurant for breakfast this morning so he might be full.  I bet your twin is an appetizer for later.<quote>"
+<press-any-key>
+<br>
+"<player>: <quote>That's horrible!!!<quote>"
+<press-any-key>
+<br>
+"MYLEE: <quote>Don't I know it, kid.  But hey, tell you what... these elevator doors can take you to a magical world.  If you want to save your twin, gain some experience out there and then come back.  If you bring me some GOLD I'll take you to the level that BIG CHUNG hangs out on.  But be careful, NIGHT OWL and a DRAGON like GOLD and if you remove any from their level they might come after you.  You better slay that dragon if you can and ask my friend GIANNI for help with that NIGHT OWL problem.  Don't you dare try to fight NIGHT OWL in a dark place.  He'll swoop down on you before you have a chance to defend yourself.<quote>"
+<press-any-key>
+[[NOTHING]]
+<br>
+"MYLEE: <quote>Nothing else, huh.  Okay.  Well take this then...<quote>"
+<inventory-add GAME BOOK>
+<press-any-key>
+<br>
+"MYLEE: <quote>It's called a 'GAME BOOK'.  It will give you some options on the other page for exiting the game and stuff.  Maybe if you can find that SPELL BOOK I lost you'll have two books and a way to defeat BIG CHUNG.  But don't worry, things like that have a way of turning up.  Even when you don't think you'll find them again they fly right back to you.<quote>"
+<press-any-key>
+<br>
+"<player>: <quote>Umm, thanks?<quote>"
+<press-any-key>
+<br>
+<play-sound elevator-open.mp3>
+"MYLEE: <quote>You're welcome.  Now off with you!  I'll open the magic elevator doors for you.  Remember: Don't die.  And... bring me back some GOLD!!!<quote>"
+<press-any-key>
+<br>
+"It would seem like you're no longer welcome in this elevator.  MYLEE flips a switch and the doors open.  You walk out and find that you are no longer on the cloud..."
+<press-any-key>
+<stop-sound elevator-open.mp3>
+<goto-chapter 1>
+"[scene id=1,1,1]"
+"name=WILDERNESS"
+"color=0,100,0"
+"sound=wilderness.mp3"
+"symbol=color"
+[scene 1]
+"Oh the great outdoors!"
+<choices-add CHASE BUNNIES>
+[[LOOK]]
+<image wilderness.jpg>
+"You see tall grass, a few trees, a misty stream, hills in the distance, and cute bunnies.  Also, the sun is shining brightly."
+[[LISTEN]]
+"You hear birds singing and perhaps some insects.  There is also a slight breeze.  These are the typical sounds of nature."
+[[CHASE BUNNIES]]
+"Seems like an unimportant thing to do but nevertheless you try to chase some of the bunnies."
+<br>
+"And..."
+<press-any-key>
+<random 3>
+[[RANDOM 1]]
+<image bunny2.jpg>
+"You can't catch a single one.  They are too fast!  Oh well, next time maybe.  You need to continue on with your quest."
+[[RANDOM 2]]
+<image bunny2.jpg>
+"You can't catch a single one.  But you got close!  Oh well, next time maybe.  You need to continue on with your quest."
+[[RANDOM 3]]variables
+<image bionic-bunny-commander.jpg>
+<br>
+"The bunnies start chasing you!  A very large commander of the bunnies shoots at you as you run as fast as you can to get away.  You definitely don't want to do that again!!!"
+<hp-remove 25>
+"[scene id=1,2,1]"
+"name=WILDERNESS"
+"color=79,47,79"
+"sound=wilderness.mp3"
+"symbol=color"
+[scene 1]
+"Oh the great outdoors!"
+<choices-add CHASE BUNNIES+NIGHT OWL>
+[[LOOK]]
+<image wilderness3-small.jpg>
+"You see a meadow full of lavendar, then some trees, and then a mighty mountain range off in the distance.  The mountain range stretches to the south where a central point appears to climb so high that the mountain quite possibly goes up into outer space."
+<br>
+"Here in the meadow the sun is shining peacefully and cute bunnies scamper around you."
+<br>
+"You need to remember so you don't get lost... the ELEVATOR is by the purple lavendar."
+[[LISTEN]]
+"You hear birds singing and perhaps some insects.  There is also a slight breeze.  These are the typical sounds of nature."
+[[CHASE BUNNIES]]
+"Seems like an unimportant thing to do but nevertheless you try to chase some of the bunnies."
+<br>
+"And..."
+<press-any-key>
+<random 3>
+[[RANDOM 1]]
+<image bunny.jpg>
+"You can't catch a single one.  They are too fast!  Oh well, next time maybe.  You need to continue on with your quest."
+[[RANDOM 2]]elevator-open
+<image bunny.jpg>
+"You can't catch a single one.  But you got close!  Oh well, next time maybe.  You need to continue on with your quest."
+[[RANDOM 3]]
+<image bionic-bunny.jpg>
+<br>
+"The bunnies start chasing you!  What are they, bionic???  They shoot at you and you run as fast as you can to get away.  What were you thinking trying to chase bunnies???"
+<hp-remove 10>
+[[NIGHT OWL]]
+<story-sound>
+<if-game-variable PLAYER>
+[[PLAYER GREYSON]]
+<monster-shooter wilderness3.jpg+boss-battle.mp3+ninja-cat.png+arrow.png+arrow.png+night-owl-flying.png+1+hooting.mp3>
+[[PLAYER ZARA]]
+<monster-shooter wilderness3.jpg+boss-battle.mp3+ninja-cat.png+cat-missile-left.png+cat-missile-right.png+night-owl-flying.png+1+hooting.mp3>
+<end-page>
+"[scene id=1,3,1]"
+"name=MAGIC RING OF TOADSTOOLS"
+"color=184,115,51"
+"sound=magic-chimes.mp3"
+"symbol=color"
+[scene 1]
+<choices-add SPEAK NAME>
+[[LISTEN]]
+<play-sound magic.mp3>
+"You hear... magic, perhaps?  You attempt to focus on the sound..."
+<press-any-key>
+<br>
+"...but it disappears from your mind."
+[[LOOK]]
+<image mushroom.jpg>
+<unbreak><unbreak><unbreak><unbreak><unbreak><unbreak><unbreak>
+<image wooden-sign.png>
+<br>
+"This is a magical place of faeries and giant mushrooms!  A simple wooden sign sits in the center of this place.  On this sign reads a simple message..."
+<br>
+"<quote>Speak the name of the spirit that dwells in this place and be gifted with a magical item.<quote>"
+[[SPEAK NAME]]
+Think carefully.  What could the magic name be?
+<br>
+<get-input You:SHMEBULOCK+DRACO+MAGNIFICO+DRACO MAGNIFICO>
+[[INPUT SHMEBULOCK]]
+<play-sound magic.mp3>
+<br>
+"A purplish mist rises off the ground..."
+<br>
+"Perhaps some magical creature is manifesting?"
+<press-any-key>
+<br>
+<color 160+32+240>
+"|           ,"
+"|          / \"
+"|         /   \"
+"|        /     \"
+"|       /_______\"
+"|       // . . \\"
+"|      (/(__7__)\)"
+"|      |'-' = `-'|"
+"|      |         |"
+"|      /\       /\"
+"|     /  '.   .'  \"
+"|    / /|  `v`  |\ \"
+"|    \ \|===[]==|/ /"
+"|     '-|_______|-'"
+"|        |__|__|"
+"|        |--|--|"
+"|       (__)`(__)"
+<color STORY>
+<br>
+"MAGIC GNOME: <quote>Shmebulock!  Shmebulock... Shmebulock.  Shmebulock?  Shmebulock, Shmebulock.  Shme... bu... lock!<quote>"
+<if-inventory-contains RING OF TAMING>
+[[HAS RING OF TAMING]]
+<br>
+"You look down at your ring and it glows with power."
+[[NO RING OF TAMING]]
+<inventory-add RING OF TAMING>
+"(Does not work on large creatures.)"
+[[INPUT DRACO]]
+<br>
+"You wait... and wait some more.  But... nothing happens!  Perhaps you spoke the wrong name?"
+<br>
+"Good guess though.  A fluffy guess... but a good guess!"
+[[INPUT MAGNIFICO]]
+<br>
+"You wait... and wait some more.  But... nothing happens!  Perhaps you spoke the wrong name?"
+<br>
+"Good guess though.  A fluffy guess... but a good guess!"
+[[INPUT DRACO MAGNIFICO]]
+<br>
+"You wait... and wait some more.  But... nothing happens!  Perhaps you spoke the wrong name?"
+<br>
+"Good guess though.  A fluffy guess... but a good guess!"
+[[INPUT ELSE]]
+<br>
+"You wait... and wait some more.  But... nothing happens!  Perhaps you spoke the wrong name?"
+<br>
+"Better luck next time."
+"[scene id=1,1,2]"
+"name=GIANNI'S DEN"
+"color=0,0,0"
+"sound=bonfire.mp3"
+"symbol=color"
+[scene 1]
+[[LISTEN]]
+"You hear the crackle of a campfire in a vacuous space.  The sounds of the outside world are muted."
+<br>
+"This is a peaceful place."
+[[LOOK]]
+"You find yourself in a dark cave.  A fire burns deep inside.  You explore the cave and find yourself face to face with an adorable black cat curled up on a Pittsburgh Steelers blanket."
+<br>
+"He's so cuuuuuuute!"
+<if-inventory-contains RING OF TAMING>
+[[HAS RING OF TAMING]]
+<image gianni.jpg>
+<if-story-variable isCatTamed>
+[[isCatTamed 1]]
+"He meows with delight when he sees you and jumps into your waiting arms.  Oh what a wonderful cat he is!"
+[[isCatTamed 0]]
+<play-sound cat-meowing.mp3>
+<press-any-key>
+<set-story-variable isCatTamed=1>
+"You use your RING OF TAMING on him and he jumps into your waiting arms.  You pet him for hours and hours.  As a reward for your petting, he gives you a long-range weapon to aid you in your quest."
+<score-add 100>
+<if-game-variable PLAYER>
+[[PLAYER GREYSON]]
+<inventory-add BOW & ARROWS>
+<set-story-variable longRangeWeapon=BOW & ARROWS>
+[[PLAYER ZARA]]
+<inventory-add CAT-APULT>
+<set-story-variable longRangeWeapon=CAT-APULT>
+[[NO RING OF TAMING]]
+<image gianni2.jpg>
+"You attempt to pet him but he climbs a stair railing to get away.  If only you could tame him.  But such a feat would require strong magic..."
+"[scene id=1,2,2]"
+"name=WOODS"
+"color=85,85,85"
+"sound=woods.mp3"
+"symbol=color"
+[scene 1]
+[[LISTEN]]
+"You hear the typical sounds of the woods at night.  There are birds.  Definitely crows.  Maybe a There are birds.  Definitely crows.  Maybe a woodpecker.  And... the hooting of an owl?"
+[[LOOK]]
+"You cautiously look around..."
+<press-any-key>
+<random 3>
+[[RANDOM 1]]
+<image woods.jpg>
+"The sky is dark and NIGHT OWL is hiding somewhere.  You must take care to tread lightly lest a noise alert NIGHT OWL to your whereabouts.  Be very, very quiet."
+[[RANDOM 2]]
+<image woods2.jpg>
+<br>
+"What was that???"
+<play-sound heavy-wings.mp3+scream.mp3><press-any-key>
+<br>
+<play-sound heavy-wings.mp3>
+"The sky is dark and you hear the sound of flapping wings.  NIGHT OWL has claimed one of the townspeople as his prey."
+<br>
+"You have escaped death.  But... for how long?  That could have been you.  Be very, very quiet."|
+<press-any-key>
+[[RANDOM 3]]
+<story-sound><play-sound heavy-wings.mp3+hooting.mp3>
+<br>
+"The sky is dark and you hear the sound of flapping wings.  By the time you look up it's too late..."
+<press-any-key>
+<play-sound heavy-wings.mp3+hooting.mp3>
+<br>
+<image night-owl.jpg>
+<press-any-key>
+<br>
+"NIGHT OWL has claimed you as his prey!  What an unfortunate way to end your journey."
+<hp-remove 100>
+"[scene id=1,3,2]"
+"name=MOUNT FLUFF"
+"color=255,255,255"
+"sound=wind.mp3"
+"symbol=color"
+[scene 1]
+<choices-add PLAY GAME>
+<if-inventory-contains RING OF TAMING>
+[[HAS RING OF TAMING]]
+<choices-add TAME FLUFF>
+[[LISTEN]]
+<play-sound fluff.wav>
+"Oh my!  The tom cat picks up his guitar and plays for you.  What magnificent guitar strumming!  His styling is firm and decisive and yet also... romantic.  The melody hypnotizes you."
+<press-any-key>
+<br>
+"You also hear a steady, blowing wind.  The sound swirls all around you.  This mountain must indeed be fluffy!"
+[[LOOK]]
+<image fluff.jpg>
+"You come upon the base of a giant mountain that is so tall you can't even see the top.  Directly in front of you is a gallant white tom cat wearing boots.  Beside him is a noble-looking spanish guitar.  And my... this tom cat... he is so fluffy!"
+<br>
+"You are astonished to learn that this cat can speak.  He enjoys challenging others to a guessing game.  If you solve his riddle, he might just give you a prize."
+[[TAME FLUFF]]
+"|                ____"
+"|                \ _ `\ "
+"|                 | \  `\._"
+"|                 |  |  _/ `-.._"
+"|                 |  /-'  // /.'`-. .--.__"
+"|                 /-'    || // //  |    __\"
+"|               ./   .` |\///_//   \  /'   |"
+"|             .'.-.__.` \ |/'-' .'  \|    /"
+"|            / ( ____`.\ |/ .' '.'   |\  /"
+"|           /  -//   \     /- _  '     `'|"
+"|           |  ||o    ;       __`--      |"
+"|           |   \\   /      //  `.  \    |"
+"|           \    `---'     |/o    \_ )   \"
+"|         _ _\_    /       |      /       |"
+"|       _-_`-__-_.-'|__    \`-..-'       /"
+"|      '  .--_--_-.. \_\/_              /"
+"|        ' /    \... / .. \_-___       / \"
+"|         /      `-._| ..-._--___     /   \"
+"|        /    .---.|  `-.__/`--.__---'     |"
+"|       /_.--/ . . \__/   _   `--._-.      |"
+"|    .-'    | || | |   .-' `-.     \ `\    |"
+"|  .'       `-\/\|-'  |  / /  \     `\ \   |"
+"| /                    \/ | .  |           |"
+"|/                      \_/_/ / \          |"
+"|  magnifico               \/   \         |"
+[[PLAY GAME]]
+"FLUFFY CAT: <quote>Answer me this, and a magical name I will give to you.<quote>"
+<br>
+"<quote>What is blue... and is also the sky?<quote>"
+<br>
+<get-input You:THE SKY+THE BLUE SKY+BLUE SKY+SKY>
+[[INPUT THE SKY]]
+<play-sound fluff.wav>
+<br>
+<image fluff2.jpg>
+"FLUFFY CAT: <quote>Alas you have bested me!  And that was my finest riddle!  Very well then.  A deal is a deal. The magical name you seek is... SHMEBULOCK.<quote>"
+<press-any-key>
+[[INPUT THE BLUE SKY]]
+<play-sound fluff.wav>
+<br>
+<image fluff2.jpg>
+"FLUFFY CAT: <quote>Alas you have bested me!  And that was my finest riddle!  Very well then.  A deal is a deal. The magical name you seek is... SHMEBULOCK.<quote>"
+<press-any-key>
+[[INPUT BLUE SKY]]
+<play-sound fluff.wav>
+<br>
+<image fluff2.jpg>
+"FLUFFY CAT: <quote>Alas you have bested me!  And that was my finest riddle!  Very well then.  A deal is a deal. The magical name you seek is... SHMEBULOCK.<quote>"
+<press-any-key>
+[[INPUT SKY]]
+<play-sound fluff.wav>
+<br>
+<image fluff2.jpg>
+"FLUFFY CAT: <quote>Alas you have bested me!  And that was my finest riddle!  Very well then.  A deal is a deal. The magical name you seek is... SHMEBULOCK.<quote>"
+<press-any-key>
+[[INPUT ELSE]]
+<play-sound fluff.wav>
+<br>
+"FLUFFY CAT: <quote>Aha!  It appears that I have bested you!  That answer is INCORRECT.  No one is as clever as I!<quote>"
+<br>
+"Better luck next time."
+"[scene id=1,1,3]"
+"name=MYSTERY ROOM"
+"color=184,115,51"
+"sound="
+"symbol=color"
+[scene 1]
+<if-game-variable PLAYER>
+[[PLAYER GREYSON]]
+<story-sound grey.mp3>
+<image arcade.jpg>
+"You've stumbled into Greyson's Arcade!!!  Oh my!  Every game known to mankind can be found for sale in this room.  A particular game catches your eye... UNO."
+<if-inventory-contains GOLD>
+[[HAS GOLD]]
+<if-inventory-contains UNO REVERSE>
+[[NO GOLD]]
+<br>
+"Maybe some day you'll return when you have some money so you can buy it."
+<end-page>
+[[HAS UNO REVERSE]]
+<br>
+"That mighty deck is in your hand... perhaps you should use it for some heroic deed?"
+<end-page>
+[[NO UNO REVERSE]]
+<br>
+"You leave some GOLD coins on the table in exchange for the UNO deck.  You look at the cards and discover the legendary... UNO REVERSE!!!"
+<inventory-add UNO REVERSE>
+<set-story-variable shortRangeWeapon=UNO REVERSE>
+<end-page>
+[[PLAYER ZARA]]
+<story-sound zara.mp3>
+<image store.jpg>
+"You've stumbled into Zara's Store!!!  There are a lot of fun things to buy.  Of particular note you see a mighty silver SWORD, fit for slaying a DRAGON."
+<if-inventory-contains GOLD>
+[[HAS GOLD]]
+<if-inventory-contains SWORD>
+[[NO GOLD]]
+<br>
+"Maybe some day you'll return when you have some money so you can buy it."
+<end-page>
+[[HAS SWORD]]
+<br>
+"That mighty weapon is in your hand... perhaps you should use it for some heroic deed?"
+<end-page>
+[[NO SWORD]]
+<br>
+"You put some GOLD coins on the counter..."
+<inventory-add SWORD>
+<set-story-variable shortRangeWeapon=SWORD>
+<end-page>
+[[LISTEN]]
+<play-sound magic.mp3>
+"You hear... magic, perhaps?  You attempt to focus on the sound..."
+<press-any-key>
+<br>dd
+"...but it disappears from your mind."
+<if-game-variable PLAYER>
+[[PLAYER GREYSON]]
+<br>
+"You hear the typical sounds of an arcade."
+[[PLAYER ZARA]]
+<br>
+"You hear the hustling and bustling sounds of a successful store."
+"[scene id=1,2,3]"
+"name=CASTLE"
+"color=171,145,68"
+"sound=castle.mp3"
+"symbol=color"
+[scene 1]
+[[LISTEN]]
+"You hear royal music... A harp!  A guitar!  And also the deep sound of a tuba.  How splendid!  The music carries loudly from the castle courtyard.  However, you hear nothing here within the castle."
+[[LOOK]]
+<image castle-interior.jpg>
+<if-inventory-contains GOLD>
+[[HAS GOLD]]
+"What a magnificent castle!  But no one is home.  Perhaps the royal court fled because of BIG CHUNG?"
+[[NO GOLD]]
+<unbreak><unbreak><unbreak><unbreak><unbreak><unbreak><unbreak><unbreak><unbreak>
+<image gold.png>
+"What a magnificent castle!  But no one is home.  Perhaps the royal court fled because of BIG CHUNG?"
+<br>
+"A chest full of beautiful gold coins was left behind.  Will you it?"
+<choices-add TAKE GOLD>
+[[TAKE GOLD]]
+<score-add 100>
+<inventory-add GOLD>
+<br>
+"All the gold now belongs to you!"
+<choices-remove TAKE GOLD>
+"[scene id=1,3,3]"
+"name=DRAGON'S DEN"
+"color=255,0,0"
+"sound=bonfire.mp3"
+"symbol=color"
+[scene 1]
+[[LISTEN]]
+<if-story-variable isDragonDead>
+[[isDragonDead 1]]
+"You hear the crackle of torches in a vacuous space.  The sounds of the outside world are muted.  It is peaceful here.  There is no longer anything to fear in this cave."
+<end-page>
+[[isDragonDead 0]]
+<play-sound dragon.mp3>
+"You hear the fearsome roar of a DRAGON!  There is no time to stop and listen to it!"
+<press-any-key>
+<end-page>
+[[LOOK]]
+<if-story-variable isDragonDead>
+[[isDragonDead 1]]
+"The DRAGON once lived here until you, an amazing hero, slew it!  Paintings depicting your heroic act now cover the wall, a tribute from the townspeople you saved!"
+<end-page>
+[[isDragonDead 0]]
+"You find yourself in a dark cave.  Torches on the walls guide your way inside.  You explore the cave and stop when you see up ahead the shadow of a ferocious DRAGON!"
+<br>
+<play-sound dragon.mp3>
+<if-inventory-contains GOLD>
+[[NO GOLD]]
+<image dragon.png>
+<br>
+"With nothing heavy to carry, you are able to run away before the DRAGON knows that you entered its den."
+<end-page>
+[[HAS GOLD]]
+<if-game-variable PLAYER>
+[[PLAYER GREYSON]]
+<if-inventory-contains UNO REVERSE>
+[[NO UNO REVERSE]]
+<press-any-key>
+<image dragon-fire.jpg>
+<br>
+<play-sound dragon.mp3>
+"The greedy DRAGON smells your GOLD and charges you before you can escape.  It blasts you with its burning fire.  With no defense, you are burned to death."
+<br>
+"Alas, this is the end of your quest."
+<hp-remove 100>
+<end-page>
+[[HAS UNO REVERSE]]
+<press-any-key>
+<image dragon-fight-grey2.png>
+<unbreak><unbreak><unbreak><unbreak><unbreak><unbreak><unbreak><unbreak><unbreak><unbreak><unbreak><unbreak>
+<image uno-reverse.png>
+<br><br><br><br>
+"With quick reflexes you run towards the DRAGON and throw your UNO REVERSE card at it.  The DRAGON shoots fire at you.  The flames are automatically redirected back at it.  With each fiery burst, the DRAGON destroys itself.  The townspeople are saved.  And you are today a hero!!!"
+<set-story-variable isDragonDead=1>
+<score-add 100>
+<end-page>
+[[PLAYER ZARA]]
+<if-inventory-contains SWORD>
+[[NO SWORD]]
+<press-any-key>
+<image dragon-fire.jpg>
+<br>
+"The greedy DRAGON smells your GOLD and charges you before you can escape.  It blasts you with its burning fire.  With no defense, you are burned to death."
+<br>
+"Alas, this is the end of your quest."
+<hp-remove 100>
+<end-page>
+[[HAS SWORD]]
+<press-any-key>
+<image dragon-fight-zara2.png>
+<br>
+<play-sound dragon.mp3>
+"With quick reflexes you run towards the DRAGON and swing your mighty SWORD before it has a chance to react.  The DRAGON is now slain.  The townspeople are saved.  And you are today a hero!!!"
+<set-story-variable isDragonDead=1>
+<score-add 100>
+<end-page>
+"[scene id=1,2,0]"
+"name=MYLEE'S ELEVATOR"
+"color=0,0,0"
+"sound=elevator.wav"
+"symbol=asterisk"
+[scene 1]
+[[LISTEN]]
+"You hear surprisingly good elevator music."
+[[LOOK]]
+<if-inventory-contains GOLD>
+[[NO GOLD]]
+<play-sound elevator-open.mp3>
+"You return to the ELEVATOR and what you see surprises you..."
+<press-any-key>
+<image mylee-sink.jpg>
+"MYLEE: <quote>Hey!  I'm trying to take a bath!  Off with you human!!!  Don't you come back until you have some GOLD!<quote>"
+<br>
+<press-any-key>
+<play-sound elevator-open.mp3>
+"MYLEE presses a button on a remote control next to her and the elevator doors re-open."
+<br>
+"Hmm... seems like you're still not welcome in this elevator.  Maybe you should find some GOLD."
+<press-any-key>
+<set-game-variable playerX=LAST>
+<set-game-variable playerY=LAST>
+<load-scene>
+<end-page>
+[[HAS GOLD]]
+<if-story-variable isDragonDead>
+[[isDragonDead 0]]
+<play-sound elevator-open.mp3>
+"You return to the elevator and see a surprised MYLEE."
+<image mylee.jpg>
+"MYLEE: <quote>Oh no you didn't!!!  Did you come back here with GOLD without first slaying the DRAGON???<quote>"
+<press-any-key>
+<story-sound>
+<hp-remove 100>
+"You hear a thunderous sound behind you and turn to see the elevator doors burst open as a fearsome DRAGON sticks his head in and gobbles you up.  You'd like to say that at least you got the GOLD but that doesn't matter much when you're dead."
+<end-page>
+[[isDragonDead 1]]
+<if-story-variable isCatTamed>
+[[isCatTamed 0]]
+<play-sound elevator-open.mp3>
+"You return to the elevator and see a surprised MYLEE."
+<image mylee.jpg>
+"MYLEE: <quote>Oh no you didn't!!!  Did you come back here with GOLD without first getting a long-range weapon from GIANNI???<quote>"
+<press-any-key>
+<story-sound>
+<hp-remove 100>
+"You hear a thunderous sound behind you and turn to see the elevator doors burst open as NIGHT OWL sticks his head in and gobbles you up.  You'd like to say that at least you got the GOLD but that doesn't matter much when you're dead."
+<end-page>
+[[isCatTamed 1]]
+<play-sound elevator-open.mp3>
+"You return to the elevator and see a surprised MYLEE."
+<br>
+"MYLEE: <quote>Oh no you didn't!!!  You brought NIGHT OWL back here!!!  He wants that GOLD!!!<quote>"
+<press-any-key>
+<story-sound>
+<play-sound hooting.mp3>
+<play-sound hit.mp3>
+<play-sound heavy-wings.mp3>
+<br>
+"You hear a thunderous sound behind you and turn to see the elevator doors burst open as NIGHT OWL sticks his head in.  Before he can gobble you up, you hit him on the head with your trusty <get-story-variable shortRangeWeapon> and he lets out a painful, shrieking hoot."
+<press-any-key>
+<play-sound heavy-wings.mp3>
+<br>
+"NIGHT OWL backs away into the bright light of the WILDERNESS where you can finally fight him in a fair battle.  You decide to march after him..."
+<press-any-key>
+<br>
+"MYLEE: <quote>WAIT!!!<quote>"
+<press-any-key>
+<br>
+"<player>: <quote>What???<quote>"
+<press-any-key>
+<br>
+"MYLEE: <quote>You can't go out there looking like that!!!<quote>"
+<press-any-key>
+<br>
+"<player>: <quote>Why not???<quote>"
+<press-any-key>
+<br>
+"MYLEE: <quote>Because NIGHT OWL will just swoop down on you.  You need this to be a fair fight.  Here, let me cast a spell to transform you into something NIGHT OWL fears...<quote>"
+<play-sound magic.mp3>
+<press-any-key>
+<set-player-mode CAT>
+<play-sound cat-meow.wav>
+<br>
+"<player>: <quote>I'M NOW A CAT???<quote>"
+<press-any-key>
+<br>
+"MYLEE: <quote>You're welcome!  Now get out there and fight NIGHT OWL!!!<quote>"
+<press-any-key>
+<br>
+You march after NIGHT OWL with your <get-story-variable longRangeWeapon>, determined to end his reign of terror once and for all..."
+<press-any-key>
+<if-game-variable PLAYER>
+[[PLAYER GREYSON]]
+<monster-shooter wilderness3.jpg+boss-battle.mp3+ninja-cat.png+arrow.png+arrow.png+night-owl-flying.png+1+hooting.mp3>
+[[PLAYER ZARA]]
+<monster-shooter wilderness3.jpg+boss-battle.mp3+ninja-cat.png+cat-missile-left.png+cat-missile-right.png+night-owl-flying.png+1+hooting.mp3>
+[[MINIGAME VICTORY]]
+<set-game-variable playerX=0>
+<set-game-variable playerY=0>
+<score-add 100>
+<end-page>
+"[scene id=1,0,0]"
+"name=MYLEE'S ELEVATOR"
+"color=0,0,0"
+"sound=elevator.wav"
+[variables]
+[scene 1]
+<image mylee.jpg>
+<br>
+"MYLEE: <quote>Good job kid.<quote>"
+<press-any-key>
+<turn-page>
+[scene 2]
+"Level 2 introduction... give gold to MYLEE, story prompt for her phone call with BIG CHUNG, what it will take to undo CAT MODE, etc."
+[high scores]
+300   GRE   03-09-2024
+300   ZRT   03-09-2024
+300   GRE   03-23-2024
+300   ZRT   03-23-2024
+300   ZRT   03-23-2024
+200   ZRT   03-23-2024
