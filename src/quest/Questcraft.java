@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 
 /**
  * book.png - "Empty book" by Darkmoon_Art (https://pixabay.com/illustrations/reserve-pages-empty-book-open-book-3057904/)
+ * designer.jpg - "Digital, Binary Code, Abstract royalty-free stock illustration. Free for use & download." by wastedgeneration (https://pixabay.com/illustrations/digital-binary-code-abstract-8280790/)
  * dragon.gif - "#dragon" by Kentrius (https://gifer.com/en/6JPK)
  * epic.mp3 - "Epic Trailer Background Music" by Migfus20 (https://freesound.org/people/Migfus20/sounds/560454/)
  * old-books.jpg - "Old books, Book, Old image. Free for use." by jarmoluk (https://pixabay.com/photos/old-books-book-old-library-436498/)
@@ -36,7 +37,7 @@ public class Questcraft extends app.ApplicationView {
         this.library = new Library();
         this.book = null;
         this.cheats = null;
-        this.designer = new Designer();
+        this.designer = null;
         this.map = new LinkedHashMap<>();
         map.put(LIBRARY, this.library);
         map.put(BOOK, this.book);
@@ -52,6 +53,9 @@ public class Questcraft extends app.ApplicationView {
 
     @Override
     public void onDisplay(ApplicationController appController, ApplicationView parentView) {}
+    
+    @Override
+    public void onLoad(ApplicationController appController, ApplicationView parentView) {}
     
     @Override
     public void handleEvent(String eventName, String eventValue) {

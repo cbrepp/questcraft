@@ -12,11 +12,15 @@ public class Designer extends ApplicationView {
 
     public Designer() {
         super();
+        this.backgroundImage = "/assets/images/designer.jpg";
     }
     
     @Override
-    public void onDisplay(ApplicationController appController, ApplicationView parentView) {
-        // TODO
+    public void onDisplay(ApplicationController appController, ApplicationView parentView) {}
+    
+    @Override
+    public void onLoad(ApplicationController appController, ApplicationView parentView) {
+        appController.addDesigner();
     }
 
     @Override

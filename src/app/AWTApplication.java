@@ -51,6 +51,21 @@ public class AWTApplication extends ApplicationController {
     }
     
     @Override
+    public void clearScreen() {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public void addView(String childName, ApplicationView childView) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public void addDesigner() {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
     public void displayMessageBox(String text) {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -125,4 +140,8 @@ public class AWTApplication extends ApplicationController {
         throw new UnsupportedOperationException("Not supported.");
     }
     
+    @Override
+    public void setBackground(int backgroundColor, String backgroundImageFile) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
 }

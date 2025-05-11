@@ -24,6 +24,7 @@ public abstract class ApplicationView {
     }
     
     public abstract void onDisplay(ApplicationController appController, ApplicationView parentView);
+    public abstract void onLoad(ApplicationController appController, ApplicationView parentView);
 
     public LinkedHashMap<String, ApplicationView> getChildren() {
         return null;

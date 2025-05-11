@@ -7,10 +7,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import javax.sound.sampled.*;
+import org.eclipse.swt.SWT;
 
 public class Book extends app.ApplicationView {
-    public static String BACKGROUND_IMAGE = "/assets/images/book.png";
     public final static String SUPPORTED_TAGS = "color";
+    public final static String TIMER_EVENT = "LOADING_COMPLETE";
     public final static String TURN_PAGE = "turn-page";
     
     public ApplicationController appController;
@@ -84,7 +85,6 @@ public class Book extends app.ApplicationView {
 
     public Book() {
         super();
-        this.backgroundImage = "/assets/images/book.png";
         
         this.chapter = "";
         this.isOver = false;
@@ -120,6 +120,35 @@ public class Book extends app.ApplicationView {
         System.out.println("Book: onDisplay");
         this.appController = appController;
         this.parentView = parentView;
+        
+        // Loading screen
+        int nextRow = appController.displayGif(this.bookFile.animationFileName, 3, 12);
+        appController.displayText("Loading...", nextRow, 12, SWT.COLOR_WHITE);
+        app.Utility.playSound(this.bookFile.musicFileName, true);
+        appController.setTimer(TIMER_EVENT, 3, this);
+    }
+    
+    @Override
+    public void onLoad(ApplicationController appController, ApplicationView parentView) {}
+    
+    @Override
+    public void handleEvent(String eventName, String eventValue) {
+        System.out.println("Book: handleEvent: eventName=" + eventName + ", eventValue=" + eventValue);
+        
+        switch(eventName) {
+            case TURN_PAGE -> this.appController.displayMessageBox("Not yet implemented!!!");
+            case TIMER_EVENT -> this.displayTitlePage();
+            default -> System.err.println("Book: handleEvent: Unsupported event");
+        }
+    }
+    
+    public void displayTitlePage() {
+        System.out.println("Book: displayTitlePage");
+        
+        this.appController.clearScreen();
+        this.backgroundImage = "/assets/images/book.png";
+        this.backgroundColor = SWT.COLOR_BLACK;
+        this.appController.setBackground(this.backgroundColor, this.backgroundImage);
         app.Utility.playSound("/assets/sounds/turn-page.mp3", false);
         displayScene(bookFile.titlePage);
 
@@ -131,8 +160,8 @@ public class Book extends app.ApplicationView {
         // TODO - A collection of mapped story elements could be used to validate each tag as to whether it's a story element tag or not
         
         // Calculate book margins
-        int parentColumns = appController.getTextColumns();
-        int parentRows = appController.getTextRows();
+        int parentColumns = this.appController.getTextColumns();
+        int parentRows = this.appController.getTextRows();
         this.titleRow = 2;
         this.startingRow = 4;
         this.leftPageStartingColumn = (int) (parentColumns * 0.1) + 1;
@@ -151,19 +180,7 @@ public class Book extends app.ApplicationView {
         int buttonRows = appController.getButtonRows();
         int buttonColumn = parentColumns - buttonColumns - 1 - 7;   // TODO - Factor in book margins
         int buttonRow = parentRows - buttonRows;   // TODO - Factor in book margins
-        appController.displayButton(TURN_PAGE, buttonText, buttonRow, buttonColumn, this);
-    }
-    
-    @Override
-    public void handleEvent(String eventName, String eventValue) {
-        System.out.println("Book: handleEvent: eventName=" + eventName + ", eventValue=" + eventValue);
-        
-        switch(eventName) {
-            case TURN_PAGE -> {
-                this.appController.displayMessageBox("Not yet implemented!!!");
-            }
-            default -> System.err.println("Book: handleEvent: Unsupported event");
-        }
+        this.appController.displayButton(TURN_PAGE, buttonText, buttonRow, buttonColumn, this);
     }
     
     public void displayScene(List<String> scene) {

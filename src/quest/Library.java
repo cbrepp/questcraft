@@ -30,6 +30,9 @@ public class Library extends app.ApplicationView {
     }
     
     @Override
+    public void onLoad(ApplicationController appController, ApplicationView parentView) {}
+    
+    @Override
     public void onDisplay(ApplicationController appController, ApplicationView parentView) {
         this.appController = appController;
         this.parentView = parentView;
@@ -39,7 +42,7 @@ public class Library extends app.ApplicationView {
         
         int spiderColumns = appController.getColumns("/assets/images/spider.gif");
         int parentColumns = appController.getColumns(parentView.backgroundImage);
-        int gifColumn = parentColumns - spiderColumns - 9;    // Puts the spider in the upper right-hand corner
+        int gifColumn = parentColumns - spiderColumns;    // Puts the spider in the upper right-hand corner
         appController.displayGif("/assets/images/spider.gif", 1, gifColumn);
         
         serializeBook();
@@ -61,9 +64,16 @@ public class Library extends app.ApplicationView {
 
                 Book book = new Book();
                 book.bookFile = bf;
+                
+                Designer designer = new Designer();
 
+                // TODO - Opening a second book creates a second Book tab.  There should be only one.
+                // Questcraft should provide methods for handling this.
                 this.parentView.getChildren().put(Questcraft.BOOK, book);
-                this.appController.displayView(new LoadingScreen(book, bf.animationFileName, bf.musicFileName));
+                this.appController.addView(Questcraft.BOOK, book);
+                this.parentView.getChildren().put(Questcraft.DESIGNER, designer);
+                this.appController.addView(Questcraft.DESIGNER, designer);
+                this.appController.displayView(Questcraft.BOOK);
             }
             default -> System.err.println("Library: handleEvent: Unsupported event");
         }

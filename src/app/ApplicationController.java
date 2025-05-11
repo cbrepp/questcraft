@@ -34,12 +34,15 @@ public abstract class ApplicationController {
     public static final String PROPERTIES_FILE = "assets/app.properties";
     public static String NAME;
     
+    public abstract void addDesigner();
+    public abstract void addView(String childName, ApplicationView childView);
     public abstract void close();
     public abstract void displayApplication();
     public abstract void displaySplash();
     public abstract void displayView(String name);
     public abstract void displayView(ApplicationView view);
     public abstract void initialize(ApplicationView view);
+    public abstract void clearScreen();
     public abstract void displayMessageBox(String text);
     public abstract void displayText(String text, Integer row, Integer column);
     public abstract void displayText(String text, Integer row, Integer column, int color);
@@ -55,6 +58,7 @@ public abstract class ApplicationController {
     public abstract int getRows(String fileName);
     public abstract int getButtonColumns(String buttonText);
     public abstract int getButtonRows();
+    public abstract void setBackground(int backgroundColor, String backgroundImageFile);
     
     public static void main(String[] args) {
         System.out.println("ApplicationController: main: args=" + Arrays.toString(args));
