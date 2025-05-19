@@ -16,6 +16,7 @@ package app;
  * Figure out license references
  */
 
+import quest.SplashScreen;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -34,23 +35,21 @@ public abstract class ApplicationController {
     public static final String PROPERTIES_FILE = "assets/app.properties";
     public static String NAME;
     
-    public abstract void addDesigner();
-    public abstract void addView(String childName, ApplicationView childView);
+    public abstract void addDesigner(String viewName);
+    public abstract void addView(ApplicationView view);
     public abstract void close();
-    public abstract void displayApplication();
-    public abstract void displaySplash();
-    public abstract void displayView(String name);
+    public abstract void displayApplication(ApplicationView view);
     public abstract void displayView(ApplicationView view);
     public abstract void initialize(ApplicationView view);
-    public abstract void clearScreen();
+    public abstract void clearScreen(String name);
     public abstract void displayMessageBox(String text);
-    public abstract void displayText(String text, Integer row, Integer column);
-    public abstract void displayText(String text, Integer row, Integer column, int color);
-    public abstract void displayText(String text, Integer row, Integer column, Color color);
-    public abstract void displayButton(String name, String text, int row, int column, ApplicationView listener);
-    public abstract void displayOpenFileButton(String name, String text, int row, int column, ApplicationView listener);
-    public abstract int displayImage(String fileName, int row, int column);
-    public abstract int displayGif(String fileName, int row, int column);
+    public abstract void displayText(String viewName, String text, Integer row, Integer column);
+    public abstract void displayText(String viewName, String text, Integer row, Integer column, int color);
+    public abstract void displayText(String viewName, String text, Integer row, Integer column, Color color);
+    public abstract void displayButton(String viewName, String name, String text, int row, int column, ApplicationView listener);
+    public abstract void displayOpenFileButton(String viewName, String name, String text, int row, int column, ApplicationView listener);
+    public abstract int displayImage(String viewName, String fileName, int row, int column);
+    public abstract int displayGif(String viewName, String fileName, int row, int column);
     public abstract void setTimer(String name, int seconds, ApplicationView listener);
     public abstract int getTextColumns();
     public abstract int getTextRows();
@@ -58,7 +57,7 @@ public abstract class ApplicationController {
     public abstract int getRows(String fileName);
     public abstract int getButtonColumns(String buttonText);
     public abstract int getButtonRows();
-    public abstract void setBackground(int backgroundColor, String backgroundImageFile);
+    public abstract void setBackgroundImage(String viewName, String imageFileName);
     
     public static void main(String[] args) {
         System.out.println("ApplicationController: main: args=" + Arrays.toString(args));
@@ -82,28 +81,38 @@ public abstract class ApplicationController {
         System.out.println("ApplicationController: Instancing application view for " + props.getProperty("app.class"));
         String configAppClass = props.getProperty("app.class");
         String configAppVersion = props.getProperty("app.version");
-        ApplicationView appView = (ApplicationView) Utility.instance(configAppClass);
-        Class<?> clazz = appView.getClass();
+        String configSplashClass = props.getProperty("app.splash");
+        
+        Class<?> clazz;
+        String appName = getAppName(configAppClass, configAppVersion);
+        
+        // Initialize the splash view
+        if (configSplashClass != null) {
+            ApplicationView splashView = (ApplicationView) Utility.instance(configSplashClass, appName);
+            clazz = splashView.getClass();
+            if (!ApplicationView.class.isAssignableFrom(clazz)) {
+                System.err.println("ApplicationController: main: " + clazz.getName() + " is not an application view");
+                return;
+            }
+            appController.initialize(splashView);
+            System.out.println("ApplicationController: main: Displaying splash view");
+            appController.displayApplication(splashView);
+        }
+
+        // Initialize the main application view
+        ApplicationView appView = (ApplicationView) Utility.instance(configAppClass, appName);
+        clazz = appView.getClass();
         if (!ApplicationView.class.isAssignableFrom(clazz)) {
             System.err.println("ApplicationController: main: " + clazz.getName() + " is not an application view");
             return;
         }
-        
-        // Initialize the application view
         appView.className = configAppClass;
         appView.iconFileName = props.getProperty("app.icon");
-        appView.name = getAppName(configAppClass, configAppVersion);
-        appView.splashImageFileName = props.getProperty("app.splashImage");
-        appView.splashSeconds = Integer.parseInt(props.getProperty("app.splashSeconds"));
-        appView.splashSoundFileName = props.getProperty("app.splashSound");
+        appView.name = 
         appView.version = configAppVersion;
-        
-        System.out.println("ApplicationController: main: Initializing controller");
         appController.initialize(appView);
-        System.out.println("ApplicationController: main: Displaying splash screen");
-        appController.displaySplash();
-        System.out.println("ApplicationController: main: Displaying application");
-        appController.displayApplication();
+        System.out.println("ApplicationController: main: Displaying main application view");
+        appController.displayApplication(appView);
         System.out.println("ApplicationController: main: Closing");
         appController.close();
         System.out.println("ApplicationController: main: System exit");

@@ -219,13 +219,22 @@ public class Utility {
     }
     
     public static Object instance(String className) {
+        return instance(className, null);
+    }
+    
+    public static Object instance(String className, Object parameter) {
         Object instance = null;
         try {
             Class<?> appClass = Class.forName(className);
             try {
-                Constructor<?> constructor = appClass.getConstructor();
                 try {
-                    instance = constructor.newInstance();
+                    if (parameter == null) {
+                        Constructor<?> constructor = appClass.getConstructor();
+                        instance = constructor.newInstance();
+                    } else {
+                        Constructor<?> constructor = appClass.getConstructor(parameter.getClass());
+                        instance = constructor.newInstance(parameter);
+                    }
                 } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                     Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, e);
                     System.err.println("ERROR: " + e.toString());

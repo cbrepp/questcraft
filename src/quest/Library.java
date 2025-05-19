@@ -1,7 +1,6 @@
 package quest;
 
 import app.ApplicationController;
-import app.ApplicationView;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -10,7 +9,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.swt.SWT;
@@ -22,61 +20,39 @@ import org.eclipse.swt.SWT;
 public class Library extends app.ApplicationView {
     
     public ApplicationController appController;
-    public ApplicationView parentView;
     
-    public Library() {
-        super();
+    public Library(String name) {
+        super(name);
         this.backgroundColor = SWT.COLOR_WHITE;
     }
     
     @Override
-    public void onLoad(ApplicationController appController, ApplicationView parentView) {}
-    
-    @Override
-    public void onDisplay(ApplicationController appController, ApplicationView parentView) {
-        this.appController = appController;
-        this.parentView = parentView;
-        appController.displayText("SELECT STORY", 3, 12);
-        int nextRow = appController.displayImage("/assets/images/old-books.jpg", 5, 12);
-        appController.displayOpenFileButton("quest", "Choose Quest", nextRow, 12, this);
-        
-        int spiderColumns = appController.getColumns("/assets/images/spider.gif");
-        int parentColumns = appController.getColumns(parentView.backgroundImage);
-        int gifColumn = parentColumns - spiderColumns;    // Puts the spider in the upper right-hand corner
-        appController.displayGif("/assets/images/spider.gif", 1, gifColumn);
-        
-        serializeBook();
-    }
-
-    @Override
-    public LinkedHashMap<String, ApplicationView> getChildren() {
-        return null;
-    }
-    
-    @Override
-    public void handleEvent(String eventName, String eventValue) {
-        System.out.println("Library: handleEvent: eventName=" + eventName + ", eventValue=" + eventValue);
+    public void onEvent(String eventName, Object eventValue) {
+        System.out.println("Library: onEvent: eventName=" + eventName + ", eventValue=" + eventValue);
         
         switch(eventName) {
             case "quest" -> {
-                // Deserialize the book
-                BookFile bf = deserializeBook(eventValue);
-
-                Book book = new Book();
-                book.bookFile = bf;
-                
-                Designer designer = new Designer();
-
-                // TODO - Opening a second book creates a second Book tab.  There should be only one.
-                // Questcraft should provide methods for handling this.
-                this.parentView.getChildren().put(Questcraft.BOOK, book);
-                this.appController.addView(Questcraft.BOOK, book);
-                this.parentView.getChildren().put(Questcraft.DESIGNER, designer);
-                this.appController.addView(Questcraft.DESIGNER, designer);
-                this.appController.displayView(Questcraft.BOOK);
+                String fileName = (String) eventValue;
+                BookFile bookFile = deserializeBook(fileName);
+                this.publishEvent("book", bookFile);
             }
-            default -> System.err.println("Library: handleEvent: Unsupported event");
+            default -> System.err.println("Library: onEvent: Unsupported event");
         }
+    }
+    
+    @Override
+    public void onLoad(ApplicationController appController) {
+        this.appController = appController;
+        appController.displayText(this.name, "SELECT STORY", 3, 12);
+        int nextRow = appController.displayImage(this.name, "/assets/images/old-books.jpg", 5, 12);
+        appController.displayOpenFileButton(this.name, "quest", "Choose Quest", nextRow, 12, this);
+        
+        int spiderColumns = appController.getColumns("/assets/images/spider.gif");
+        int parentColumns = appController.getTextColumns();
+        int gifColumn = parentColumns - spiderColumns + 2;    // Puts the spider in the upper right-hand corner
+        appController.displayGif(this.name, "/assets/images/spider.gif", 1, gifColumn);
+        
+        serializeBook();
     }
     
     public BookFile deserializeBook(String fileName) {

@@ -2,7 +2,6 @@ package quest;
 
 import app.ApplicationController;
 import app.ApplicationView;
-import java.util.LinkedHashMap;
 
 /**
  * book.png - "Empty book" by Darkmoon_Art (https://pixabay.com/illustrations/reserve-pages-empty-book-open-book-3057904/)
@@ -19,47 +18,51 @@ import java.util.LinkedHashMap;
  */
 public class Questcraft extends app.ApplicationView {
     
-    public final static String LIBRARY = "Library";
     public final static String BOOK = "Book";
-    public final static String HIGH_SCORES = "High Scores";
     public final static String CHEATS = "Cheats";
     public final static String DESIGNER = "Designer";
+    public final static String HIGH_SCORES = "High Scores";
+    public final static String LIBRARY = "Library";
     
-    public Library library;
+    public ApplicationController appController;
     public Book book;
-    public ApplicationView highScores;
     public ApplicationView cheats;
     public Designer designer;
-    public LinkedHashMap<String, ApplicationView> map;
+    public ApplicationView highScores;
+    public Library library;
     
-    public Questcraft() {
+    public Questcraft(String name) {
+        super(name);
+        this.addTextArea = false;
         this.backgroundImage = "/assets/images/book.png";
-        this.library = new Library();
         this.book = null;
         this.cheats = null;
         this.designer = null;
-        this.map = new LinkedHashMap<>();
-        map.put(LIBRARY, this.library);
-        map.put(BOOK, this.book);
-        map.put(HIGH_SCORES, this.highScores);
-        map.put(CHEATS, this.cheats);
-        map.put(DESIGNER, this.designer);
+        this.library = new Library(LIBRARY);
     }
     
     @Override
-    public LinkedHashMap<String, ApplicationView> getChildren() {
-        return this.map;
+    public void onEvent(String eventName, Object eventValue) {
+        System.out.println("Questcraft: onEvent: eventName=" + eventName + ", eventValue=" + eventValue);
+        
+        switch(eventName) {
+            case "book" -> {
+                this.book = new Book(BOOK);
+                this.book.bookFile = (BookFile) eventValue;
+                this.appController.addView(this.book);
+                this.designer = new Designer(DESIGNER);
+                this.appController.addView(this.designer);
+                this.appController.displayView(this.book);
+            }
+            default -> System.err.println("Library: onEvent: Unsupported event");
+        }
     }
 
     @Override
-    public void onDisplay(ApplicationController appController, ApplicationView parentView) {}
-    
-    @Override
-    public void onLoad(ApplicationController appController, ApplicationView parentView) {}
-    
-    @Override
-    public void handleEvent(String eventName, String eventValue) {
-        throw new UnsupportedOperationException("Not supported.");
+    public void onLoad(ApplicationController appController) {
+        this.appController = appController;
+        this.library.addListener("book", this);
+        appController.addView(this.library);
     }
 
 }

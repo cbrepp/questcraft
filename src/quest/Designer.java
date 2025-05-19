@@ -2,7 +2,6 @@ package quest;
 
 import app.ApplicationController;
 import app.ApplicationView;
-import java.util.LinkedHashMap;
 
 /**
  *
@@ -10,27 +9,15 @@ import java.util.LinkedHashMap;
  */
 public class Designer extends ApplicationView {
 
-    public Designer() {
-        super();
+    public Designer(String name) {
+        super(name);
         this.backgroundImage = "/assets/images/designer.jpg";
+        this.addTextArea = false;
     }
     
     @Override
-    public void onDisplay(ApplicationController appController, ApplicationView parentView) {}
-    
-    @Override
-    public void onLoad(ApplicationController appController, ApplicationView parentView) {
-        appController.addDesigner();
-    }
-
-    @Override
-    public LinkedHashMap<String, ApplicationView> getChildren() {
-        return null;
-    }
-    
-    @Override
-    public void handleEvent(String eventName, String eventValue) {
-        throw new UnsupportedOperationException("Not supported.");
+    public void onLoad(ApplicationController appController) {
+        appController.addDesigner(this.name);
     }
     
 }

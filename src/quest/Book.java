@@ -15,7 +15,6 @@ public class Book extends app.ApplicationView {
     public final static String TURN_PAGE = "turn-page";
     
     public ApplicationController appController;
-    public ApplicationView parentView;
     public BookFile bookFile;
     
     public String author;
@@ -83,9 +82,10 @@ public class Book extends app.ApplicationView {
     public app.Color textColor;
     public int textRow;
 
-    public Book() {
-        super();
+    public Book(String name) {
+        super(name);
         
+        this.backgroundColor = SWT.COLOR_BLACK;
         this.chapter = "";
         this.isOver = false;
         this.isRightHanded = true; // Are the game controls on the right page? (1/0)
@@ -111,28 +111,7 @@ public class Book extends app.ApplicationView {
     }
     
     @Override
-    public LinkedHashMap<String, ApplicationView> getChildren() {
-        return null;
-    }
-    
-    @Override
-    public void onDisplay(ApplicationController appController, ApplicationView parentView) {
-        System.out.println("Book: onDisplay");
-        this.appController = appController;
-        this.parentView = parentView;
-        
-        // Loading screen
-        int nextRow = appController.displayGif(this.bookFile.animationFileName, 3, 12);
-        appController.displayText("Loading...", nextRow, 12, SWT.COLOR_WHITE);
-        app.Utility.playSound(this.bookFile.musicFileName, true);
-        appController.setTimer(TIMER_EVENT, 3, this);
-    }
-    
-    @Override
-    public void onLoad(ApplicationController appController, ApplicationView parentView) {}
-    
-    @Override
-    public void handleEvent(String eventName, String eventValue) {
+    public void onEvent(String eventName, Object eventValue) {
         System.out.println("Book: handleEvent: eventName=" + eventName + ", eventValue=" + eventValue);
         
         switch(eventName) {
@@ -142,13 +121,24 @@ public class Book extends app.ApplicationView {
         }
     }
     
+    @Override
+    public void onLoad(ApplicationController appController) {
+        System.out.println("Book: onLoad");
+        this.appController = appController;
+        
+        // Loading screen
+        int nextRow = appController.displayGif(this.name, this.bookFile.animationFileName, 3, 12);
+        appController.displayText(this.name, "Loading...", nextRow, 12, SWT.COLOR_WHITE);
+        app.Utility.playSound(this.bookFile.musicFileName, true);
+        appController.setTimer(TIMER_EVENT, 3, this);
+    }
+    
     public void displayTitlePage() {
         System.out.println("Book: displayTitlePage");
         
-        this.appController.clearScreen();
+        this.appController.clearScreen(this.name);
         this.backgroundImage = "/assets/images/book.png";
-        this.backgroundColor = SWT.COLOR_BLACK;
-        this.appController.setBackground(this.backgroundColor, this.backgroundImage);
+        this.appController.setBackgroundImage(this.name, this.backgroundImage);
         app.Utility.playSound("/assets/sounds/turn-page.mp3", false);
         displayScene(bookFile.titlePage);
 
@@ -170,9 +160,9 @@ public class Book extends app.ApplicationView {
         this.rightPageEndingColumn = (int) (parentColumns * 0.92) + 1;
         
         // Display book information
-        this.appController.displayText(bookFile.title, this.startingRow, this.rightPageStartingColumn);
-        this.appController.displayText("by " + bookFile.author, this.startingRow + 1, this.rightPageStartingColumn);
-        this.appController.displayText("Last Updated: " + bookFile.updateDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.getDefault())), this.startingRow + 3, this.rightPageStartingColumn);
+        this.appController.displayText(this.name, bookFile.title, this.startingRow, this.rightPageStartingColumn);
+        this.appController.displayText(this.name, "by " + bookFile.author, this.startingRow + 1, this.rightPageStartingColumn);
+        this.appController.displayText(this.name, "Last Updated: " + bookFile.updateDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.getDefault())), this.startingRow + 3, this.rightPageStartingColumn);
 
         // Turn Page button
         String buttonText = "Turn Page -->";
@@ -180,7 +170,7 @@ public class Book extends app.ApplicationView {
         int buttonRows = appController.getButtonRows();
         int buttonColumn = parentColumns - buttonColumns - 1 - 7;   // TODO - Factor in book margins
         int buttonRow = parentRows - buttonRows;   // TODO - Factor in book margins
-        this.appController.displayButton(TURN_PAGE, buttonText, buttonRow, buttonColumn, this);
+        this.appController.displayButton(this.name, TURN_PAGE, buttonText, buttonRow, buttonColumn, this);
     }
     
     public void displayScene(List<String> scene) {
@@ -205,7 +195,7 @@ public class Book extends app.ApplicationView {
             }
             
             if (storyText.length() > 0) {
-                this.appController.displayText(storyElement, this.textRow, 12, this.textColor);
+                this.appController.displayText(this.name, storyElement, this.textRow, 12, this.textColor);
                 this.textRow = this.textRow + 1;
             } else if (storyElement.length() == 0) {
                 this.textRow = this.textRow + 1;
