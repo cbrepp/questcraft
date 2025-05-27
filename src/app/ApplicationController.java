@@ -16,7 +16,6 @@ package app;
  * Figure out license references
  */
 
-import quest.SplashScreen;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -44,11 +43,12 @@ public abstract class ApplicationController {
     public abstract void clearScreen(String name);
     public abstract void displayMessageBox(String text);
     public abstract void displayText(String viewName, String text, Integer row, Integer column);
-    public abstract void displayText(String viewName, String text, Integer row, Integer column, int color);
     public abstract void displayText(String viewName, String text, Integer row, Integer column, Color color);
+    public abstract void displayText(String viewName, String text, Integer row, Integer column, Color color, int style);
     public abstract void displayButton(String viewName, String name, String text, int row, int column, ApplicationView listener);
     public abstract void displayOpenFileButton(String viewName, String name, String text, int row, int column, ApplicationView listener);
     public abstract int displayImage(String viewName, String fileName, int row, int column);
+    public abstract void displayInputField(String viewName, String name, String text, int length, int row, int column, ApplicationView listener);
     public abstract int displayGif(String viewName, String fileName, int row, int column);
     public abstract void setTimer(String name, int seconds, ApplicationView listener);
     public abstract int getTextColumns();
@@ -108,7 +108,6 @@ public abstract class ApplicationController {
         }
         appView.className = configAppClass;
         appView.iconFileName = props.getProperty("app.icon");
-        appView.name = 
         appView.version = configAppVersion;
         appController.initialize(appView);
         System.out.println("ApplicationController: main: Displaying main application view");

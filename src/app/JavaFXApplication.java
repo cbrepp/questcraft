@@ -65,12 +65,12 @@ public class JavaFXApplication extends ApplicationController {
     }
     
     @Override
-    public void displayText(String viewName, String text, Integer row, Integer column, int color) {
+    public void displayText(String viewName, String text, Integer row, Integer column, Color color) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
     @Override
-    public void displayText(String viewName, String text, Integer row, Integer column, Color color) {
+    public void displayText(String viewName, String text, Integer row, Integer column, Color color, int style) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
@@ -86,6 +86,11 @@ public class JavaFXApplication extends ApplicationController {
     
     @Override
     public int displayImage(String viewName, String fileName, int row, int column) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public void displayInputField(String viewName, String name, String text, int length, int row, int column, ApplicationView listener) {
         throw new UnsupportedOperationException("Not supported.");
     }
     

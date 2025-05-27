@@ -11,7 +11,7 @@ import java.util.List;
 public class ApplicationView {
     
     public Boolean addTextArea;
-    public Integer backgroundColor;
+    public Color backgroundColor;
     public String backgroundImage;
     public String className;
     public String iconFileName;

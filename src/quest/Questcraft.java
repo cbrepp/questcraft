@@ -28,7 +28,7 @@ public class Questcraft extends app.ApplicationView {
     public Book book;
     public ApplicationView cheats;
     public Designer designer;
-    public ApplicationView highScores;
+    public HighScores highScores;
     public Library library;
     
     public Questcraft(String name) {
@@ -36,8 +36,9 @@ public class Questcraft extends app.ApplicationView {
         this.addTextArea = false;
         this.backgroundImage = "/assets/images/book.png";
         this.book = null;
-        this.cheats = null;
+        this.cheats = new Cheats(CHEATS);
         this.designer = null;
+        this.highScores = new HighScores(HIGH_SCORES);
         this.library = new Library(LIBRARY);
     }
     
@@ -50,6 +51,10 @@ public class Questcraft extends app.ApplicationView {
                 this.book = new Book(BOOK);
                 this.book.bookFile = (BookFile) eventValue;
                 this.appController.addView(this.book);
+                this.highScores.setHighScores(this.book.bookFile.highScores);
+                this.appController.addView(this.highScores);
+                // TODO - Load cheats specific to the bookFile
+                this.appController.addView(this.cheats);
                 this.designer = new Designer(DESIGNER);
                 this.appController.addView(this.designer);
                 this.appController.displayView(this.book);

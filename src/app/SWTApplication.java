@@ -36,6 +36,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -46,6 +47,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 
 public class SWTApplication extends ApplicationController {
 
@@ -89,7 +91,7 @@ public class SWTApplication extends ApplicationController {
     
     @Override
     public void displayApplication(ApplicationView view) {
-        System.out.println("SWTApplication: displayApplication: view=" + view);
+        System.out.println("SWTApplication: displayApplication: view=" + view.name);
 
         // Initialize the application window
         int shellStyle = view.isSplash ? SWT.NO_TRIM | SWT.ON_TOP : SWT.SHELL_TRIM;
@@ -98,8 +100,7 @@ public class SWTApplication extends ApplicationController {
         shell.setText(view.name);
 
         // Size the application window        
-        String backgroundImageFileName = view.backgroundImage;
-        Point dimensions = getDimensions(backgroundImageFileName);
+        Point dimensions = getDimensions(view.backgroundImage);
         shell.setSize(dimensions);
         
         // Set the application icon
@@ -177,7 +178,11 @@ public class SWTApplication extends ApplicationController {
             this.shell.update();
         }
         
-        this.shell.pack();
+        // Only pack if the main view isn't a text area
+        if (!view.addTextArea) {
+            this.shell.pack();
+        }
+        
         view.onDisplay(this);
         
         while (!shell.isDisposed ()) {
@@ -255,15 +260,15 @@ public class SWTApplication extends ApplicationController {
             this.tabStyledTextMap.put(view.name, textArea);
 
             // Set the text area's background color and image
-            Integer imageColor = view.backgroundColor;
+            app.Color imageColor = view.backgroundColor;
             if (imageColor == null) {
                 imageColor = this.parentView.backgroundColor;
             }
             if (imageColor == null) {
-                imageColor = SWT.COLOR_BLACK;
+                imageColor = new app.Color(0, 0, 0);
             }
             String imageFileName = view.backgroundImage;
-            textArea.setBackground(this.display.getSystemColor(imageColor));
+            textArea.setBackground(new Color(this.display, imageColor.red, imageColor.green, imageColor.blue));
             if (imageFileName != null) {
                 final Image backgroundImage = loadImage(imageFileName);
                 textArea.setBackgroundImage(backgroundImage);
@@ -311,10 +316,10 @@ public class SWTApplication extends ApplicationController {
         return dimensions;
     }
     
-    public Point convertToCoordinates(int row, int column) {
+    public Point convertToCoordinates(double row, double column) {
         System.out.println("SWTApplication: convertToCoordinates: row=" + row + ", column=" + column);
-        int x = (column * this.fontWidth) - this.fontWidth;
-        int y = (row * this.fontHeight) - this.fontHeight;
+        int x = (int)(column * this.fontWidth) - this.fontWidth;
+        int y = (int)(row * this.fontHeight) - this.fontHeight;
         Point coordinates = new Point(x, y);
         System.out.println("SWTApplication: convertToCoordinates: font width=" + this.fontWidth + ", font height=" + this.fontHeight + ", x=" + coordinates.x + ", y=" + coordinates.y);
         return coordinates;
@@ -420,21 +425,38 @@ public class SWTApplication extends ApplicationController {
     }
     
     @Override
-    public void displayText(String viewName, String text, Integer row, Integer column, app.Color color) {
-        System.out.println("SWTApplication: displayText: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", color=" + color);
-        Color textColor = new Color(color.red, color.green, color.blue);
-        displayText(viewName, text, row, column, textColor);
+    public void displayText(String viewName, String text, Integer row, Integer column) {
+        System.out.println("SWTApplication: displayText: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column);
+        displayText(viewName, text, row, column, new app.Color(0, 0, 0));
     }
     
     @Override
-    public void displayText(String viewName, String text, Integer row, Integer column, int color) {
+    public void displayText(String viewName, String text, Integer row, Integer column, app.Color color) {
         System.out.println("SWTApplication: displayText: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", color=" + color);
-        Color textColor = this.display.getSystemColor(color);
-        displayText(viewName, text, row, column, textColor);
+        displayText(viewName, text, row, column, color, FontStyle.NORMAL);
     }
     
-    public void displayText(String viewName, String text, Integer row, Integer column, Color color) {
-        System.out.println("SWTApplication: displayText: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", color=" + color);
+    @Override
+    public void displayText(String viewName, String text, Integer row, Integer column, app.Color color, int style) {
+        System.out.println("SWTApplication: displayText: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", color=" + color + ", style=" + style);
+        
+        Color SWTColor = new Color(color.red, color.green, color.blue);
+        
+        int SWTStyle;
+        switch (style) {
+            case FontStyle.NORMAL -> SWTStyle = SWT.NORMAL;
+            case FontStyle.BOLD -> SWTStyle = SWT.BOLD;
+            case FontStyle.ITALIC -> SWTStyle = SWT.ITALIC;
+            case FontStyle.UNDERLINE_DOUBLE -> SWTStyle = SWT.UNDERLINE_DOUBLE;
+            case FontStyle.UNDERLINE_ERROR -> SWTStyle = SWT.UNDERLINE_ERROR;
+            case FontStyle.UNDERLINE_LINK -> SWTStyle = SWT.UNDERLINE_LINK;
+            case FontStyle.UNDERLINE_SINGLE -> SWTStyle = SWT.UNDERLINE_SINGLE;
+            case FontStyle.UNDERLINE_SQUIGGLE -> SWTStyle = SWT.UNDERLINE_SQUIGGLE;
+            default -> {
+                SWTStyle = SWT.NORMAL;
+                System.err.println("SWTApplication: displayText: Unsupported font style: " + style);
+            }
+        }
         
         StyledText textArea = this.tabStyledTextMap.get(viewName);
         List<StyleRange> styleRanges = tabStyleRangesMap.get(viewName);
@@ -448,9 +470,10 @@ public class SWTApplication extends ApplicationController {
         StyleRange textRange = new StyleRange();
         textRange.start = position;
         textRange.length = text.length();
-        textRange.foreground = color;
-        if (!color.equals(SWT.COLOR_BLACK)) {
-            // Skip styling if the color is black
+        textRange.foreground = SWTColor;
+        textRange.fontStyle = SWTStyle;
+        if (((color.red != 0) || (color.green != 0) || (color.blue != 0)) || (SWTStyle != SWT.NORMAL)) {
+            // Skip styling if the color is black and the styling is normal
             styleRanges.add(textRange);
         }
         // Thanks to a limitation with SWT, each previous style range needs to be reapplied
@@ -459,13 +482,8 @@ public class SWTApplication extends ApplicationController {
         }
         textArea.redraw();
     }
-
-    @Override
-    public void displayText(String viewName, String text, Integer row, Integer column) {
-        displayText(viewName, text, row, column, SWT.COLOR_BLACK);
-    }
     
-    public Button newButton(String viewName, String name, String text, int row, int column, ApplicationView listener) {
+    public Button newButton(String viewName, String name, String text, double row, double column, ApplicationView listener) {
         System.out.println("SWTApplication: newButton: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column);
         
         StyledText textArea = this.tabStyledTextMap.get(viewName);
@@ -560,6 +578,38 @@ public class SWTApplication extends ApplicationController {
         System.out.println("SWTApplication: setTimer: name=" + name + ", seconds=" + seconds + ", listener=" + listener);
         this.display.timerExec(seconds * 1000, () -> {
             listener.onEvent(name, seconds);
+        });
+    }
+    
+    @Override
+    public void displayInputField(String viewName, String name, String text, int length, int row, int column, ApplicationView listener) {
+        System.out.println("SWTApplication: displayInputField: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column);
+        
+        StyledText textArea = this.tabStyledTextMap.get(viewName);
+        Composite composite = this.tabCompositeMap.get(viewName);
+        
+        // Display a label for the input field
+        this.displayText(viewName, text, row, column);
+
+        // Display the input field
+        Text textInput = new Text(composite, SWT.BORDER);
+        textInput.setTextLimit(length);
+        textInput.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        Point coordinates = this.convertToCoordinates(row - 0.5, column);
+        int labelWidth = text.length() * this.fontWidth;
+        int inputWidth = (length * this.fontWidth) + (2 * this.fontWidth);    // Calculate width of text plus buffer of two imaginary characters
+        int height = 2 * this.fontHeight;   // Calculate double height of text
+        textInput.setBounds(coordinates.x + 1 + labelWidth + (1 * this.fontWidth), coordinates.y + 1, inputWidth, height);
+        textInput.moveAbove(textArea);
+        
+        // Display a button for submitting the input
+        Button button = this.newButton(viewName, name, "Submit", row - 0.5, column + text.length() + 1 + 1 + length + 1 + 1, listener);
+        button.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                listener.onEvent(name, textInput.getText());
+                textInput.setText("");
+            }
         });
     }
     

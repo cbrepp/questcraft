@@ -1,5 +1,7 @@
 package quest;
 
+import app.Color;
+import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,16 +43,16 @@ import java.util.Map;
  *
  * @author repp
  */
-public class Page {
+public class Chapter implements Serializable {
     
-    public String name;
-    public int color;
+    public Color color;
     public String soundFileName;
     public String symbol;
-    public Map<String, List<String>> scenes;
+    public Map<Integer, List<String>> pages;
+    public Map<String, String> variables;
     
-    public Page() {
-        scenes = new LinkedHashMap<>();
+    public Chapter() {
+        this.pages = new LinkedHashMap<>();
     }
     
 }
