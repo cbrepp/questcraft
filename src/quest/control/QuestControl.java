@@ -1,7 +1,7 @@
 
 package quest.control;
 
-import quest.Book;
+import quest.view.Quest;
 
 /**
  *
@@ -9,10 +9,10 @@ import quest.Book;
  */
 public abstract class QuestControl {
     
-    public Book book;
+    public Quest quest;
     
-    public QuestControl(Book book) {
-        this.book = book;
+    public QuestControl(Quest quest) {
+        this.quest = quest;
     }
     
     public static String getTag(String text, int index) {
@@ -22,7 +22,7 @@ public abstract class QuestControl {
             int lastChar = text.indexOf('>', index);
             if (lastChar > -1) {
                 System.out.println("QuestControl: tagName=" + tagName + ", text=" + text + ", index=" + index + ", lastChar + 1=" + lastChar + 1);
-                return text.substring(index, lastChar + 1).toLowerCase();
+                return text.substring(index, lastChar + 1);
             }
         }
         return null;
@@ -44,6 +44,37 @@ public abstract class QuestControl {
         return value;
     }
     
+    public static String getTagToken(String tag, int tokenIndex, Boolean ignoreDelimiter) {
+        System.out.println("QuestControl: getTagToken: tag=" + tag + ", tokenIndex=" + tokenIndex + ", ignoreDelimiter=" + ignoreDelimiter);
+        
+        String[] tagTokens = tag.split(" ");
+        String tokenValue = "";
+        if (!ignoreDelimiter) {
+            tokenValue = tagTokens[tokenIndex];
+        } else {
+            String[] combinedTokens = new String[tagTokens.length - tokenIndex];
+            System.arraycopy(tagTokens, tokenIndex, combinedTokens, 0, combinedTokens.length);
+            for (int i = 0; i < combinedTokens.length; i++) {
+                String currentTokenValue = combinedTokens[i];
+                if (i == 0) {
+                    tokenValue = currentTokenValue;
+                } else {
+                    tokenValue = tokenValue + " " + currentTokenValue;
+                }
+            }
+        }
+        
+        if (tokenIndex == 0) {
+            // Trim the "<" off the start of the first token
+            tokenValue = tokenValue.substring(1, tokenValue.length());
+        } else if ((tokenIndex == (tagTokens.length - 1)) || ignoreDelimiter) {
+            // Trim the ">" off the end of the last token
+            tokenValue = tokenValue.substring(0, tokenValue.length() - 1);
+        }
+        
+        return tokenValue;
+    }
+    
     public static String getTagName(String tag, int index) {
         System.out.println("QuestControl: getTagName: tag=" + tag);
         
@@ -54,6 +85,7 @@ public abstract class QuestControl {
             tagName = tagName.substring(0, closingTagPosition);
         }
         
+        tagName = tagName.toLowerCase();
         System.out.println("QuestControl: getTagName: tagName=" + tagName);
         
         return tagName;

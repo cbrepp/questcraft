@@ -1,10 +1,12 @@
 package app;
 
+import java.io.Serializable;
+
 /**
  *
  * @author repp
  */
-public class Color {
+public class Color implements Serializable {
     
     public int red;
     public int green;

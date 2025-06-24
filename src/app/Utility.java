@@ -1,19 +1,23 @@
 package app;
 
 import java.io.BufferedInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.util.LinkedHashMap;
+import java.util.ConcurrentModificationException;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineEvent;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javazoom.jl.decoder.JavaLayerException;
@@ -21,14 +25,32 @@ import javazoom.jl.player.Player;
 
 public class Utility {
     
-    public static Map<String, Object> audioPlayers = new LinkedHashMap<>();
-    public static Map<String, InputStream> inputStreams = new LinkedHashMap<>();
-    public static Map<String, AudioInputStream> audioInputStreams = new LinkedHashMap<>();
+    public static Map<String, AudioInputStream> audioInputStreams = new HashMap<>();
+    public static Map<String, Object> audioPlayers = new HashMap<>();
+    public static Map<String, InputStream> inputStreams = new HashMap<>();
+    private static final Lock lock = new ReentrantLock();
     
     public static void playSound(String fileName, Boolean isLoop) {
         System.out.println("Utility: playSound: fileName= " + fileName);
         
         if (fileName == null) {
+            return;
+        }
+        
+        // Quit early if the sound is already playing
+        Boolean isPlaying = false;
+        Iterator<Map.Entry<String, Object>> iterator = audioPlayers.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, Object> entry = iterator.next();
+            String currentFileName = entry.getKey();
+            if (currentFileName.equals(fileName)) {
+                isPlaying = true;
+                break;
+            }
+        }
+        
+        if (isPlaying) {
+            System.out.println("Utility: playSound: Audio is already playing!");
             return;
         }
 
@@ -62,7 +84,7 @@ public class Utility {
                             } else {
                                 player.play();
                             }
-                            stopSound(fileName);
+                            stopSound(fileName, true);
                         } catch (JavaLayerException e) {
                             System.err.println("Utility: playSound: Error playing MP3 file: " + e.toString());
                         }
@@ -82,6 +104,12 @@ public class Utility {
                         inputStreams.put(fileName, inputStream);
                         audioPlayers.put(fileName, clip);
                         clip.start();   // TODO - How to support playing in a loop?
+                        clip.addLineListener(event -> {
+                            if (event.getType() == LineEvent.Type.STOP) {
+                                System.out.println("Utility: playSound: WAV file playback complete");
+                                stopSound(fileName, true);
+                            }
+                        });
                     }).start();
                 }
                 default -> System.err.println("Utility: playSound: Unsupported file type: " + fileType);
@@ -136,59 +164,78 @@ public class Utility {
         return clip;
     }
     
-    public static void stopSound(String fileName) {
+    public static void stopSound(String fileName, Boolean removeAudioPlayer) {
         System.out.println("Utility: stopSound: fileName= " + fileName);
         
-        String fileType = getFileExtension(fileName);
-        switch (fileType) {
-            case "mp3" -> {
-                Player player = (Player) audioPlayers.get(fileName);
-                if (player != null) {
-                    player.close();
-                }
-                InputStream inputStream = inputStreams.get(fileName);
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                    } catch (IOException e) {
-                        System.err.println("Utility: stopSound: Error closing input stream: " + e.toString());
+        lock.lock();
+        
+        try {
+            String fileType = getFileExtension(fileName);
+            switch (fileType) {
+                case "mp3" -> {
+                    Player player = (Player) audioPlayers.get(fileName);
+                    if (player != null) {
+                        player.close();
+                    }
+                    InputStream inputStream = inputStreams.get(fileName);
+                    if (inputStream != null) {
+                        try {
+                            inputStream.close();
+                        } catch (IOException e) {
+                            System.err.println("Utility: stopSound: Error closing input stream: " + e.toString());
+                        }
                     }
                 }
+                case "wav" -> {
+                    Clip clip = (Clip) audioPlayers.get(fileName);
+                    if (clip != null) {
+                        clip.stop();
+                        clip.close();
+                    }
+                    InputStream inputStream = inputStreams.get(fileName);
+                    if (inputStream != null) {
+                        try {
+                            inputStream.close();
+                        } catch (IOException e) {
+                            System.err.println("Utility: stopSound: Error closing input stream: " + e.toString());
+                        }
+                    }
+                    AudioInputStream audioInputStream = audioInputStreams.get(fileName);
+                    if (audioInputStream != null) {
+                        try {
+                            audioInputStream.close();
+                        } catch (IOException e) {
+                            System.err.println("Utility: stopSound: Error closing audio input stream: " + e.toString());
+                        }
+                    }
+                    audioInputStreams.remove(fileName);
+                }
+                default -> System.err.println("Utility: stopSound: Unsupported file type: " + fileType);
             }
-            case "wav" -> {
-                Clip clip = (Clip) audioPlayers.get(fileName);
-                if (clip != null) {
-                    clip.stop();
-                    clip.close();
-                }
-                InputStream inputStream = inputStreams.get(fileName);
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                    } catch (IOException e) {
-                        System.err.println("Utility: stopSound: Error closing input stream: " + e.toString());
-                    }
-                }
-                AudioInputStream audioInputStream = audioInputStreams.get(fileName);
-                if (audioInputStream != null) {
-                    try {
-                        audioInputStream.close();
-                    } catch (IOException e) {
-                        System.err.println("Utility: stopSound: Error closing audio input stream: " + e.toString());
-                    }
-                }
-                audioInputStreams.remove(fileName);
+            if (removeAudioPlayer) {
+                audioPlayers.remove(fileName);
             }
-            default -> System.err.println("Utility: stopSound: Unsupported file type: " + fileType);
+            inputStreams.remove(fileName);
+        } finally {
+            lock.unlock();
         }
-        audioPlayers.remove(fileName);
-        inputStreams.remove(fileName);
     }
     
     public static void stopAllSounds() {
         System.out.println("Utility: stopAllSounds");
-        for (String fileName : audioPlayers.keySet()) {
-            stopSound(fileName);
+        Iterator<Map.Entry<String, Object>> iterator = audioPlayers.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, Object> entry = iterator.next();
+            String fileName = entry.getKey();
+            stopSound(fileName, false);
+            lock.lock();
+            try {
+                iterator.remove();
+            } catch(ConcurrentModificationException e) {
+                System.err.println("Utility: stopAllSounds: " + e.toString());
+            } finally {  
+                lock.unlock();
+            }
         }
     }
     

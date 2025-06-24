@@ -1,7 +1,7 @@
 
 package quest.control;
 
-import quest.Book;
+import quest.view.Quest;
 
 /**
  *
@@ -11,15 +11,15 @@ public class SetFocusOnSecondPageControl extends QuestControl {
     
     public static String NAME = "second-page";
     
-    public SetFocusOnSecondPageControl(Book book) {
-        super(book);
+    public SetFocusOnSecondPageControl(Quest quest) {
+        super(quest);
     }
     
     @Override
     public String onExecute(String tag) {
-        System.out.println("SetFocusOnSecondPageControl: onExecute: Changing display to second page");
-        this.book.currentDisplayPage = Book.SECOND_PAGE;
-        this.book.textRow = 1;
+        System.out.println("SetFocusOnSecondPageControl: onExecute: tag=" + tag);
+        this.quest.currentDisplayPage = Quest.SECOND_PAGE;
+        this.quest.textRow = 1;
         return "";
     }
     

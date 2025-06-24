@@ -1,5 +1,10 @@
 package app;
 
+import app.control.BaseControl;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 /**
  *
  * @author repp
@@ -35,6 +40,11 @@ public class SwingApplication extends ApplicationController {
     }
     
     @Override
+    public void displayView(String viewName) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
     public void initialize(ApplicationView view) {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -50,12 +60,27 @@ public class SwingApplication extends ApplicationController {
     }
     
     @Override
+    public void selectTab(String viewName) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public Integer getTabIndex(String viewName) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
     public void addView(ApplicationView view) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
     @Override
-    public void displayMessageBox(String text) {
+    public void addView(ApplicationView view, Boolean isParent, int index) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public void displayMessageBox(String title, String text, int level) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
@@ -75,12 +100,22 @@ public class SwingApplication extends ApplicationController {
     }
     
     @Override
-    public void displayButton(String viewName, String name, String text, int row, int column, ApplicationView listener) {
+    public void displayGrid(String viewName, Map<String, ArrayList<BaseControl>> linkTexts, int columns, Boolean showBorders, EventListener listener) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+      
+    @Override
+    public void displayLink(String viewName, String name, String linkText, int row, int column, int length, EventListener listener) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
     @Override
-    public void displayOpenFileButton(String viewName, String name, String text, int row, int column, ApplicationView listener) {
+    public void displayButton(String viewName, String name, String text, int row, int column, EventListener listener) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public void displayOpenFileButton(String viewName, String name, String text, int row, int column, EventListener listener) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
@@ -90,7 +125,12 @@ public class SwingApplication extends ApplicationController {
     }
     
     @Override
-    public void displayInputField(String viewName, String name, String text, int length, int row, int column, ApplicationView listener) {
+    public void displayInputField(String viewName, String name, String label, int length, int row, int column, EventListener listener) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, EventListener listener) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
@@ -100,7 +140,7 @@ public class SwingApplication extends ApplicationController {
     }
     
     @Override
-    public void setTimer(String name, int seconds, ApplicationView listener) {
+    public void setTimer(String name, int seconds, EventListener listener) {
         throw new UnsupportedOperationException("Not supported.");
     }
     

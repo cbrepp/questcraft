@@ -1,7 +1,7 @@
 
 package quest.control;
 
-import quest.Book;
+import quest.view.Quest;
 
 /**
  *
@@ -11,14 +11,14 @@ public class BreakControl extends QuestControl {
     
     public static String NAME = "br";
     
-    public BreakControl(Book book) {
-        super(book);
+    public BreakControl(Quest quest) {
+        super(quest);
     }
     
     @Override
     public String onExecute(String tag) {
-        System.out.println("BreakControl: onExecute: Breaking");
-        this.book.textRow = this.book.textRow + 1;
+        System.out.println("BreakControl: onExecute: tag=" + tag);
+        this.quest.textRow = this.quest.textRow + 1;
         return "";
     }
     

@@ -8,7 +8,7 @@ import java.util.List;
  *
  * @author repp
  */
-public class ApplicationView {
+public class ApplicationView implements EventListener {
     
     public Boolean addTextArea;
     public Color backgroundColor;
@@ -45,6 +45,7 @@ public class ApplicationView {
         System.out.println("ApplicationView: onDisplay: Unimplemented");
     }
     
+    @Override
     public void onEvent(String eventName, Object eventValue) {
         System.out.println("ApplicationView: onEvent: Unimplemented: eventName=" + eventName + ", eventValue=" + eventValue);
     }

@@ -16,10 +16,14 @@ package app;
  * Figure out license references
  */
 
+import app.control.BaseControl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,22 +39,29 @@ public abstract class ApplicationController {
     public static String NAME;
     
     public abstract void addDesigner(String viewName);
+    public abstract void selectTab(String viewName);
     public abstract void addView(ApplicationView view);
+    public abstract void addView(ApplicationView view, Boolean isParent, int index);
+    public abstract Integer getTabIndex(String viewName);
     public abstract void close();
     public abstract void displayApplication(ApplicationView view);
     public abstract void displayView(ApplicationView view);
+    public abstract void displayView(String viewName);
     public abstract void initialize(ApplicationView view);
     public abstract void clearScreen(String name);
-    public abstract void displayMessageBox(String text);
+    public abstract void displayMessageBox(String title, String text, int level);
     public abstract void displayText(String viewName, String text, Integer row, Integer column);
     public abstract void displayText(String viewName, String text, Integer row, Integer column, Color color);
     public abstract void displayText(String viewName, String text, Integer row, Integer column, Color color, int style);
-    public abstract void displayButton(String viewName, String name, String text, int row, int column, ApplicationView listener);
-    public abstract void displayOpenFileButton(String viewName, String name, String text, int row, int column, ApplicationView listener);
+    public abstract void displayGrid(String viewName, Map<String, ArrayList<BaseControl>> linkTexts, int columns, Boolean showBorders, EventListener listener);
+    public abstract void displayLink(String viewName, String name, String linkText, int row, int column, int length, EventListener listener);
+    public abstract void displayButton(String viewName, String name, String text, int row, int column, EventListener listener);
+    public abstract void displayOpenFileButton(String viewName, String name, String text, int row, int column, EventListener listener);
     public abstract int displayImage(String viewName, String fileName, int row, int column);
-    public abstract void displayInputField(String viewName, String name, String text, int length, int row, int column, ApplicationView listener);
+    public abstract void displayInputField(String viewName, String name, String label, int length, int row, int column, EventListener listener);
+    public abstract void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, EventListener listener);
     public abstract int displayGif(String viewName, String fileName, int row, int column);
-    public abstract void setTimer(String name, int seconds, ApplicationView listener);
+    public abstract void setTimer(String name, int seconds, EventListener listener);
     public abstract int getTextColumns();
     public abstract int getTextRows();
     public abstract int getColumns(String fileName);

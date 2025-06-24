@@ -1,7 +1,7 @@
 
 package quest.control;
 
-import quest.Book;
+import quest.view.Quest;
 
 /**
  *
@@ -11,13 +11,13 @@ public class DoubleQuoteControl extends QuestControl {
     
     public static String NAME = "quote";
     
-    public DoubleQuoteControl(Book book) {
-        super(book);
+    public DoubleQuoteControl(Quest quest) {
+        super(quest);
     }
     
     @Override
     public String onExecute(String tag) {
-        System.out.println("DoubleQuoteControl: onExecute: Translating to double quote");
+        System.out.println("DoubleQuoteControl: onExecute: tag=" + tag);
         String doubleQuote = "\"";
         return doubleQuote;
     }

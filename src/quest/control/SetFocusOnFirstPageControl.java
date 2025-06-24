@@ -1,7 +1,7 @@
 
 package quest.control;
 
-import quest.Book;
+import quest.view.Quest;
 
 /**
  *
@@ -11,15 +11,15 @@ public class SetFocusOnFirstPageControl extends QuestControl {
     
     public static String NAME = "first-page";
     
-    public SetFocusOnFirstPageControl(Book book) {
-        super(book);
+    public SetFocusOnFirstPageControl(Quest quest) {
+        super(quest);
     }
     
     @Override
     public String onExecute(String tag) {
-        System.out.println("SetFocusOnFirstPageControl: onExecute: Changing display to first page");
-        this.book.currentDisplayPage = Book.FIRST_PAGE;
-        this.book.textRow = 1;
+        System.out.println("SetFocusOnFirstPageControl: onExecute: tag=" + tag);
+        this.quest.currentDisplayPage = Quest.FIRST_PAGE;
+        this.quest.textRow = 1;
         return "";
     }
     

@@ -1,12 +1,16 @@
 package app;
 
+import app.control.BaseControl;
+import app.control.LabelControl;
+import app.control.LinkControl;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 
@@ -45,9 +49,11 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import quest.control.ImageControl;
 
 public class SWTApplication extends ApplicationController {
 
@@ -59,12 +65,13 @@ public class SWTApplication extends ApplicationController {
     public ApplicationView parentView;
     public Shell shell;
     public CTabFolder tabFolder;
-    public LinkedHashMap<String, Composite> tabCompositeMap;
-    public LinkedHashMap<String, Integer> tabIndexMap;
-    public LinkedHashMap<String, StyledText> tabStyledTextMap;
-    public LinkedHashMap<String, List<StyleRange>> tabStyleRangesMap;
+    public HashMap<String, Composite> tabCompositeMap;
+    public HashMap<String, Integer> tabIndexMap;
+    public HashMap<String, List<StyleRange>> tabStyleRangesMap;
+    public HashMap<String, StyledText> tabStyledTextMap;
     public int textColumns = 0;
     public int textRows = 0;
+    public HashMap<String, ApplicationView> views;
     
     /**
      * The implementation of this method is a work-around to inheritance not being fully implemented in java
@@ -113,36 +120,32 @@ public class SWTApplication extends ApplicationController {
         // Create the application window composite
         Composite composite = new Composite(shell, SWT.NONE);
         composite.setLayout(new FillLayout());
-        //Rectangle shellBounds = shell.getBounds();
         composite.setBounds(0,0,dimensions.x,dimensions.y);
         
         // Create a tab folder to contain the child views
         CTabFolder tabFolder;
-        if (view.addTextArea) {
-            tabFolder = null;
-        } else {
-            final SWTApplication thisController = this;
-            tabFolder = new CTabFolder(composite, SWT.BORDER);
-            tabFolder.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    int selectedIndex = thisController.tabFolder.getSelectionIndex();
-                    String selectedTabTitle = thisController.tabFolder.getItem(selectedIndex).getText();
-                    //CTabItem item = tabFolder.getSelection();
-                    System.out.println("SWTApplication: displayApplication: Selected tab " + selectedTabTitle);
-                }
-            });
-        }
+        final SWTApplication thisController = this;
+        tabFolder = new CTabFolder(composite, SWT.BORDER);
+        tabFolder.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                int selectedIndex = thisController.tabFolder.getSelectionIndex();
+                String selectedTabTitle = thisController.tabFolder.getItem(selectedIndex).getText();
+                //CTabItem item = tabFolder.getSelection();
+                System.out.println("SWTApplication: displayApplication: Selected tab " + selectedTabTitle);
+            }
+        });
 
         // Share important state with the other instance methods
         this.shell = shell;
         this.parentView = view;
         this.tabFolder = tabFolder;
-        this.tabStyledTextMap = new LinkedHashMap<>();
-        this.tabCompositeMap = new LinkedHashMap<>();
-        tabCompositeMap.put(view.name, composite);
-        this.tabStyleRangesMap = new LinkedHashMap<>();
-        this.tabIndexMap = new LinkedHashMap<>();
+        this.tabStyledTextMap = new HashMap<>();
+        this.tabCompositeMap = new HashMap<>();
+        this.tabCompositeMap.put(view.name, composite);
+        this.tabStyleRangesMap = new HashMap<>();
+        this.tabIndexMap = new HashMap<>();
+        this.views = new HashMap();
             
         // Init a font for all text areas to use
         this.monospaceFont = new Font(this.display, "Consolas", 12, SWT.NORMAL);
@@ -202,19 +205,45 @@ public class SWTApplication extends ApplicationController {
         
         Utility.stopAllSounds();
     }
+    
+    @Override
+    public void selectTab(String viewName) {
+        System.out.println("SWTApplication: selectTab: viewName=" + viewName);
+        Integer index = this.getTabIndex(viewName);
+        if (index == null) {
+            System.err.println("SWTApplication: selectTab: The view does not have a tab!");
+            return;
+        }
+        
+        this.tabFolder.setSelection(index);
+    }
 
     @Override
     public void displayView(ApplicationView view) {
         System.out.println("SWTApplication: displayView: Displaying application view: " + view.name);
         
         int tabIndex = this.tabIndexMap.get(view.name);
-        System.out.println("SWTApplication: displayView: Tab index=" + tabIndex + ", Tab view name=" + view.name);
+        System.out.println("SWTApplication: displayTab: Tab index=" + tabIndex);
         
         if (this.tabFolder != null) {
             this.tabFolder.setSelection(tabIndex);
         }
-
+        
         view.onDisplay(this);
+    }
+    
+    @Override
+    public Integer getTabIndex(String viewName) {
+        System.out.println("SWTApplication: getTabIndex: viewName=" + viewName);
+        Integer index = this.tabIndexMap.get(viewName);
+        return index;
+    }
+    
+    @Override
+    public void displayView(String viewName) {
+        System.out.println("SWTApplication: displayTab: viewName=" + viewName);
+        ApplicationView view = this.views.get(viewName);
+        this.displayView(view);
     }
     
     @Override
@@ -230,23 +259,35 @@ public class SWTApplication extends ApplicationController {
         this.addView(view, isParent, index);
     }
     
+    @Override
     public void addView(ApplicationView view, Boolean isParent, int index) {
         System.out.println("SWTApplication: addView: name=" + view.name + ", isParent=" + isParent + ", index=" + index);
         
-        if (view.addTextArea) {
-            Composite composite;
-            if (isParent) {
-                composite = tabCompositeMap.get(view.name);
-            } else {
-                // Create a new tab with a composite
-                CTabItem tab = new CTabItem(this.tabFolder, SWT.NONE, index);
-                tab.setText(view.name);
-                composite = new Composite(this.tabFolder, SWT.NONE);
-                composite.setLayout(null);
-                tab.setControl(composite);
-                this.tabCompositeMap.put(view.name, composite);
-            }
+        Composite composite;
+        if (isParent) {
+            composite = tabCompositeMap.get(view.name);
+        } else {
+            // Create a new tab with a composite
+            CTabItem tab = new CTabItem(this.tabFolder, SWT.NONE, index);
+            tab.setText(view.name);
+            composite = new Composite(this.tabFolder, SWT.NONE);
+            composite.setLayout(null);
             
+            String appImageFile = this.parentView.backgroundImage;
+            Point dimensions = getDimensions(appImageFile);
+            composite.setBounds(0, 0, dimensions.x, dimensions.y);
+            
+            tab.setControl(composite);
+            this.tabCompositeMap.put(view.name, composite);
+            
+            // Track the tab position of each view
+            this.tabIndexMap.put(view.name, index);
+            
+            this.views.put(view.name, view);
+        }
+           
+        Control control = composite;
+        if (view.addTextArea) {
             // Add a text area to the composite.
             // Not using a layout allows controls to overlay.  This is needed so controls can display on top of the text area.
             StyledText textArea = new StyledText(composite, SWT.NONE);
@@ -258,33 +299,33 @@ public class SWTApplication extends ApplicationController {
             textArea.setFont(this.monospaceFont);
             textArea.setText(this.emptyBook);
             this.tabStyledTextMap.put(view.name, textArea);
-
-            // Set the text area's background color and image
-            app.Color imageColor = view.backgroundColor;
-            if (imageColor == null) {
-                imageColor = this.parentView.backgroundColor;
-            }
-            if (imageColor == null) {
-                imageColor = new app.Color(0, 0, 0);
-            }
-            String imageFileName = view.backgroundImage;
-            textArea.setBackground(new Color(this.display, imageColor.red, imageColor.green, imageColor.blue));
-            if (imageFileName != null) {
-                final Image backgroundImage = loadImage(imageFileName);
-                textArea.setBackgroundImage(backgroundImage);
-                textArea.addListener(SWT.Resize, event -> {
-                    textArea.setBackgroundImage(backgroundImage);
-                });
-            }
-            System.out.println("SWTApplication: addView: backgroundColor=" + imageColor + ", backgroundImageFile=" + imageFileName + ",  x=" + dimensions.x +", y=" + dimensions.y);
+            
+            control = textArea;
 
             // Init style ranges
             List<StyleRange> styleRanges = new ArrayList<>();
             this.tabStyleRangesMap.put(view.name, styleRanges);
-            
-            // Track the tab position of each view
-            this.tabIndexMap.put(view.name, index);
         }
+        
+        // Set the text area's background color and image
+        app.Color imageColor = view.backgroundColor;
+        if (imageColor == null) {
+            imageColor = this.parentView.backgroundColor;
+        }
+        if (imageColor == null) {
+            imageColor = new app.Color(0, 0, 0);
+        }
+        control.setBackground(new Color(this.display, imageColor.red, imageColor.green, imageColor.blue));
+        if (view.backgroundImage != null) {
+            final Image backgroundImage = loadImage(view.backgroundImage);
+            control.setBackgroundImage(backgroundImage);
+            System.out.println("SWTApplication: addView: Set background image to " + view.backgroundImage);
+            final Control backgroundContainer = control;
+            control.addListener(SWT.Resize, event -> {
+                backgroundContainer.setBackgroundImage(backgroundImage);
+            });
+        }
+        System.out.println("SWTApplication: addView: backgroundColor=" + imageColor + ", backgroundImageFile=" + view.backgroundImage);
         
         view.onLoad(this);
     }
@@ -402,24 +443,41 @@ public class SWTApplication extends ApplicationController {
         Control[] controls = tabComposite.getChildren();
         for (Control control : controls) {
             System.out.println("SWTApplication: clearScreen: Disposing " + control);
-            if (control.getBackgroundImage() != null) {
-                control.getBackgroundImage().dispose();
-            }
+            //if (control.getBackgroundImage() != null) {
+            //    control.getBackgroundImage().dispose();
+            //}
             if (!control.getClass().toString().equals("class org.eclipse.swt.custom.StyledText")) {
                 System.out.println("SWTApplication: class is " + control.getClass().toString());
                 control.dispose();
             }
         }
         StyledText textArea = this.tabStyledTextMap.get(viewName);
-        textArea.setText(this.emptyBook);
-        List<StyleRange> styleRanges = tabStyleRangesMap.get(viewName);
-        styleRanges.clear();
+        if (textArea != null) {
+            textArea.setText(this.emptyBook);
+            List<StyleRange> styleRanges = tabStyleRangesMap.get(viewName);
+            styleRanges.clear();
+        }
     }
     
     @Override
-    public void displayMessageBox(String text) {
-        MessageBox messageBox = new MessageBox(this.shell, SWT.ICON_INFORMATION | SWT.OK);
-        messageBox.setText(this.parentView.name);
+    public void displayMessageBox(String title, String text, int level) {
+        int SWTIcon;
+        SWTIcon = switch (level) {
+            case Icon.INFORMATION -> SWT.ICON_INFORMATION;
+            case Icon.WARNING -> SWT.ICON_WARNING;
+            case Icon.ERROR -> SWT.ICON_ERROR;
+            case Icon.CANCEL -> SWT.ICON_CANCEL;
+            case Icon.QUESTION -> SWT.ICON_QUESTION;
+            case Icon.SEARCH -> SWT.ICON_SEARCH;
+            case Icon.WORKING -> SWT.ICON_WORKING;
+            default -> SWT.ICON_INFORMATION;
+        };
+
+        MessageBox messageBox = new MessageBox(this.shell, SWTIcon | SWT.OK);
+        if (title == null) {
+            title = this.parentView.name;
+        }
+        messageBox.setText(title);
         messageBox.setMessage(text);
         messageBox.open();
     }
@@ -443,18 +501,34 @@ public class SWTApplication extends ApplicationController {
         Color SWTColor = new Color(color.red, color.green, color.blue);
         
         int SWTStyle;
+        int SWTUnderlineStyle = 0;
         switch (style) {
             case FontStyle.NORMAL -> SWTStyle = SWT.NORMAL;
             case FontStyle.BOLD -> SWTStyle = SWT.BOLD;
             case FontStyle.ITALIC -> SWTStyle = SWT.ITALIC;
-            case FontStyle.UNDERLINE_DOUBLE -> SWTStyle = SWT.UNDERLINE_DOUBLE;
-            case FontStyle.UNDERLINE_ERROR -> SWTStyle = SWT.UNDERLINE_ERROR;
-            case FontStyle.UNDERLINE_LINK -> SWTStyle = SWT.UNDERLINE_LINK;
-            case FontStyle.UNDERLINE_SINGLE -> SWTStyle = SWT.UNDERLINE_SINGLE;
-            case FontStyle.UNDERLINE_SQUIGGLE -> SWTStyle = SWT.UNDERLINE_SQUIGGLE;
+            case FontStyle.UNDERLINE_DOUBLE -> {
+                SWTStyle= SWT.NORMAL;
+                SWTUnderlineStyle = SWT.UNDERLINE_DOUBLE;
+            }
+            case FontStyle.UNDERLINE_ERROR -> {
+                SWTStyle= SWT.NORMAL;
+                SWTUnderlineStyle = SWT.UNDERLINE_ERROR;
+            }
+            case FontStyle.UNDERLINE_LINK -> {
+                SWTStyle= SWT.NORMAL;
+                SWTUnderlineStyle = SWT.UNDERLINE_LINK;
+            }
+            case FontStyle.UNDERLINE_SINGLE -> {
+                SWTStyle= SWT.NORMAL;
+                SWTUnderlineStyle = SWT.UNDERLINE_SINGLE;
+            }
+            case FontStyle.UNDERLINE_SQUIGGLE -> {
+                SWTStyle= SWT.NORMAL;
+                SWTUnderlineStyle = SWT.UNDERLINE_SQUIGGLE;
+            }
             default -> {
+                System.out.println("SWTApplication: displayText: Unsupported font style!");
                 SWTStyle = SWT.NORMAL;
-                System.err.println("SWTApplication: displayText: Unsupported font style: " + style);
             }
         }
         
@@ -463,7 +537,7 @@ public class SWTApplication extends ApplicationController {
         String currentText = textArea.getText();
         Integer position = column - 1; // String positions start at zero
         position = position + (this.textColumns * (row - 1)) + (row - 1);
-        System.out.println("SWTApplication: displayText: this.textColumns=" + this.textColumns + ", position=" + position);
+        System.out.println("SWTApplication: displayText: this.textColumns=" + this.textColumns + ", position=" + position + ", SWTStyle=" + SWTStyle);
         StringBuilder sb = new StringBuilder(currentText);
         sb.replace(position, position + text.length(), text);
         textArea.setText(sb.toString());
@@ -472,7 +546,11 @@ public class SWTApplication extends ApplicationController {
         textRange.length = text.length();
         textRange.foreground = SWTColor;
         textRange.fontStyle = SWTStyle;
-        if (((color.red != 0) || (color.green != 0) || (color.blue != 0)) || (SWTStyle != SWT.NORMAL)) {
+        if (style >= 3) {
+            textRange.underline = true;
+            textRange.underlineStyle = SWTUnderlineStyle;
+        }
+        if (((color.red != 0) || (color.green != 0) || (color.blue != 0)) || (SWTStyle != SWT.NORMAL) || (textRange.underline)) {
             // Skip styling if the color is black and the styling is normal
             styleRanges.add(textRange);
         }
@@ -483,7 +561,140 @@ public class SWTApplication extends ApplicationController {
         textArea.redraw();
     }
     
-    public Button newButton(String viewName, String name, String text, double row, double column, ApplicationView listener) {
+    @Override
+    public void displayLink(String viewName, String name, String linkText, int row, int column, int length, EventListener listener) {
+        System.out.println("SWTApplication: displayLink: viewName=" + viewName + ", name=" + name + ", linkText=" + linkText + ",row=" + row + ", column=" + column + ", length=" + length);
+        
+        StyledText textArea = this.tabStyledTextMap.get(viewName);
+        Composite composite = this.tabCompositeMap.get(viewName);
+        
+        // Length needs to be provided because characters represented by two 16-bit Unicode characters will inflate the length
+        Point upperLeftCoordinates = this.convertToCoordinates(row, column);
+        Point upperRightCoordinates = this.convertToCoordinates(row, column + length);
+        int width = upperRightCoordinates.x - upperLeftCoordinates.x;
+        int height = 2 * this.fontHeight;
+        
+        Link link = new Link(composite, SWT.NONE);
+        link.setFont(this.monospaceFont);
+        link.setText(linkText);
+        link.setBounds(upperLeftCoordinates.x + 1, upperLeftCoordinates.y + 1, width, height);
+        link.moveAbove(textArea);
+        link.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                System.out.println("SWTApplication: displayLink: Link clicked: " + e.text);
+                listener.onEvent(name, null);
+            }
+        });
+    }
+    
+    @Override
+    public void displayGrid(String viewName, Map<String, ArrayList<BaseControl>> gridCells, int columns, Boolean showBorders, EventListener listener) {
+        System.out.println("SWTApplication: displayGrid: viewName=" + viewName + ", cells=" + gridCells.size());
+        
+        // TODO - Only available when the view does NOT have a text area
+        
+        Composite composite = this.tabCompositeMap.get(viewName);
+            
+        if (columns == 0) {
+            double squareRoot = Math.sqrt(gridCells.size());
+            columns = (int) Math.ceil(squareRoot);
+        }
+
+        System.out.println("SWTApplication: displayGrid: columns=" + columns);
+        
+        GridLayout gridLayout = new GridLayout(columns, true); // 3 columns, equal width
+        composite.setLayout(gridLayout);
+        
+        for (String cellName : gridCells.keySet()) {
+            ArrayList<BaseControl> controls = gridCells.get(cellName);
+            
+            int gridItemStyle;
+            if (showBorders) {
+                gridItemStyle = SWT.BORDER;
+            } else {
+                gridItemStyle = SWT.NONE;
+            }
+            Composite cellComposite = new Composite(composite, gridItemStyle);
+
+            cellComposite.setBackgroundMode(SWT.INHERIT_DEFAULT);
+            // TODO - Using the first control's background color is a little cludgy
+            Color backgroundColor = null;
+            int rgbSum = 0;
+            if (!controls.isEmpty()) {
+                System.out.println("SWTApplication: displayGrid: Cell count: " + controls.size());
+                app.Color genericBackgroundColor = controls.getFirst().backgroundColor;
+                if (genericBackgroundColor != null) {
+                    backgroundColor = new Color(genericBackgroundColor.red, genericBackgroundColor.green, genericBackgroundColor.blue);
+                    rgbSum = genericBackgroundColor.red + genericBackgroundColor.green + genericBackgroundColor.blue;
+                }
+            } else {
+                System.out.println("SWTApplication: displayGrid: Empty cell");
+            }
+            
+            cellComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true)); // Fill the cell
+            cellComposite.setLayout(new GridLayout());
+            Color foregroundColor = null;
+            if (backgroundColor != null) {
+                cellComposite.setBackground(backgroundColor);
+                if (rgbSum > 382) {
+                    // 255 * 3 = 765 as a maximum value for white.  Use black as the font color if on the lighter half of the color scale.
+                    foregroundColor = new Color(0, 0, 0);
+                } else {
+                    foregroundColor = new Color(255, 255, 255);
+                }
+            } else {
+                cellComposite.setBackground(this.display.getSystemColor(SWT.COLOR_TRANSPARENT)); // Set label background to transparent
+            }
+            
+            // Add zero to many controls to the grid cell
+            for (BaseControl abstractControl : controls) {
+                System.out.println("SWTApplication: displayGrid: Adding control " + abstractControl.getClass().getName());
+                Control control = null;
+                if (abstractControl.getClass().equals(app.control.LinkControl.class)) {
+                    Link link = new Link(cellComposite, SWT.NONE);
+                    link.setText(abstractControl.text);
+                    if (listener != null) {
+                        link.addSelectionListener(new SelectionAdapter() {
+                            @Override
+                            public void widgetSelected(SelectionEvent e) {
+                                System.out.println("SWTApplication: displayGrid: Link clicked: " + e.text);
+                                listener.onEvent(cellName, null);
+                            }
+                        });
+                    }
+                    control = link;
+                    System.out.println("SWTApplication: displayGrid: Added link " + abstractControl.text + " for " + cellName);
+                } else if (abstractControl.getClass().equals(app.control.LabelControl.class)) {
+                    Label label = new Label(cellComposite, SWT.NONE);
+                    label.setText(abstractControl.text);
+                    control = label;
+                    System.out.println("SWTApplication: displayGrid: Added label " + abstractControl.text + " for " + cellName);
+                } else if (abstractControl.getClass().equals(app.control.ImageControl.class)) {
+                    Label label = new Label(cellComposite, SWT.NONE);
+                    final Image image = loadImage(abstractControl.text);
+                    label.setImage(image);
+                    control = label;
+                    System.out.println("SWTApplication: displayGrid: Added image " + abstractControl.text + " for " + cellName);
+                }
+                
+                if (control != null) {
+                    control.setFont(this.monospaceFont);
+                    control.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
+                    control.setBackground(this.display.getSystemColor(SWT.COLOR_TRANSPARENT));
+                    if (backgroundColor != null) {
+                        control.setBackground(backgroundColor);
+                        control.setForeground(foregroundColor);
+                    }
+                    System.out.println("SWTApplication: displayGrid: Added " + abstractControl.getClass().getName() + " control " + abstractControl.text + " for " + cellName);
+                }
+            }
+        }
+
+        composite.pack();
+    }
+    
+    public Button newButton(String viewName, String name, String text, double row, double column, EventListener listener) {
         System.out.println("SWTApplication: newButton: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column);
         
         StyledText textArea = this.tabStyledTextMap.get(viewName);
@@ -501,7 +712,7 @@ public class SWTApplication extends ApplicationController {
     }
    
     @Override
-    public void displayButton(String viewName, String name, String text, int row, int column, ApplicationView listener) {
+    public void displayButton(String viewName, String name, String text, int row, int column, EventListener listener) {
         System.out.println("SWTApplication: displayButton: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column);
         Button button = this.newButton(viewName, name, text, row, column, listener);
         button.addSelectionListener(new SelectionAdapter() {
@@ -513,7 +724,7 @@ public class SWTApplication extends ApplicationController {
     }
     
     @Override
-    public void displayOpenFileButton(String viewName, String name, String text, int row, int column, ApplicationView listener) {
+    public void displayOpenFileButton(String viewName, String name, String text, int row, int column, EventListener listener) {
         System.out.println("SWTApplication: displayOpenFileButton: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column);
         Button button = this.newButton(viewName, name, text, row, column, listener);
         button.addSelectionListener(new SelectionAdapter() {
@@ -535,7 +746,7 @@ public class SWTApplication extends ApplicationController {
         System.out.println("SWTApplication: displayImage: viewName=" + viewName + ", fileName=" + fileName + ", row=" + row + ", column=" + column);
         StyledText textArea = this.tabStyledTextMap.get(viewName);
         Composite composite = this.tabCompositeMap.get(viewName);
-        Label label = new Label(composite, SWT.BORDER);
+        Label label = new Label(composite, SWT.NONE);
         final Image image = loadImage(fileName);
         Point dimensions = getDimensions(fileName);
         label.setImage(image);
@@ -574,7 +785,7 @@ public class SWTApplication extends ApplicationController {
     }
     
     @Override
-    public void setTimer(String name, int seconds, ApplicationView listener) {
+    public void setTimer(String name, int seconds, EventListener listener) {
         System.out.println("SWTApplication: setTimer: name=" + name + ", seconds=" + seconds + ", listener=" + listener);
         this.display.timerExec(seconds * 1000, () -> {
             listener.onEvent(name, seconds);
@@ -582,28 +793,28 @@ public class SWTApplication extends ApplicationController {
     }
     
     @Override
-    public void displayInputField(String viewName, String name, String text, int length, int row, int column, ApplicationView listener) {
-        System.out.println("SWTApplication: displayInputField: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column);
+    public void displayInputField(String viewName, String name, String label, int length, int row, int column, EventListener listener) {
+        System.out.println("SWTApplication: displayInputField: viewName=" + viewName + ", text=" + label + ", row=" + row + ", column=" + column);
         
         StyledText textArea = this.tabStyledTextMap.get(viewName);
         Composite composite = this.tabCompositeMap.get(viewName);
         
         // Display a label for the input field
-        this.displayText(viewName, text, row, column);
+        this.displayText(viewName, label, row, column);
 
         // Display the input field
         Text textInput = new Text(composite, SWT.BORDER);
         textInput.setTextLimit(length);
         textInput.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
         Point coordinates = this.convertToCoordinates(row - 0.5, column);
-        int labelWidth = text.length() * this.fontWidth;
+        int labelWidth = label.length() * this.fontWidth;
         int inputWidth = (length * this.fontWidth) + (2 * this.fontWidth);    // Calculate width of text plus buffer of two imaginary characters
         int height = 2 * this.fontHeight;   // Calculate double height of text
         textInput.setBounds(coordinates.x + 1 + labelWidth + (1 * this.fontWidth), coordinates.y + 1, inputWidth, height);
         textInput.moveAbove(textArea);
         
         // Display a button for submitting the input
-        Button button = this.newButton(viewName, name, "Submit", row - 0.5, column + text.length() + 1 + 1 + length + 1 + 1, listener);
+        Button button = this.newButton(viewName, name, "Submit", row - 0.5, column + label.length() + 1 + length + 1 + 1, listener);
         button.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -614,10 +825,49 @@ public class SWTApplication extends ApplicationController {
     }
     
     @Override
+    public void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, EventListener listener) {
+        System.out.println("SWTApplication: displayValidatedInputField: viewName=" + viewName + ", row=" + row + ", startColumn=" + startColumn + ", endColumn=" + endColumn);
+        
+        StyledText textArea = this.tabStyledTextMap.get(viewName);
+        Composite composite = this.tabCompositeMap.get(viewName);
+
+        // Display a row of buttons with the possible input values
+        Point coordinates = this.convertToCoordinates(row, startColumn);
+        Point terminalCoordinates = this.convertToCoordinates(row, endColumn);
+        int buttonHeight = 2 * this.fontHeight;   // Calculate double height of text
+        int buttonX = coordinates.x + 1;
+        int buttonY = coordinates.y + 1;
+        //Group buttonGroup = new Group(composite, SWT.NONE);
+        for (String value : values) {
+            Button button = new Button(composite, SWT.PUSH);
+            button.setText(value);
+            button.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    listener.onEvent(name, value);
+                }
+            });
+            int buttonWidth = (value.length() * this.fontWidth) + (2 * this.fontWidth);    // Calculate width of text plus buffer of two imaginary characters
+            if ((buttonX + buttonWidth) > terminalCoordinates.x) {
+                // Wrap the button onto a new line
+                buttonX = coordinates.x + 1;
+                buttonY = (int) (buttonY + buttonHeight + ((1 * this.fontWidth)));
+            }
+            button.setBounds(buttonX, buttonY, buttonWidth, buttonHeight);
+            button.moveAbove(textArea);
+            buttonX = buttonX + buttonWidth + (1 * this.fontWidth);   // Add a spacer between this button and the next
+        }
+    }
+    
+    @Override
     public void addDesigner(String viewName) {
         System.out.println("SWTApplication: addDesigner: viewName=" + viewName);
         
+        //StyledText textArea = this.tabStyledTextMap.get(viewName);
+        Composite composite = this.tabCompositeMap.get(viewName);
+        
         //int index = this.tabIndexMap.get(viewName);
+        /*
         int index = this.tabIndexMap.size();
         CTabItem tab = new CTabItem(this.tabFolder, SWT.NONE, index);
         tab.setText(viewName);
@@ -626,14 +876,18 @@ public class SWTApplication extends ApplicationController {
         composite.setLayout(null);
         tab.setControl(composite);
         this.tabCompositeMap.put(viewName, composite);
+        */
+        
+        Composite backgroundComposite = composite;
+        
 
         final Image backgroundImage = loadImage("/assets/images/designer.jpg");
         composite.setBackgroundImage(backgroundImage);
         composite.addListener(SWT.Resize, event -> {
-            composite.setBackgroundImage(backgroundImage);
+            backgroundComposite.setBackgroundImage(backgroundImage);
         });
 
-        tab.setControl(composite);
+        //tab.setControl(composite);
         composite.setLayout(new GridLayout(5, false));
 
         // First Panel
