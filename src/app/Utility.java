@@ -31,7 +31,7 @@ public class Utility {
     private static final Lock lock = new ReentrantLock();
     
     public static void playSound(String fileName, Boolean isLoop) {
-        System.out.println("Utility: playSound: fileName= " + fileName);
+        System.out.println("Utility: playSound: fileName= " + fileName + ", isLoop=" + isLoop);
         
         if (fileName == null) {
             return;
@@ -58,33 +58,51 @@ public class Utility {
             String fileType = getFileExtension(fileName);
             switch (fileType) {
                 case "mp3" -> {
-                    InputStream inputStream = getInputStream(fileName);
-                    if (inputStream == null) {
-                        System.err.println("Utility: playSound: File not found in classpath");
-                        return;
-                    }
-                    Player player = getPlayer(fileName, inputStream);
+
                     new Thread(() -> {
                         try {
-                            inputStreams.put(fileName, inputStream);
-                            audioPlayers.put(fileName, player);
-                            if (isLoop) {
+                            if (isLoop) {                                
+                                // Find the parent thread
                                 ThreadGroup group = Thread.currentThread().getThreadGroup().getParent();
                                 Thread[] parentThreads = new Thread[group.activeCount()];
                                 group.enumerate(parentThreads);
-
                                 Thread parentThread = null;
                                 for(Thread thread: parentThreads){
                                     if(thread.getName().equals("main"))
                                         parentThread = thread;
                                 }
-                                while (parentThread.isAlive()) {
+                                
+                                Boolean isClosed = false;
+                                while ((parentThread.isAlive()) && (!isClosed)) {
+                                    System.out.println("Utility: playSound: Playing " + fileName + " in a loop");
+                                    InputStream inputStream = getInputStream(fileName);
+                                    if (inputStream == null) {
+                                        System.err.println("Utility: playSound: File not found in classpath");
+                                        return;
+                                    }
+                                    inputStreams.put(fileName, inputStream);
+                                    Player player = getPlayer(fileName, inputStream);
+                                    audioPlayers.put(fileName, player);
                                     player.play();
+                                    isClosed = !player.isComplete();
+                                    player.close();
+                                    stopSound(fileName, true);
                                 }
+                                System.out.println("Utility: playSound: Done playing " + fileName + " in a loop");
                             } else {
+                                System.out.println("Utility: playSound: Playing " + fileName + " once");
+                                InputStream inputStream = getInputStream(fileName);
+                                if (inputStream == null) {
+                                    System.err.println("Utility: playSound: File not found in classpath");
+                                    return;
+                                }
+                                inputStreams.put(fileName, inputStream);
+                                Player player = getPlayer(fileName, inputStream);
+                                audioPlayers.put(fileName, player);
                                 player.play();
+                                stopSound(fileName, true);
+                                System.out.println("Utility: playSound: Done playing " + fileName + " once");
                             }
-                            stopSound(fileName, true);
                         } catch (JavaLayerException e) {
                             System.err.println("Utility: playSound: Error playing MP3 file: " + e.toString());
                         }
@@ -103,7 +121,11 @@ public class Utility {
                         audioInputStreams.put(fileName, audioInputStream);
                         inputStreams.put(fileName, inputStream);
                         audioPlayers.put(fileName, clip);
-                        clip.start();   // TODO - How to support playing in a loop?
+                        if (!isLoop) {
+                            clip.start();
+                        } else {
+                            clip.loop(Clip.LOOP_CONTINUOUSLY);
+                        }
                         clip.addLineListener(event -> {
                             if (event.getType() == LineEvent.Type.STOP) {
                                 System.out.println("Utility: playSound: WAV file playback complete");
@@ -224,17 +246,21 @@ public class Utility {
     public static void stopAllSounds() {
         System.out.println("Utility: stopAllSounds");
         Iterator<Map.Entry<String, Object>> iterator = audioPlayers.entrySet().iterator();
+        Boolean isLocked = false;
         while (iterator.hasNext()) {
-            Map.Entry<String, Object> entry = iterator.next();
-            String fileName = entry.getKey();
-            stopSound(fileName, false);
-            lock.lock();
             try {
+                Map.Entry<String, Object> entry = iterator.next();
+                String fileName = entry.getKey();
+                lock.lock();
+                stopSound(fileName, false);
+                isLocked = true;
                 iterator.remove();
             } catch(ConcurrentModificationException e) {
                 System.err.println("Utility: stopAllSounds: " + e.toString());
-            } finally {  
-                lock.unlock();
+            } finally { 
+                if (isLocked) {
+                    lock.unlock();
+                }
             }
         }
     }

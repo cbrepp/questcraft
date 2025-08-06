@@ -12,4 +12,9 @@ public class LinkControl extends BaseControl {
         super(text, backgroundColor);
     }
     
+    public LinkControl(String text, Color backgroundColor, Boolean isEnabled) {
+        this(text, backgroundColor);
+        this.isEnabled = isEnabled;
+    }
+    
 }

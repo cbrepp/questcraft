@@ -17,4 +17,9 @@ public class Color implements Serializable {
         this.green = green;
         this.blue = blue;
     }
+    
+    @Override
+    public String toString() {
+        return "(" + this.red + ", " + this.green + ", " + this.blue + ")";
+    }
 }

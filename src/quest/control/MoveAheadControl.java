@@ -19,10 +19,10 @@ public class MoveAheadControl extends QuestControl {
     public String onExecute(String tag) {
         System.out.println("MoveAheadControl: onExecute: tag=" + tag);
         
-        String nextSceneName = this.quest.getNextScene();
+        String nextSceneName = this.quest.getNextScene(true);
         
         if (nextSceneName.equals(Quest.EDGE_OF_THE_WORLD)) {
-            // TODO - How to handle the edge of the world?
+            System.err.println("MoveAheadControl: onExecute: Can move past the edge of the world!");
         } else {
             this.quest.startScene(nextSceneName, false, false);
             this.quest.display();

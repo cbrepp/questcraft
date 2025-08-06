@@ -19,8 +19,12 @@ public class SoundStopControl extends QuestControl {
     @Override
     public String onExecute(String tag) {
         System.out.println("SoundStopControl: onExecute: tag=" + tag);
-        // TODO - Optionally stop a specific sound file
-        Utility.stopAllSounds();
+        String soundFileName = getTagToken(tag, 1, true);
+        if (!soundFileName.equals("")) {
+            Utility.stopSound(soundFileName, true);
+        } else {
+            Utility.stopAllSounds();
+        }
         return "";
     }
     

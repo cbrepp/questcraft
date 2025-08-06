@@ -26,9 +26,14 @@ public class Quest extends app.ApplicationView {
     public final static String DIRECTION_WEST = "WEST";
     public final static String EDGE_OF_THE_WORLD = "EDGE OF THE WORLD";
     public static int FIRST_PAGE = 1;
+    public final static String GAME_OVER = "game-over";
+    public final static String HP_CHANGE = "hp-change";
+    public final static String HP_CHANGE_REFRESH = "hp-change-refresh";
     public final static int LEFT_PAGE = 1;
     public final static String LOADING_COMPLETE = "loading-complete";
     public final static String MAP = "Map";
+    public final static String MP_CHANGE = "mp-change";
+    public final static String MP_CHANGE_REFRESH = "mp-change-refresh";
     public final static String NEW_ACT = "new-act";
     public final static String NEW_INVENTORY_ITEM = "new-inventory-item";
     public final static String NEW_SCENE = "new-scene";
@@ -37,7 +42,11 @@ public class Quest extends app.ApplicationView {
     public final static String PREVIOUS_PAGE = "previous-page";
     public final static int RIGHT_PAGE = 2;
     public static int SECOND_PAGE = 2;
+    public final static String SPELL_BOOK = "Spell Book";
+    public final static String TIMER_EVENT_PREFIX = "TIMER";
     public final static String VARIABLE_EVENT_PREFIX = "VARIABLE";
+    public final static String XP_CHANGE = "xp-change";
+    public final static String XP_CHANGE_REFRESH = "xp-change-refresh";
     
     public ApplicationController appController;
     public Book book;
@@ -46,6 +55,7 @@ public class Quest extends app.ApplicationView {
     public int currentDisplayPage;
     public String currentPage;
     public String currentScene;
+    public Boolean isGameOver;
     public Map<String, InventoryItem> inventory;
     public Inventory inventoryView; // TODO - Make the inventoryView a listener of inventory change events
     public int leftPageStartingColumn;
@@ -54,14 +64,20 @@ public class Quest extends app.ApplicationView {
     public SceneMap map;
     public Map<String, List<String>> observedScenes;
     private String playerDirection;
+    private int playerHP;
+    private int playerMP;
+    private int playerXP;
     public String playerSymbol;
     public Integer playerX;
     public Integer playerY;
     public Map<String, QuestControl> questControls;
+    public Random random = new Random();
     public int rightPageStartingColumn;
     public int rightPageEndingColumn;
+    public SpellBook spellBook;
     public int startingRow;
     public Color textColor;
+    public int textColumn;
     public int textRow;
     public int textStyle;
     public int titleRow;
@@ -71,6 +87,10 @@ public class Quest extends app.ApplicationView {
         super(name);
         
         this.backgroundColor = new Color(0, 0, 0);
+        this.isGameOver = false;
+        this.playerHP = 100;
+        this.playerMP = 0;
+        this.playerXP = 0;
         this.playerSymbol = "\uD83E\uDDB0";
         this.magicText = false;
         this.inventory = new LinkedHashMap<>();
@@ -118,8 +138,31 @@ public class Quest extends app.ApplicationView {
         this.questControls.put(ObservedSceneAddControl.NAME, new ObservedSceneAddControl(this));
         this.questControls.put(TabSelectControl.NAME, new TabSelectControl(this));
         this.questControls.put(MoveAheadControl.NAME, new MoveAheadControl(this));
+        this.questControls.put(ButtonRowControl.NAME, new ButtonRowControl(this));
+        this.questControls.put(PlayerHPChangeControl.NAME, new PlayerHPChangeControl(this));
+        this.questControls.put(RandomControl.NAME, new RandomControl(this));
+        this.questControls.put(PlayerHPControl.NAME, new PlayerHPControl(this));
+        this.questControls.put(InventoryHasControl.NAME, new InventoryHasControl(this));
+        this.questControls.put(PlayerSymbolControl.NAME, new PlayerSymbolControl(this));
+        this.questControls.put(ItalicsTextControl.NAME, new ItalicsTextControl(this));
+        this.questControls.put(ItalicsTextOffControl.NAME, new ItalicsTextOffControl(this));
+        this.questControls.put(GifControl.NAME, new GifControl(this));
+        this.questControls.put(IfControl.NAME, new IfControl(this));
+        this.questControls.put(OverlayControl.NAME, new OverlayControl(this));
+        this.questControls.put(RemoveControl.NAME, new RemoveControl(this));
+        this.questControls.put(GetValidatedInputControl.NAME, new GetValidatedInputControl(this));
+        this.questControls.put(PlayerMPControl.NAME, new PlayerMPControl(this));
+        this.questControls.put(PlayerMPChangeControl.NAME, new PlayerMPChangeControl(this));
+        this.questControls.put(PlayerXPControl.NAME, new PlayerXPControl(this));
+        this.questControls.put(PlayerXPChangeControl.NAME, new PlayerXPChangeControl(this));
+        this.questControls.put(MaskControl.NAME, new MaskControl(this));
+        this.questControls.put(MoveBackControl.NAME, new MoveBackControl(this));
+        this.questControls.put(TimerStartControl.NAME, new TimerStartControl(this));
+        this.questControls.put(TimerStopControl.NAME, new TimerStopControl(this));
+        this.questControls.put(VariableAddControl.NAME, new VariableAddControl(this));
         this.textColor = new Color(0, 0, 0);
         this.textStyle = FontStyle.NORMAL;
+        this.emoji = "\uD83D\uDCD6"; // "open book" Unicode emoji
     }
     
     @Override
@@ -127,6 +170,21 @@ public class Quest extends app.ApplicationView {
         System.out.println("Quest: onEvent: eventName=" + eventName + ", eventValue=" + eventValue);
         
         switch(eventName) {
+            case HP_CHANGE -> this.appController.clearControl(this.name, HP_CHANGE);
+            case HP_CHANGE_REFRESH -> {
+                this.appController.clearControl(this.name, HP_CHANGE_REFRESH);
+                this.display();
+            }
+            case MP_CHANGE -> this.appController.clearControl(this.name, MP_CHANGE);
+            case MP_CHANGE_REFRESH -> {
+                this.appController.clearControl(this.name, MP_CHANGE_REFRESH);
+                this.display();
+            }
+            case XP_CHANGE -> this.appController.clearControl(this.name, XP_CHANGE);
+            case XP_CHANGE_REFRESH -> {
+                this.appController.clearControl(this.name, XP_CHANGE_REFRESH);
+                this.display();
+            }
             case LOADING_COMPLETE -> {
                 this.startAct(this.book.firstActName);
                 this.display();
@@ -156,12 +214,48 @@ public class Quest extends app.ApplicationView {
                 this.currentPage = page.previousPageName;
                 this.display();
             }
+            case GAME_OVER -> {
+                // TODO - Make this a configurable Story that can be added to any level of the Book
+                this.isGameOver = true;
+                app.Utility.stopAllSounds();
+                Act act = book.acts.get(this.currentAct);
+                Scene scene = act.scenes.get(this.currentScene);
+                Page deathPage = new Page();
+                deathPage.hideNextButton = true;
+                deathPage.hidePreviousButton = true;
+                deathPage.story.contents.add("Alas!  You have succombed to your wounds.  Here endeth your quest.");
+                deathPage.story.contents.add("<br>");
+                deathPage.story.contents.add("XP: <TODO>");
+                deathPage.story.contents.add("<br>");
+                deathPage.story.contents.add("<get-validated-input action Check High Scores>");
+                deathPage.story.contents.add("<br>");
+                // TODO - Display cool death image on the second page
+                scene.pages.put("DEATH PAGE", deathPage);
+                Story checkHighScoresSubpage = new Story();
+                checkHighScoresSubpage.contents.add("Sorry... High Scores is not yet implemented!");
+                deathPage.subpages.put("INPUT action=Check High Scores", checkHighScoresSubpage);
+                this.currentPage = "DEATH PAGE";
+                this.display();
+            }
             default -> {
                 String[] eventNameParts = eventName.split(":");
                 if (eventNameParts[0].equals(VARIABLE_EVENT_PREFIX)) {
                     String key = eventNameParts[1];
                     this.variables.put(key, (String)eventValue);
                     String subpageName = "INPUT " + key + "=" + eventValue;
+                    Story subpage = getSubpage(subpageName, false);
+                    if (subpage != null) {
+                        this.displayPage(subpage.contents, true);
+                    } else {
+                        subpageName = "INPUT " + key;
+                        subpage = getSubpage(subpageName, false);
+                        if (subpage != null) {
+                            this.displayPage(subpage.contents, true);
+                        }
+                    }
+                } else if (eventNameParts[0].equals(TIMER_EVENT_PREFIX)) {
+                    String key = eventNameParts[1];
+                    String subpageName = "TIMER " + key;
                     Story subpage = getSubpage(subpageName, false);
                     if (subpage != null) {
                         this.displayPage(subpage.contents, true);
@@ -205,21 +299,23 @@ public class Quest extends app.ApplicationView {
     }
     
     public void addInventoryItem(String inventoryItemName) {
+        System.out.println("addInventoryItem: inventoryItemName=" + inventoryItemName);
+        
         InventoryItem item;
         if (this.inventory.containsKey(inventoryItemName)) {
             item = this.inventory.get(inventoryItemName);
             item.quantity++;
-            System.out.println("InventoryAddControl: onExecute: Item increased by 1: " + item.quantity);
+            System.out.println("addInventoryItem: Item increased by 1: " + item.quantity);
         } else {
             item = this.book.inventory.get(inventoryItemName);
             item.quantity = 1;
             this.inventory.put(inventoryItemName, item);
-            System.out.println("InventoryAddControl: onExecute: Item added to inventory");
+            System.out.println("addInventoryItem: Item added to inventory");
         }
 
         // Play the item's sound if applicable
         if (item.soundFileName != null) {
-            System.out.println("InventoryAddControl: onExecute: Playing inventory item's sound: " + item.soundFileName);
+            System.out.println("addInventoryItem: Playing inventory item's sound: " + item.soundFileName);
             Utility.playSound(item.soundFileName, false);
         }
         
@@ -262,91 +358,55 @@ public class Quest extends app.ApplicationView {
 
         // Display the current page's contents
         Page page = scene.pages.get(this.currentPage);
-        List<String> pageContents = page.story.contents;
+        List<String> pageContents;
+        Story pageStory;
+        if ((page == null) || (page.story == null)) {
+            pageContents = new ArrayList();
+            pageContents.add("404 NOT FOUND");
+            displayPage(pageContents, false);
+            return;
+        }
+        pageStory = page.story;
+        pageContents = pageStory.contents;
         displayPage(pageContents, false);
         
-        // Previous page button
-        if ((!page.hidePreviousButton) && (page.previousPageName != null)) {
-            String buttonText = "< Previous";
-            int buttonColumn = this.leftPageStartingColumn;
-            this.appController.displayButton(this.name, PREVIOUS_PAGE, buttonText, this.buttonRow, buttonColumn, this);
-        }
-        
         // Next page button
-        if ((!page.hideNextButton) && ((act.nextActName != null) || (scene.nextSceneName != null) || (page.nextPageName != null))) {
+        Boolean isNextPageDisplaying = false;
+        if ((this.playerHP != 0) && (!page.hideNextButton) && ((act.nextActName != null) || (scene.nextSceneName != null) || (page.nextPageName != null))) {
             String buttonText = "Next >";
             int buttonColumns = appController.getButtonColumns(buttonText);
             int buttonColumn = this.rightPageEndingColumn - buttonColumns + 1;
-            this.appController.displayButton(this.name, NEXT_PAGE, buttonText, this.buttonRow, buttonColumn, this);
+            this.appController.displayButton(this.name, NEXT_PAGE, buttonText, this.buttonRow, buttonColumn, false, !page.noGlow, this);
+            isNextPageDisplaying = true;
         }
-    }
-    
-    public void displayTextOnPage(String text, Integer row, Integer column, Color color, int style) {
-        int startingColumn;
-        int endingColumn;
-        if (this.currentDisplayPage == RIGHT_PAGE) {
-            startingColumn = this.rightPageStartingColumn;
-            endingColumn = this.rightPageEndingColumn;
-        } else {
-            startingColumn = this.leftPageStartingColumn;
-            endingColumn = this.leftPageEndingColumn;
+
+        // Previous page button
+        if ((this.playerHP != 0) && (!page.hidePreviousButton) && (page.previousPageName != null)) {
+            String buttonText = "< Previous";
+            int buttonColumn = this.leftPageStartingColumn;
+            Boolean glow = ((!isNextPageDisplaying) && (!page.noGlow));   // If there is no Next Page button, then attention should be called to going back
+            this.appController.displayButton(this.name, PREVIOUS_PAGE, buttonText, this.buttonRow, buttonColumn, false, glow, this);
         }
         
-        int realRow = this.titleRow + 1 + row;
-        int realColumn = startingColumn + column - 1;
-        int rowWidth = endingColumn - startingColumn;
-        String remainingText = text;
-        while (remainingText.length() > 0) {
-            String lineText;
-            if (remainingText.length() <= (rowWidth + 1)) {
-                lineText = remainingText;
-                remainingText = "";
-            } else {
-                lineText = remainingText.substring(0, rowWidth + 1);
-                int lastSpaceIndex = lineText.lastIndexOf(' ');
-                if (lastSpaceIndex != -1) {
-                    lineText = lineText.substring(0, lastSpaceIndex);
-                    remainingText = remainingText.substring(lineText.length(), remainingText.length());
-                } else {
-                    lineText = lineText + "-";
-                    remainingText = remainingText.substring(rowWidth, remainingText.length());
-                }
-            }
-            if ((!this.magicText) || (color.red != 0) || (color.green != 0) || (color.blue != 0)) {
-                this.appController.displayText(this.name, lineText, realRow, realColumn, color, style);
-            } else {
-                // When magic words are turned on and the font color is black, color each word individually
-                int magicColumn = realColumn;
-                Random random = new Random();
-                String[] magicWords = lineText.split(" ");
-                for (String magicWord : magicWords) {
-                    // Randomly pick a number from the bottom 3/4 of the 256 RGB scale.
-                    // (Bottom half means darker and easier to read on the light book pages.)
-                    int red = random.nextInt(192);
-                    int green = random.nextInt(192);
-                    int blue = random.nextInt(192);
-                    Color randomColor = new Color(red, green, blue);
-                    this.appController.displayText(this.name, magicWord + " ", realRow, magicColumn, randomColor, style);
-                    magicColumn += magicWord.length() + 1;
-                }
-                this.appController.displayText(this.name, lineText, realRow, realColumn, color, style);
-            }
-            remainingText = remainingText.trim();
-            realRow++;
-            realColumn = startingColumn;
-            this.textRow = this.textRow + 1;
+        // Game Over button
+        if ((!this.isGameOver) && (this.playerHP == 0)) {
+            String buttonText = "Game Over >";
+            int buttonColumns = appController.getButtonColumns(buttonText);
+            int buttonColumn = this.rightPageEndingColumn - buttonColumns + 1;
+            this.appController.displayButton(this.name, GAME_OVER, buttonText, this.buttonRow, buttonColumn, false, true, this);
         }
     }
     
-    // TODO - Skip [[VARIABLE player=GREYSON]] sections... these should really be a sub-page data structure in Act mapped with the same page number and executed by getting input?
     public void displayPage(List<String> page, Boolean isSubpage) {
         System.out.println("Quest: displayPage");
         
         if (!isSubpage) {
             this.currentDisplayPage = FIRST_PAGE;
+            this.textColumn = 1;
             this.textRow = 1;
             this.textColor = new Color(0, 0, 0);
             this.textStyle = FontStyle.NORMAL;
+            System.out.println("Quest: displayPage : Initialized textRow to 1");
         }
         
         Color currentTextColor = this.textColor;
@@ -354,6 +414,7 @@ public class Quest extends app.ApplicationView {
         
         for (String pageLine : page) {
             String storyText = "";
+            Boolean pageLineContainsText = false;
             for (int i = 0; i < pageLine.length(); i++) {
                 char character = pageLine.charAt(i);
                 String newText = "" + character;
@@ -370,8 +431,15 @@ public class Quest extends app.ApplicationView {
                             // Unsupported tags are supported and should not throw an exception
                             System.out.println("Quest: displayPage: Unsupported tag: ***" + questControlName + "***");
                         } else {
+                            if ((control.unspoolStoryText) && (!storyText.equals(""))) {
+                                System.out.println("Quest: displayPage: Unspooling story text...");
+                                pageLineContainsText = true;
+                                this.displayTextOnPage(storyText, this.textRow, this.textColumn, this.textColor, this.textStyle);
+                                storyText = "";
+                            }
                             System.out.println("Quest: displayPage: Executing tag " + questControlName);
-                            newText = control.onExecute(questControlTag);
+                            // TODO - If displaying an in-line control (like 'inventory'), need to display all of the text accumulated thus far
+                            newText = control.execute(questControlTag);
                             i = i + questControlTag.length() - 1;
                         }
                     }
@@ -379,20 +447,110 @@ public class Quest extends app.ApplicationView {
                 storyText = storyText + newText;
                 
                 if ((currentTextStyle != this.textStyle) || (!currentTextColor.equals(this.textColor))) {
+                    pageLineContainsText = true;
                     // Display the previous text styling for the text accumulated thus far
-                    System.out.println("Quest: displayPage: Displaying current story text: " + storyText);
-                    // TODO - The text column should NOT be 1
-                    this.displayTextOnPage(storyText, this.textRow, 1, currentTextColor, currentTextStyle);
+                    System.out.println("Quest: displayPage: Displaying current story text for previous style on textRow " + this.textRow + ": " + storyText);
+                    this.displayTextOnPage(storyText, this.textRow, this.textColumn, currentTextColor, currentTextStyle);
                     storyText = "";
                     currentTextColor = this.textColor;
                     currentTextStyle = this.textStyle;
+                    System.out.println("Quest: displayPage: Updated text style!");
                 }
             }
             
             if (storyText.length() > 0) {
-                this.displayTextOnPage(storyText, this.textRow, 1, this.textColor, this.textStyle);
-            } else if (pageLine.length() == 0) {
+                pageLineContainsText = true;
+                this.displayTextOnPage(storyText, this.textRow, this.textColumn, this.textColor, this.textStyle);
+            }
+            
+            if (pageLineContainsText) {
+                // Page lines that have no text but rather a quest control like <br> or <second-page> should not increment the text row.
+                // This requires that empty lines use <br>.
                 this.textRow = this.textRow + 1;
+                this.textColumn = 1;
+                System.out.println("Quest: displayPage: Done with page line and it had text so advanced text row to " + this.textRow);
+            }
+        }
+    }
+    
+    public void displayTextOnPage(String text, Integer row, Integer column, Color color, int style) {
+        this.textColumn = column;
+        int startingColumn;
+        int endingColumn;
+        if (this.currentDisplayPage == RIGHT_PAGE) {
+            startingColumn = this.rightPageStartingColumn;
+            endingColumn = this.rightPageEndingColumn;
+        } else {
+            startingColumn = this.leftPageStartingColumn;
+            endingColumn = this.leftPageEndingColumn;
+        }
+        
+        int realRow = this.titleRow + 1 + row;
+        System.out.println("Quest: displayTextOnPage: Start: realRow=" + realRow);
+        int realColumn = startingColumn + this.textColumn - 1;
+        int rowWidth = endingColumn - startingColumn;
+        String remainingText = text;
+        while (remainingText.length() > 0) {
+            Boolean wrapText = true;
+            String lineText;
+            if ((remainingText.length() + this.textColumn - 1) <= (rowWidth + 1)) {
+                lineText = remainingText;
+                remainingText = "";
+                wrapText = false;
+            } else {
+                System.out.println("remainingText=" + remainingText + ", rowWidth=" + rowWidth + ", this.textColumn=" + this.textColumn);
+                int charsToGrab;
+                if ((rowWidth + 1 - this.textColumn) > (remainingText.length())) {
+                    charsToGrab = remainingText.length();
+                } else {
+                    charsToGrab = rowWidth + 1 - this.textColumn;
+                    if (charsToGrab < 0) {
+                        charsToGrab = remainingText.length();
+                    }
+                }
+                System.out.println("charsToGrab = " + charsToGrab + ", length = " + remainingText.length());
+                lineText = remainingText.substring(0, charsToGrab);
+                int lastSpaceIndex = lineText.lastIndexOf(' ');
+                if (lastSpaceIndex != -1) {
+                    lineText = lineText.substring(0, lastSpaceIndex);
+                    remainingText = remainingText.substring(lineText.length(), remainingText.length());
+                } else {
+                    lineText = lineText + "-";
+                    //remainingText = remainingText.substring(rowWidth, remainingText.length());
+                    remainingText = remainingText.substring(0, charsToGrab);
+                }
+            }
+            if ((!this.magicText) || (color.red != 0) || (color.green != 0) || (color.blue != 0)) {
+                System.out.println("Quest: displayTextOnPage: starting row=" + row + ", now on " + (this.textRow) + ", text=" + lineText + ", realColumn=" + realColumn + ", textColumn=" + this.textColumn);
+                this.appController.displayText(this.name, lineText, realRow, realColumn, color, style);
+            } else {
+                // When magic words are turned on and the font color is black, color each word individually
+                int magicColumn = realColumn;
+                //Random random = new Random();
+                String[] magicWords = lineText.split(" ");
+                for (String magicWord : magicWords) {
+                    // Randomly pick a number from the bottom 3/4 of the 256 RGB scale.
+                    // (Bottom half means darker and easier to read on the light book pages.)
+                    int red = this.random.nextInt(192);
+                    int blue = this.random.nextInt(192);
+                    Color randomColor = new Color(red, 0, blue);
+                    this.appController.displayText(this.name, magicWord + " ", realRow, magicColumn, randomColor, style);
+                    this.textColumn += magicWord.length() + 1;
+                    magicColumn += magicWord.length() + 1;
+                }
+                System.out.println("Quest: displayTextOnPage: lineText=" + lineText + ", realRow=" + realRow + ", realColumn=" + realColumn);
+                this.appController.displayText(this.name, lineText, realRow, realColumn, color, style);
+            }
+            remainingText = remainingText.trim();
+            if (wrapText) {
+                realRow++;
+                realColumn = startingColumn;
+                this.textColumn = 1;
+                this.textRow = this.textRow + 1;
+                System.out.println("Quest: displayTextOnPage: Wrapping text so incrementing row: realRow now " + realRow);
+            } else {
+                this.textColumn += lineText.length() + 1;
+                realColumn += lineText.length();
             }
         }
     }
@@ -408,24 +566,36 @@ public class Quest extends app.ApplicationView {
         }
     }
     
-    public String getNextScene() {
-        System.out.println("Quest: getNextScene");
+    public String getNextScene(Boolean movingForward) {
+        System.out.println("Quest: getNextScene: movingForward=" + movingForward);
         
         Act currentAct = this.book.acts.get(this.currentAct);
         Scene currentScene = currentAct.scenes.get(this.currentScene);
         
         if ((currentScene.x == null) || (currentScene.y == null)) {
+            System.err.println("Quest: getNextScene: Outside of a scene! x=" + currentScene.x + ", y=" + currentScene.y);
             return Quest.EDGE_OF_THE_WORLD;
         }
         
         int x = currentScene.x;
         int y = currentScene.y;
-        switch (this.getPlayerDirection().toUpperCase()) {
-            case Quest.DIRECTION_EAST -> x += 1;
-            case Quest.DIRECTION_NORTH -> y += -1;
-            case Quest.DIRECTION_SOUTH -> y += 1;
-            case Quest.DIRECTION_WEST -> x += -1;
+        System.out.println("Quest: getNextScene: Current x=" + x + ", current y=" + y);
+        if (movingForward) {
+            switch (this.getPlayerDirection().toUpperCase()) {
+                case Quest.DIRECTION_EAST -> x += 1;
+                case Quest.DIRECTION_NORTH -> y += -1;
+                case Quest.DIRECTION_SOUTH -> y += 1;
+                case Quest.DIRECTION_WEST -> x += -1;
+            }
+        } else {
+            switch (this.getPlayerDirection().toUpperCase()) {
+                case Quest.DIRECTION_EAST -> x += -1;
+                case Quest.DIRECTION_NORTH -> y += 1;
+                case Quest.DIRECTION_SOUTH -> y += -1;
+                case Quest.DIRECTION_WEST -> x += 1;
+            }
         }
+        System.out.println("Quest: getNextScene: Next x=" + x + ", next y=" + y);
         
         String nextSceneName = Quest.EDGE_OF_THE_WORLD;
         for (String sceneName : currentAct.scenes.keySet()) {
@@ -434,6 +604,7 @@ public class Quest extends app.ApplicationView {
                 continue;
             }
             if ((scene.x == x) && (scene.y == y)) {
+                System.out.println("Quest: getNextScene: Found matching scene: " + sceneName);
                 nextSceneName = sceneName;
                 break;
             }
@@ -444,6 +615,18 @@ public class Quest extends app.ApplicationView {
     
     public String getPlayerDirection() {
         return this.playerDirection;
+    }
+    
+    public int getPlayerHP() {
+        return this.playerHP;
+    }
+    
+    public int getPlayerMP() {
+        return this.playerMP;
+    }
+    
+    public int getPlayerXP() {
+        return this.playerXP;
     }
     
     public Story getSubpage(String name, Boolean cheatOnly) {
@@ -495,6 +678,95 @@ public class Quest extends app.ApplicationView {
         this.updateObservedScenes();
 
         this.publishEvent(PLAYER_DIRECTION, this.playerDirection);        
+    }
+    
+    // TODO - Make this configurable as a Story element on any level of the Book
+    public void setPlayerHP(int delta, Boolean refreshPage) {
+        System.out.println("Quest: setPlayerHP: delta=" + delta + ", refreshPage=" + refreshPage);
+        
+        this.playerHP = this.playerHP + delta;
+        
+        String overlayName;
+        if (refreshPage) {
+            overlayName = HP_CHANGE_REFRESH;
+        } else {
+            overlayName = HP_CHANGE;
+        }
+        
+        if (delta < 0) {
+            if (delta >= -10) {
+                app.Utility.playSound("/assets/sounds/hit.mp3", false);
+            } else {
+                app.Utility.playSound("/assets/sounds/hit-harder.mp3", false);
+            }
+            this.appController.displayOverlay(this.name, overlayName, new Color(255, 0, 0), null, null, null, null, null);
+            appController.setTimer(overlayName, 0.5, this);
+        } else if (delta > 0) {
+            //app.Utility.playSound("/assets/sounds/TODO", false);
+            this.appController.displayOverlay(this.name, overlayName, new Color(0, 255, 0), null, null, null, null, null);
+            appController.setTimer(overlayName, 0.5, this);
+        }
+        
+        if (this.playerHP < 0) {
+            this.playerHP = 0;
+            app.Utility.playSound("/assets/sounds/death.mp3", false);
+        }
+    }
+    
+    // TODO - Make this configurable as a Story element on any level of the Book
+    public void setPlayerMP(int delta, Boolean refreshPage) {
+        System.out.println("Quest: setPlayerMP: delta=" + delta + ", refreshPage=" + refreshPage);
+        
+        this.playerMP = this.playerMP + delta;
+
+        if (this.playerMP < 0) {
+            this.playerMP = 0;
+        } else if (this.playerMP > 100) {
+            this.playerMP = 100;
+        }
+        
+        String overlayName;
+        if (refreshPage) {
+            overlayName = MP_CHANGE_REFRESH;
+        } else {
+            overlayName = MP_CHANGE;
+        }
+        
+        if (delta < 0) {
+            app.Utility.playSound("/assets/sounds/spell-cast.wav", false);
+            this.appController.displayOverlay(this.name, overlayName, new Color(128, 0, 128), null, null, null, null, null);
+            appController.setTimer(overlayName, 0.5, this);
+        } else if (delta > 0) {
+            app.Utility.playSound("/assets/sounds/mp-up.wav", false);
+            this.appController.displayOverlay(this.name, overlayName, new Color(128, 0, 128), null, null, null, null, null);
+            appController.setTimer(overlayName, 0.5, this);
+        }        
+    }
+    
+    // TODO - Make this configurable as a Story element on any level of the Book
+    public void setPlayerXP(int delta, Boolean refreshPage) {
+        System.out.println("Quest: setPlayerXP: delta=" + delta + ", refreshPage=" + refreshPage);
+        
+        this.playerXP = this.playerXP + delta;
+        
+        String overlayName;
+        if (refreshPage) {
+            overlayName = XP_CHANGE_REFRESH;
+        } else {
+            overlayName = XP_CHANGE;
+        }
+        
+        if (delta < 0) {
+            this.appController.displayOverlay(this.name, overlayName, new Color(128, 0, 128), null, null, null, null, null);
+            appController.setTimer(overlayName, 0.5, this);
+        } else if (delta > 0) {
+            this.appController.displayOverlay(this.name, overlayName, new Color(128, 0, 128), null, null, null, null, null);
+            appController.setTimer(overlayName, 0.5, this);
+        }  
+
+        if (this.playerXP < 0) {
+            this.playerXP = 0;
+        }       
     }
     
     public void startAct(String actName) {
@@ -558,7 +830,7 @@ public class Quest extends app.ApplicationView {
         if (!this.observedScenes.get(this.currentAct).contains(this.currentScene)) {
             this.observedScenes.get(this.currentAct).add(this.currentScene);
         }
-        String nextSceneName = this.getNextScene();
+        String nextSceneName = this.getNextScene(true);
         if (!this.observedScenes.get(this.currentAct).contains(nextSceneName)) {
             this.observedScenes.get(this.currentAct).add(nextSceneName);
         }

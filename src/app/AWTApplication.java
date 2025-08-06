@@ -24,6 +24,11 @@ public class AWTApplication extends ApplicationController {
         }
         ApplicationController.main(args);
     }
+    
+    @Override
+    public void setDelegate(Object delegate) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
 
     @Override
     public void close() {
@@ -31,7 +36,7 @@ public class AWTApplication extends ApplicationController {
     }
 
     @Override
-    public void displayApplication(ApplicationView view) {
+    public void open(ApplicationView splashView, ApplicationView mainView) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
@@ -46,12 +51,17 @@ public class AWTApplication extends ApplicationController {
     }
     
     @Override
-    public void initialize(ApplicationView view) {
+    public void displayOverlay(String viewName, String name, app.Color color, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, Integer transparency) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
     @Override
     public void clearScreen(String name) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public void clearControl(String viewName, String controlName) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
@@ -77,6 +87,11 @@ public class AWTApplication extends ApplicationController {
     
     @Override
     public void selectTab(String viewName) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public void renameTab(String viewName, String newViewName) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
@@ -111,12 +126,12 @@ public class AWTApplication extends ApplicationController {
     }
     
     @Override
-    public void displayButton(String viewName, String name, String text, int row, int column, EventListener listener) {
+    public void displayButton(String viewName, String name, String text, int row, int column, Boolean isMonospace, Boolean glow, EventListener listener) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
     @Override
-    public void displayOpenFileButton(String viewName, String name, String text, int row, int column, EventListener listener) {
+    public void displayOpenFileButton(String viewName, String name, String text, int row, int column, Boolean isMonospace, Boolean glow, EventListener listener) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
@@ -126,12 +141,12 @@ public class AWTApplication extends ApplicationController {
     }
     
     @Override
-    public void displayInputField(String viewName, String name, String label, int length, int row, int column, EventListener listener) {
+    public void displayInputField(String viewName, String name, String label, int length, int row, int column, Boolean isMonospace, Boolean isUpperCase, Boolean isMultiUse, EventListener listener) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
     @Override
-    public void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, EventListener listener) {
+    public void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, int alignment, EventListener listener) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
@@ -141,7 +156,12 @@ public class AWTApplication extends ApplicationController {
     }
     
     @Override
-    public void setTimer(String name, int seconds, EventListener listener) {
+    public void setTimer(String name, double seconds, EventListener listener) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public void removeTimer(String name) {
         throw new UnsupportedOperationException("Not supported.");
     }
     

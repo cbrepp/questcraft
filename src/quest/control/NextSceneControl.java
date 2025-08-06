@@ -20,7 +20,17 @@ public class NextSceneControl extends QuestControl {
     @Override
     public String onExecute(String tag) {
         System.out.println("NextSceneControl: onExecute: tag=" + tag);
-        String nextSceneName = this.quest.getNextScene();
+        String nextSceneId = this.quest.getNextScene(true);
+        Act act = this.quest.book.acts.get(this.quest.currentAct);
+        System.out.println("NextSceneControl: onExecute: act " + this.quest.currentAct + "'s next scene is " + nextSceneId);
+        String nextSceneName;
+        if (!nextSceneId.equals(Quest.EDGE_OF_THE_WORLD)) {
+            Scene nextScene = act.scenes.get(nextSceneId);
+            String nextSceneSymbol = nextScene.symbol;
+            nextSceneName = nextSceneSymbol + " " + nextSceneId;
+        } else {
+            nextSceneName = nextSceneId;
+        }
         return nextSceneName;
     }
     

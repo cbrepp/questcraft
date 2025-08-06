@@ -31,7 +31,7 @@ public class SplashScreen extends app.ApplicationView {
     @Override
     public void onDisplay(ApplicationController appController) {
         System.out.println("SplashScreen: onDisplay");
-        appController.setTimer("timeout", 4, this);
+        appController.setTimer("timeout", 4.0, this);
     }
 
     @Override

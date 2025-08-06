@@ -37,31 +37,36 @@ public abstract class ApplicationController {
     public static final String NAME_PROPERTY = "NAME";
     public static final String PROPERTIES_FILE = "assets/app.properties";
     public static String NAME;
+    public static ApplicationController appController;
     
+    public abstract void setDelegate(Object delegate);
     public abstract void addDesigner(String viewName);
     public abstract void selectTab(String viewName);
+    public abstract void renameTab(String viewName, String newViewName);
     public abstract void addView(ApplicationView view);
     public abstract void addView(ApplicationView view, Boolean isParent, int index);
     public abstract Integer getTabIndex(String viewName);
     public abstract void close();
-    public abstract void displayApplication(ApplicationView view);
+    public abstract void open(ApplicationView splashView, ApplicationView mainView);
     public abstract void displayView(ApplicationView view);
     public abstract void displayView(String viewName);
-    public abstract void initialize(ApplicationView view);
+    public abstract void displayOverlay(String viewName, String name, app.Color color, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, Integer transparency);
     public abstract void clearScreen(String name);
+    public abstract void clearControl(String viewName, String controlName);
     public abstract void displayMessageBox(String title, String text, int level);
     public abstract void displayText(String viewName, String text, Integer row, Integer column);
     public abstract void displayText(String viewName, String text, Integer row, Integer column, Color color);
     public abstract void displayText(String viewName, String text, Integer row, Integer column, Color color, int style);
     public abstract void displayGrid(String viewName, Map<String, ArrayList<BaseControl>> linkTexts, int columns, Boolean showBorders, EventListener listener);
     public abstract void displayLink(String viewName, String name, String linkText, int row, int column, int length, EventListener listener);
-    public abstract void displayButton(String viewName, String name, String text, int row, int column, EventListener listener);
-    public abstract void displayOpenFileButton(String viewName, String name, String text, int row, int column, EventListener listener);
+    public abstract void displayButton(String viewName, String name, String text, int row, int column, Boolean isMonospace, Boolean glow, EventListener listener);
+    public abstract void displayOpenFileButton(String viewName, String name, String text, int row, int column, Boolean isMonospace, Boolean glow, EventListener listener);
     public abstract int displayImage(String viewName, String fileName, int row, int column);
-    public abstract void displayInputField(String viewName, String name, String label, int length, int row, int column, EventListener listener);
-    public abstract void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, EventListener listener);
+    public abstract void displayInputField(String viewName, String name, String label, int length, int row, int column, Boolean isMonospace, Boolean isUpperCase, Boolean isMultiUse, EventListener listener);
+    public abstract void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, int alignment, EventListener listener);
     public abstract int displayGif(String viewName, String fileName, int row, int column);
-    public abstract void setTimer(String name, int seconds, EventListener listener);
+    public abstract void setTimer(String name, double seconds, EventListener listener);
+    public abstract void removeTimer(String name);
     public abstract int getTextColumns();
     public abstract int getTextRows();
     public abstract int getColumns(String fileName);
@@ -82,8 +87,8 @@ public abstract class ApplicationController {
         
         // Instance the application controller
         String guiProperty = props.getProperty("app.gui");
-        ApplicationController appController = resolveController(args, guiProperty);
-        if (appController == null) {
+        ApplicationController.appController = resolveController(args, guiProperty);
+        if (ApplicationController.appController == null) {
             System.err.println("ApplicationController: main: Unable to construct application controller");
             return;
         }
@@ -96,21 +101,21 @@ public abstract class ApplicationController {
         
         Class<?> clazz;
         String appName = getAppName(configAppClass, configAppVersion);
-        
+
         // Initialize the splash view
+        ApplicationView splashView = null;
         if (configSplashClass != null) {
-            ApplicationView splashView = (ApplicationView) Utility.instance(configSplashClass, appName);
+            System.out.println("ApplicationController: main: Intializing splash view");
+            splashView = (ApplicationView) Utility.instance(configSplashClass, appName);
             clazz = splashView.getClass();
             if (!ApplicationView.class.isAssignableFrom(clazz)) {
                 System.err.println("ApplicationController: main: " + clazz.getName() + " is not an application view");
                 return;
             }
-            appController.initialize(splashView);
-            System.out.println("ApplicationController: main: Displaying splash view");
-            appController.displayApplication(splashView);
         }
 
         // Initialize the main application view
+        System.out.println("ApplicationController: main: Intializing main view");
         ApplicationView appView = (ApplicationView) Utility.instance(configAppClass, appName);
         clazz = appView.getClass();
         if (!ApplicationView.class.isAssignableFrom(clazz)) {
@@ -120,11 +125,14 @@ public abstract class ApplicationController {
         appView.className = configAppClass;
         appView.iconFileName = props.getProperty("app.icon");
         appView.version = configAppVersion;
-        appController.initialize(appView);
-        System.out.println("ApplicationController: main: Displaying main application view");
-        appController.displayApplication(appView);
+        
+        // Display the application
+        System.out.println("ApplicationController: main: Displaying application");
+        ApplicationController.appController.open(splashView, appView);
+        
+        // Dispose the application
         System.out.println("ApplicationController: main: Closing");
-        appController.close();
+        ApplicationController.appController.close();
         System.out.println("ApplicationController: main: System exit");
     }
     

@@ -20,6 +20,7 @@ public class SetFocusOnFirstPageControl extends QuestControl {
         System.out.println("SetFocusOnFirstPageControl: onExecute: tag=" + tag);
         this.quest.currentDisplayPage = Quest.FIRST_PAGE;
         this.quest.textRow = 1;
+        this.quest.textColumn = 1;
         return "";
     }
     

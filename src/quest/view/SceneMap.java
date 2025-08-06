@@ -20,6 +20,7 @@ import quest.model.Scene;
 public class SceneMap extends app.ApplicationView implements EventListener {
 
     public final static String COMPASS = "COMPASS";
+    public final static String EMOJI = "\uD83D\uDDFA";
     public Quest quest;
     public ApplicationController appController;
     
@@ -28,6 +29,7 @@ public class SceneMap extends app.ApplicationView implements EventListener {
         this.addTextArea = false;   // The text area would interfere with this view's grid layout, so prevent it here
         this.backgroundColor = new Color(255, 255, 255);
         this.backgroundImage = "/assets/images/map.jpg";
+        this.emoji = EMOJI; 
     }
     
     @Override

@@ -1,14 +1,13 @@
 package app;
 
 import app.control.BaseControl;
-import app.control.LabelControl;
-import app.control.LinkControl;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -31,18 +30,22 @@ import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -53,20 +56,31 @@ import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import quest.control.ImageControl;
 
 public class SWTApplication extends ApplicationController {
 
+    // Settings for Follow-The-Button glow effect for buttons
+    public static int CURRENT_COLOR_INDEX = 0;
+    public static final int ANIMATION_DELAY = 100; // milliseconds
+    public static List<String> TIMER_EVENTS = new ArrayList();
+    
+    public static int direction = 1;
     public Display display;
     public String emptyBook;
     public int fontHeight = 0;
     public int fontWidth = 0;
+    public int buttonFontHeight = 0;
+    public int buttonFontWidth = 0;
+    public Font buttonFont;
     public Font monospaceFont;
+    public HashMap<String, Map<String, Composite>> namedControls;
     public ApplicationView parentView;
     public Shell shell;
     public CTabFolder tabFolder;
     public HashMap<String, Composite> tabCompositeMap;
     public HashMap<String, Integer> tabIndexMap;
+    public HashMap<String, CTabItem> tabItemMap;
+    public HashMap<CTabItem, ApplicationView> tabItemViewMap;
     public HashMap<String, List<StyleRange>> tabStyleRangesMap;
     public HashMap<String, StyledText> tabStyledTextMap;
     public int textColumns = 0;
@@ -87,8 +101,21 @@ public class SWTApplication extends ApplicationController {
     }
     
     @Override
-    public void initialize(ApplicationView view) {
-        this.display = new Display();
+    public void setDelegate(Object delegate) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+
+    @Override
+    public void open(ApplicationView splashView, ApplicationView mainView) {
+        if (splashView != null) {
+            this.display = new Display();
+            this.displayShell(splashView);
+        }
+        
+        if (mainView != null) {
+            this.display = new Display();
+            this.displayShell(mainView);
+        }
     }
     
     @Override
@@ -96,9 +123,8 @@ public class SWTApplication extends ApplicationController {
         this.display.dispose();
     }
     
-    @Override
-    public void displayApplication(ApplicationView view) {
-        System.out.println("SWTApplication: displayApplication: view=" + view.name);
+    public void displayShell(ApplicationView view) {
+        System.out.println("SWTApplication: displayShell: view=" + view.name);
 
         // Initialize the application window
         int shellStyle = view.isSplash ? SWT.NO_TRIM | SWT.ON_TOP : SWT.SHELL_TRIM;
@@ -126,13 +152,20 @@ public class SWTApplication extends ApplicationController {
         CTabFolder tabFolder;
         final SWTApplication thisController = this;
         tabFolder = new CTabFolder(composite, SWT.BORDER);
+        if (view.backgroundColor != null) {
+            tabFolder.setBackground(new Color(view.backgroundColor.red, view.backgroundColor.green, view.backgroundColor.blue));
+        }
         tabFolder.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 int selectedIndex = thisController.tabFolder.getSelectionIndex();
                 String selectedTabTitle = thisController.tabFolder.getItem(selectedIndex).getText();
-                //CTabItem item = tabFolder.getSelection();
-                System.out.println("SWTApplication: displayApplication: Selected tab " + selectedTabTitle);
+                CTabItem item = tabFolder.getSelection();
+                System.out.println("SWTApplication: displayShell: Selected tab " + selectedTabTitle + ", map size = " + thisController.tabItemViewMap.size());
+                ApplicationView selectedView = thisController.tabItemViewMap.get(item);
+                if (selectedView != null) {
+                    selectedView.onSelected(thisController);
+                }
             }
         });
 
@@ -145,18 +178,27 @@ public class SWTApplication extends ApplicationController {
         this.tabCompositeMap.put(view.name, composite);
         this.tabStyleRangesMap = new HashMap<>();
         this.tabIndexMap = new HashMap<>();
+        this.tabItemMap = new HashMap<>();
+        this.tabItemViewMap = new HashMap<>();
         this.views = new HashMap();
+        this.namedControls = new HashMap();
             
         // Init a font for all text areas to use
         this.monospaceFont = new Font(this.display, "Consolas", 12, SWT.NORMAL);
+        this.buttonFont = new Font(this.display, "Consolas", 10, SWT.NORMAL);
         
         // Calculate the height and width of the font (TODO - this works for instancing GC with a text area, not sure about composite)
         GC gc = new GC(composite);
-        gc.setFont(this.monospaceFont);
+        gc.setFont(this.buttonFont);
         Point extent = gc.stringExtent("W");
+        this.buttonFontHeight = extent.y;
+        this.buttonFontWidth = extent.x;
+        System.out.println("SWTApplication: displayShell: buttonFontWidth=" + this.buttonFontWidth + ", buttonFontHeight=" + this.buttonFontHeight);
+        gc.setFont(this.monospaceFont);
+        extent = gc.stringExtent("W");
         this.fontHeight = extent.y;
         this.fontWidth = extent.x;
-        System.out.println("SWTApplication: displayApplication: fontWidth=" + this.fontWidth + ", fontHeight=" + this.fontHeight);
+        System.out.println("SWTApplication: displayShell: fontWidth=" + this.fontWidth + ", fontHeight=" + this.fontHeight);
 
         // Calculate the textual height and width of a possible text area
         this.textColumns = this.getColumns(dimensions.x) - 1; // Subtract by 1 to prevent rounding from exceeding the available space
@@ -174,10 +216,10 @@ public class SWTApplication extends ApplicationController {
         
         // Open or update the shell as needed
         if (!this.shell.isVisible()) {
-            System.out.println("SWTApplication: displayApplication: Opening shell");
+            System.out.println("SWTApplication: displayShell: Opening shell");
             this.shell.open();
         } else {
-            System.out.println("SWTApplication: displayApplication: Updating shell");
+            System.out.println("SWTApplication: displayShell: Updating shell");
             this.shell.update();
         }
         
@@ -209,12 +251,14 @@ public class SWTApplication extends ApplicationController {
     @Override
     public void selectTab(String viewName) {
         System.out.println("SWTApplication: selectTab: viewName=" + viewName);
+        
         Integer index = this.getTabIndex(viewName);
         if (index == null) {
             System.err.println("SWTApplication: selectTab: The view does not have a tab!");
             return;
         }
         
+        System.out.println("SWTApplication: selectTab: Setting tab selection to index " + index);
         this.tabFolder.setSelection(index);
     }
 
@@ -247,6 +291,13 @@ public class SWTApplication extends ApplicationController {
     }
     
     @Override
+    public void renameTab(String viewName, String newViewName) {
+        System.out.println("SWTApplication: renameView: viewName=" + viewName + ", newViewName=" + newViewName);
+        CTabItem tabItem = this.tabItemMap.get(viewName);
+        tabItem.setText(newViewName);
+    }
+    
+    @Override
     public void addView(ApplicationView view) {
         this.addView(view, false);
     }
@@ -269,8 +320,17 @@ public class SWTApplication extends ApplicationController {
         } else {
             // Create a new tab with a composite
             CTabItem tab = new CTabItem(this.tabFolder, SWT.NONE, index);
-            tab.setText(view.name);
+            this.tabItemMap.put(view.name, tab);
+            this.tabItemViewMap.put(tab, view);
+            if (view.emoji == null) {
+                tab.setText(view.name);
+            } else {
+                tab.setText(view.emoji + " " + view.name);
+            }
             composite = new Composite(this.tabFolder, SWT.NONE);
+            if (view.backgroundColor != null) {
+                composite.setBackground(new Color(view.backgroundColor.red, view.backgroundColor.green, view.backgroundColor.blue));
+            }
             composite.setLayout(null);
             
             String appImageFile = this.parentView.backgroundImage;
@@ -280,10 +340,30 @@ public class SWTApplication extends ApplicationController {
             tab.setControl(composite);
             this.tabCompositeMap.put(view.name, composite);
             
-            // Track the tab position of each view
+            // Track the tab position of each view.
+            // Inserting a new view shifts all of the other views to the right.
+            HashMap<String, Integer> indicesToAdd = new HashMap();
+            Iterator<String> iterator = this.tabIndexMap.keySet().iterator();
+            while (iterator.hasNext()) {
+                String viewName = iterator.next();
+                int currentIndex = this.tabIndexMap.get(viewName);
+                if (currentIndex >= index) {
+                    currentIndex++;
+                    iterator.remove();
+                    indicesToAdd.put(viewName, currentIndex);
+                }
+            }
+            for (String viewName : indicesToAdd.keySet()) {
+                Integer currentIndex = indicesToAdd.get(viewName);
+                this.tabIndexMap.put(viewName, currentIndex);
+            }
             this.tabIndexMap.put(view.name, index);
             
             this.views.put(view.name, view);
+            
+            if (this.namedControls.get(view.name) == null) {
+                this.namedControls.put(view.name, new HashMap());
+            }
         }
            
         Control control = composite;
@@ -439,23 +519,34 @@ public class SWTApplication extends ApplicationController {
     @Override
     public void clearScreen(String viewName) {
         System.out.println("SWTApplication: clearScreen : viewName=" + viewName); 
+
+        this.namedControls.get(viewName).clear();
+
         Composite tabComposite = this.tabCompositeMap.get(viewName);
         Control[] controls = tabComposite.getChildren();
         for (Control control : controls) {
             System.out.println("SWTApplication: clearScreen: Disposing " + control);
-            //if (control.getBackgroundImage() != null) {
-            //    control.getBackgroundImage().dispose();
-            //}
             if (!control.getClass().toString().equals("class org.eclipse.swt.custom.StyledText")) {
                 System.out.println("SWTApplication: class is " + control.getClass().toString());
                 control.dispose();
             }
         }
+
         StyledText textArea = this.tabStyledTextMap.get(viewName);
         if (textArea != null) {
             textArea.setText(this.emptyBook);
             List<StyleRange> styleRanges = tabStyleRangesMap.get(viewName);
             styleRanges.clear();
+        }
+    }
+    
+    @Override
+    public void clearControl(String viewName, String controlName) {
+        System.out.println("SWTApplication: clearControl : viewName=" + viewName + ", controlName=" + controlName);
+        Composite control = this.namedControls.get(viewName).get(controlName);
+        if (control != null) {
+            control.dispose();
+            this.namedControls.get(viewName).remove(controlName);
         }
     }
     
@@ -592,10 +683,15 @@ public class SWTApplication extends ApplicationController {
     public void displayGrid(String viewName, Map<String, ArrayList<BaseControl>> gridCells, int columns, Boolean showBorders, EventListener listener) {
         System.out.println("SWTApplication: displayGrid: viewName=" + viewName + ", cells=" + gridCells.size());
         
-        // TODO - Only available when the view does NOT have a text area
-        
+        StyledText textArea = this.tabStyledTextMap.get(viewName);
         Composite composite = this.tabCompositeMap.get(viewName);
-            
+        
+        // This control is only available when the view does NOT have a text area
+        if (textArea != null) {
+            System.err.println("SWTApplication: displayGrid: Grids can NOT overlay a text area!");
+            return;
+        }
+                    
         if (columns == 0) {
             double squareRoot = Math.sqrt(gridCells.size());
             columns = (int) Math.ceil(squareRoot);
@@ -654,6 +750,7 @@ public class SWTApplication extends ApplicationController {
                 if (abstractControl.getClass().equals(app.control.LinkControl.class)) {
                     Link link = new Link(cellComposite, SWT.NONE);
                     link.setText(abstractControl.text);
+                    link.setEnabled(abstractControl.isEnabled);
                     if (listener != null) {
                         link.addSelectionListener(new SelectionAdapter() {
                             @Override
@@ -665,6 +762,22 @@ public class SWTApplication extends ApplicationController {
                     }
                     control = link;
                     System.out.println("SWTApplication: displayGrid: Added link " + abstractControl.text + " for " + cellName);
+                } else if (abstractControl.getClass().equals(app.control.ButtonControl.class)) {
+                    Button button = new Button(cellComposite, SWT.PUSH);
+                    button.setFont(this.buttonFont);
+                    button.setText(abstractControl.text);
+                    button.setEnabled(abstractControl.isEnabled);
+                    if (listener != null) {
+                        button.addSelectionListener(new SelectionAdapter() {
+                            @Override
+                            public void widgetSelected(SelectionEvent e) {
+                                System.out.println("SWTApplication: displayGrid: Button clicked: " + e.text);
+                                listener.onEvent(cellName, null);
+                            }
+                        });
+                    }
+                    control = button;
+                    System.out.println("SWTApplication: displayGrid: Added button " + abstractControl.text + " for " + cellName);
                 } else if (abstractControl.getClass().equals(app.control.LabelControl.class)) {
                     Label label = new Label(cellComposite, SWT.NONE);
                     label.setText(abstractControl.text);
@@ -694,27 +807,71 @@ public class SWTApplication extends ApplicationController {
         composite.pack();
     }
     
-    public Button newButton(String viewName, String name, String text, double row, double column, EventListener listener) {
-        System.out.println("SWTApplication: newButton: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column);
+    public Button newButton(String viewName, String name, String text, double row, double column, Boolean isMonospace, Boolean glow, EventListener listener) {
+        System.out.println("SWTApplication: newButton: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", isMonospace=" + isMonospace + ", glow=" + glow);
         
         StyledText textArea = this.tabStyledTextMap.get(viewName);
         Composite composite = this.tabCompositeMap.get(viewName);
         Button button = new Button(composite, SWT.PUSH);
+        int fontWidth = this.fontWidth;
+        int fontHeight = this.fontHeight;
+        if (isMonospace) {
+            button.setFont(this.buttonFont);
+            fontWidth = this.buttonFontWidth;
+            fontHeight = this.buttonFontHeight;
+        }
         button.setText(text);
         Point coordinates = this.convertToCoordinates(row, column);
-        int width = (text.length() * this.fontWidth) + (2 * this.fontWidth);    // Calculate width of text plus buffer of two imaginary characters
-        int height = 2 * this.fontHeight;   // Calculate double height of text
+        int width = (text.length() * fontWidth) + (2 * fontWidth);    // Calculate width of text plus buffer of two imaginary characters
+        int height = 2 * fontHeight;   // Calculate double height of text
         button.setBounds(coordinates.x + 1, coordinates.y + 1, width, height);
         System.out.println("SWTApplication: Moved button above text area " + System.identityHashCode(textArea));
         button.moveAbove(textArea);
+        
+        // Add a special glow effect to the button to call the user's attention to it
+        if (glow) {
+            Display localDisplay = this.display;
+            button.addPaintListener((PaintEvent e) -> {
+                GC gc = e.gc;
+                Rectangle bounds = ((Button) e.widget).getBounds();
+                
+                // Draw a rectangle around the button with the current glow color
+                int red = 0;
+                int blue = 0;
+                red = CURRENT_COLOR_INDEX;
+                blue = CURRENT_COLOR_INDEX;
+                gc.setForeground(new Color(localDisplay, red, 0, blue, 100));
+                gc.setLineWidth(1); // Thin border for a glowing effect
+                gc.drawRectangle(0, 0, bounds.width - 1, bounds.height - 1);
+            });
+            
+            // Timer for animating the border color
+            this.display.timerExec(ANIMATION_DELAY, new Runnable() {
+                @Override
+                public void run() {
+                    if (!button.isDisposed()) {
+                        CURRENT_COLOR_INDEX += (10 * direction);
+                        if (CURRENT_COLOR_INDEX > 255) {
+                            direction = -1;
+                            CURRENT_COLOR_INDEX = 255;
+                        } else if (CURRENT_COLOR_INDEX < 125) {
+                            direction = 1;
+                            CURRENT_COLOR_INDEX = 125;
+                        }
+                        button.redraw(); // Request a repaint to update the border
+                        display.timerExec(ANIMATION_DELAY, this); // Schedule the next flash
+                    }
+                }
+            });
+        }
         
         return button;
     }
    
     @Override
-    public void displayButton(String viewName, String name, String text, int row, int column, EventListener listener) {
-        System.out.println("SWTApplication: displayButton: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column);
-        Button button = this.newButton(viewName, name, text, row, column, listener);
+    public void displayButton(String viewName, String name, String text, int row, int column, Boolean isMonospace, Boolean glow, EventListener listener) {
+        System.out.println("SWTApplication: displayButton: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", isMonospace=" + isMonospace + ", glow=" + glow);
+        Button button = this.newButton(viewName, name, text, row, column, isMonospace, glow, listener);
         button.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -724,9 +881,9 @@ public class SWTApplication extends ApplicationController {
     }
     
     @Override
-    public void displayOpenFileButton(String viewName, String name, String text, int row, int column, EventListener listener) {
-        System.out.println("SWTApplication: displayOpenFileButton: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column);
-        Button button = this.newButton(viewName, name, text, row, column, listener);
+    public void displayOpenFileButton(String viewName, String name, String text, int row, int column, Boolean isMonospace, Boolean glow, EventListener listener) {
+        System.out.println("SWTApplication: displayOpenFileButton: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", isMonospace=" + isMonospace);
+        Button button = this.newButton(viewName, name, text, row, column, isMonospace, glow, listener);
         button.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -785,77 +942,239 @@ public class SWTApplication extends ApplicationController {
     }
     
     @Override
-    public void setTimer(String name, int seconds, EventListener listener) {
+    public void setTimer(String name, double seconds, EventListener listener) {
         System.out.println("SWTApplication: setTimer: name=" + name + ", seconds=" + seconds + ", listener=" + listener);
-        this.display.timerExec(seconds * 1000, () -> {
+        if (TIMER_EVENTS.contains(name)) {
+            System.out.println("SWTApplication: setTimer: Timer already exists for " + name + "!");
+            return;
+        }
+        TIMER_EVENTS.add(name);
+        this.display.timerExec((int)(seconds * 1000), () -> {
+            System.out.println("SWTApplication: setTimer: Timer elapsed: name=" + name + ", seconds=" + seconds + ", listener=" + listener);
+            if (!TIMER_EVENTS.contains(name)) {
+                System.out.println("SWTApplication: setTimer: Timer " + name + " was removed!");
+                return;
+            }
+            TIMER_EVENTS.remove(name);
             listener.onEvent(name, seconds);
         });
     }
     
     @Override
-    public void displayInputField(String viewName, String name, String label, int length, int row, int column, EventListener listener) {
-        System.out.println("SWTApplication: displayInputField: viewName=" + viewName + ", text=" + label + ", row=" + row + ", column=" + column);
+    public void removeTimer(String name) {
+        System.out.println("SWTApplication: removeTimer: name=" + name);
+        if (!TIMER_EVENTS.contains(name)) {
+            System.out.println("SWTApplication: removeTimer: Timer " + name + " was already removed!");
+        } else {
+            TIMER_EVENTS.remove(name);
+        }
+    }
+    
+    @Override
+    public void displayInputField(String viewName, String name, String label, int length, int row, int column, Boolean isMonospace, Boolean isUpperCase, Boolean isMultiUse, EventListener listener) {
+        System.out.println("SWTApplication: displayInputField: viewName=" + viewName + ", text=" + label + ", row=" + row + ", column=" + column + ", isMonospace=" + isMonospace + ", isUpperCase=" + isUpperCase + ", isMultiUse=" + isMultiUse + ", listener=" + listener);
         
         StyledText textArea = this.tabStyledTextMap.get(viewName);
         Composite composite = this.tabCompositeMap.get(viewName);
         
         // Display a label for the input field
-        this.displayText(viewName, label, row, column);
+        //this.displayText(viewName, label, row, column);
 
         // Display the input field
         Text textInput = new Text(composite, SWT.BORDER);
+        if (isUpperCase) {
+            // Add a VerifyListener to force uppercase
+            textInput.addVerifyListener((VerifyEvent event) -> { event.text = event.text.toUpperCase(); });
+        }
+        textInput.setMessage(label);
         textInput.setTextLimit(length);
         textInput.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
         Point coordinates = this.convertToCoordinates(row - 0.5, column);
         int labelWidth = label.length() * this.fontWidth;
         int inputWidth = (length * this.fontWidth) + (2 * this.fontWidth);    // Calculate width of text plus buffer of two imaginary characters
         int height = 2 * this.fontHeight;   // Calculate double height of text
-        textInput.setBounds(coordinates.x + 1 + labelWidth + (1 * this.fontWidth), coordinates.y + 1, inputWidth, height);
+        //textInput.setBounds(coordinates.x + 1 + labelWidth + (1 * this.fontWidth), coordinates.y + 1, inputWidth, height);
+        textInput.setBounds(coordinates.x + 1, coordinates.y + 1, inputWidth, height);
         textInput.moveAbove(textArea);
         
         // Display a button for submitting the input
-        Button button = this.newButton(viewName, name, "Submit", row - 0.5, column + label.length() + 1 + length + 1 + 1, listener);
+        Button button = this.newButton(viewName, name, "Submit", row - 0.5, column + length + 1 + 1, isMonospace, false, listener);
         button.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 listener.onEvent(name, textInput.getText());
-                textInput.setText("");
+                if (isMultiUse) {
+                    if (!textInput.isDisposed()) {
+                        textInput.setText("");
+                    }
+                } else {
+                    if (!textInput.isDisposed()) {
+                        textInput.setEnabled(false);
+                    }
+                    if (!button.isDisposed()) {
+                        button.setEnabled(false);
+                    }
+                }
             }
         });
     }
     
     @Override
-    public void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, EventListener listener) {
-        System.out.println("SWTApplication: displayValidatedInputField: viewName=" + viewName + ", row=" + row + ", startColumn=" + startColumn + ", endColumn=" + endColumn);
+    public void displayOverlay(String viewName, String name, app.Color color, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, Integer transparency) {
+        System.out.println("SWTApplication: displayOverlay: viewName=" + viewName + ", name=" + name + ", color=" + color + ", startRow=" + startRow + ", startColumn=" + startColumn + ", endRow=" + endRow + ", endColumn=" + endColumn + ", transparency=" + transparency);
+        
+        if (this.namedControls.get(viewName).containsKey(name)) {
+            System.out.println("SWTApplication: displayOverlay: View already contains a control with this name:" + this.namedControls.get(viewName).get(name));
+            return;
+        }
+        
+        StyledText textArea = this.tabStyledTextMap.get(viewName);
+        Composite composite = this.tabCompositeMap.get(viewName);
+        
+        Canvas overlay = new Canvas(composite, SWT.NO_BACKGROUND);
+        overlay.setBackground(this.display.getSystemColor(SWT.COLOR_TRANSPARENT));
+        if ((startRow == null) || (startRow == 0) || (startColumn == null) || (startColumn == 0) || (endRow == null) || (endRow == 0) || (endColumn == null) || (endColumn == 0)) {
+            System.out.println("SWTApplication: displayOverlay: Using composite dimensions");
+            overlay.setBounds(0, 0, composite.getSize().x, composite.getSize().y);
+        } else {
+            System.out.println("SWTApplication: displayOverlay: Using composite dimensions");
+            Point topLeftCoordinates = this.convertToCoordinates(startRow, startColumn);
+            Point bottomRightCoordinates = this.convertToCoordinates(endRow + 1, endColumn + 1);
+            bottomRightCoordinates.x = bottomRightCoordinates.x - 1;
+            bottomRightCoordinates.y = bottomRightCoordinates.y - 1;
+            int length = bottomRightCoordinates.x - topLeftCoordinates.x;
+            int height = bottomRightCoordinates.y - topLeftCoordinates.y;
+            overlay.setBounds(topLeftCoordinates.x, topLeftCoordinates.y, length, height);
+        }
+        if ((transparency == null) || (transparency == 0)) {
+            transparency = 128;
+        }
+        final int finalTransparency = transparency;
+        overlay.moveAbove(textArea);
+        overlay.addPaintListener(e -> {
+            Color overlayColor = new Color(this.display, color.red, color.green, color.blue);
+            e.gc.setAlpha(finalTransparency); // Transparency (0-255)
+            e.gc.setBackground(overlayColor);
+            Rectangle clientArea = overlay.getClientArea();
+            e.gc.fillRectangle(clientArea);
+            overlayColor.dispose(); // Dispose of the color
+        });
+        
+        this.namedControls.get(viewName).put(name, overlay);
+    }
+    
+    // TODO - Pass in a list of app.Controls with button text and isEnabled
+    @Override
+    public void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, int alignment, EventListener listener) {
+        System.out.println("SWTApplication: displayValidatedInputField: viewName=" + viewName + ", name=" + name + ", row=" + row + ", startColumn=" + startColumn + ", endColumn=" + endColumn + ", alignment=" + alignment + ", listener=" + listener);
         
         StyledText textArea = this.tabStyledTextMap.get(viewName);
         Composite composite = this.tabCompositeMap.get(viewName);
 
         // Display a row of buttons with the possible input values
+        int buttonHeight = 2 * this.buttonFontHeight;   // Calculate double height of text
         Point coordinates = this.convertToCoordinates(row, startColumn);
         Point terminalCoordinates = this.convertToCoordinates(row, endColumn);
-        int buttonHeight = 2 * this.fontHeight;   // Calculate double height of text
-        int buttonX = coordinates.x + 1;
-        int buttonY = coordinates.y + 1;
-        //Group buttonGroup = new Group(composite, SWT.NONE);
+        int buttonX;
+        int buttonY;
+        switch (alignment) {
+            case Alignment.LEFT -> {
+                System.out.println("SWTApplication: displayValidatedInputField: Left alignment");
+            }
+            case Alignment.CENTER -> {
+                System.out.println("SWTApplication: displayValidatedInputField: Center alignment");
+                // Calculate the full width of the button row
+                int rowWidth = 0;
+                for (String value : values) {
+                    int tempButtonWidth = (value.length() * this.buttonFontWidth) + (2 * this.buttonFontWidth);    // Calculate width of text plus buffer of two imaginary characters
+                    rowWidth += tempButtonWidth + (1 * this.buttonFontWidth);   // Add a spacer between this button and the next
+                }
+                coordinates.x = (int) (terminalCoordinates.x - Math.floor(rowWidth / 2));
+            }
+            case Alignment.RIGHT -> {
+                System.out.println("SWTApplication: displayValidatedInputField: Right alignment");
+                // Calculate the full width of the button row
+                int rowWidth = 0;
+                for (String value : values) {
+                    int tempButtonWidth = (value.length() * this.buttonFontWidth) + (2 * this.buttonFontWidth);    // Calculate width of text plus buffer of two imaginary characters
+                    rowWidth += tempButtonWidth + (1 * this.buttonFontWidth);   // Add a spacer between this button and the next
+                }
+                coordinates.x = terminalCoordinates.x - rowWidth;
+            }
+            default -> {
+                System.err.println("SWTApplication: displayValidatedInputField: Unsupported alignment!");
+            }
+        }
+        buttonX = coordinates.x + 1;
+        buttonY = coordinates.y + 1;
+        
         for (String value : values) {
             Button button = new Button(composite, SWT.PUSH);
-            button.setText(value);
+            if (value.charAt(0) == '!') {
+                // TODO - This is just a hack to support disabling buttons
+                value = value.substring(1, value.length());
+                button.setEnabled(false);
+            }
+            Boolean glow = false;
+            if (value.charAt(0) == '*') {
+                value = value.substring(1, value.length());
+                glow = true;
+            }
+            final String finalValue = value;
+            button.setFont(this.buttonFont);
+            button.setText(finalValue);
             button.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    listener.onEvent(name, value);
+                    listener.onEvent(name, finalValue);
                 }
             });
-            int buttonWidth = (value.length() * this.fontWidth) + (2 * this.fontWidth);    // Calculate width of text plus buffer of two imaginary characters
+            int buttonWidth = (finalValue.length() * this.buttonFontWidth) + (2 * this.buttonFontWidth);    // Calculate width of text plus buffer of two imaginary characters
             if ((buttonX + buttonWidth) > terminalCoordinates.x) {
                 // Wrap the button onto a new line
                 buttonX = coordinates.x + 1;
-                buttonY = (int) (buttonY + buttonHeight + ((1 * this.fontWidth)));
+                buttonY = (int) (buttonY + buttonHeight + ((1 * this.buttonFontWidth)));
             }
             button.setBounds(buttonX, buttonY, buttonWidth, buttonHeight);
             button.moveAbove(textArea);
-            buttonX = buttonX + buttonWidth + (1 * this.fontWidth);   // Add a spacer between this button and the next
+            buttonX = buttonX + buttonWidth + (1 * this.buttonFontWidth);   // Add a spacer between this button and the next
+            
+            // TODO - newButton should be used to prevent code duplication
+            if (glow) {
+                Display localDisplay = this.display;
+                button.addPaintListener((PaintEvent e) -> {
+                    GC gc = e.gc;
+                    Rectangle bounds = ((Button) e.widget).getBounds();
+
+                    // Draw a rectangle around the button with the current glow color
+                    int red = 0;
+                    int blue = 0;
+                    red = CURRENT_COLOR_INDEX;
+                    blue = CURRENT_COLOR_INDEX;
+                    gc.setForeground(new Color(localDisplay, red, 0, blue, 100));
+                    gc.setLineWidth(1); // Thin border for a glowing effect
+                    gc.drawRectangle(0, 0, bounds.width - 1, bounds.height - 1);
+                });
+
+                // Timer for animating the border color
+                this.display.timerExec(ANIMATION_DELAY, new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!button.isDisposed()) {
+                            CURRENT_COLOR_INDEX += (10 * direction);
+                            if (CURRENT_COLOR_INDEX > 255) {
+                                direction = -1;
+                                CURRENT_COLOR_INDEX = 255;
+                            } else if (CURRENT_COLOR_INDEX < 125) {
+                                direction = 1;
+                                CURRENT_COLOR_INDEX = 125;
+                            }
+                            button.redraw(); // Request a repaint to update the border
+                            display.timerExec(ANIMATION_DELAY, this); // Schedule the next flash
+                        }
+                    }
+                });
+            }
         }
     }
     

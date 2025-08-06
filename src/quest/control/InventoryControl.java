@@ -4,12 +4,11 @@ package quest.control;
 import app.EventListener;
 import app.Icon;
 import app.Utility;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.MessageBox;
+import java.util.HashSet;
+import java.util.Set;
 import quest.model.InventoryItem;
 import quest.model.Story;
 import quest.view.Quest;
-import static quest.view.Quest.SECOND_PAGE;
 
 /**
  *
@@ -22,11 +21,14 @@ public class InventoryControl extends QuestControl implements EventListener {
     
     public InventoryControl(Quest quest) {
         super(quest);
+        this.unspoolStoryText = true; // So the inventory can be displayed in-line, unspool any accumulated story text before execution
     }
     
     @Override
     public String onExecute(String tag) {
         System.out.println("InventoryControl: onExecute: tag=" + tag);
+        
+        String inventoryItemName = getTagToken(tag, 1, true);
         
         int realRow = this.quest.titleRow + this.quest.textRow + 1;
         int startingColumn;
@@ -38,23 +40,53 @@ public class InventoryControl extends QuestControl implements EventListener {
             startingColumn = this.quest.leftPageStartingColumn;
             endingColumn = this.quest.leftPageEndingColumn;
         }
-        int realColumn = startingColumn;
         
-        for (String key : this.quest.inventory.keySet()) {
-            if ((realColumn + 5) > endingColumn) {
-                realRow++;
-            }
-            System.out.println("InventoryControl: onExecute: realRow=" + realRow + ", realColumn=" + realColumn + ", key=" + key);
-            InventoryItem item = this.quest.inventory.get(key);
-            String linkText =  "<a>" + item.unicodeSurrogatePair + "</a>x" + item.quantity + " ";
-            int linkTextLength = item.unicodeSurrogatePair.length() + 1 + String.valueOf(item.quantity).length() + 1; // Add emoticon plus "x" plus digits in quantity plus a space
-            this.quest.appController.displayLink(this.quest.name, key, linkText, realRow, realColumn, linkTextLength, this);
-            realColumn = realColumn + linkTextLength;
+        int realColumn = startingColumn + this.quest.textColumn - 1;
+        System.out.println("InventoryControl: onExecute: textColumn=" + this.quest.textColumn + ", realColumn=" + realColumn);
+        
+        Set<String> keySet;
+        if (inventoryItemName.equals("")) {
+            System.out.println("InventoryControl: onExecute: Displaying full inventory");
+            keySet = this.quest.inventory.keySet();
+        } else {
+            System.out.println("InventoryControl: onExecute: Displaying only " + inventoryItemName);
+            keySet = new HashSet();
+            keySet.add(inventoryItemName);
         }
         
-        this.quest.textRow = this.quest.textRow + 1;    // Prevent additional story text from overwriting
+        int totalLength = 0;
+        for (String key : keySet) {
+            System.out.println("InventoryControl: onExecute: realRow=" + realRow + ", realColumn=" + realColumn + ", key=" + key);
+            InventoryItem item = this.quest.inventory.get(key);
+            String linkText;
+            int linkTextLength;
+            if (inventoryItemName.equals("")) {
+                linkText = "<a>" + item.unicodeSurrogatePair + "</a>" + "x" + item.quantity + " ";
+                linkTextLength = 2 + 1 + String.valueOf(item.quantity).length() + 1; // Add emoticon plus "x" plus digits in quantity plus a space
+            } else {
+                if (this.quest.inventory.containsKey(inventoryItemName)) {
+                    // In possession, so add a link
+                    linkText = item.unicodeSurrogatePair + " <a>" + inventoryItemName + "</a>";
+                } else {
+                    // NOT in possession, so no link, just the emoji and name
+                    item = this.quest.book.inventory.get(key);
+                    linkText = item.unicodeSurrogatePair + " " + inventoryItemName;
+                }
+                linkTextLength = 2 + 1 + inventoryItemName.length(); // Add emoticon plus space plus name length
+            }
+            if ((realColumn + linkTextLength) > endingColumn) {
+                System.out.println("InventoryControl: onExecute: Wrapping to the next line");
+                realRow++;
+                realColumn = startingColumn;
+            }
+            this.quest.appController.displayLink(this.quest.name, key, linkText, realRow, realColumn, linkTextLength, this);
+            realColumn = realColumn + linkTextLength;
+            totalLength += linkTextLength;
+        }
         
-        return "";
+        String placeholderSpaces = String.valueOf(' ').repeat(totalLength);
+        
+        return placeholderSpaces;
     }
     
     @Override

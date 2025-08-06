@@ -14,6 +14,7 @@ public class ApplicationView implements EventListener {
     public Color backgroundColor;
     public String backgroundImage;
     public String className;
+    public String emoji;
     public String iconFileName;
     public Boolean isSplash;
     public String name;
@@ -23,8 +24,6 @@ public class ApplicationView implements EventListener {
     
     public ApplicationView(String name) {
         this.addTextArea = true;
-        this.backgroundColor = null;
-        this.backgroundImage = null;
         this.eventListenerMap = new LinkedHashMap<>();
         this.isSplash = false;
         this.name = name;
@@ -52,6 +51,10 @@ public class ApplicationView implements EventListener {
     
     public void onLoad(ApplicationController appController) {
         System.out.println("ApplicationView: onLoad: Unimplemented");
+    }
+    
+    public void onSelected(ApplicationController appController) {
+        System.out.println("ApplicationView: onSelected: Unimplemented for " + this.name);
     }
     
     public void publishEvent(String eventName, Object eventValue) {

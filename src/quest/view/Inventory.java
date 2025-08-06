@@ -25,7 +25,8 @@ public class Inventory extends app.ApplicationView implements EventListener {
     public Inventory(String name) {
         super(name);
         this.addTextArea = false;   // The text area would interfere with this view's grid layout, so prevent it here
-        this.backgroundColor = new Color(255, 255, 255);
+        this.backgroundColor = new Color(0, 0, 0);
+        this.emoji = "\uD83C\uDF71"; // "bento box" Unicode emoji
     }
     
     @Override
@@ -44,6 +45,7 @@ public class Inventory extends app.ApplicationView implements EventListener {
         if (eventName.equals(Quest.NEW_INVENTORY_ITEM)) {
             this.appController.clearScreen(this.name);
             this.render();
+            this.appController.renameTab(this.name, "\uD83D\uDD25 " + this.emoji + " " + this.name);    // Add "fire" Unicode emoji... "NEW button" Unicode emoji is \uD83C\uDD95 but a dull gray
         } else {
             InventoryItem item = this.quest.book.inventory.get(eventName);
             String title = item.unicodeSurrogatePair + " " + eventName;
@@ -59,7 +61,14 @@ public class Inventory extends app.ApplicationView implements EventListener {
         }
     }
     
+    @Override
+    public void onSelected(ApplicationController appController) {
+        System.out.println("Inventory: onSelected");
+        appController.renameTab(this.name, this.emoji + " " + this.name);    // Remove "sparkle" Unicode emoji
+    }
+    
     public void render() {
+        System.out.println("Inventory: render");
         Map<String, ArrayList<BaseControl>> gridCells = new LinkedHashMap<>();
         for (String key : this.quest.book.inventory.keySet()) {
             InventoryItem bookItem = this.quest.book.inventory.get(key);
@@ -68,10 +77,13 @@ public class Inventory extends app.ApplicationView implements EventListener {
             Color backgroundColor = null;
             InventoryItem questItem = this.quest.inventory.get(key);
             if (questItem != null) {
+                System.out.println("Inventory: render: Item in quest inventory: " + key);
                 linkText = "<a>" + linkText + "</a>";
                 labelText = "x" + questItem.quantity;
+                backgroundColor = new Color(255, 255, 255); // White
             } else {
-                backgroundColor = new Color(127, 127, 127); // Gray
+                System.out.println("Inventory: render: Item NOT in quest inventory: " + key);
+                backgroundColor = new Color(169, 169, 169); // Dark Gray
             }
             ArrayList<BaseControl> controlList = new ArrayList();
             LinkControl linkControl = new LinkControl(linkText, backgroundColor);

@@ -44,6 +44,9 @@ public class ImageControl extends QuestControl {
             int halfColumns = ((endingColumn - startingColumn) / 2);
             int halfImageWidth = (this.quest.appController.getColumns(imageFile) / 2);
             imageColumn = startingColumn + halfColumns - halfImageWidth + 1;
+        } else if (alignment.toUpperCase().equals("RIGHT")) {
+            int imageWidth = this.quest.appController.getColumns(imageFile);
+            imageColumn = endingColumn - imageWidth + 1;
         } else {
             imageColumn = startingColumn;
         }

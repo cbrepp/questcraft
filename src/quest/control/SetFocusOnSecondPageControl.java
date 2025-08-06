@@ -20,6 +20,7 @@ public class SetFocusOnSecondPageControl extends QuestControl {
         System.out.println("SetFocusOnSecondPageControl: onExecute: tag=" + tag);
         this.quest.currentDisplayPage = Quest.SECOND_PAGE;
         this.quest.textRow = 1;
+        this.quest.textColumn = 1;
         return "";
     }
     

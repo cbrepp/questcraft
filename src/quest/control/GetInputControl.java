@@ -1,8 +1,6 @@
 
 package quest.control;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import quest.view.Quest;
 
 /**
@@ -21,22 +19,24 @@ public class GetInputControl extends QuestControl {
     public String onExecute(String tag) {
         System.out.println("GetInputControl: onExecute: tag=" + tag);
         String variable = getTagToken(tag, 1, false);
-        String values = getTagToken(tag, 2, true);
-        ArrayList<String> valueList = new ArrayList<>(Arrays.asList(values.split("\\+")));
+        int length = Integer.parseInt(getTagToken(tag, 2, false));
+        Boolean isUpperCase = Boolean.valueOf(getTagToken(tag, 3, false));
+        Boolean isMultiUse = Boolean.valueOf(getTagToken(tag, 4, false));
+        String prompt = getTagToken(tag, 5, true);
+
         String eventName = Quest.VARIABLE_EVENT_PREFIX + ":" + variable;
         int startColumn;
-        int endColumn;
         if (this.quest.currentDisplayPage == Quest.RIGHT_PAGE) {
             startColumn = this.quest.rightPageStartingColumn;
-            endColumn = this.quest.rightPageEndingColumn;
         } else {
             startColumn = this.quest.leftPageStartingColumn;
-            endColumn = this.quest.leftPageEndingColumn;
         }
+        int realColumn = startColumn + this.quest.textColumn - 1;
         int realRow = this.quest.titleRow + 1 + this.quest.textRow;
-        // TODO - Display max column so buttons will wrap onto the next line
-        this.quest.appController.displayValidatedInputField(this.quest.name, eventName, valueList, realRow, startColumn, endColumn, this.quest);
+        
+        this.quest.appController.displayInputField(this.quest.name, eventName, prompt, length, realRow, realColumn, true, isUpperCase, isMultiUse, this.quest);
         this.quest.textRow = this.quest.textRow + 2;
+        this.quest.textColumn = 1;
         return "";
     }
     

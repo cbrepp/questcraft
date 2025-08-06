@@ -1,6 +1,8 @@
 
 package quest.control;
 
+import quest.model.Act;
+import quest.model.Scene;
 import quest.view.Quest;
 
 /**
@@ -18,7 +20,10 @@ public class SceneControl extends QuestControl {
     @Override
     public String onExecute(String tag) {
         System.out.println("SceneControl: onExecute: tag=" + tag);
-        String sceneName = this.quest.currentScene;
+        Act act = this.quest.book.acts.get(this.quest.currentAct);
+        Scene scene = act.scenes.get(this.quest.currentScene);
+        String sceneSymbol = scene.symbol;
+        String sceneName = sceneSymbol + " " + this.quest.currentScene;
         return sceneName;
     }
     
