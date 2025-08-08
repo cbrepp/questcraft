@@ -712,7 +712,7 @@ public class Quest extends app.ApplicationView {
         if (this.playerHP <= 0) {
             this.playerHP = 0;
             app.Utility.stopAllSounds();
-            app.Utility.playSound("/assets/sounds/death.mp3", false);
+            app.Utility.playSound("/assets/sounds/death.mp3", true);
         }
     }
     

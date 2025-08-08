@@ -793,7 +793,7 @@ public class Library extends app.ApplicationView {
         mainPage = new Page();
         mainPage.story.contents.add("<subpage-display Scene Header>");
         mainPage.story.contents.add("<color 79+47+79>");
-        mainPage.story.contents.add("You see a meadow full of purple flowers.  The sun is shining brightly and cute bunnies scamper around you.  A wide dirt path leads in several directions.");
+        mainPage.story.contents.add("You see a meadow full of purple flowers.  The sun is shining brightly and cute bunnies scamper around you.  A wide, well-traveled dirt path splits out in all directions.");
         mainPage.story.contents.add("<br>");
         mainPage.story.contents.add("In the southeast a mighty mountain range borders the world.  It stretches to a central point where a mountain appears to climb so high that it quite possibly goes up into outer space.");
         mainPage.story.contents.add("<br>");

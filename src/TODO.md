@@ -20,17 +20,13 @@ Upcoming changes.
 ### Quest
 
 - Add list of learned spells to spell book
-- Add ability for spell to fail because of insufficient MP
-- For shorter scene images, expand the width past 400
 - Add keyboard arrow key bindings to the navigation buttons
 - Add yellow highlighting to new items on the Inventory view
-- Add xp increases to aquiring items and other significant events
 - When magic words are in use, the current text column calculation gets weird.  Mylee's parting words to Shmebulock in the introduction has exclamation points that overlap the Gold inventory item.
 - Refactor the current Twin Quest book to use the cool new control features.  Shmebulock variables can be removed and <if condition="variable player=Shmebulock" SHMEBULOCK!> can be used instead.
 - "Library" should instead be "Application" with a "Now Playing" section that shows the book's metadata over a transparent overlay over a full image.  Can add app-level options like changing the GUI and styling here.
 - Add a return icon with tooltip to the upper-left hand corner of each non-quest view for returning to the Quest tab... "right arrow curving left" U+21A9 or "BACK arrow" U+1F519 with a floating overlay that can contain not just the return icon but the Spell Book spell field, etc.  Quest can return back to Application.  Application's Now Playing will include a Link to the Quest.
  - inventory-add in Quest needs to limit additions based on how many items are in a book
-- setPlayerHP() in Quest needs to require a source of the damage so if the player is unalived, they can be told by who or whom
 - Add gasp sound when player dies
 - Implement Book-specific game over page via a new Book property "finalAct".  Also add a High Score handler page that shows how the player did in comparison to the other high scores.  And, a cool skull and crossbones picture would be nice.
 - Fix loading a new book not closing the current book's open tabs
@@ -54,34 +50,15 @@ Upcoming changes.
 ### Chapter 1 - A Dragon in the Kingdom
 
 - Each scene's description should be in 3 sections-- short introduction to where the player is, the interesting detail the player can pick out in this scene, and next steps available to the player.
-- Reimplement Wilderness 1
--- Gold Bunny enables DOWN THE RABBIT HOLE spell that Shmebulock can use to access the stairwell.  The stairwell has a 1/14 chance of encountering Big Chung.  Also, invincibility star is hidden (1/7 chance).
--- 1/14 chance there will be no wildlife.  That's when Big Chung is present in the stairwell.
--- Improve the images that are used.
--- Foreshadowing for Chapter 2: The grass is tall and could be hiding things.  The commander bunnies are evidence of that.
-- Finish reimplementing Wilderness 2
--- Only Shmebulock with infinite MP recharging and a healing spell can capture 10 bunnies without dying.
--- Foreshadowing for Chapter 2: The wilderness has a large dirt path.  Perhaps someday it will be used?
-- Reimplement Magic Ring of Toadstools
--- Implement DOWN THE RABBIT HOLE SPELL for accessing the stairwell
--- The open-door.wav sound is reduced after truncating it and it can't be heard over the other sounds
--- Maybe remove the sign and add an overlay and text label where the picture frame should have text
-- Reimplement Gianni's Den
--- Foreshadowing for Chapter 2: The den has a sense of foritified security
-- Reimplement Woods
--- Foreshadowing for Chapter 2: The trees are tall but the player believes they could throw rocks over them.
-- Reimplement Mount Fluff
--- Add spanish guitar image
--- SHMEBULOCK play-through needs additional work...Shmebulock should only be able to talk if a certain variable is set
--- Foreshadowing for Chapter 2: The mountain climbs as high as the eye can see.  Who knows how high up it might go?  Imagine skiing down it!
-- Reimplement Mystery Room
--- For Shmebulock, this is cosmic wonder #1.  He must collect all of them to imbue the new ring of taming with magic.
--- When aquiring Cosmic Terror, allude to it being a new short-range attack
--- Foreshadowing for Chapter 2: The room is perhaps some sort of cosmic center?
-- Reimplement Castle
--- Foreshadowing for Chapter 2: The gold is scattered about the maze-like interior of the castle.
-- Reimplement Dragon's Den
--- Shmebulock's Cosmic Terror should require 10MP but it currently doesn't
+- Wilderness 2: Gold Bunny enables DOWN THE RABBIT HOLE spell that Shmebulock can use to access the stairwell.  The stairwell has a 1/14 chance of encountering Big Chung.  Also, invincibility star is hidden (1/7 chance).
+- Wilderness 2: 1/14 chance there will be no wildlife.  That's when Big Chung is present in the stairwell.
+- Wilderness 1 and 2:  Only Shmebulock with infinite MP recharging and a healing spell can capture 10 bunnies without dying.
+- Magic Ring of Toadstools: The open-door.wav sound is reduced after truncating it and it can't be heard over the other sounds
+- Mount Fluff: Add spanish guitar image
+- Mount Fluff: SHMEBULOCK play-through needs additional work...Shmebulock should only be able to talk if a certain variable is set
+- Mystery Room: Shmebulock must collect all cosmic wonders to imbue the new ring of taming with magic.
+- Mystery Room: When aquiring Cosmic Terror, allude to it being a new short-range attack
+- Reimplement Castle: Foreshadowing for Chapter 2: The gold is scattered about the maze-like interior of the castle.
 - Reimplement Mylee's Elevator
 -- Night Owl doesn't die, he just flies away, defeated.
 -- Ends with full screen mode of ominous music and seeing the outline of a giant black cat watching.  Mylee intervenes and talks to Chung.
