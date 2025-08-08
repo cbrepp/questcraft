@@ -38,11 +38,20 @@ public class SpellBook extends app.ApplicationView {
                         this.appController.displayMessageBox(randomResponse, "You wait... and wait... and nothing happens.  The words in the book fade and disappear.  Perhaps you're trying the right spell at the wrong time?", app.Icon.ERROR);
                         return;
                     }
-                    app.Utility.playSound("/assets/sounds/spell-cast.wav", false);
+                    if (spell.mpCost > 0) {
+                        if (this.quest.getPlayerMP() < spell.mpCost) {
+                            this.appController.displayMessageBox("Almost but not quite.", "It looks like the ink is trying its hardest to stay on the page but failing.  The words fade and disappear.  Perhaps you're lacking in magic points?", app.Icon.ERROR);
+                            return;
+                        } else {
+                            this.quest.setPlayerMP(spell.mpCost * -1, false);
+                        }
+                    } else {
+                        app.Utility.playSound("/assets/sounds/spell-cast.wav", false);
+                    }
                     String[] responses = {"Success!", "Huzzah!", "Abracadabra!"};
                     int randomResponseIndex = (int) (Math.random() * responses.length);
                     String randomResponse = responses[randomResponseIndex];
-                    this.appController.displayMessageBox(randomResponse, "You hear the crackle and spark of magic.  The spell has been written!  Return to your Quest to see if the spell has been cast.", app.Icon.INFORMATION);
+                    this.appController.displayMessageBox(randomResponse, "You hear the crackle and spark of magic.  The spell has been written!  The fresh words on the page emit a purple glow.", app.Icon.INFORMATION);
                     System.out.println("SpellBook: onEvent: Executing spell: " + spellName);
                     this.quest.displayPage(spell.contents, true);
                 }

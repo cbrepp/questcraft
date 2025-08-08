@@ -19,8 +19,9 @@ public class PlayerHPChangeControl extends QuestControl {
     public String onExecute(String tag) {
         System.out.println("PlayerHPChangeControl: onExecute: tag=" + tag);
         int amount = Integer.parseInt(getTagToken(tag, 1, false));
-        Boolean refreshPage = Boolean.valueOf(getTagToken(tag, 2, true));
-        this.quest.setPlayerHP(amount, refreshPage);
+        Boolean refreshPage = Boolean.valueOf(getTagToken(tag, 2, false));
+        String damageSource = getTagToken(tag, 3, true);
+        this.quest.setPlayerHP(amount, refreshPage, damageSource);
         if (refreshPage) {
             this.quest.display();
         }

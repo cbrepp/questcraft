@@ -14,12 +14,14 @@ public class InventoryItem implements Serializable {
     public int quantity;
     public String soundFileName;
     public String unicodeSurrogatePair;
+    public int xp;
     
     public InventoryItem(String description, String soundFileName, String unicodeSurrogatePair) {
         this.description = description;
         this.quantity = 0;
         this.soundFileName = soundFileName;
         this.unicodeSurrogatePair = unicodeSurrogatePair;
+        this.xp = 0;
     }
 
 }

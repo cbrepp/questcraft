@@ -25,38 +25,39 @@ public abstract class QuestControl {
         String operator;
         if (condition.contains("!=")) {
             operator = "!=";
-            System.out.println("QuestControl: evalauteCondition: Testing for inequality");
         } else if (condition.contains("=")) {  
             operator = "=";
-            System.out.println("QuestControl: evalauteCondition: Testing for equality");
         } else if (condition.contains("&gt;")) {  
-            operator = ">";
-            System.out.println("QuestControl: evalauteCondition: Testing for greater than");
+            operator = "&gt;";
         } else if (condition.contains("&ge;")) {  
-            operator = ">=";
-            System.out.println("QuestControl: evalauteCondition: Testing for greater than or equal to");
+            operator = "&ge";
         } else if (condition.contains("&lt;")) {  
-            operator = "<";
-            System.out.println("QuestControl: evalauteCondition: Testing for less than");
+            operator = "&lt;";
         } else if (condition.contains("&le;")) {  
-            operator = "<=";
-            System.out.println("QuestControl: evalauteCondition: Testing for less than or equal to");
+            operator = "&le;";
         } else {
             System.err.println("QuestControl: evalauteCondition: Condition does NOT contain a valid operator!");
             return false;
         }
         
+        System.out.println("QuestControl: evalauteCondition: operator=" + operator);
+        
         String[] conditionParts = condition.split(operator);
+        System.out.println("QuestControl: evalauteCondition: conditions parts=" + conditionParts.length);
         if (conditionParts.length != 2) {
-                System.err.println("QuestControl: evalauteCondition: Operator exists more than once in the condition!");
-                return true;
+            System.err.println("QuestControl: evalauteCondition: Operator exists more than once in the condition!");
+            return true;
         }
         
         String leftExpression = conditionParts[0];
+        System.out.println("QuestControl: evalauteCondition: leftExpression raw=" + leftExpression);
         String leftValue = evaluateExpression(leftExpression);
+        System.out.println("QuestControl: evalauteCondition: leftExpression translated=" + leftValue);
         
         String rightExpression = conditionParts[1];
+        System.out.println("QuestControl: evalauteCondition: rightExpression raw=" + rightExpression);
         String rightValue = evaluateExpression(rightExpression);
+        System.out.println("QuestControl: evalauteCondition: rightExpression translated=" + rightValue);
         
         System.out.println("QuestControl: evalauteCondition: translated condition=" + leftValue + operator + rightValue);
         

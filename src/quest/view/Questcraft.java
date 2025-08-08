@@ -86,6 +86,7 @@ import quest.model.Book;
  * ring-of-toadstools.jpg - "Cats, Mushrooms, Forest royalty-free stock illustration. Free for use & download." by betidraws (https://pixabay.com/illustrations/cats-mushrooms-forest-fantasy-8277166/)
  * ring-of-toadstools.wav - "Music loop for game development. I will be happy to hear your feedback or see your products using my works." by rhodesmas (https://freesound.org/people/rhodesmas/sounds/321387/)
  * skis.wav - "Skiers passing close to X/Y mic. Stereo. Good Left/Right cues" by benu123 (https://freesound.org/people/benu123/sounds/789441/)
+ * skull.png - "Skull, Day Of The Dead, Dia De Los Muertos royalty-free vector graphic. Free for use & download." by OpenClipart-Vectors (https://pixabay.com/vectors/skull-day-of-the-dead-2028286/)
  * spell-book.jpg - "Ai Generated, Book, Fantasy royalty-free stock illustration. Free for use & download." by 1tamara2 (https://pixabay.com/illustrations/ai-generated-book-fantasy-8716781/)
  * spell-cast.wav - "Breathy, airy effect; spell of good nature." by Kostas17 (https://freesound.org/people/Kostas17/sounds/542825/)
  * spider.gif - "Insect, Spider, Spider web GIF. Free for use." by Tilixia-Summer (https://pixabay.com/gifs/insect-spider-spider-web-fly-858/)
@@ -156,6 +157,7 @@ public class Questcraft extends app.ApplicationView {
                 this.inventory.quest = this.quest;
                 this.appController.addView(this.inventory);
                 this.highScores.setHighScores(this.quest.book.highScores);
+                this.highScores.quest = this.quest;
                 this.appController.addView(this.highScores);
                 this.craftingTable = new CraftingTable(CRAFTING_TABLE);
                 this.appController.addView(this.craftingTable);

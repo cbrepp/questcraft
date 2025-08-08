@@ -58,6 +58,7 @@ public class Quest extends app.ApplicationView {
     public Boolean isGameOver;
     public Map<String, InventoryItem> inventory;
     public Inventory inventoryView; // TODO - Make the inventoryView a listener of inventory change events
+    public String lastEnemyThatAttacked;
     public int leftPageStartingColumn;
     public int leftPageEndingColumn;
     public Boolean magicText;
@@ -217,22 +218,19 @@ public class Quest extends app.ApplicationView {
             case GAME_OVER -> {
                 // TODO - Make this a configurable Story that can be added to any level of the Book
                 this.isGameOver = true;
-                app.Utility.stopAllSounds();
                 Act act = book.acts.get(this.currentAct);
                 Scene scene = act.scenes.get(this.currentScene);
                 Page deathPage = new Page();
                 deathPage.hideNextButton = true;
                 deathPage.hidePreviousButton = true;
-                deathPage.story.contents.add("Alas!  You have succombed to your wounds.  Here endeth your quest.");
+                deathPage.story.contents.add("Alas!  You were defeated by <b>" + this.lastEnemyThatAttacked + "</b>.  Here endeth your quest.");
                 deathPage.story.contents.add("<br>");
-                deathPage.story.contents.add("XP: <TODO>");
-                deathPage.story.contents.add("<br>");
-                deathPage.story.contents.add("<get-validated-input action Check High Scores>");
-                deathPage.story.contents.add("<br>");
-                // TODO - Display cool death image on the second page
+                deathPage.story.contents.add("<get-validated-input action *Check High Scores>");
+                deathPage.story.contents.add("<second-page>");
+                deathPage.story.contents.add("<image center /assets/images/skull.png>");
                 scene.pages.put("DEATH PAGE", deathPage);
                 Story checkHighScoresSubpage = new Story();
-                checkHighScoresSubpage.contents.add("Sorry... High Scores is not yet implemented!");
+                checkHighScoresSubpage.contents.add("<tab-select " + Questcraft.HIGH_SCORES + ">");
                 deathPage.subpages.put("INPUT action=Check High Scores", checkHighScoresSubpage);
                 this.currentPage = "DEATH PAGE";
                 this.display();
@@ -318,6 +316,9 @@ public class Quest extends app.ApplicationView {
             System.out.println("addInventoryItem: Playing inventory item's sound: " + item.soundFileName);
             Utility.playSound(item.soundFileName, false);
         }
+        
+        // Give the player experience for aquiring the item
+        this.playerXP += item.xp;
         
         // Handle any custom add event logic for the item
         if (item.onAdd != null) {
@@ -629,8 +630,8 @@ public class Quest extends app.ApplicationView {
         return this.playerXP;
     }
     
-    public Story getSubpage(String name, Boolean cheatOnly) {
-        System.out.println("Quest: getSubpage: name=" + name + ", cheatOnly=" + cheatOnly);
+    public Story getSubpage(String name, Boolean spellOnly) {
+        System.out.println("Quest: getSubpage: name=" + name + ", spellOnly=" + spellOnly);
         
         Act act = this.book.acts.get(this.currentAct);
         Scene scene = act.scenes.get(this.currentScene);
@@ -639,28 +640,28 @@ public class Quest extends app.ApplicationView {
         Story story;
         if (page.subpages.containsKey(name)) {
             story = page.subpages.get(name);
-            if ((!cheatOnly) || (story.isCheat)) {
+            if ((!spellOnly) || (story.isSpell)) {
                 System.out.println("Quest: getSubpage: Found subpage at page level");
                 return story;
             }
         }
         if (scene.subpages.containsKey(name)) {
             story = scene.subpages.get(name);
-            if ((!cheatOnly) || (story.isCheat)) {
+            if ((!spellOnly) || (story.isSpell)) {
                 System.out.println("Quest: getSubpage: Found subpage at scene level");
                 return story;
             }
         }
         if (act.subpages.containsKey(name)) {
             story = act.subpages.get(name);
-            if ((!cheatOnly) || (story.isCheat)) {
+            if ((!spellOnly) || (story.isSpell)) {
                 System.out.println("Quest: getSubpage: Found subpage at act level");
                 return story;
             }
         }
         if (this.book.subpages.containsKey(name)) {
             story = this.book.subpages.get(name);
-            if ((!cheatOnly) || (story.isCheat)) {
+            if ((!spellOnly) || (story.isSpell)) {
                 System.out.println("Quest: getSubpage: Found subpage at book level");
                 return story;
             }
@@ -681,7 +682,7 @@ public class Quest extends app.ApplicationView {
     }
     
     // TODO - Make this configurable as a Story element on any level of the Book
-    public void setPlayerHP(int delta, Boolean refreshPage) {
+    public void setPlayerHP(int delta, Boolean refreshPage, String lastEnemyThatAttacked) {
         System.out.println("Quest: setPlayerHP: delta=" + delta + ", refreshPage=" + refreshPage);
         
         this.playerHP = this.playerHP + delta;
@@ -694,6 +695,7 @@ public class Quest extends app.ApplicationView {
         }
         
         if (delta < 0) {
+            this.lastEnemyThatAttacked = lastEnemyThatAttacked;
             if (delta >= -10) {
                 app.Utility.playSound("/assets/sounds/hit.mp3", false);
             } else {
@@ -707,8 +709,9 @@ public class Quest extends app.ApplicationView {
             appController.setTimer(overlayName, 0.5, this);
         }
         
-        if (this.playerHP < 0) {
+        if (this.playerHP <= 0) {
             this.playerHP = 0;
+            app.Utility.stopAllSounds();
             app.Utility.playSound("/assets/sounds/death.mp3", false);
         }
     }

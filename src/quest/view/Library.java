@@ -109,25 +109,32 @@ public class Library extends app.ApplicationView {
         book.inventory.put("Banana", item);
         item = new InventoryItem("A cute little fuzzy bunny.  Be sure to keep it safe from predators!", "/assets/sounds/spring.wav", "\uD83D\uDC07");
         item.quantity = 100;
+        item.xp = 1;
         book.inventory.put("Bunny", item);
         item = new InventoryItem("A small catapult capable of launching an endless supply of cats into the air.", "/assets/sounds/catapult.wav", "\uD83D\uDC08");
+        item.xp = 10;
         book.inventory.put("Cat-apult", item);
         item = new InventoryItem("A foreboding monolith of enormous size.  Its existence predates that of our species.  Perhaps even the world.  What terrible powers does it hold?", "/assets/sounds/cosmic-wonder-1.wav", "\uD83C\uDF0C");
+        item.xp = 10;
         book.inventory.put("Cosmic Wonder #1", item);
         item = new InventoryItem("A small, magic portal capable of launching an endless supply of woodland faeries into the air.", "/assets/sounds/faery-zing.wav", "\uD83E\uDDDA");
+        item.xp = 10;
         book.inventory.put("Faery Launcher", item);
         item = new InventoryItem("Stinky methane gas.  Don't let any of this leak out of its tank!  Gross!!!", "/assets/sounds/fart.wav", "\uD83D\uDCA8");
         book.inventory.put("Gas", item);
         item = new InventoryItem("Stinky methane gas.  Don't let any of this leak out of its tank!  Gross!!!", "/assets/sounds/fart.wav", "\uD83D\uDCA8");
         book.inventory.put("Gas", item);
         item = new InventoryItem("Shiny gold!", "/assets/sounds/gold.wav", "\uD83D\uDCB0");
+        item.xp = 10;
         book.inventory.put("Gold", item);
         item = new InventoryItem("A cute little fuzzy bunny... made of gold!  It unlocks some powerful magic.", "/assets/sounds/spring.wav", "\uD83D\uDC07");
-        item.quantity = 1;
+        item.quantity = 100;
+        item.xp = 10;
         book.inventory.put("Golden Bunny", item);
         item = new InventoryItem("A royal-looking key.  But what does it unlock?", "/assets/sounds/key.wav", "\uD83D\uDD11");
         book.inventory.put("Golden Key", item);
         item = new InventoryItem("An impressive mid-range weapon.  Great for slaying dragons!", "/assets/sounds/arrow.mp3", "\uD83C\uDFF9");
+        item.xp = 10;
         book.inventory.put("Greyson's Great Bow", item);
         item = new InventoryItem("This is a serious weapon!  The high-intensity laser beam can destory large objects with a single blast.", "/assets/sounds/laser.wav", "\uD83C\uDFEE");
         book.inventory.put("Laser Cannon", item);
@@ -138,6 +145,7 @@ public class Library extends app.ApplicationView {
         Story onSelect = new Story();
         onSelect.contents.add("<tab-select Map>");
         item.onSelect = onSelect;
+        item.xp = 0;
         book.inventory.put("Map", item);
         item = new InventoryItem("Wear this medal proudly.  It marks the honor, courage, and valour of those who have earned the right to wear it", "/assets/sounds/achievement.wav", "\uD83C\uDF96");
         book.inventory.put("Military Rank", item);
@@ -146,6 +154,7 @@ public class Library extends app.ApplicationView {
         item = new InventoryItem("A fine-tuned machine, this speedster can go from 0 to 60 in just one second!  A wonderful car for any racing competition.  But this car is unique in that it is fueled by methane which is hard to find in abundance.", "/assets/sounds/race-car.wav", "\uD83C\uDFCE");
         book.inventory.put("Race Car", item);
         item = new InventoryItem("A magical ring forged by woodland gnomes for taming creatures.  But beware!  It does not work on large creatures.", "/assets/sounds/ring-of-taming.wav", "\uD83D\uDC8D");
+        item.xp = 10;
         book.inventory.put("Ring of Taming", item);
         item = new InventoryItem("A brand new high-altitude sled!  Perfect for an all-expenses paid vacation at Mount Fluff.", "/assets/sounds/skis.wav", "\uD83C\uDFBF");
         book.inventory.put("Snow Sled", item);
@@ -156,14 +165,17 @@ public class Library extends app.ApplicationView {
         onSelect = new Story();
         onSelect.contents.add("<tab-select Spell Book>");
         item.onSelect = onSelect;
+        item.xp = 0;
         book.inventory.put("Spell Book", item);
         item = new InventoryItem("The fabeled UNO reverse card.  Used to return damage back into the face of he who dealt it.", "/assets/sounds/reverse.wav", "\uD83C\uDFB4");
+        item.xp = 10;
         book.inventory.put("UNO Reverse", item);
         item = new InventoryItem("A magnificent blade.  Great for slaying dragons!", "/assets/sounds/sword.wav", "\uD83D\uDDE1");
+        item.xp = 10;
         book.inventory.put("Zara's Sword", item);
 
         Story flipBookSubpage = new Story();
-        flipBookSubpage.isCheat = true;
+        flipBookSubpage.isSpell = true;
         flipBookSubpage.contents.add("<flip-book>");
         book.subpages.put("FLIP BOOK", flipBookSubpage);
         
@@ -268,7 +280,7 @@ public class Library extends app.ApplicationView {
         playerShmebulockSubpage.contents.add("<goto-scene Difficulty Selection>");
         page1.subpages.put("INPUT player=Shmebulock", playerShmebulockSubpage);
         Story shmebulockCheatSubpage = new Story();
-        shmebulockCheatSubpage.isCheat = true;
+        shmebulockCheatSubpage.isSpell = true;
         shmebulockCheatSubpage.contents.add("<variable-set summonShmebulock true>");
         shmebulockCheatSubpage.contents.add("<page-refresh>");
         page1.subpages.put("SHMEBULOCK", shmebulockCheatSubpage);
@@ -757,10 +769,10 @@ public class Library extends app.ApplicationView {
         chaseBunniesPage.subpages.put("Almost Success", almostBunniesSuccessSubpage);
         Story troubleBunniesSubpage = new Story();
         troubleBunniesSubpage.contents.add("<play-sound /assets/sounds/spring.wav false>");
-        troubleBunniesSubpage.contents.add("<hp-change condition=\"variable difficulty=Easy\" -20 false>");
-        troubleBunniesSubpage.contents.add("<hp-change condition=\"variable difficulty=Normal\" -30 false>");
-        troubleBunniesSubpage.contents.add("<hp-change condition=\"variable difficulty=Hard\" -40 false>");
-        troubleBunniesSubpage.contents.add("<hp-change condition=\"variable difficulty=Magical\" -20 false>");
+        troubleBunniesSubpage.contents.add("<hp-change condition=\"variable difficulty=Easy\" -20 false a Bunny Commander>");
+        troubleBunniesSubpage.contents.add("<hp-change condition=\"variable difficulty=Normal\" -30 false a Bunny Commander>");
+        troubleBunniesSubpage.contents.add("<hp-change condition=\"variable difficulty=Hard\" -40 false a Bunny Commander>");
+        troubleBunniesSubpage.contents.add("<hp-change condition=\"variable difficulty=Magical\" -20 false a Bunny Commander>");
         troubleBunniesSubpage.contents.add("Some of the bunnies start chasing you!  What are they, bionic???");
         troubleBunniesSubpage.contents.add("<br>");
         troubleBunniesSubpage.contents.add("A very large commander of the bunnies shoots at you.  You run as fast as you can to get away.  You definitely don't want to do that again!!!");
@@ -854,10 +866,10 @@ public class Library extends app.ApplicationView {
         chaseBunniesPage.subpages.put("Almost Success", almostBunniesSuccessSubpage);
         troubleBunniesSubpage = new Story();
         troubleBunniesSubpage.contents.add("<play-sound /assets/sounds/spring.wav false>");
-        troubleBunniesSubpage.contents.add("<hp-change condition=\"variable difficulty=Easy\" -10 false>");
-        troubleBunniesSubpage.contents.add("<hp-change condition=\"variable difficulty=Normal\" -15 false>");
-        troubleBunniesSubpage.contents.add("<hp-change condition=\"variable difficulty=Hard\" -20 false>");
-        troubleBunniesSubpage.contents.add("<hp-change condition=\"variable difficulty=Magical\" -10 false>");
+        troubleBunniesSubpage.contents.add("<hp-change condition=\"variable difficulty=Easy\" -10 false a Bunny Solider>");
+        troubleBunniesSubpage.contents.add("<hp-change condition=\"variable difficulty=Normal\" -15 false a Bunny Solider>");
+        troubleBunniesSubpage.contents.add("<hp-change condition=\"variable difficulty=Hard\" -20 false a Bunny Solider>");
+        troubleBunniesSubpage.contents.add("<hp-change condition=\"variable difficulty=Magical\" -10 false a Bunny Solider>");
         troubleBunniesSubpage.contents.add("Some of the bunnies start chasing you!  What are they, bionic???");
         troubleBunniesSubpage.contents.add("<br>");
         troubleBunniesSubpage.contents.add("They shoot at you and you run as fast as you can to get away.  What were you thinking trying to chase bunnies???");
@@ -1257,7 +1269,7 @@ public class Library extends app.ApplicationView {
         deadPage.story.contents.add("<second-page>");
         deadPage.story.contents.add("<image center /assets/images/night-owl.jpg>");
         deadPage.story.contents.add("<first-page>");
-        deadPage.story.contents.add("<play-sound /assets/sounds/heavy-wings.mp3 false><play-sound /assets/sounds/hooting.mp3 false><hp-change -100 false>");
+        deadPage.story.contents.add("<play-sound /assets/sounds/heavy-wings.mp3 false><play-sound /assets/sounds/hooting.mp3 false><hp-change -100 false Night Owl>");
         deadPage.story.contents.add("<color 85+85+85>Too late.</color>");
         deadPage.story.contents.add("<br>");
         woods.pages.put("Dead", deadPage);
@@ -1461,9 +1473,10 @@ public class Library extends app.ApplicationView {
         mysteryRoom.pages.put("main", mainPage);
         
         Story starChildSubpage = new Story();
-        starChildSubpage.isCheat = true;
-        starChildSubpage.contents.add("<variable-set condition=\"mp=100\" star-child true>");
-        starChildSubpage.contents.add("<mp-change condition=\"variable star-child=true\" -100 true>");
+        starChildSubpage.isSpell = true;
+        starChildSubpage.mpCost = 100;
+        starChildSubpage.contents.add("<variable-set star-child true>");
+        starChildSubpage.contents.add("<page-refresh>");
         mysteryRoom.subpages.put("STAR CHILD", starChildSubpage);
         
         Story shmebulockSubpage = new Story();
@@ -1787,14 +1800,13 @@ public class Library extends app.ApplicationView {
         Story displayWeaponSubpage = new Story();
         displayWeaponSubpage.contents.add("<image condition=\"inventory-has UNO Reverse=true\" center /assets/images/UNO-reverse.png>");
         displayWeaponSubpage.contents.add("<image condition=\"inventory-has Zara's Sword=true\" center /assets/images/sword.png>");
-        //displayWeaponSubpage.contents.add("<overlay condition=\"inventory-has Cosmic Wonder #1=true\" cosmic-terror 48+25+52>");  // Dark purple
         dragonPage.subpages.put("Display Weapon", displayWeaponSubpage);
 
         Story playerHitSubpage = new Story();
-        playerHitSubpage.contents.add("<hp-change condition=\"variable difficulty=Easy\" -25 false>");
-        playerHitSubpage.contents.add("<hp-change condition=\"variable difficulty=Normal\" -50 false>");
-        playerHitSubpage.contents.add("<hp-change condition=\"variable difficulty=Hard\" -100 false>");
-        playerHitSubpage.contents.add("<hp-change condition=\"variable difficulty=Magical\" -25 false>");
+        playerHitSubpage.contents.add("<hp-change condition=\"variable difficulty=Easy\" -25 false a dragon>");
+        playerHitSubpage.contents.add("<hp-change condition=\"variable difficulty=Normal\" -50 false a dragon>");
+        playerHitSubpage.contents.add("<hp-change condition=\"variable difficulty=Hard\" -100 false a dragon>");
+        playerHitSubpage.contents.add("<hp-change condition=\"variable difficulty=Magical\" -25 false a dragon>");
         dragonPage.subpages.put("Player Hit", playerHitSubpage);
         
         Story handleWeaponSubpage = new Story();
@@ -1881,6 +1893,8 @@ public class Library extends app.ApplicationView {
         dragonDefeatedPage.story.contents.add("<get-validated-input condition=\"event=4\" action Return To Cave Entrance>");
         dragonDefeatedPage.story.contents.add("</color>");
         dragonDefeatedPage.story.contents.add("<second-page>");
+        dragonDefeatedPage.story.contents.add("<subpage-display condition=\"event!=4\" Display Weapon>");
+        dragonDefeatedPage.story.contents.add("<second-page>");
         dragonDefeatedPage.story.contents.add("<subpage-display condition=\"event!=4\" Display Attacked Dragon>");
         dragonDefeatedPage.story.contents.add("<second-page>");
         dragonDefeatedPage.story.contents.add("<image center /assets/images/dragons-den2.jpg>");
@@ -1890,8 +1904,14 @@ public class Library extends app.ApplicationView {
         displayAttackedDragonSubpage.contents.add("<image condition=\"inventory-has Cosmic Wonder #1!=true\" center /assets/images/dragon-red.png><image condition=\"inventory-has Cosmic Wonder #1=true\" center /assets/images/dragon-inverted.png>");
         dragonDefeatedPage.subpages.put("Display Attacked Dragon", displayAttackedDragonSubpage);
         
+        displayWeaponSubpage = new Story();
+        displayWeaponSubpage.contents.add("<image condition=\"inventory-has UNO Reverse=true\" center /assets/images/UNO-reverse.png>");
+        displayWeaponSubpage.contents.add("<image condition=\"inventory-has Zara's Sword=true\" center /assets/images/sword.png>");
+        dragonDefeatedPage.subpages.put("Display Weapon", displayWeaponSubpage);
+        
         Story event4Subpage = new Story();
         event4Subpage.contents.add("<variable-set event 4>");
+        event4Subpage.contents.add("<xp-change 100 false>");
         event4Subpage.contents.add("<page-refresh>");
         event4Subpage.contents.add("<play-sound condition=\"inventory-has UNO Reverse=true\" /assets/sounds/reverse.wav false>");
         event4Subpage.contents.add("<play-sound condition=\"inventory-has Zara's Sword=true\" /assets/sounds/sword.wav false>");

@@ -11,11 +11,13 @@ import java.util.List;
 public class Story implements Serializable {
 
     public List<String> contents;
-    public Boolean isCheat;
+    public Boolean isSpell;
+    public int mpCost;
     
     public Story() {
         this.contents = new ArrayList();
-        this.isCheat = false;
+        this.isSpell = false;
+        this.mpCost = 0;
     }
     
 }

@@ -12,7 +12,8 @@ import quest.model.HighScore;
  */
 public class HighScores extends app.ApplicationView {
 
-    List<HighScore> highScores;
+    public List<HighScore> highScores;
+    public Quest quest;
     
     public HighScores(String name) {
         super(name);
@@ -29,6 +30,9 @@ public class HighScores extends app.ApplicationView {
         for (HighScore highScore : this.highScores) {
             appController.displayText(this.name, highScore.score + "   " + highScore.player + "   " + highScore.date.format(formatter), row++, 5);
         }
+        
+        row++;
+        appController.displayText(this.name, "Your score: " + this.quest.getPlayerXP(), row++, 5);
     }
         
     public void setHighScores(List<HighScore> highScores) {
