@@ -1644,9 +1644,9 @@ public class Library extends app.ApplicationView {
         mainPage = new Page();
         mainPage.story.contents.add("<subpage-display Scene Header>");
         mainPage.story.contents.add("<first-page><color 171+145+68><br><br><br>");
-        mainPage.story.contents.add("What a magnificent castle!  You step inside and explore the maze-like interior but no one is home.  Perhaps the royal court fled because of Big Chung?");
+        mainPage.story.contents.add("What a magnificent castle!  You step inside and explore the castle but no one is home.  Perhaps the royal court fled because of Big Chung?");
         mainPage.story.contents.add("<br>");
-        mainPage.story.contents.add("<if condition=\"inventory-has Gold!=true\" A chest full of beautiful gold coins was left behind.  Will you take it?><if condition=\"inventory-has Gold=true\" Such an empty place!>");
+        mainPage.story.contents.add("<if condition=\"inventory-has Gold!=true\" You see beautiful gold coins scattered around the maze-like interior.  They lead up to a chest overflowing with gold coins.  Will you take the gold?><if condition=\"inventory-has Gold=true\" Such an empty place!>");
         mainPage.story.contents.add("<br>");
         mainPage.story.contents.add("<get-validated-input condition=\"inventory-has Gold!=true\" action Listen+Take Gold><get-validated-input condition=\"inventory-has Gold=true\" action Listen>");
         mainPage.story.contents.add("<subpage-display Navigation Footer>");

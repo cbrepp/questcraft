@@ -57,6 +57,10 @@ public class ApplicationView implements EventListener {
         System.out.println("ApplicationView: onSelected: Unimplemented for " + this.name);
     }
     
+    public void onUnselected(ApplicationController appController) {
+        System.out.println("ApplicationView: onUnselected: Unimplemented for " + this.name);
+    }
+    
     public void publishEvent(String eventName, Object eventValue) {
         System.out.println("ApplicationView: publishEvent: eventName=" + eventName + ", eventValue=" + eventValue);
         List<ApplicationView> eventListeners = this.eventListenerMap.get(eventName);

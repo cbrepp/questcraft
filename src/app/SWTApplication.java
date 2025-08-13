@@ -76,6 +76,7 @@ public class SWTApplication extends ApplicationController {
     public int buttonFontWidth = 0;
     public Font buttonFont;
     public KeyEvent lastProcessedKeyEvent;
+    public ApplicationView lastSelectedView;
     public Font monospaceFont;
     public HashMap<String, Map<String, Composite>> namedControls;
     public ApplicationView parentView;
@@ -169,6 +170,11 @@ public class SWTApplication extends ApplicationController {
                 ApplicationView selectedView = thisController.tabItemViewMap.get(item);
                 if (selectedView != null) {
                     selectedView.onSelected(thisController);
+                    ApplicationView lastSelectedView = thisController.lastSelectedView;
+                    thisController.lastSelectedView = selectedView;
+                    if ((lastSelectedView != null) && (!lastSelectedView.equals(selectedView))) {
+                        lastSelectedView.onUnselected(thisController);
+                    }
                 }
             }
         });
@@ -527,6 +533,8 @@ public class SWTApplication extends ApplicationController {
         this.namedControls.get(viewName).clear();
 
         Composite tabComposite = this.tabCompositeMap.get(viewName);
+
+        // Remove all children
         Control[] controls = tabComposite.getChildren();
         for (Control control : controls) {
             System.out.println("SWTApplication: clearScreen: Disposing " + control);
@@ -535,13 +543,18 @@ public class SWTApplication extends ApplicationController {
                 control.dispose();
             }
         }
-
+        
+        // Clear the book text if this view uses a text area
         StyledText textArea = this.tabStyledTextMap.get(viewName);
         if (textArea != null) {
             textArea.setText(this.emptyBook);
             List<StyleRange> styleRanges = tabStyleRangesMap.get(viewName);
             styleRanges.clear();
-        }        
+        }
+        
+        // Refresh the composite's layout
+        tabComposite.setLayout(null);
+        tabComposite.pack();
     }
     
     @Override
@@ -689,6 +702,8 @@ public class SWTApplication extends ApplicationController {
         
         StyledText textArea = this.tabStyledTextMap.get(viewName);
         Composite composite = this.tabCompositeMap.get(viewName);
+        composite.setLayout(null);
+        composite.layout(true, true);
         
         // This control is only available when the view does NOT have a text area
         if (textArea != null) {

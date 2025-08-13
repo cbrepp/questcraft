@@ -21,7 +21,6 @@ Upcoming changes.
 
 - Abstract out the dragon fight logic into a quest control with different weapon strategies
 - Add list of learned spells to spell book
-- Add yellow highlighting to new items on the Inventory view
 - When magic words are in use, the current text column calculation gets weird.  Mylee's parting words to Shmebulock in the introduction has exclamation points that overlap the Gold inventory item.
 - Refactor the current Twin Quest book to use the cool new control features.  Shmebulock variables can be removed and <if condition="variable player=Shmebulock" SHMEBULOCK!> can be used instead.
 - "Library" should instead be "Application" with a "Now Playing" section that shows the book's metadata over a transparent overlay over a full image.  Can add app-level options like changing the GUI and styling here.

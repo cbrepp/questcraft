@@ -28,7 +28,6 @@ public class Inventory extends app.ApplicationView implements EventListener {
         this.addTextArea = false;   // The text area would interfere with this view's grid layout, so prevent it here
         this.backgroundColor = new Color(0, 0, 0);
         this.emoji = "\uD83C\uDF71"; // "bento box" Unicode emoji
-        this.lastRenderContainedNewItems = false;
     }
     
     @Override
@@ -66,19 +65,27 @@ public class Inventory extends app.ApplicationView implements EventListener {
     @Override
     public void onSelected(ApplicationController appController) {
         System.out.println("Inventory: onSelected");
+        
         appController.renameTab(this.name, this.emoji + " " + this.name);    // Remove "fire" Unicode emoji
-        if (this.lastRenderContainedNewItems) {
-            // Clear the yellow highlight for previously new inventory items
-            // TODO - Clearing the tab's composite doesn't free up the previous grid from the layout and the next grid displays at half size
-            this.appController.clearScreen(this.name);
-            this.render();
-        }
+
         for (String key : this.quest.inventory.keySet()) {
             InventoryItem questItem = this.quest.inventory.get(key);
             if (questItem.isNew) {
-                // Now that we've seen it, it's no longer new
+                // Now that we've seen an item, it's no longer new
                 questItem.isNew = false;
+                this.lastRenderContainedNewItems = true;
             }
+        }
+    }
+    
+    @Override
+    public void onUnselected(ApplicationController appController) {
+        System.out.println("Inventory: onUnselected");
+        
+        if (this.lastRenderContainedNewItems) {
+            System.out.println("Inventory: onUnselected: Re-rendering to remove highlighted items");
+            this.appController.clearScreen(this.name);
+            this.render();
         }
     }
     
@@ -98,7 +105,6 @@ public class Inventory extends app.ApplicationView implements EventListener {
                 labelText = "x" + questItem.quantity;
                 if (questItem.isNew) {
                     backgroundColor = new Color(255, 222, 33); // Yellow
-                    this.lastRenderContainedNewItems = true;
                 } else  {
                     backgroundColor = new Color(255, 255, 255); // White
                 }
