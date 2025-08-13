@@ -30,6 +30,9 @@ import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -72,6 +75,7 @@ public class SWTApplication extends ApplicationController {
     public int buttonFontHeight = 0;
     public int buttonFontWidth = 0;
     public Font buttonFont;
+    public KeyEvent lastProcessedKeyEvent;
     public Font monospaceFont;
     public HashMap<String, Map<String, Composite>> namedControls;
     public ApplicationView parentView;
@@ -537,7 +541,7 @@ public class SWTApplication extends ApplicationController {
             textArea.setText(this.emptyBook);
             List<StyleRange> styleRanges = tabStyleRangesMap.get(viewName);
             styleRanges.clear();
-        }
+        }        
     }
     
     @Override
@@ -1086,6 +1090,13 @@ public class SWTApplication extends ApplicationController {
                 // Calculate the full width of the button row
                 int rowWidth = 0;
                 for (String value : values) {
+                    value = value.toUpperCase().replaceFirst("&UP;", "K");
+                    value = value.toUpperCase().replaceFirst("&DOWN;", "K");
+                    value = value.toUpperCase().replaceFirst("&LEFT;", "K");
+                    value = value.toUpperCase().replaceFirst("&RIGHT;", "K");
+                    if (value.charAt(0) == '*') {
+                        value = value.substring(1, value.length());
+                    }
                     int tempButtonWidth = (value.length() * this.buttonFontWidth) + (2 * this.buttonFontWidth);    // Calculate width of text plus buffer of two imaginary characters
                     rowWidth += tempButtonWidth + (1 * this.buttonFontWidth);   // Add a spacer between this button and the next
                 }
@@ -1096,6 +1107,13 @@ public class SWTApplication extends ApplicationController {
                 // Calculate the full width of the button row
                 int rowWidth = 0;
                 for (String value : values) {
+                    value = value.toUpperCase().replaceFirst("&UP;", "K");
+                    value = value.toUpperCase().replaceFirst("&DOWN;", "K");
+                    value = value.toUpperCase().replaceFirst("&LEFT;", "K");
+                    value = value.toUpperCase().replaceFirst("&RIGHT;", "K");
+                    if (value.charAt(0) == '*') {
+                        value = value.substring(1, value.length());
+                    }
                     int tempButtonWidth = (value.length() * this.buttonFontWidth) + (2 * this.buttonFontWidth);    // Calculate width of text plus buffer of two imaginary characters
                     rowWidth += tempButtonWidth + (1 * this.buttonFontWidth);   // Add a spacer between this button and the next
                 }
@@ -1120,15 +1138,56 @@ public class SWTApplication extends ApplicationController {
                 value = value.substring(1, value.length());
                 glow = true;
             }
-            final String finalValue = value;
+            Integer keyBinding = null;
+            String eventValue = value;
+            if (value.toUpperCase().contains("&UP;")) {
+                keyBinding = SWT.ARROW_UP;
+                eventValue = value.replaceFirst("(?i)" + "&UP;", "");
+                value = value.replaceFirst("(?i)" + "&UP;", "\u2B06");  // Case insensitive reg ex
+            } else if (value.toUpperCase().contains("&DOWN;")) {
+                keyBinding = SWT.ARROW_DOWN;
+                eventValue = value.replaceFirst("(?i)" + "&DOWN;", "");
+                value = value.replaceFirst("(?i)" + "&DOWN;", "\u2B07");  // Case insensitive reg ex
+            } else if (value.toUpperCase().contains("&LEFT;")) {
+                keyBinding = SWT.ARROW_LEFT;
+                eventValue = value.replaceFirst("(?i)" + "&LEFT;", "");
+                value = value.replaceFirst("(?i)" + "&LEFT;", "\u2190");  // Case insensitive reg ex
+            } else if (value.toUpperCase().contains("&RIGHT;")) {
+                keyBinding = SWT.ARROW_RIGHT;
+                eventValue = value.replaceFirst("(?i)" + "&RIGHT;", "");
+                value = value.replaceFirst("(?i)" + "&RIGHT;", "\u27A1");  // Case insensitive reg ex
+            }
+            final String finalValue = eventValue;
             button.setFont(this.buttonFont);
-            button.setText(finalValue);
+            button.setText(value);
             button.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
+                    ((Button) e.widget).setEnabled(false);
                     listener.onEvent(name, finalValue);
                 }
             });
+            if (keyBinding != null) {
+                // A button can only trap key events when it has focus, so add a key listener to the shell that gets removed when the button is disposed
+                final int finalKeyBinding = (int)keyBinding;
+                final SWTApplication thisAppController = this;
+                final KeyListener textAreaKeyListener = new KeyAdapter() {
+                    @Override
+                    public void keyPressed(KeyEvent e) {
+                        if ((e.keyCode == finalKeyBinding) && (!button.isDisposed())) {
+                            if ((thisAppController.lastProcessedKeyEvent == null) || (thisAppController.lastProcessedKeyEvent.time != e.time) || (thisAppController.lastProcessedKeyEvent.keyCode != e.keyCode)) {
+                                e.doit = false; // e hasn't been checked yet and the refreshed page's event handling will process the event in an infinite loop
+                                thisAppController.lastProcessedKeyEvent = e; // e.doit isn't processed until this method returns so to further prevent an infinite loop guarantee the key event is new
+                                listener.onEvent(name, finalValue);
+                            }
+                        }
+                    }
+                };
+                textArea.addKeyListener(textAreaKeyListener);
+                button.addDisposeListener(e -> {
+                    textArea.removeKeyListener(textAreaKeyListener);
+                });
+            }
             int buttonWidth = (finalValue.length() * this.buttonFontWidth) + (2 * this.buttonFontWidth);    // Calculate width of text plus buffer of two imaginary characters
             if ((buttonX + buttonWidth) > terminalCoordinates.x) {
                 // Wrap the button onto a new line

@@ -302,10 +302,12 @@ public class Quest extends app.ApplicationView {
         InventoryItem item;
         if (this.inventory.containsKey(inventoryItemName)) {
             item = this.inventory.get(inventoryItemName);
+            item.isNew = true;
             item.quantity++;
             System.out.println("addInventoryItem: Item increased by 1: " + item.quantity);
         } else {
             item = this.book.inventory.get(inventoryItemName);
+            item.isNew = true;
             item.quantity = 1;
             this.inventory.put(inventoryItemName, item);
             System.out.println("addInventoryItem: Item added to inventory");

@@ -19,8 +19,8 @@ Upcoming changes.
 
 ### Quest
 
+- Abstract out the dragon fight logic into a quest control with different weapon strategies
 - Add list of learned spells to spell book
-- Add keyboard arrow key bindings to the navigation buttons
 - Add yellow highlighting to new items on the Inventory view
 - When magic words are in use, the current text column calculation gets weird.  Mylee's parting words to Shmebulock in the introduction has exclamation points that overlap the Gold inventory item.
 - Refactor the current Twin Quest book to use the cool new control features.  Shmebulock variables can be removed and <if condition="variable player=Shmebulock" SHMEBULOCK!> can be used instead.
@@ -52,13 +52,12 @@ Upcoming changes.
 - Each scene's description should be in 3 sections-- short introduction to where the player is, the interesting detail the player can pick out in this scene, and next steps available to the player.
 - Wilderness 2: Gold Bunny enables DOWN THE RABBIT HOLE spell that Shmebulock can use to access the stairwell.  The stairwell has a 1/14 chance of encountering Big Chung.  Also, invincibility star is hidden (1/7 chance).
 - Wilderness 2: 1/14 chance there will be no wildlife.  That's when Big Chung is present in the stairwell.
+- Wilderness 2: Entering the stairwell requires a password, which is the answer to the riddle "Speak friend, and enter"
 - Wilderness 1 and 2:  Only Shmebulock with infinite MP recharging and a healing spell can capture 10 bunnies without dying.
-- Magic Ring of Toadstools: The open-door.wav sound is reduced after truncating it and it can't be heard over the other sounds
+- Gianni's Den: After taming Gianni, present buttons for different photos you can via of Gianni.  Each photo overlays a polaroid border and a camera sound plays.  If the player views all photos, they receive a special culinary inventory item as a bonus prize.
 - Mount Fluff: Add spanish guitar image
-- Mount Fluff: SHMEBULOCK play-through needs additional work...Shmebulock should only be able to talk if a certain variable is set
+- Mount Fluff: After taming Professor Fluff, present buttons for different photos you can via of Draco.  Each photo overlays a polaroid border and a camera sound plays.  If the player views all photos, they incur -100HP damage when cause being "too much fluff".
 - Mystery Room: Shmebulock must collect all cosmic wonders to imbue the new ring of taming with magic.
-- Mystery Room: When aquiring Cosmic Terror, allude to it being a new short-range attack
-- Reimplement Castle: Foreshadowing for Chapter 2: The gold is scattered about the maze-like interior of the castle.
 - Reimplement Mylee's Elevator
 -- Night Owl doesn't die, he just flies away, defeated.
 -- Ends with full screen mode of ominous music and seeing the outline of a giant black cat watching.  Mylee intervenes and talks to Chung.

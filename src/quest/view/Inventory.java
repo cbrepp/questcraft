@@ -19,6 +19,7 @@ import quest.model.InventoryItem;
  */
 public class Inventory extends app.ApplicationView implements EventListener {
 
+    public Boolean lastRenderContainedNewItems;
     public Quest quest;
     public ApplicationController appController;
     
@@ -27,6 +28,7 @@ public class Inventory extends app.ApplicationView implements EventListener {
         this.addTextArea = false;   // The text area would interfere with this view's grid layout, so prevent it here
         this.backgroundColor = new Color(0, 0, 0);
         this.emoji = "\uD83C\uDF71"; // "bento box" Unicode emoji
+        this.lastRenderContainedNewItems = false;
     }
     
     @Override
@@ -64,11 +66,25 @@ public class Inventory extends app.ApplicationView implements EventListener {
     @Override
     public void onSelected(ApplicationController appController) {
         System.out.println("Inventory: onSelected");
-        appController.renameTab(this.name, this.emoji + " " + this.name);    // Remove "sparkle" Unicode emoji
+        appController.renameTab(this.name, this.emoji + " " + this.name);    // Remove "fire" Unicode emoji
+        if (this.lastRenderContainedNewItems) {
+            // Clear the yellow highlight for previously new inventory items
+            // TODO - Clearing the tab's composite doesn't free up the previous grid from the layout and the next grid displays at half size
+            this.appController.clearScreen(this.name);
+            this.render();
+        }
+        for (String key : this.quest.inventory.keySet()) {
+            InventoryItem questItem = this.quest.inventory.get(key);
+            if (questItem.isNew) {
+                // Now that we've seen it, it's no longer new
+                questItem.isNew = false;
+            }
+        }
     }
     
     public void render() {
         System.out.println("Inventory: render");
+        this.lastRenderContainedNewItems = false;
         Map<String, ArrayList<BaseControl>> gridCells = new LinkedHashMap<>();
         for (String key : this.quest.book.inventory.keySet()) {
             InventoryItem bookItem = this.quest.book.inventory.get(key);
@@ -77,10 +93,15 @@ public class Inventory extends app.ApplicationView implements EventListener {
             Color backgroundColor = null;
             InventoryItem questItem = this.quest.inventory.get(key);
             if (questItem != null) {
-                System.out.println("Inventory: render: Item in quest inventory: " + key);
+                System.out.println("v Item in quest inventory: " + key + ", is new?=" + questItem.isNew);
                 linkText = "<a>" + linkText + "</a>";
                 labelText = "x" + questItem.quantity;
-                backgroundColor = new Color(255, 255, 255); // White
+                if (questItem.isNew) {
+                    backgroundColor = new Color(255, 222, 33); // Yellow
+                    this.lastRenderContainedNewItems = true;
+                } else  {
+                    backgroundColor = new Color(255, 255, 255); // White
+                }
             } else {
                 System.out.println("Inventory: render: Item NOT in quest inventory: " + key);
                 backgroundColor = new Color(169, 169, 169); // Dark Gray

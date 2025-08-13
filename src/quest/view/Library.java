@@ -345,6 +345,7 @@ public class Library extends app.ApplicationView {
         page1a.story.contents.add("<br>");
         page1a.story.contents.add("<i>He has returned...</i>");
         page1a.story.contents.add("<br>");
+        page1a.story.contents.add("<i><if condition=\"player=Shmebulock\" ...perhaps this time it will be different?></i>");
         page1a.story.contents.add("<second-page>");
         page1a.story.contents.add("<gif center /assets/images/cat-storm-large.gif>");
         introScene.pages.put("1a", page1a);
@@ -605,21 +606,21 @@ public class Library extends app.ApplicationView {
         Story navigationFooterSubpage = new Story();
         navigationFooterSubpage.contents.add("<variable-set nextScene next-scene>");
         navigationFooterSubpage.contents.add("<button-row>");
-        navigationFooterSubpage.contents.add("<get-validated-input condition=\"next-scene=EDGE OF THE WORLD\" align=right navigation-prompt Turn Left+!Move Ahead+Turn Right>");
-        navigationFooterSubpage.contents.add("<get-validated-input condition=\"next-scene!=EDGE OF THE WORLD\" align=right navigation-prompt Turn Left+Move Ahead+Turn Right>");
+        navigationFooterSubpage.contents.add("<get-validated-input condition=\"next-scene=EDGE OF THE WORLD\" align=right navigation-prompt &left; Turn Left+!&up; Move Ahead+&right; Turn Right>");
+        navigationFooterSubpage.contents.add("<get-validated-input condition=\"next-scene!=EDGE OF THE WORLD\" align=right navigation-prompt &left; Turn Left+&up; Move Ahead+&right; Turn Right>");
         book.subpages.put("Navigation Footer", navigationFooterSubpage);
         
         Story inputTurnLeftSubpage = new Story();
         inputTurnLeftSubpage.contents.add("<turn-left>");
-        book.subpages.put("INPUT navigation-prompt=Turn Left", inputTurnLeftSubpage);
+        book.subpages.put("INPUT navigation-prompt= Turn Left", inputTurnLeftSubpage);
         
         Story inputMoveAheadSubpage = new Story();
         inputMoveAheadSubpage.contents.add("<move-ahead>");
-        book.subpages.put("INPUT navigation-prompt=Move Ahead", inputMoveAheadSubpage);
+        book.subpages.put("INPUT navigation-prompt= Move Ahead", inputMoveAheadSubpage);
 
         Story inputTurnRightSubpage = new Story();
         inputTurnRightSubpage.contents.add("<turn-right>");
-        book.subpages.put("INPUT navigation-prompt=Turn Right", inputTurnRightSubpage);
+        book.subpages.put("INPUT navigation-prompt= Turn Right", inputTurnRightSubpage);
         
         Scene chapterScene = new Scene();
         chapterScene.firstPageName = "1";
@@ -668,14 +669,14 @@ public class Library extends app.ApplicationView {
         noGoldSubpage.contents.add("<br>");
         noGoldSubpage.contents.add("You have so many questions.  But for now, you better leave.");
         noGoldSubpage.contents.add("<br>");
-        noGoldSubpage.contents.add("<get-validated-input action Listen+Leave Elevator>");
+        noGoldSubpage.contents.add("<get-validated-input action Listen+&down; Leave Elevator>");
         noGoldSubpage.contents.add("<second-page>");
         noGoldSubpage.contents.add("<image center /assets/images/mylee-sink.jpg>");
         mainPage.subpages.put("No Gold", noGoldSubpage);
         
         Story leaveElevatorSubpage = new Story();
         leaveElevatorSubpage.contents.add("<move-back>");
-        mainPage.subpages.put("INPUT action=Leave Elevator", leaveElevatorSubpage);
+        mainPage.subpages.put("INPUT action= Leave Elevator", leaveElevatorSubpage);
         
         Story listenSubpage = new Story();
         listenSubpage.contents.add("<goto-page Listen>");
@@ -981,7 +982,6 @@ public class Library extends app.ApplicationView {
         spokeRightPasswordSubpage.contents.add("<get-validated-input action Walk Through Door>");
         spokeRightPasswordSubpage.contents.add("<br>");
         spokeRightPasswordSubpage.contents.add("</color>");
-        spokeRightPasswordSubpage.contents.add("<play-sound /assets/sounds/open-door.wav false>");
         openDoorPage.subpages.put("INPUT password=SHMEBULOCK", spokeRightPasswordSubpage);
         Story spokeWrongPasswordSubpage = new Story();
         spokeWrongPasswordSubpage.contents.add("<player-symbol> YOU: <quote><mask * password><quote>");
@@ -1007,12 +1007,15 @@ public class Library extends app.ApplicationView {
         toadstoolCircle.pages.put("Shmebulock Listen", shmebulockListenPage);
         
         Story walkThroughDoor = new Story();
+        walkThroughDoor.contents.add("<variable-set open-door true>");
         walkThroughDoor.contents.add("<goto-page Shmebulock Home>");
         openDoorPage.subpages.put("INPUT action=Walk Through Door", walkThroughDoor);
         
         Page shmebulockHomePage = new Page();
         shmebulockHomePage.previousPageName = "main";
-        shmebulockHomePage.story.contents.add("<color 184+115+51>You successfully step through the magic door...");
+                spokeRightPasswordSubpage.contents.add("");
+
+        shmebulockHomePage.story.contents.add("<play-sound condition=\"open-door=true\" /assets/sounds/open-door.wav false><variable-set open-door false><color 184+115+51>You successfully step through the magic door...");
         shmebulockHomePage.story.contents.add("<br>");
         shmebulockHomePage.story.contents.add("... and find yourself standing before your mushroom house.  Oh it's good to be home!");
         shmebulockHomePage.story.contents.add("<br>");
@@ -1226,7 +1229,7 @@ public class Library extends app.ApplicationView {
         Story missedSubpage = new Story();
         missedSubpage.contents.add("<color 85+85+85>The sky is dark and Night Owl is hiding somewhere.  You must take care to tread lightly lest a noise alert Night Owl to your whereabouts.  Be very, very quiet.</color>");
         missedSubpage.contents.add("<br>");
-        missedSubpage.contents.add("<get-validated-input action Leave Woods>");
+        missedSubpage.contents.add("<get-validated-input action &down; Leave Woods>");
         mainPage.subpages.put("Missed", missedSubpage);
         Story almostSubpage = new Story();
         almostSubpage.contents.add("<color 85+85+85>What was that???<play-sound /assets/sounds/heavy-wings.mp3 false>");
@@ -1247,14 +1250,14 @@ public class Library extends app.ApplicationView {
         lookUp1Subpage.contents.add("<br>");
         lookUp1Subpage.contents.add("You have escaped death.  But... for how long?  That could have been you.  Be very, very quiet.</color>");
         lookUp1Subpage.contents.add("<br></color>");
-        lookUp1Subpage.contents.add("<get-validated-input action Leave Woods>");
+        lookUp1Subpage.contents.add("<get-validated-input action &down; Leave Woods>");
         mainPage.subpages.put("INPUT action1=Look Up", lookUp1Subpage);
         Story lookUp2Subpage = new Story();
         lookUp2Subpage.contents.add("<goto-page Dead>");
         mainPage.subpages.put("INPUT action2=Look Up", lookUp2Subpage);
         Story leaveWoodsSubpage = new Story();
         leaveWoodsSubpage.contents.add("<move-back>");
-        mainPage.subpages.put("INPUT action=Leave Woods", leaveWoodsSubpage);
+        mainPage.subpages.put("INPUT action= Leave Woods", leaveWoodsSubpage);
         
         listenPage = new Page();
         listenPage.previousPageName = "main";
@@ -1377,7 +1380,7 @@ public class Library extends app.ApplicationView {
         acceptChallengePage.story.contents.add("<subpage-display Second Page>");
         acceptChallengePage.story.contents.add("<first-page><color 0+0+0><br><subpage-display condition=\"player!=Shmebulock\" Non-Magical Riddle><subpage-display condition=\"player=Shmebulock\" Magical Riddle>");
         acceptChallengePage.story.contents.add("<br></color>");
-        acceptChallengePage.story.contents.add("<get-input answer 15 true false Enter answer here>");
+        acceptChallengePage.story.contents.add("<get-input condition=\"player!=Shmebulock\" answer 15 true false Enter answer here><get-input condition=\"player=Shmebulock\" magical-answer 15 true false Enter answer here>");
         mountFluff.pages.put("Accept Challenge", acceptChallengePage);
         
         skiLodgeSecondPageSubpage = new Story();
@@ -1414,16 +1417,23 @@ public class Library extends app.ApplicationView {
         skyAnswerSubpage.contents.add("<subpage-display condition=\"player!=Shmebulock\" Correct Answer>");
         acceptChallengePage.subpages.put("INPUT answer=SKY", skyAnswerSubpage);
         Story timeSubpage = new Story();
-        timeSubpage.contents.add("<goto-page condition=\"player=Shmebulock\" Correct Magical Answer>");
-        acceptChallengePage.subpages.put("INPUT answer=TIME", timeSubpage);
+        timeSubpage.contents.add("<goto-page condition=\"inventory-has Ancient Spell=true\" Correct Magical Answer>");
+        timeSubpage.contents.add("<subpage-display condition=\"inventory-has Ancient Spell!=true\" Wrong Magical Answer>");
+        acceptChallengePage.subpages.put("INPUT magical-answer=TIME", timeSubpage);
         Story wrongAnswerSubpage = new Story();
         wrongAnswerSubpage.contents.add("<subpage-display Wrong Answer>");
         acceptChallengePage.subpages.put("INPUT answer", wrongAnswerSubpage);
+        Story wrongMagicalAnswerSubpage = new Story();
+        wrongMagicalAnswerSubpage.contents.add("<subpage-display Wrong Magical Answer>");
+        acceptChallengePage.subpages.put("INPUT magical-answer", wrongMagicalAnswerSubpage);
+        wrongMagicalAnswerSubpage = new Story();
+        wrongMagicalAnswerSubpage.contents.add("<player-symbol> YOU: <quote><variable condition=\"inventory-has Ancient Spell=true\" magical-answer><mask condition=\"inventory-has Ancient Spell!=true\" * magical-answer><quote>");
+        wrongMagicalAnswerSubpage.contents.add("<br>");
+        wrongMagicalAnswerSubpage.contents.add("\uD83D\uDE38 PROFESSOR FLUFF: <quote>Aha!  It appears that I have bested you!  That answer is INCORRECT.  No one is as clever as I!<quote>");
+        acceptChallengePage.subpages.put("Wrong Magical Answer", wrongMagicalAnswerSubpage);
         wrongAnswerSubpage = new Story();
         wrongAnswerSubpage.contents.add("<br>");
-        // TODO - If the player is SHMEBULOCK and the answer is SHMEBULOCK do not mask the answer
-        // TODO - If the player is SHMEUBLOCK and the answer is TIME and SHMEBULOCK can't speak normally, it's a wrong answer
-        wrongAnswerSubpage.contents.add("<play-sound /assets/sounds/fluff.wav false><player-symbol> YOU: <quote><variable condition=\"player!=Shmebulock\" answer><mask condition=\"player=Shmebulock\" * answer><quote>");
+        wrongAnswerSubpage.contents.add("<player-symbol> YOU: <quote><variable answer><quote>");
         wrongAnswerSubpage.contents.add("<br>");
         wrongAnswerSubpage.contents.add("\uD83D\uDE38 PROFESSOR FLUFF: <quote>Aha!  It appears that I have bested you!  That answer is INCORRECT.  No one is as clever as I!<quote>");
         acceptChallengePage.subpages.put("Wrong Answer", wrongAnswerSubpage);
@@ -1434,6 +1444,7 @@ public class Library extends app.ApplicationView {
         correctAnswerSubpage.contents.add("\uD83D\uDE38 PROFESSOR FLUFF: <quote>Yes!  That is most correct!  Alas, you have bested me... and that was my finest riddle!  Very well then.  A deal is a deal.  The magical name you seek is... SHMEBULOCK.<quote>");
         acceptChallengePage.subpages.put("Correct Answer", correctAnswerSubpage);
 
+        // TODO - Need to echo back the answer, but for now there's not enough room.  This could be refactored to be multiple pages.
         Page correctMagicalAnswerPage = new Page();
         correctMagicalAnswerPage.previousPageName = "Enter Ski Lodge";
         correctMagicalAnswerPage.story.contents.add("<first-page><color 0+0+0><play-sound /assets/sounds/fluff.wav false>");
@@ -1633,9 +1644,9 @@ public class Library extends app.ApplicationView {
         mainPage = new Page();
         mainPage.story.contents.add("<subpage-display Scene Header>");
         mainPage.story.contents.add("<first-page><color 171+145+68><br><br><br>");
-        mainPage.story.contents.add("What a magnificent castle!  But no one is home.  Perhaps the royal court fled because of Big Chung?");
+        mainPage.story.contents.add("What a magnificent castle!  You step inside and explore the maze-like interior but no one is home.  Perhaps the royal court fled because of Big Chung?");
         mainPage.story.contents.add("<br>");
-        mainPage.story.contents.add("<if condition=\"inventory-has Gold!=true\" A chest full of beautiful gold coins was left behind.  Will you it?><if condition=\"inventory-has Gold=true\" Such an empty place!>");
+        mainPage.story.contents.add("<if condition=\"inventory-has Gold!=true\" A chest full of beautiful gold coins was left behind.  Will you take it?><if condition=\"inventory-has Gold=true\" Such an empty place!>");
         mainPage.story.contents.add("<br>");
         mainPage.story.contents.add("<get-validated-input condition=\"inventory-has Gold!=true\" action Listen+Take Gold><get-validated-input condition=\"inventory-has Gold=true\" action Listen>");
         mainPage.story.contents.add("<subpage-display Navigation Footer>");
@@ -1890,7 +1901,7 @@ public class Library extends app.ApplicationView {
         dragonDefeatedPage.story.contents.add("<br>");
         dragonDefeatedPage.story.contents.add("You decide to explore the rest of the cave.  Towards the back you see what looks like a great hiding place for treasure.  But alas, there is no treasure to be found.");
         dragonDefeatedPage.story.contents.add("<br>");
-        dragonDefeatedPage.story.contents.add("<get-validated-input condition=\"event=4\" action Return To Cave Entrance>");
+        dragonDefeatedPage.story.contents.add("<get-validated-input condition=\"event=4\" action *Return To Cave Entrance>");
         dragonDefeatedPage.story.contents.add("</color>");
         dragonDefeatedPage.story.contents.add("<second-page>");
         dragonDefeatedPage.story.contents.add("<subpage-display condition=\"event!=4\" Display Weapon>");
