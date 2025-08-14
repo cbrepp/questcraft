@@ -11,7 +11,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.time.LocalDate;
 import java.time.Month;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import quest.model.Act;
@@ -26,48 +28,67 @@ import quest.model.Story;
  *
  * @author repp
  */
-public class Library extends app.ApplicationView {
+public class Application extends app.ApplicationView {
     
     public ApplicationController appController;
+    public Book bookFile;
     
-    public Library(String name) {
+    public Application(String name) {
         super(name);
         this.backgroundColor = new Color(255, 255, 255);
+        this.backgroundImage = "/assets/images/app.jpg";
         this.emoji = "\uD83D\uDCDA"; // "books" Unicode emoji
     }
     
     @Override
     public void onEvent(String eventName, Object eventValue) {
-        System.out.println("Library: onEvent: eventName=" + eventName + ", eventValue=" + eventValue);
+        System.out.println("Application: onEvent: eventName=" + eventName + ", eventValue=" + eventValue);
         
         switch (eventName) {
             case "quest" -> {
                 Utility.stopAllSounds();
                 String fileName = (String) eventValue;
-                Book bookFile = deserializeBook(fileName);
+                this.bookFile = deserializeBook(fileName);
+                this.appController.clearScreen(this.name);
+                this.display();
                 this.publishEvent("book", bookFile);
             }
             default ->
-                System.err.println("Library: onEvent: Unsupported event");
+                System.err.println("Application: onEvent: Unsupported event");
         }
     }
     
     @Override
     public void onLoad(ApplicationController appController) {
+        System.out.println("Application: onLoad");
+        
         this.appController = appController;
-        appController.displayText(this.name, "SELECT STORY", 3, 5);
-        int nextRow = appController.displayImage(this.name, "/assets/images/old-books.jpg", 5, 5);
-        appController.displayOpenFileButton(this.name, "quest", "Choose Quest", nextRow, 5, false, true, this);
+        
+        this.display();
+        
+        serializeBook();
+    }
+    
+    public void display() {
+        appController.displayOpenFileButton(this.name, "quest", "Choose Quest", 3, 5, false, true, this);
         
         int spiderColumns = appController.getColumns("/assets/images/spider.gif");
         int parentColumns = appController.getTextColumns();
         int gifColumn = parentColumns - spiderColumns + 2;    // Puts the spider in the upper right-hand corner
         appController.displayGif(this.name, "/assets/images/spider.gif", 1, gifColumn);
-        
-        serializeBook();
+
+        if (bookFile != null) {
+            appController.displayFloatingText(this.name, "Now Playing:", 7, 6, 20);
+            appController.displayFloatingText(this.name, this.bookFile.title, 10, 6, 16);
+            appController.displayFloatingText(this.name, "by " + this.bookFile.author, 12, 6, 16);
+            appController.displayFloatingText(this.name, this.bookFile.updateDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.getDefault())), 14, 6, 16);
+            appController.displayOverlay(this.name, "app", new Color(255, 255, 255), 6, 5, 16, 50, 200);
+        }
     }
     
     public Book deserializeBook(String fileName) {
+        System.out.println("Application: deserializeBook");
+        
         Book bf = null;
         FileInputStream file;
         try {
@@ -79,13 +100,13 @@ public class Library extends app.ApplicationView {
                     bf = (Book) in.readObject();
                     System.out.println("Read book! title=" + bf.title + " by " + bf.author);
                 } catch (ClassNotFoundException ex) {
-                    Logger.getLogger(Library.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(Application.class.getName()).log(Level.SEVERE, null, ex);
                 }
             } catch (IOException ex) {
-                Logger.getLogger(Library.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Application.class.getName()).log(Level.SEVERE, null, ex);
             }
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(Library.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Application.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         return bf;
@@ -93,6 +114,8 @@ public class Library extends app.ApplicationView {
     
     // TODO - Just a temporary helper method to get the book going.  Eventually the Craft Table should be used for this purpose.
     public void serializeBook() {
+        System.out.println("Application: serializeBook");
+        
         Book book = new Book();
         book.animationFileName = "/assets/images/dragon.gif";
         book.author = "R. W. Chung";
@@ -1949,10 +1972,10 @@ public class Library extends app.ApplicationView {
                 out = new ObjectOutputStream(file);
                 out.writeObject(book);
             } catch (IOException ex) {
-                Logger.getLogger(Library.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Application.class.getName()).log(Level.SEVERE, null, ex);
             }
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(Library.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Application.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

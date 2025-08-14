@@ -34,12 +34,14 @@ import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -916,19 +918,61 @@ public class SWTApplication extends ApplicationController {
             }
         });
     }
+   
+    @Override
+    public void displayFloatingText(String viewName, String text, int row, int column, int fontSize) {
+        System.out.println("SWTApplication: displayFloatingText: viewName=" + viewName + ", fileName=" + text + ", row=" + row + ", column=" + column + ", fontSize=" + fontSize);
+        
+        StyledText textArea = this.tabStyledTextMap.get(viewName);
+        Composite composite = this.tabCompositeMap.get(viewName);
+
+        Label label = new Label(composite, SWT.NONE);
+        
+        // Get the current font of the label
+        Font currentFont = label.getFont();
+        FontData[] fontData = currentFont.getFontData();
+
+        // Create a new FontData array and set the style to bold
+        for (FontData data : fontData) {
+            data.setStyle(SWT.BOLD);
+            data.setHeight(fontSize);
+        }
+
+        // Create a new Font with the bold style
+        Font boldFont = new Font(display, fontData);
+        label.setFont(boldFont);
+        
+        label.setText(text);
+        
+        // TODO - Need to calculate font height and width.  See how this.fontHeight is set.
+        Point startCoordinates = this.convertToCoordinates(row, column);
+        Point endCoordinates = this.convertToCoordinates(row + 2, column + (text.length() * 2) + 1);
+        
+        label.setBounds(startCoordinates.x, startCoordinates.y, endCoordinates.x - 1, endCoordinates.y - 1);
+        if (textArea != null) {
+            label.moveAbove(textArea);
+        }
+    }
     
     @Override
     public int displayImage(String viewName, String fileName, int row, int column) {
         System.out.println("SWTApplication: displayImage: viewName=" + viewName + ", fileName=" + fileName + ", row=" + row + ", column=" + column);
+        
         StyledText textArea = this.tabStyledTextMap.get(viewName);
         Composite composite = this.tabCompositeMap.get(viewName);
-        Label label = new Label(composite, SWT.NONE);
+
         final Image image = loadImage(fileName);
         Point dimensions = getDimensions(fileName);
+
+        Label label = new Label(composite, SWT.NONE);
         label.setImage(image);
         Point coordinates = this.convertToCoordinates(row, column);
         label.setBounds(coordinates.x + 1, coordinates.y + 1, dimensions.x, dimensions.y);
-        label.moveAbove(textArea);
+        if (textArea != null) {
+            label.moveAbove(textArea);
+        }
+        
+        // Advance the text cursor automatically
         int nextRow = row + this.getRows(dimensions.y);
         return nextRow;
     }

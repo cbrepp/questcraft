@@ -6,6 +6,7 @@ import quest.model.Book;
 
 /**
  * achievement.wav - "An uplifting and straight forward orchestral jingle achiecement completed sound to be used in fantasy games. Useful for when a character has completed an objective, an achievement or other pleasant events." by LittleRobotSoundFactory (https://freesound.org/people/LittleRobotSoundFactory/sounds/270404/)
+ * app.jpg - "Vision, Nature, Future royalty-free stock illustration. Free for use & download." by TheDigitalArtist (https://pixabay.com/illustrations/vision-future-dream-fantasy-book-8386199/)
  * arcade.jpg - Teddy bear, Arcade, Claw machines image. Free for use. (https://pixabay.com/photos/teddy-bear-arcade-claw-machines-7558723/)
  * arrow.mp3 - "arrow-shot.mp3, An arrow being shot as part of my iPad game Knights vs Knightesses (http://versuspad.com). This sound is a simulation." by JPhilipp (https://freesound.org/people/JPhilipp/sounds/119060/)
  * bionic-bunny.jpg - Bionic Bunny Soldier by Zara
@@ -76,7 +77,6 @@ import quest.model.Book;
  * mystery-door.jpg - "Hello :)" by qimono (https://pixabay.com/illustrations/door-open-doorway-entrance-1590024/)
  * night-owl.gif - "Owl, Bird, Barn owl GIF. Free for use." by KiFoKu (https://pixabay.com/gifs/owl-bird-barn-owl-plumage-beak-17686/)
  * night-owl.jpg - "Scary, Owl, Eyes image. Free for use." by Skitterphoto (https://pixabay.com/photos/scary-owl-eyes-spooky-halloween-3595742/)
- * old-books.jpg - "Old books, Book, Old image. Free for use." by jarmoluk (https://pixabay.com/photos/old-books-book-old-library-436498/)
  * open-door.wav - "A french double door opening and closing. Recorded at The Home Depot." by designerschoice (https://freesound.org/people/designerschoice/sounds/806875/)
  * paper.wav - "Crumpled Up Paper, Me crumpling up a paper. Recorded with a Genius MIC-01A Black 3.5mm Connector Metallic Microphone." by Natty23 (https://freesound.org/people/Natty23/sounds/257272/)
  * ping-pong.wav - "Hit a ping pong ball with a bat. Recorded in a small room for a short distance. Recorded with Zoom H6 recorder. The sound was postprocessed." by 14FPanskaBubik_Lukas (https://freesound.org/people/14FPanskaBubik_Lukas/sounds/418556/)
@@ -118,10 +118,10 @@ import quest.model.Book;
  */
 public class Questcraft extends app.ApplicationView {
     
+    public final static String APPLICATION = "Application";
     public final static String CRAFTING_TABLE = "Crafting Table";
     public final static String HIGH_SCORES = "High Scores";
     public final static String INVENTORY = "Inventory";
-    public final static String LIBRARY = "Library";
     public final static String QUEST = "Quest";
     
     public ApplicationController appController;
@@ -129,7 +129,7 @@ public class Questcraft extends app.ApplicationView {
     public CraftingTable craftingTable;
     public HighScores highScores;
     public Inventory inventory;
-    public Library library;
+    public Application app;
     
     public Questcraft(String name) {
         super(name);
@@ -140,7 +140,7 @@ public class Questcraft extends app.ApplicationView {
         this.craftingTable = null;
         this.highScores = new HighScores(HIGH_SCORES);
         this.inventory = new Inventory(INVENTORY);
-        this.library = new Library(LIBRARY);
+        this.app = new Application(APPLICATION);
     }
     
     @Override
@@ -163,15 +163,15 @@ public class Questcraft extends app.ApplicationView {
                 this.appController.addView(this.craftingTable);
                 this.appController.displayView(this.quest);
             }
-            default -> System.err.println("Library: onEvent: Unsupported event");
+            default -> System.err.println("Questcraft: onEvent: Unsupported event");
         }
     }
 
     @Override
     public void onLoad(ApplicationController appController) {
         this.appController = appController;
-        this.library.addListener("book", this);
-        appController.addView(this.library);
+        this.app.addListener("book", this);
+        appController.addView(this.app);
     }
 
 }

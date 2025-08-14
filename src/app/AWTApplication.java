@@ -141,6 +141,11 @@ public class AWTApplication extends ApplicationController {
     }
     
     @Override
+    public void displayFloatingText(String viewName, String text, int row, int column, int fontSize) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
     public void displayInputField(String viewName, String name, String label, int length, int row, int column, Boolean isMonospace, Boolean isUpperCase, Boolean isMultiUse, EventListener listener) {
         throw new UnsupportedOperationException("Not supported.");
     }
