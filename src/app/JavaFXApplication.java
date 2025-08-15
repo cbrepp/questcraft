@@ -194,6 +194,11 @@ public class JavaFXApplication extends ApplicationController {
     }
     
     @Override
+    public void removeTab(String viewName) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
     public Integer getTabIndex(String viewName) {
         throw new UnsupportedOperationException("Not supported.");
     }

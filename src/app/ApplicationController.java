@@ -43,6 +43,7 @@ public abstract class ApplicationController {
     public abstract void addDesigner(String viewName);
     public abstract void selectTab(String viewName);
     public abstract void renameTab(String viewName, String newViewName);
+    public abstract void removeTab(String viewName);
     public abstract void addView(ApplicationView view);
     public abstract void addView(ApplicationView view, Boolean isParent, int index);
     public abstract Integer getTabIndex(String viewName);

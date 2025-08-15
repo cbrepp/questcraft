@@ -138,8 +138,6 @@ public class Questcraft extends app.ApplicationView {
         this.backgroundImage = "/assets/images/book.png";
         this.quest = null;
         this.craftingTable = null;
-        this.highScores = new HighScores(HIGH_SCORES);
-        this.inventory = new Inventory(INVENTORY);
         this.app = new Application(APPLICATION);
     }
     
@@ -149,7 +147,25 @@ public class Questcraft extends app.ApplicationView {
         
         switch(eventName) {
             case "book" -> {
-                // TODO - Need to tell the app controller to remove the following views if they are displaying
+                // Remove tabs for the previous book
+                if (this.highScores != null) {
+                    this.appController.removeTab(HIGH_SCORES);
+                }
+                if (this.inventory != null) {
+                    this.appController.removeTab(INVENTORY);
+                }
+                if (this.craftingTable != null) {
+                    this.appController.removeTab(CRAFTING_TABLE);
+                }
+                this.appController.removeTab("Map");
+                this.appController.removeTab("Spell Book");
+                if (this.quest != null) {
+                    this.appController.removeTab(QUEST);
+                }
+                
+                // Initialize the new book
+                this.highScores = new HighScores(HIGH_SCORES);
+                this.inventory = new Inventory(INVENTORY);
                 this.quest = new Quest(QUEST);
                 this.quest.book = (Book) eventValue;
                 this.quest.inventoryView = this.inventory;

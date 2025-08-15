@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -34,7 +35,6 @@ import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.VerifyEvent;
@@ -307,6 +307,50 @@ public class SWTApplication extends ApplicationController {
         System.out.println("SWTApplication: renameView: viewName=" + viewName + ", newViewName=" + newViewName);
         CTabItem tabItem = this.tabItemMap.get(viewName);
         tabItem.setText(newViewName);
+    }
+    
+    @Override
+    public void removeTab(String viewName) {
+        System.out.println("SWTApplication: removeTab: viewName=" + viewName);
+        if (!tabItemMap.containsKey(viewName)) {
+            return;
+        }
+        
+        // *** Dispose of the UI objects ***
+        CTabItem tabItem = this.tabItemMap.get(viewName);
+        this.tabItemViewMap.remove(tabItem);
+        if (!tabItem.isDisposed()) {
+            tabItem.dispose();
+        }
+        this.tabItemMap.remove(viewName);
+        
+        this.namedControls.remove(viewName);
+        
+        Composite tabComposite = tabCompositeMap.get(viewName);
+        if ((tabComposite != null) && (!tabComposite.isDisposed())) {
+            tabComposite.dispose();
+        }
+        this.tabCompositeMap.remove(viewName);
+        
+        // Remove all references to the view
+        if ((this.lastSelectedView != null) && (this.lastSelectedView.name.equals(viewName))) {
+            this.lastSelectedView = null;
+        }
+        
+        // Shift all indices to the right left by 1
+        int tabIndex = tabIndexMap.get(viewName);
+        tabIndexMap.remove(viewName);
+        for (String tabViewName : this.tabIndexMap.keySet()) {
+            int currentIndex = this.tabIndexMap.get(tabViewName);
+            if (currentIndex > tabIndex) {
+                currentIndex--;
+                this.tabIndexMap.put(tabViewName, currentIndex);
+            }
+        }
+        
+        this.tabStyleRangesMap.remove(viewName);
+        this.tabStyledTextMap.remove(viewName);
+        this.views.remove(viewName);
     }
     
     @Override
