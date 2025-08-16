@@ -5,6 +5,9 @@ import app.Color;
 import quest.model.Book;
 
 /**
+ * This application is for personal, non-commercial use only.
+ * 
+ * The following resources were provided courtesy of the respective authors and are also for personal use only:
  * achievement.wav - "An uplifting and straight forward orchestral jingle achiecement completed sound to be used in fantasy games. Useful for when a character has completed an objective, an achievement or other pleasant events." by LittleRobotSoundFactory (https://freesound.org/people/LittleRobotSoundFactory/sounds/270404/)
  * app.jpg - "Vision, Nature, Future royalty-free stock illustration. Free for use & download." by TheDigitalArtist (https://pixabay.com/illustrations/vision-future-dream-fantasy-book-8386199/)
  * arcade.jpg - Teddy bear, Arcade, Claw machines image. Free for use. (https://pixabay.com/photos/teddy-bear-arcade-claw-machines-7558723/)
@@ -71,6 +74,7 @@ import quest.model.Book;
  * magic-door.jpg - "Door, Woods, Forest royalty-free stock illustration. Free for use & download." by betidraws (https://pixabay.com/illustrations/door-woods-forest-trees-autumn-7003670/)
  * magical-one.png - "Wizard, Red, Hat royalty-free vector graphic. Free for use & download." by Clker-Free-Vector-Images (https://pixabay.com/vectors/wizard-red-hat-santa-claus-297406/)
  * map.jpg - "Paper, Stationery, Parchment royalty-free stock illustration. Free for use & download." by geralt (https://pixabay.com/illustrations/paper-stationery-parchment-old-68829/)
+ * Minecraft.ttf - Font by Craftron Gaming (https://www.dafont.com/minecraft.font)
  * monkey.wav - "Imitation of a monkey or ape. Originally created for Stendhal: https://stendhalgame.org/" by AntumDeluge (https://freesound.org/people/AntumDeluge/sounds/417823/)
  * mount-fluff.jpg - "Dog, Cat, Pet royalty-free stock illustration. Free for use & download." by varunanand93 (https://pixabay.com/illustrations/dog-cat-pet-nature-puppy-animals-9527945/)
  * mp-up.wav - "Scifi plasma charging" by Robinhood76 (https://freesound.org/people/Robinhood76/sounds/700413/)
@@ -83,6 +87,7 @@ import quest.model.Book;
  * paper.wav - "Crumpled Up Paper, Me crumpling up a paper. Recorded with a Genius MIC-01A Black 3.5mm Connector Metallic Microphone." by Natty23 (https://freesound.org/people/Natty23/sounds/257272/)
  * ping-pong.wav - "Hit a ping pong ball with a bat. Recorded in a small room for a short distance. Recorded with Zoom H6 recorder. The sound was postprocessed." by 14FPanskaBubik_Lukas (https://freesound.org/people/14FPanskaBubik_Lukas/sounds/418556/)
  * polaroid-landscape.png,polaroid-portrait.png - "Polaroid, Film, Blank royalty-free vector graphic. Free for use & download." by Clker-Free-Vector-Images (https://pixabay.com/vectors/polaroid-film-blank-retro-32180/)
+ * questcraft.mp3 - "SCI-FI SURVIVAL DREAMSCAPE APOCALYPSE - SURVIVAL - LOADING SCREEN MUSIC" by onderwish (https://freesound.org/people/onderwish/sounds/468407/)
  * race-car.wav - "A recording of a 3.2L V6 V-Tec Engine and the exhaust pipe mixed together. This is a single rev." by EvanBoyerman (https://freesound.org/people/EvanBoyerman/sounds/755999/)
  * reverse.wav - "reverse fx 12.wav, just some reverse" by reathance (https://freesound.org/people/reathance/sounds/503813/)
  * ring-of-taming.wav - "10891 magic time complete.wav", "Magic time complete sound for games and multimedia" by Robinhood76 (https://freesound.org/people/Robinhood76/sounds/614810/)

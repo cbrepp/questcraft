@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -872,18 +872,32 @@ public class SWTApplication extends ApplicationController {
         composite.pack();
     }
     
-    public Button newButton(String viewName, String name, String text, double row, double column, Boolean isMonospace, Boolean glow, EventListener listener) {
-        System.out.println("SWTApplication: newButton: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", isMonospace=" + isMonospace + ", glow=" + glow);
+    public Button newButton(String viewName, String name, String text, double row, double column, Boolean isMonospace, String fontName, Boolean glow, EventListener listener) {
+        System.out.println("SWTApplication: newButton: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", isMonospace=" + isMonospace + ", fontName=" + fontName + ", glow=" + glow);
         
         StyledText textArea = this.tabStyledTextMap.get(viewName);
         Composite composite = this.tabCompositeMap.get(viewName);
         Button button = new Button(composite, SWT.PUSH);
-        int fontWidth = this.fontWidth;
-        int fontHeight = this.fontHeight;
-        if (isMonospace) {
-            button.setFont(this.buttonFont);
-            fontWidth = this.buttonFontWidth;
-            fontHeight = this.buttonFontHeight;
+        Font font;
+        int fontWidth;
+        int fontHeight;
+        if (fontName == null) {
+            fontWidth = this.fontWidth;
+            fontHeight = this.fontHeight;
+            if (isMonospace) {
+                button.setFont(this.buttonFont);
+                fontWidth = this.buttonFontWidth;
+                fontHeight = this.buttonFontHeight;
+            }
+        } else {
+            // TODO - Cache the font
+            font = new Font(this.display, fontName, 12, SWT.NORMAL);
+            GC gc = new GC(composite);
+            gc.setFont(font);
+            Point extent = gc.stringExtent("W");
+            fontHeight = extent.y;
+            fontWidth = extent.x;
+            button.setFont(font);
         }
         button.setText(text);
         Point coordinates = this.convertToCoordinates(row, column);
@@ -934,9 +948,9 @@ public class SWTApplication extends ApplicationController {
     }
    
     @Override
-    public void displayButton(String viewName, String name, String text, int row, int column, Boolean isMonospace, Boolean glow, EventListener listener) {
-        System.out.println("SWTApplication: displayButton: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", isMonospace=" + isMonospace + ", glow=" + glow);
-        Button button = this.newButton(viewName, name, text, row, column, isMonospace, glow, listener);
+    public void displayButton(String viewName, String name, String text, int row, int column, Boolean isMonospace, String fontName, Boolean glow, EventListener listener) {
+        System.out.println("SWTApplication: displayButton: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", isMonospace=" + isMonospace + ", fontName=" + fontName + ", glow=" + glow);
+        Button button = this.newButton(viewName, name, text, row, column, isMonospace, fontName, glow, listener);
         button.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -946,9 +960,9 @@ public class SWTApplication extends ApplicationController {
     }
     
     @Override
-    public void displayOpenFileButton(String viewName, String name, String text, int row, int column, Boolean isMonospace, Boolean glow, EventListener listener) {
-        System.out.println("SWTApplication: displayOpenFileButton: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", isMonospace=" + isMonospace);
-        Button button = this.newButton(viewName, name, text, row, column, isMonospace, glow, listener);
+    public void displayOpenFileButton(String viewName, String name, String text, int row, int column, Boolean isMonospace, String fontName, Boolean glow, EventListener listener) {
+        System.out.println("SWTApplication: displayOpenFileButton: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", isMonospace=" + isMonospace + ", fontName=" + fontName + ", glow=" + glow);
+        Button button = this.newButton(viewName, name, text, row, column, isMonospace, fontName, glow, listener);
         button.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -964,33 +978,75 @@ public class SWTApplication extends ApplicationController {
     }
    
     @Override
-    public void displayFloatingText(String viewName, String text, int row, int column, int fontSize) {
-        System.out.println("SWTApplication: displayFloatingText: viewName=" + viewName + ", fileName=" + text + ", row=" + row + ", column=" + column + ", fontSize=" + fontSize);
+    public void displayFloatingText(String viewName, String text, int row, int column, int fontSize, int fontStyle, String fontName) {
+        System.out.println("SWTApplication: displayFloatingText: viewName=" + viewName + ", fileName=" + text + ", row=" + row + ", column=" + column + ", fontSize=" + fontSize + ", fontName=" + fontName);
         
         StyledText textArea = this.tabStyledTextMap.get(viewName);
         Composite composite = this.tabCompositeMap.get(viewName);
 
         Label label = new Label(composite, SWT.NONE);
         
-        // Get the current font of the label
-        Font currentFont = label.getFont();
-        FontData[] fontData = currentFont.getFontData();
+        // TODO - Move this to a helper method
+        int SWTStyle;
+        //int SWTUnderlineStyle = 0;
+        switch (fontStyle) {
+            case FontStyle.NORMAL -> SWTStyle = SWT.NORMAL;
+            case FontStyle.BOLD -> SWTStyle = SWT.BOLD;
+            case FontStyle.ITALIC -> SWTStyle = SWT.ITALIC;
+            case FontStyle.UNDERLINE_DOUBLE -> {
+                SWTStyle= SWT.NORMAL;
+                //SWTUnderlineStyle = SWT.UNDERLINE_DOUBLE;
+            }
+            case FontStyle.UNDERLINE_ERROR -> {
+                SWTStyle= SWT.NORMAL;
+                //SWTUnderlineStyle = SWT.UNDERLINE_ERROR;
+            }
+            case FontStyle.UNDERLINE_LINK -> {
+                SWTStyle= SWT.NORMAL;
+                //SWTUnderlineStyle = SWT.UNDERLINE_LINK;
+            }
+            case FontStyle.UNDERLINE_SINGLE -> {
+                SWTStyle= SWT.NORMAL;
+                //SWTUnderlineStyle = SWT.UNDERLINE_SINGLE;
+            }
+            case FontStyle.UNDERLINE_SQUIGGLE -> {
+                SWTStyle= SWT.NORMAL;
+                //SWTUnderlineStyle = SWT.UNDERLINE_SQUIGGLE;
+            }
+            default -> {
+                System.out.println("SWTApplication: displayText: Unsupported font style!");
+                SWTStyle = SWT.NORMAL;
+            }
+        }
+        
+        // Load the text font
+        Font font;
+        if (fontName == null) {
+            Font defaultFont = label.getFont();
+            FontData[] fontDataArray = defaultFont.getFontData();
+            
+            // Create a new FontData array and set the style to match the intended fontStyle
+            for (FontData data : fontDataArray) {
+                data.setStyle(SWTStyle);
+                data.setHeight(fontSize);
+            }
 
-        // Create a new FontData array and set the style to bold
-        for (FontData data : fontData) {
-            data.setStyle(SWT.BOLD);
-            data.setHeight(fontSize);
+            // Create a new Font with the bold style
+            font = new Font(this.display, fontDataArray);
+        } else {
+            // TODO - Support SWTUnderlineStyle
+            System.out.println(Arrays.toString(this.display.getFontList(null, true)));
+            System.out.println("SWTApplication: displayFloatingText: Loading font name " + fontName);
+            font = new Font(this.display, fontName, fontSize, SWTStyle);
         }
 
-        // Create a new Font with the bold style
-        Font boldFont = new Font(display, fontData);
-        label.setFont(boldFont);
+        label.setFont(font);
         
         label.setText(text);
         
         // TODO - Need to calculate font height and width.  See how this.fontHeight is set.
         Point startCoordinates = this.convertToCoordinates(row, column);
-        Point endCoordinates = this.convertToCoordinates(row + 2, column + (text.length() * 2) + 1);
+        Point endCoordinates = this.convertToCoordinates(row + 2, column + (text.length() * 3) + 1);
         
         label.setBounds(startCoordinates.x, startCoordinates.y, endCoordinates.x - 1, endCoordinates.y - 1);
         if (textArea != null) {
@@ -1105,7 +1161,7 @@ public class SWTApplication extends ApplicationController {
         textInput.moveAbove(textArea);
         
         // Display a button for submitting the input
-        Button button = this.newButton(viewName, name, "Submit", row - 0.5, column + length + 1 + 1, isMonospace, false, listener);
+        Button button = this.newButton(viewName, name, "Submit", row - 0.5, column + length + 1 + 1, isMonospace, null, false, listener);
         button.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {

@@ -2,6 +2,7 @@ package quest.view;
 
 import app.ApplicationController;
 import app.Color;
+import app.FontStyle;
 import app.Utility;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -53,6 +54,9 @@ public class Application extends app.ApplicationView {
                 this.display();
                 this.publishEvent("book", bookFile);
             }
+            case "quit" -> {
+                this.appController.close();
+            }
             default ->
                 System.err.println("Application: onEvent: Unsupported event");
         }
@@ -64,25 +68,34 @@ public class Application extends app.ApplicationView {
         
         this.appController = appController;
         
+        Utility.playSound("/assets/sounds/questcraft.mp3", true);
+        
         this.display();
         
         serializeBook();
     }
     
     public void display() {
-        appController.displayOpenFileButton(this.name, "quest", "Choose Quest", 3, 5, false, true, this);
+        System.out.println("Application: display");
         
         int spiderColumns = appController.getColumns("/assets/images/spider.gif");
         int parentColumns = appController.getTextColumns();
         int gifColumn = parentColumns - spiderColumns + 2;    // Puts the spider in the upper right-hand corner
         appController.displayGif(this.name, "/assets/images/spider.gif", 1, gifColumn);
+        
+        appController.displayOpenFileButton(this.name, "quest", "Choose Quest", 16, 55, false, "Minecraft", true, this);        
+        appController.displayButton(this.name, "quit", "Quit Game", 18, 57, false, "Minecraft", true, this);        
+
+        appController.displayFloatingText(this.name, "QUESTCRAFT", 7, 34, 64, FontStyle.BOLD, "Minecraft");
+        appController.displayFloatingText(this.name, "JAVA  EDITION", 11, 40, 48, FontStyle.BOLD, "Minecraft");
 
         if (bookFile != null) {
-            appController.displayFloatingText(this.name, "Now Playing:", 7, 6, 20);
-            appController.displayFloatingText(this.name, this.bookFile.title, 10, 6, 16);
-            appController.displayFloatingText(this.name, "by " + this.bookFile.author, 12, 6, 16);
-            appController.displayFloatingText(this.name, this.bookFile.updateDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.getDefault())), 14, 6, 16);
-            appController.displayOverlay(this.name, "app", new Color(255, 255, 255), 6, 5, 16, 50, 200);
+            // Display "Now Playing" info
+            appController.displayFloatingText(this.name, "Now Playing:", 31, 7, 20, FontStyle.BOLD, null);
+            appController.displayFloatingText(this.name, this.bookFile.title, 34, 7, 16, FontStyle.BOLD, null);
+            appController.displayFloatingText(this.name, "by " + this.bookFile.author, 36, 7, 16, FontStyle.BOLD, null);
+            appController.displayFloatingText(this.name, this.bookFile.updateDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.getDefault())), 38, 7, 16, FontStyle.BOLD, null);
+            appController.displayOverlay(this.name, "app", new Color(255, 255, 255), 30, 5, 40, 50, 200);
         }
     }
     

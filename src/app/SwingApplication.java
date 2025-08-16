@@ -130,12 +130,12 @@ public class SwingApplication extends ApplicationController {
     }
     
     @Override
-    public void displayButton(String viewName, String name, String text, int row, int column, Boolean isMonospace, Boolean glow, EventListener listener) {
+    public void displayButton(String viewName, String name, String text, int row, int column, Boolean isMonospace, String fontName, Boolean glow, EventListener listener) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
     @Override
-    public void displayOpenFileButton(String viewName, String name, String text, int row, int column, Boolean isMonospace, Boolean glow, EventListener listener) {
+    public void displayOpenFileButton(String viewName, String name, String text, int row, int column, Boolean isMonospace, String fontName, Boolean glow, EventListener listener) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
@@ -145,7 +145,7 @@ public class SwingApplication extends ApplicationController {
     }
     
     @Override
-    public void displayFloatingText(String viewName, String text, int row, int column, int fontSize) {
+    public void displayFloatingText(String viewName, String text, int row, int column, int fontSize, int fontStyle, String fontName) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
