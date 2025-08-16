@@ -47,12 +47,14 @@ import quest.model.Book;
  * fluff.jpg - "Draco in the evening in a cat tree" by Mr. Chris
  * fluff2.jpg - "Draco in a laundry box" by Mr. Chris
  * fluff3.jpg - "Draco reclining on a cardboard scratching post bed" by Mr. Chris
+ * fluff-photo[1-7].jpg - Adorable photos of Draco by Mr. Chris
  * frame.png - "Frame, Photo Frame, Openwork royalty-free stock illustration. Free for use & download." by AlLes (https://pixabay.com/illustrations/frame-photo-frame-openwork-design-1797353/)
  * gianni-bed.jpg - "AI filter of Gianni laying on his rainbow bed" by Mr. Chris
  * gvianni-escape.jpg - "AI filter of Gianni climbing up my stair railing" by Mr. Chris
  * gianni-tamed.jpg - "AI filter of Gianni laying on a cardboard scratching post bed" by Mr. Chris
  * giannis-den.jpg - "Tunnel, Underground, Perspective royalty-free stock illustration. Free for use & download." by TheDigitalArtist (https://pixabay.com/illustrations/tunnel-underground-perspective-dark-8870195/)
  * giannis-den.wav - "Dark Cave Factory Atmo" by szegvari (https://freesound.org/people/szegvari/sounds/583474/)
+ * gianni-photo[1-7].jpg - Adorable photos of Gianni by Mr. Chris
  * gnome-sweet-gnome.jpg - "Gnome, Hut, Trees royalty-free stock illustration. Free for use & download." by betidraws (https://pixabay.com/illustrations/gnome-hut-trees-woods-magic-forest-7364632/)
  * gold.png - Chest Coins Gold royalty-free vector graphic. Free for use & download. (https://pixabay.com/vectors/chest-coins-gold-lock-money-1293748/)
  * gold.wav - "Cash Register Purchase, Cash Register Sound by CapsLok remixed for extra depth. Created in Audacity." by Zott820 (https://freesound.org/people/Zott820/sounds/209578/)
@@ -80,6 +82,7 @@ import quest.model.Book;
  * open-door.wav - "A french double door opening and closing. Recorded at The Home Depot." by designerschoice (https://freesound.org/people/designerschoice/sounds/806875/)
  * paper.wav - "Crumpled Up Paper, Me crumpling up a paper. Recorded with a Genius MIC-01A Black 3.5mm Connector Metallic Microphone." by Natty23 (https://freesound.org/people/Natty23/sounds/257272/)
  * ping-pong.wav - "Hit a ping pong ball with a bat. Recorded in a small room for a short distance. Recorded with Zoom H6 recorder. The sound was postprocessed." by 14FPanskaBubik_Lukas (https://freesound.org/people/14FPanskaBubik_Lukas/sounds/418556/)
+ * polaroid-landscape.png,polaroid-portrait.png - "Polaroid, Film, Blank royalty-free vector graphic. Free for use & download." by Clker-Free-Vector-Images (https://pixabay.com/vectors/polaroid-film-blank-retro-32180/)
  * race-car.wav - "A recording of a 3.2L V6 V-Tec Engine and the exhaust pipe mixed together. This is a single rev." by EvanBoyerman (https://freesound.org/people/EvanBoyerman/sounds/755999/)
  * reverse.wav - "reverse fx 12.wav, just some reverse" by reathance (https://freesound.org/people/reathance/sounds/503813/)
  * ring-of-taming.wav - "10891 magic time complete.wav", "Magic time complete sound for games and multimedia" by Robinhood76 (https://freesound.org/people/Robinhood76/sounds/614810/)

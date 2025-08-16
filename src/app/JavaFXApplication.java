@@ -269,7 +269,7 @@ public class JavaFXApplication extends ApplicationController {
     }
     
     @Override
-    public void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, int alignment, EventListener listener) {
+    public void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, int alignment, EventListener listener, Boolean allowRepeatClicks) {
         throw new UnsupportedOperationException("Not supported.");
     }
     

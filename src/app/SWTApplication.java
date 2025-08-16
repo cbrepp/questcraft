@@ -1172,8 +1172,8 @@ public class SWTApplication extends ApplicationController {
     
     // TODO - Pass in a list of app.Controls with button text and isEnabled
     @Override
-    public void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, int alignment, EventListener listener) {
-        System.out.println("SWTApplication: displayValidatedInputField: viewName=" + viewName + ", name=" + name + ", row=" + row + ", startColumn=" + startColumn + ", endColumn=" + endColumn + ", alignment=" + alignment + ", listener=" + listener);
+    public void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, int alignment, EventListener listener, Boolean allowRepeatClicks) {
+        System.out.println("SWTApplication: displayValidatedInputField: viewName=" + viewName + ", name=" + name + ", row=" + row + ", startColumn=" + startColumn + ", endColumn=" + endColumn + ", alignment=" + alignment + ", listener=" + listener + ", allowRepeatClicks=" + allowRepeatClicks);
         
         StyledText textArea = this.tabStyledTextMap.get(viewName);
         Composite composite = this.tabCompositeMap.get(viewName);
@@ -1266,7 +1266,9 @@ public class SWTApplication extends ApplicationController {
             button.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    ((Button) e.widget).setEnabled(false);
+                    if (!allowRepeatClicks) {
+                        ((Button) e.widget).setEnabled(false);
+                    }
                     listener.onEvent(name, finalValue);
                 }
             });
@@ -1280,6 +1282,9 @@ public class SWTApplication extends ApplicationController {
                         if ((e.keyCode == finalKeyBinding) && (!button.isDisposed())) {
                             if ((thisAppController.lastProcessedKeyEvent == null) || (thisAppController.lastProcessedKeyEvent.time != e.time) || (thisAppController.lastProcessedKeyEvent.keyCode != e.keyCode)) {
                                 e.doit = false; // e hasn't been checked yet and the refreshed page's event handling will process the event in an infinite loop
+                                if (!allowRepeatClicks) {
+                                    button.setEnabled(false);
+                                }
                                 thisAppController.lastProcessedKeyEvent = e; // e.doit isn't processed until this method returns so to further prevent an infinite loop guarantee the key event is new
                                 listener.onEvent(name, finalValue);
                             }
@@ -1305,24 +1310,26 @@ public class SWTApplication extends ApplicationController {
             if (glow) {
                 Display localDisplay = this.display;
                 button.addPaintListener((PaintEvent e) -> {
-                    GC gc = e.gc;
-                    Rectangle bounds = ((Button) e.widget).getBounds();
+                    if (button.isEnabled()) {
+                        GC gc = e.gc;
+                        Rectangle bounds = ((Button) e.widget).getBounds();
 
-                    // Draw a rectangle around the button with the current glow color
-                    int red = 0;
-                    int blue = 0;
-                    red = CURRENT_COLOR_INDEX;
-                    blue = CURRENT_COLOR_INDEX;
-                    gc.setForeground(new Color(localDisplay, red, 0, blue, 100));
-                    gc.setLineWidth(1); // Thin border for a glowing effect
-                    gc.drawRectangle(0, 0, bounds.width - 1, bounds.height - 1);
+                        // Draw a rectangle around the button with the current glow color
+                        int red = 0;
+                        int blue = 0;
+                        red = CURRENT_COLOR_INDEX;
+                        blue = CURRENT_COLOR_INDEX;
+                        gc.setForeground(new Color(localDisplay, red, 0, blue, 100));
+                        gc.setLineWidth(1); // Thin border for a glowing effect
+                        gc.drawRectangle(0, 0, bounds.width - 1, bounds.height - 1);
+                    }
                 });
 
                 // Timer for animating the border color
                 this.display.timerExec(ANIMATION_DELAY, new Runnable() {
                     @Override
                     public void run() {
-                        if (!button.isDisposed()) {
+                        if ((!button.isDisposed()) && (button.isEnabled())) {
                             CURRENT_COLOR_INDEX += (10 * direction);
                             if (CURRENT_COLOR_INDEX > 255) {
                                 direction = -1;
@@ -1333,6 +1340,8 @@ public class SWTApplication extends ApplicationController {
                             }
                             button.redraw(); // Request a repaint to update the border
                             display.timerExec(ANIMATION_DELAY, this); // Schedule the next flash
+                        } else {
+                            // TODO - Use CURRENT_COLOR_INDEX to determine if we need to black out the border, but only if the button is not disposed
                         }
                     }
                 });

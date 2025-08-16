@@ -56,7 +56,7 @@ public class GetValidatedInputControl extends QuestControl {
             endColumn = this.quest.leftPageEndingColumn;
         }
         int realRow = this.quest.titleRow + 1 + this.quest.textRow;
-        this.quest.appController.displayValidatedInputField(this.quest.name, eventName, valueList, realRow, startColumn, endColumn, alignment, this.quest);
+        this.quest.appController.displayValidatedInputField(this.quest.name, eventName, valueList, realRow, startColumn, endColumn, alignment, this.quest, false);
         this.quest.textRow = this.quest.textRow + 2;
         this.quest.textColumn = 1;
         return "";

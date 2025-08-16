@@ -23,12 +23,11 @@ Upcoming changes.
 - Add list of learned spells to spell book
 - When magic words are in use, the current text column calculation gets weird.  Mylee's parting words to Shmebulock in the introduction has exclamation points that overlap the Gold inventory item.
 - Refactor the current Twin Quest book to use the cool new control features.  Shmebulock variables can be removed and <if condition="variable player=Shmebulock" SHMEBULOCK!> can be used instead.
-- "Library" should instead be "Application" with a "Now Playing" section that shows the book's metadata over a transparent overlay over a full image.  Can add app-level options like changing the GUI and styling here.
+- Add app-level options like changing the GUI and styling to the Application view
 - Add a return icon with tooltip to the upper-left hand corner of each non-quest view for returning to the Quest tab... "right arrow curving left" U+21A9 or "BACK arrow" U+1F519 with a floating overlay that can contain not just the return icon but the Spell Book spell field, etc.  Quest can return back to Application.  Application's Now Playing will include a Link to the Quest.
  - inventory-add in Quest needs to limit additions based on how many items are in a book
-- Add gasp sound when player dies
+- Add gasp/impact sound when player dies
 - Implement Book-specific game over page via a new Book property "finalAct".  Also add a High Score handler page that shows how the player did in comparison to the other high scores.  And, a cool skull and crossbones picture would be nice.
-- Fix loading a new book not closing the current book's open tabs
 - Figure out how to support high score entry.
 - Rename quest controls to be noun-action so they're easier to find
 - Add category to the quest controls so they can be grouped
@@ -53,9 +52,7 @@ Upcoming changes.
 - Wilderness 2: 1/14 chance there will be no wildlife.  That's when Big Chung is present in the stairwell.
 - Wilderness 2: Entering the stairwell requires a password, which is the answer to the riddle "Speak friend, and enter"
 - Wilderness 1 and 2:  Only Shmebulock with infinite MP recharging and a healing spell can capture 10 bunnies without dying.
-- Gianni's Den: After taming Gianni, present buttons for different photos you can via of Gianni.  Each photo overlays a polaroid border and a camera sound plays.  If the player views all photos, they receive a special culinary inventory item as a bonus prize.
 - Mount Fluff: Add spanish guitar image
-- Mount Fluff: After taming Professor Fluff, present buttons for different photos you can via of Draco.  Each photo overlays a polaroid border and a camera sound plays.  If the player views all photos, they incur -100HP damage when cause being "too much fluff".
 - Mystery Room: Shmebulock must collect all cosmic wonders to imbue the new ring of taming with magic.
 - Reimplement Mylee's Elevator
 -- Night Owl doesn't die, he just flies away, defeated.
