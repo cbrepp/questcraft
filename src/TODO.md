@@ -19,8 +19,7 @@ Upcoming changes.
 
 ### Quest
 
-- Provide a way to specify the end row for buttons and left and right align the edges of the Application screen buttons with centered text
-- Provide fontColor for floating text and make the Application title dark gray
+- Implement the Options... button on the main application screen.  Pop a dialog window that offers to select which UI to use... SWT or JavaFX
 - Provide align option for floating text or ability to calculate the font width
 - Abstract out the dragon fight logic into a quest control with different weapon strategies
 - Add list of learned spells to spell book
@@ -56,8 +55,6 @@ Upcoming changes.
 - Wilderness 2: Entering the stairwell requires a password, which is the answer to the riddle "Speak friend, and enter"
 - Wilderness 1 and 2:  Only Shmebulock with infinite MP recharging and a healing spell can capture 10 bunnies without dying.
 - Mount Fluff: Add spanish guitar image
-- Mount Fluff: Play camera sound when selecting photo
-- Gianni's Den: Play camera sound when selecting photo
 - Mystery Room: Shmebulock must collect all cosmic wonders to imbue the new ring of taming with magic.
 - Reimplement Mylee's Elevator
 -- Night Owl doesn't die, he just flies away, defeated.

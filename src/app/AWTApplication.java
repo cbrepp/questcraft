@@ -131,12 +131,12 @@ public class AWTApplication extends ApplicationController {
     }
     
     @Override
-    public void displayButton(String viewName, String name, String text, int row, int column, Boolean isMonospace, String fontName, Boolean glow, EventListener listener) {
+    public void displayButton(String viewName, String name, String text, Integer row, Integer column, Integer endRow, Integer endColumn, Boolean isMonospace, String fontName, Boolean glow, EventListener listener) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
     @Override
-    public void displayOpenFileButton(String viewName, String name, String text, int row, int column, Boolean isMonospace, String fontName, Boolean glow, EventListener listener) {
+    public void displayOpenFileButton(String viewName, String name, String text, Integer row, Integer column, Integer endRow, Integer endColumn, Boolean isMonospace, String fontName, Boolean glow, EventListener listener) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
@@ -146,7 +146,7 @@ public class AWTApplication extends ApplicationController {
     }
     
     @Override
-    public void displayFloatingText(String viewName, String text, int row, int column, int fontSize, int fontStyle, String fontName) {
+    public void displayFloatingText(String viewName, String text, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, app.Color fontColor, int fontSize, int fontStyle, String fontName) {
         throw new UnsupportedOperationException("Not supported.");
     }
     

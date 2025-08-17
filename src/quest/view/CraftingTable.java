@@ -23,7 +23,7 @@ public class CraftingTable extends ApplicationView {
     public void onLoad(ApplicationController appController) {
         System.out.println("CraftingTable: display");
         
-        appController.displayFloatingText(this.name, "Coming soon!", 4, 6, 16, FontStyle.BOLD, null);
+        appController.displayFloatingText(this.name, "Coming soon!", 4, 6, null, null, null, 16, FontStyle.BOLD, null);
         appController.displayOverlay(this.name, "crafting-table", new Color(255, 255, 255), 3, 5, 7, 30, 200);
     }
     

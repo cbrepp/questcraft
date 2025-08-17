@@ -379,7 +379,7 @@ public class Quest extends app.ApplicationView {
             String buttonText = "Next >";
             int buttonColumns = appController.getButtonColumns(buttonText);
             int buttonColumn = this.rightPageEndingColumn - buttonColumns + 1;
-            this.appController.displayButton(this.name, NEXT_PAGE, buttonText, this.buttonRow, buttonColumn, false, null, !page.noGlow, this);
+            this.appController.displayButton(this.name, NEXT_PAGE, buttonText, this.buttonRow, buttonColumn, null, null, false, null, !page.noGlow, this);
             isNextPageDisplaying = true;
         }
 
@@ -388,7 +388,7 @@ public class Quest extends app.ApplicationView {
             String buttonText = "< Previous";
             int buttonColumn = this.leftPageStartingColumn;
             Boolean glow = ((!isNextPageDisplaying) && (!page.noGlow));   // If there is no Next Page button, then attention should be called to going back
-            this.appController.displayButton(this.name, PREVIOUS_PAGE, buttonText, this.buttonRow, buttonColumn, false, null, glow, this);
+            this.appController.displayButton(this.name, PREVIOUS_PAGE, buttonText, this.buttonRow, buttonColumn, null, null, false, null, glow, this);
         }
         
         // Game Over button
@@ -396,7 +396,7 @@ public class Quest extends app.ApplicationView {
             String buttonText = "Game Over >";
             int buttonColumns = appController.getButtonColumns(buttonText);
             int buttonColumn = this.rightPageEndingColumn - buttonColumns + 1;
-            this.appController.displayButton(this.name, GAME_OVER, buttonText, this.buttonRow, buttonColumn, false, null, true, this);
+            this.appController.displayButton(this.name, GAME_OVER, buttonText, this.buttonRow, buttonColumn, null, null, false, null, true, this);
         }
     }
     

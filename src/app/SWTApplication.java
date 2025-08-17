@@ -872,8 +872,8 @@ public class SWTApplication extends ApplicationController {
         composite.pack();
     }
     
-    public Button newButton(String viewName, String name, String text, double row, double column, Boolean isMonospace, String fontName, Boolean glow, EventListener listener) {
-        System.out.println("SWTApplication: newButton: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", isMonospace=" + isMonospace + ", fontName=" + fontName + ", glow=" + glow);
+    public Button newButton(String viewName, String name, String text, Integer row, Integer column, Integer endRow, Integer endColumn, Boolean isMonospace, String fontName, Boolean glow, EventListener listener) {
+        System.out.println("SWTApplication: newButton: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", endRow=" + endRow + ", endColumn=" + endColumn + ", isMonospace=" + isMonospace + ", fontName=" + fontName + ", glow=" + glow);
         
         StyledText textArea = this.tabStyledTextMap.get(viewName);
         Composite composite = this.tabCompositeMap.get(viewName);
@@ -901,8 +901,17 @@ public class SWTApplication extends ApplicationController {
         }
         button.setText(text);
         Point coordinates = this.convertToCoordinates(row, column);
-        int width = (text.length() * fontWidth) + (2 * fontWidth);    // Calculate width of text plus buffer of two imaginary characters
-        int height = 2 * fontHeight;   // Calculate double height of text
+        int width;
+        int height;
+        if ((endRow != null) && (endColumn != null)) {
+            Point endCoordinates = this.convertToCoordinates(endRow, endColumn);
+            width = endCoordinates.x - coordinates.x;
+            height = endCoordinates.y - coordinates.y;
+            button.setSize(width, height);
+        } else {
+            width = (text.length() * fontWidth) + (2 * fontWidth);    // Calculate width of text plus buffer of two imaginary characters
+            height = 2 * fontHeight;   // Calculate double height of text
+        }
         button.setBounds(coordinates.x + 1, coordinates.y + 1, width, height);
         System.out.println("SWTApplication: Moved button above text area " + System.identityHashCode(textArea));
         button.moveAbove(textArea);
@@ -948,9 +957,9 @@ public class SWTApplication extends ApplicationController {
     }
    
     @Override
-    public void displayButton(String viewName, String name, String text, int row, int column, Boolean isMonospace, String fontName, Boolean glow, EventListener listener) {
-        System.out.println("SWTApplication: displayButton: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", isMonospace=" + isMonospace + ", fontName=" + fontName + ", glow=" + glow);
-        Button button = this.newButton(viewName, name, text, row, column, isMonospace, fontName, glow, listener);
+    public void displayButton(String viewName, String name, String text, Integer row, Integer column, Integer endRow, Integer endColumn, Boolean isMonospace, String fontName, Boolean glow, EventListener listener) {
+        System.out.println("SWTApplication: displayButton: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", endRow=" + endRow + ", endColumn=" + endColumn + ", isMonospace=" + isMonospace + ", fontName=" + fontName + ", glow=" + glow);
+        Button button = this.newButton(viewName, name, text, row, column, endRow, endColumn, isMonospace, fontName, glow, listener);
         button.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -960,9 +969,9 @@ public class SWTApplication extends ApplicationController {
     }
     
     @Override
-    public void displayOpenFileButton(String viewName, String name, String text, int row, int column, Boolean isMonospace, String fontName, Boolean glow, EventListener listener) {
-        System.out.println("SWTApplication: displayOpenFileButton: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", isMonospace=" + isMonospace + ", fontName=" + fontName + ", glow=" + glow);
-        Button button = this.newButton(viewName, name, text, row, column, isMonospace, fontName, glow, listener);
+    public void displayOpenFileButton(String viewName, String name, String text, Integer row, Integer column, Integer endRow, Integer endColumn, Boolean isMonospace, String fontName, Boolean glow, EventListener listener) {
+        System.out.println("SWTApplication: displayOpenFileButton: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", endRow=" + endRow + ", endColumn=" + endColumn + ", isMonospace=" + isMonospace + ", fontName=" + fontName + ", glow=" + glow);
+        Button button = this.newButton(viewName, name, text, row, column, endRow, endColumn, isMonospace, fontName, glow, listener);
         button.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -978,8 +987,8 @@ public class SWTApplication extends ApplicationController {
     }
    
     @Override
-    public void displayFloatingText(String viewName, String text, int row, int column, int fontSize, int fontStyle, String fontName) {
-        System.out.println("SWTApplication: displayFloatingText: viewName=" + viewName + ", fileName=" + text + ", row=" + row + ", column=" + column + ", fontSize=" + fontSize + ", fontName=" + fontName);
+    public void displayFloatingText(String viewName, String text, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, app.Color fontColor, int fontSize, int fontStyle, String fontName) {
+        System.out.println("SWTApplication: displayFloatingText: viewName=" + viewName + ", fileName=" + text + ", startRow=" + startRow + ", startColumn=" + startColumn + ", endRow=" + endRow + ", endColumn=" + endColumn + ", fontColor=" + fontColor + ", fontSize=" + fontSize + ", fontName=" + fontName);
         
         StyledText textArea = this.tabStyledTextMap.get(viewName);
         Composite composite = this.tabCompositeMap.get(viewName);
@@ -1042,15 +1051,30 @@ public class SWTApplication extends ApplicationController {
 
         label.setFont(font);
         
+        if (fontColor != null) {
+            Color systemColor = new Color(this.display, fontColor.red, fontColor.green, fontColor.blue);
+            label.setForeground(systemColor);
+        }
+        
         label.setText(text);
         
         // TODO - Need to calculate font height and width.  See how this.fontHeight is set.
-        Point startCoordinates = this.convertToCoordinates(row, column);
-        Point endCoordinates = this.convertToCoordinates(row + 2, column + (text.length() * 3) + 1);
+        Point startCoordinates = this.convertToCoordinates(startRow, startColumn);
+        Point endCoordinates;
+        if ((endRow != null) && (endColumn != null)) {
+            endCoordinates = this.convertToCoordinates(endRow, endColumn);
+            label.setSize(endCoordinates.x - startCoordinates.x, endCoordinates.y - startCoordinates.y);
+        } else if (fontSize <= 12) {
+            endCoordinates = this.convertToCoordinates(startRow + 1, startColumn + text.length());
+        } else {
+            endCoordinates = this.convertToCoordinates(startRow + 4, startColumn + (text.length() * (fontSize / 12) * 1.5) + 1);
+        }
         
-        label.setBounds(startCoordinates.x, startCoordinates.y, endCoordinates.x - 1, endCoordinates.y - 1);
+        label.setBounds(startCoordinates.x, startCoordinates.y, endCoordinates.x - startCoordinates.x - 1, endCoordinates.y - startCoordinates.y - 1);
         if (textArea != null) {
             label.moveAbove(textArea);
+        } else {
+            label.moveAbove(composite);
         }
     }
     
@@ -1152,7 +1176,7 @@ public class SWTApplication extends ApplicationController {
         textInput.setMessage(label);
         textInput.setTextLimit(length);
         textInput.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-        Point coordinates = this.convertToCoordinates(row - 0.5, column);
+        Point coordinates = this.convertToCoordinates(row, column);
         int labelWidth = label.length() * this.fontWidth;
         int inputWidth = (length * this.fontWidth) + (2 * this.fontWidth);    // Calculate width of text plus buffer of two imaginary characters
         int height = 2 * this.fontHeight;   // Calculate double height of text
@@ -1161,7 +1185,7 @@ public class SWTApplication extends ApplicationController {
         textInput.moveAbove(textArea);
         
         // Display a button for submitting the input
-        Button button = this.newButton(viewName, name, "Submit", row - 0.5, column + length + 1 + 1, isMonospace, null, false, listener);
+        Button button = this.newButton(viewName, name, "Submit", row, column + length + 1 + 1, null, null, isMonospace, null, false, listener);
         button.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {

@@ -83,20 +83,24 @@ public class Application extends app.ApplicationView {
         int gifColumn = parentColumns - spiderColumns + 2;    // Puts the spider in the upper right-hand corner
         appController.displayGif(this.name, "/assets/images/spider.gif", 1, gifColumn);
         
-        appController.displayOpenFileButton(this.name, "quest", "Choose Quest", 16, 55, false, "Minecraft", true, this);        
-        appController.displayButton(this.name, "quit", "Quit Game", 18, 57, false, "Minecraft", true, this);        
+        appController.displayOpenFileButton(this.name, "quest", "Choose Quest", 16, 44, 18, 82, false, "Minecraft", true, this);        
+        appController.displayButton(this.name, "options", "Options...", 19, 44, 21, 82, false, "Minecraft", true, this);        
+        appController.displayButton(this.name, "quit", "Quit Game", 22, 44, 24, 82, false, "Minecraft", true, this);        
 
-        appController.displayFloatingText(this.name, "QUESTCRAFT", 7, 34, 64, FontStyle.BOLD, "Minecraft");
-        appController.displayFloatingText(this.name, "JAVA  EDITION", 11, 40, 48, FontStyle.BOLD, "Minecraft");
+        app.Color fontColor = new app.Color(74, 74, 74);
+        appController.displayFloatingText(this.name, "QUESTCRAFT", 7, 34, null, null, fontColor, 64, FontStyle.BOLD, "Minecraft");
+        appController.displayFloatingText(this.name, "JAVA  EDITION", 11, 40, null, null, fontColor, 48, FontStyle.BOLD, "Minecraft");
 
         if (bookFile != null) {
             // Display "Now Playing" info
-            appController.displayFloatingText(this.name, "Now Playing:", 31, 7, 20, FontStyle.BOLD, null);
-            appController.displayFloatingText(this.name, this.bookFile.title, 34, 7, 16, FontStyle.BOLD, null);
-            appController.displayFloatingText(this.name, "by " + this.bookFile.author, 36, 7, 16, FontStyle.BOLD, null);
-            appController.displayFloatingText(this.name, this.bookFile.updateDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.getDefault())), 38, 7, 16, FontStyle.BOLD, null);
+            appController.displayFloatingText(this.name, "Now Playing:", 31, 7, null, null, null, 20, FontStyle.BOLD, null);
+            appController.displayFloatingText(this.name, this.bookFile.title, 34, 7, null, null, null, 16, FontStyle.BOLD, null);
+            appController.displayFloatingText(this.name, "by " + this.bookFile.author, 36, 7, null, null, null, 16, FontStyle.BOLD, null);
+            appController.displayFloatingText(this.name, this.bookFile.updateDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.getDefault())), 38, 7, null, null, null, 16, FontStyle.BOLD, null);
             appController.displayOverlay(this.name, "app", new Color(255, 255, 255), 30, 5, 40, 50, 200);
         }
+        
+        appController.displayFloatingText(this.name, "Coming soon... JavaFX support!", 41, 102, 42, 128, null, 12, FontStyle.BOLD, "Minecraft");
     }
     
     public Book deserializeBook(String fileName) {
@@ -691,7 +695,7 @@ public class Application extends app.ApplicationView {
         // TODO - If Gianni isn't tamed (no long range weapon), Night Owl comes crashing into the elevator and kills you
         // TODO - Else, start the Night Owl minigame
         Page mainPage = new Page();
-        mainPage.story.contents.add("<subpage-display condition=\"inventory-has Gold!=true\" No Gold>");
+        mainPage.story.contents.add("<subpage-display condition=\"inventory-has Gold!=true\" No Gold><subpage-display condition=\"inventory-has Gold=true\" Has Gold>");
         myleesElevator.pages.put("main", mainPage);
         
         Story noGoldSubpage = new Story();
@@ -709,6 +713,26 @@ public class Application extends app.ApplicationView {
         noGoldSubpage.contents.add("<second-page>");
         noGoldSubpage.contents.add("<image center /assets/images/mylee-sink.jpg>");
         mainPage.subpages.put("No Gold", noGoldSubpage);
+        
+        Story hasGoldSubpage = new Story();
+        hasGoldSubpage.contents.add("<subpage-display condition=\"is-dragon-defeated!=true\" Dragon Attack><subpage-display condition=\"is-dragon-defeated=true\" Dragon Defeated>");
+        mainPage.subpages.put("Has Gold", hasGoldSubpage);
+        
+        Story dragonAttackSubpage = new Story();
+        dragonAttackSubpage.contents.add("TODO - Display dragon over clouds and button for learning player's final fate");
+        mainPage.subpages.put("Dragon Attack", dragonAttackSubpage);
+        
+        Story dragonDefeatedSubpage = new Story();
+        dragonDefeatedSubpage.contents.add("<subpage-display condition=\"is-Gianni-tamed!=true\" Night Owl Attack><subpage-display condition=\"is-Gianni-tamed=true\" Night Owl Minigame>");
+        mainPage.subpages.put("Dragon Defeated", dragonDefeatedSubpage);
+        
+        Story nightOwlAttackSubpage = new Story();
+        nightOwlAttackSubpage.contents.add("TODO - Display night owl over clouds and button for learning player's final fate");
+        mainPage.subpages.put("Night Owl Attack", nightOwlAttackSubpage);
+        
+        Story nightOwlMinigameSubpage = new Story();
+        nightOwlMinigameSubpage.contents.add("TODO - Display page prepping player for mingame and button for launching minigame");
+        mainPage.subpages.put("Night Owl Minigame", nightOwlMinigameSubpage);
         
         Story leaveElevatorSubpage = new Story();
         leaveElevatorSubpage.contents.add("<move-back>");
@@ -1198,11 +1222,13 @@ public class Application extends app.ApplicationView {
         giannisDen.pages.put("Tamed Gianni", tamedGianniPage);
         
         Story landscapePhotoSubpage = new Story();
+        landscapePhotoSubpage.contents.add("<play-sound /assets/sounds/camera.mp3 false>");
         landscapePhotoSubpage.contents.add("<variable-set gianni-photo-landscape true><variable-set gianni-photo-portrait false>");
         landscapePhotoSubpage.contents.add("<page-refresh>");
         tamedGianniPage.subpages.put("INPUT action", landscapePhotoSubpage);
         
         Story portraitPhotoSubpage = new Story();
+        portraitPhotoSubpage.contents.add("<play-sound /assets/sounds/camera.mp3 false>");
         portraitPhotoSubpage.contents.add("<variable-set gianni-photo-portrait true><variable-set gianni-photo-landscape false>");
         portraitPhotoSubpage.contents.add("<page-refresh>");
         tamedGianniPage.subpages.put("INPUT action=Photo 7", portraitPhotoSubpage);
@@ -1417,6 +1443,7 @@ public class Application extends app.ApplicationView {
         mountFluff.pages.put("Tame Fluff", tameFluffPage);
         
         Story photoSubpage = new Story();
+        photoSubpage.contents.add("<play-sound /assets/sounds/camera.mp3 false>");
         photoSubpage.contents.add("<variable-set condition=\"action=Photo 1\" fluff-photo-1 true><variable-set condition=\"action=Photo 1\" fluff-photo-portrait true><variable-set condition=\"action=Photo 1\" fluff-photo-landscape false>");
         photoSubpage.contents.add("<variable-set condition=\"action=Photo 2\" fluff-photo-2 true><variable-set condition=\"action=Photo 2\" fluff-photo-landscape true><variable-set condition=\"action=Photo 2\" fluff-photo-portrait false>");
         photoSubpage.contents.add("<variable-set condition=\"action=Photo 3\" fluff-photo-3 true><variable-set condition=\"action=Photo 3\" fluff-photo-portrait true><variable-set condition=\"action=Photo 3\" fluff-photo-landscape false>");

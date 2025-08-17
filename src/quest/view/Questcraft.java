@@ -18,6 +18,7 @@ import quest.model.Book;
  * bunny.jpg -  Rabbit, Field, Animal image. Free for use. by SvenZiegler (https://pixabay.com/photos/rabbit-field-animal-field-hare-6063733/)
  * bunny2.jpg - Hare, Animal, Mammal image. Free for use. by apnear40 (https://pixabay.com/photos/hare-animal-mammal-wildlife-fauna-8585802/)
  * bunny-caught.jpg - "Ai Generated, Rabbit, Easter Bunny royalty-free stock illustration. Free for use & download." by Alexandra_Koch (https://pixabay.com/illustrations/ai-generated-rabbit-easter-bunny-7940373/)
+ * camera.mp3 - "iOS Camera flash" by Rvgerxini (https://freesound.org/people/Rvgerxini/sounds/455511/)
  * castle.mp3 - Royal vibes (harp guitar and tuba) (https://freesound.org/people/kbrecordzz/sounds/595865/)
  * castle-interior.jpg - Ai Generated Gothic Castle royalty-free stock illustration. Free for use & download. (https://pixabay.com/illustrations/ai-generated-gothic-castle-room-8469399/)
  * catapult.wav - "06177 wire launch.wav, Launching wire harpoon - simulated" by Robinhood76 (https://freesound.org/people/Robinhood76/sounds/329683/)

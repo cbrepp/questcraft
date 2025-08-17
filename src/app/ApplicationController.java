@@ -60,10 +60,10 @@ public abstract class ApplicationController {
     public abstract void displayText(String viewName, String text, Integer row, Integer column, Color color, int style);
     public abstract void displayGrid(String viewName, Map<String, ArrayList<BaseControl>> linkTexts, int columns, Boolean showBorders, EventListener listener);
     public abstract void displayLink(String viewName, String name, String linkText, int row, int column, int length, EventListener listener);
-    public abstract void displayButton(String viewName, String name, String text, int row, int column, Boolean isMonospace, String fontName, Boolean glow, EventListener listener);
-    public abstract void displayOpenFileButton(String viewName, String name, String text, int row, int column, Boolean isMonospace, String fontName, Boolean glow, EventListener listener);
+    public abstract void displayButton(String viewName, String name, String text, Integer row, Integer column, Integer endRow, Integer endColumn, Boolean isMonospace, String fontName, Boolean glow, EventListener listener);
+    public abstract void displayOpenFileButton(String viewName, String name, String text, Integer row, Integer column, Integer endRow, Integer endColumn, Boolean isMonospace, String fontName, Boolean glow, EventListener listener);
     public abstract int displayImage(String viewName, String fileName, int row, int column);
-    public abstract void displayFloatingText(String viewName, String text, int row, int column, int fontSize, int fontStyle, String fontName);
+    public abstract void displayFloatingText(String viewName, String text, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, app.Color fontColor, int fontSize, int fontStyle, String fontName);
     public abstract void displayInputField(String viewName, String name, String label, int length, int row, int column, Boolean isMonospace, Boolean isUpperCase, Boolean isMultiUse, EventListener listener);
     public abstract void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, int alignment, EventListener listener, Boolean allowRepeatClicks);
     public abstract int displayGif(String viewName, String fileName, int row, int column);
