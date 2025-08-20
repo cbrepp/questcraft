@@ -1,4 +1,4 @@
-package app.control;
+package app.model;
 
 import app.*;
 
@@ -6,13 +6,15 @@ import app.*;
  *
  * @author repp
  */
-public class BaseControl {
+public class BaseModel {
     
     public Color backgroundColor;
     public Boolean isEnabled = true;
     public String text;
     
-    public BaseControl(String text, Color backgroundColor) {
+    public BaseModel() {}
+    
+    public BaseModel(String text, Color backgroundColor) {
         this.text = text;
         this.backgroundColor = backgroundColor;
     }

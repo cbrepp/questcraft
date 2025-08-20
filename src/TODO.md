@@ -19,7 +19,10 @@ Upcoming changes.
 
 ### Quest
 
+- Implement the Create Quest button on the main application screen.  It instances a new Book and presents the Quest and Crafting Table tabs.
 - Implement the Options... button on the main application screen.  Pop a dialog window that offers to select which UI to use... SWT or JavaFX
+- When no book is loaded, the bottom left-hand corner displays the top section of the Questcraft CHANGELOG file and the right-hand corner the top section of the TODO file
+- When a book is loaded, the bottom left-hand corner displays the top section of the quest's CHANGELOG file and the right-hand corner the top section of the TODO file
 - Provide align option for floating text or ability to calculate the font width
 - Abstract out the dragon fight logic into a quest control with different weapon strategies
 - Add list of learned spells to spell book

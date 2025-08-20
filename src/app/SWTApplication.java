@@ -1,6 +1,7 @@
 package app;
 
-import app.control.BaseControl;
+import app.model.BaseModel;
+import app.model.SpriteModel;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,6 +55,7 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
@@ -83,6 +85,7 @@ public class SWTApplication extends ApplicationController {
     public HashMap<String, Map<String, Composite>> namedControls;
     public ApplicationView parentView;
     public Shell shell;
+    public List<SpriteModel> sprites;
     public CTabFolder tabFolder;
     public HashMap<String, Composite> tabCompositeMap;
     public HashMap<String, Integer> tabIndexMap;
@@ -743,7 +746,7 @@ public class SWTApplication extends ApplicationController {
     }
     
     @Override
-    public void displayGrid(String viewName, Map<String, ArrayList<BaseControl>> gridCells, int columns, Boolean showBorders, EventListener listener) {
+    public void displayGrid(String viewName, Map<String, ArrayList<BaseModel>> gridCells, int columns, Boolean showBorders, EventListener listener) {
         System.out.println("SWTApplication: displayGrid: viewName=" + viewName + ", cells=" + gridCells.size());
         
         StyledText textArea = this.tabStyledTextMap.get(viewName);
@@ -768,7 +771,7 @@ public class SWTApplication extends ApplicationController {
         composite.setLayout(gridLayout);
         
         for (String cellName : gridCells.keySet()) {
-            ArrayList<BaseControl> controls = gridCells.get(cellName);
+            ArrayList<BaseModel> controls = gridCells.get(cellName);
             
             int gridItemStyle;
             if (showBorders) {
@@ -809,10 +812,10 @@ public class SWTApplication extends ApplicationController {
             }
             
             // Add zero to many controls to the grid cell
-            for (BaseControl abstractControl : controls) {
+            for (BaseModel abstractControl : controls) {
                 System.out.println("SWTApplication: displayGrid: Adding control " + abstractControl.getClass().getName());
                 Control control = null;
-                if (abstractControl.getClass().equals(app.control.LinkControl.class)) {
+                if (abstractControl.getClass().equals(app.model.LinkModel.class)) {
                     Link link = new Link(cellComposite, SWT.NONE);
                     link.setText(abstractControl.text);
                     link.setEnabled(abstractControl.isEnabled);
@@ -827,7 +830,7 @@ public class SWTApplication extends ApplicationController {
                     }
                     control = link;
                     System.out.println("SWTApplication: displayGrid: Added link " + abstractControl.text + " for " + cellName);
-                } else if (abstractControl.getClass().equals(app.control.ButtonControl.class)) {
+                } else if (abstractControl.getClass().equals(app.model.ButtonModel.class)) {
                     Button button = new Button(cellComposite, SWT.PUSH);
                     button.setFont(this.buttonFont);
                     button.setText(abstractControl.text);
@@ -843,12 +846,12 @@ public class SWTApplication extends ApplicationController {
                     }
                     control = button;
                     System.out.println("SWTApplication: displayGrid: Added button " + abstractControl.text + " for " + cellName);
-                } else if (abstractControl.getClass().equals(app.control.LabelControl.class)) {
+                } else if (abstractControl.getClass().equals(app.model.LabelModel.class)) {
                     Label label = new Label(cellComposite, SWT.NONE);
                     label.setText(abstractControl.text);
                     control = label;
                     System.out.println("SWTApplication: displayGrid: Added label " + abstractControl.text + " for " + cellName);
-                } else if (abstractControl.getClass().equals(app.control.ImageControl.class)) {
+                } else if (abstractControl.getClass().equals(app.model.ImageModel.class)) {
                     Label label = new Label(cellComposite, SWT.NONE);
                     final Image image = loadImage(abstractControl.text);
                     label.setImage(image);
@@ -987,13 +990,22 @@ public class SWTApplication extends ApplicationController {
     }
    
     @Override
-    public void displayFloatingText(String viewName, String text, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, app.Color fontColor, int fontSize, int fontStyle, String fontName) {
+    public void displayFloatingText(String viewName, String text, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, app.Color fontColor, Integer fontSize, Integer fontStyle, String fontName) {
         System.out.println("SWTApplication: displayFloatingText: viewName=" + viewName + ", fileName=" + text + ", startRow=" + startRow + ", startColumn=" + startColumn + ", endRow=" + endRow + ", endColumn=" + endColumn + ", fontColor=" + fontColor + ", fontSize=" + fontSize + ", fontName=" + fontName);
         
         StyledText textArea = this.tabStyledTextMap.get(viewName);
         Composite composite = this.tabCompositeMap.get(viewName);
 
-        Label label = new Label(composite, SWT.NONE);
+        Label label;
+        if ((endRow != null) && (endColumn != null)) {
+            label = new Label(composite, SWT.CENTER);
+        } else {
+            label = new Label(composite, SWT.NONE);
+        }
+        
+        if (fontStyle == null) {
+            fontStyle = FontStyle.NORMAL;
+        }
         
         // TODO - Move this to a helper method
         int SWTStyle;
@@ -1427,6 +1439,71 @@ public class SWTApplication extends ApplicationController {
                 });
             }
         }
+    }
+    
+    @Override
+    public void addAnimation(String viewName, String name, int row, int column, String backgroundImageFileName, List<SpriteModel> sprites, double animationDelay, AnimationView listener) {
+        System.out.println("SWTApplication: addAnimation: viewName=" + viewName + ", name=" + name + ", row=" + row + ", column=" + column + ", backgroundImageFileName=" + backgroundImageFileName + ", sprite count=" + sprites.size() + ", animationDelay=" + animationDelay + ", listener=" + listener);
+        
+        Composite composite = this.tabCompositeMap.get(viewName);
+        Point coordinates = this.convertToCoordinates(row, column);
+        Image backgroundImage = this.loadImage(backgroundImageFileName);
+        Map<String, Image> spriteImages = new HashMap();
+        this.sprites = sprites;
+        for (SpriteModel sprite : sprites) {
+            if (sprite.imageFile == null) {
+                continue;
+            }
+            if (spriteImages.containsKey(sprite.imageFile)) {
+                continue;
+            }
+            Image spriteImage = this.loadImage(sprite.imageFile);
+            spriteImages.put(sprite.imageFile, spriteImage);
+        }
+        Canvas canvas = new Canvas(composite, SWT.DOUBLE_BUFFERED); // Use double buffering for smoother animation
+        canvas.addListener(SWT.Paint, (Event e) -> {
+            GC gc = e.gc;
+            
+            // Draw background image
+            gc.drawImage(backgroundImage, coordinates.x, coordinates.y);
+            
+            // Draw each sprite
+            // TODO - Should the sprites be drawn first or second?
+            if (this.sprites == null) {
+                return;
+            }
+            
+            for (SpriteModel sprite : this.sprites) {
+                if (sprite.imageFile == null) {
+                    continue;
+                }
+                
+                // TODO - Support image scaling with:
+                /*
+                    Image scaledImage = new Image(display, newWidth, newHeight);
+                    GC gc = new GC(scaledImage);
+                    gc.setAntialias(SWT.ON); // For smoother scaling
+                    gc.setInterpolation(SWT.HIGH); // For better quality
+
+                    // Draw the original image onto the new, scaled image
+                    gc.drawImage(originalImage, 0, 0, originalImage.getBounds().width, originalImage.getBounds().height,
+                                 0, 0, newWidth, newHeight);
+                */
+                
+                gc.drawImage(spriteImages.get(sprite.imageFile), sprite.x, sprite.y);
+            }
+        });
+        final EventListener timerListener = new EventListener() {
+            @Override
+            public void onEvent(String eventName, Object eventValue) {
+                SWTApplication.this.sprites = listener.onAnimate();
+                canvas.redraw();
+                if (SWTApplication.this.sprites != null) {
+                    SWTApplication.this.setTimer(name, animationDelay, this);
+                }
+            }
+        };
+        this.setTimer(name, animationDelay, timerListener);
     }
     
     @Override

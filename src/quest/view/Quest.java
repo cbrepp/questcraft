@@ -161,6 +161,7 @@ public class Quest extends app.ApplicationView {
         this.questControls.put(TimerStartControl.NAME, new TimerStartControl(this));
         this.questControls.put(TimerStopControl.NAME, new TimerStopControl(this));
         this.questControls.put(VariableAddControl.NAME, new VariableAddControl(this));
+        this.questControls.put(MonsterShooterControl.NAME, new MonsterShooterControl(this));
         this.textColor = new Color(0, 0, 0);
         this.textStyle = FontStyle.NORMAL;
         this.emoji = "\uD83D\uDCD6"; // "open book" Unicode emoji
@@ -696,6 +697,13 @@ public class Quest extends app.ApplicationView {
             overlayName = HP_CHANGE;
         }
         
+        if (this.playerHP <= 0) {
+            this.playerHP = 0;
+            app.Utility.stopAllSounds();
+            app.Utility.playSound("/assets/sounds/impact.wav false>", false);
+            app.Utility.playSound("/assets/sounds/death.mp3", true);
+        }
+        
         if (delta < 0) {
             this.lastEnemyThatAttacked = lastEnemyThatAttacked;
             if (delta >= -10) {
@@ -709,13 +717,7 @@ public class Quest extends app.ApplicationView {
             //app.Utility.playSound("/assets/sounds/TODO", false);
             this.appController.displayOverlay(this.name, overlayName, new Color(0, 255, 0), null, null, null, null, null);
             appController.setTimer(overlayName, 0.5, this);
-        }
-        
-        if (this.playerHP <= 0) {
-            this.playerHP = 0;
-            app.Utility.stopAllSounds();
-            app.Utility.playSound("/assets/sounds/death.mp3", true);
-        }
+        }        
     }
     
     // TODO - Make this configurable as a Story element on any level of the Book

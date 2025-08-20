@@ -1,7 +1,8 @@
 package app;
 
-import app.control.BaseControl;
+import app.model.BaseModel;
 import app.javafx.DelegateApplication;
+import app.model.SpriteModel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -234,7 +235,7 @@ public class JavaFXApplication extends ApplicationController {
     }
     
     @Override
-    public void displayGrid(String viewName, Map<String, ArrayList<BaseControl>> linkTexts, int columns, Boolean showBorders, EventListener listener) {
+    public void displayGrid(String viewName, Map<String, ArrayList<BaseModel>> linkTexts, int columns, Boolean showBorders, EventListener listener) {
         throw new UnsupportedOperationException("Not supported.");
     }
       
@@ -259,7 +260,7 @@ public class JavaFXApplication extends ApplicationController {
     }
     
     @Override
-    public void displayFloatingText(String viewName, String text, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, app.Color fontColor, int fontSize, int fontStyle, String fontName) {
+    public void displayFloatingText(String viewName, String text, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, app.Color fontColor, Integer fontSize, Integer fontStyle, String fontName) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
@@ -320,6 +321,11 @@ public class JavaFXApplication extends ApplicationController {
     
     @Override
     public void setBackgroundImage(String viewName, String imageFileName) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public void addAnimation(String viewName, String name, int row, int startColumn, String backgroundImageFileName, List<SpriteModel> sprites, double animationDelay, AnimationView listener) {
         throw new UnsupportedOperationException("Not supported.");
     }
     

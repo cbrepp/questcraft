@@ -12,6 +12,7 @@ import quest.model.Book;
  * app.jpg - "Vision, Nature, Future royalty-free stock illustration. Free for use & download." by TheDigitalArtist (https://pixabay.com/illustrations/vision-future-dream-fantasy-book-8386199/)
  * arcade.jpg - Teddy bear, Arcade, Claw machines image. Free for use. (https://pixabay.com/photos/teddy-bear-arcade-claw-machines-7558723/)
  * arrow.mp3 - "arrow-shot.mp3, An arrow being shot as part of my iPad game Knights vs Knightesses (http://versuspad.com). This sound is a simulation." by JPhilipp (https://freesound.org/people/JPhilipp/sounds/119060/)
+ * banging-door.mp3 - "Creepy Metal Door Bang" by qubodup (https://freesound.org/people/qubodup/sounds/448947/)
  * bionic-bunny.jpg - Bionic Bunny Soldier by Zara
  * bionic-bunny-commander.jpg - Bionic Bunny Commander by Zara
  * book.png - "Empty book" by Darkmoon_Art (https://pixabay.com/illustrations/reserve-pages-empty-book-open-book-3057904/)
@@ -68,6 +69,7 @@ import quest.model.Book;
  * hit.mp3 - Hit with frying pan.mp3 (https://freesound.org/people/Whiprealgood/sounds/529567/)
  * hit-harder.mp3 - frying pan.mp3 (https://freesound.org/people/Taira%20Komori/sounds/215017/)
  * hooting.mp3 - Desert Owl (https://freesound.org/people/claytron3000/sounds/384186/)
+ * impact.wav - "kicks bass impacts subs by CVLTIV8R" by CVLTIV8R (https://freesound.org/people/CVLTIV8R/sounds/794142/)
  * key.wav - "Key clacks while locking and unlocking entrance door." by hisoul (https://freesound.org/people/hisoul/sounds/462669/v)
  * laser.wav - "Slinky Laser." by Daleonfire (https://freesound.org/people/Daleonfire/sounds/376694/)
  * magic.wav - "Recorded at 24bit 96kHz WAV. using the Zoom H6 Recorder." by EminYILDIRIM (https://freesound.org/people/EminYILDIRIM/sounds/547365/)
@@ -84,6 +86,7 @@ import quest.model.Book;
  * mystery-door.jpg - "Hello :)" by qimono (https://pixabay.com/illustrations/door-open-doorway-entrance-1590024/)
  * night-owl.gif - "Owl, Bird, Barn owl GIF. Free for use." by KiFoKu (https://pixabay.com/gifs/owl-bird-barn-owl-plumage-beak-17686/)
  * night-owl.jpg - "Scary, Owl, Eyes image. Free for use." by Skitterphoto (https://pixabay.com/photos/scary-owl-eyes-spooky-halloween-3595742/)
+ * night-owl.png - "Ai Generated, Bird, Nature royalty-free vector graphic. Free for use & download." by MickeyLIT (https://pixabay.com/vectors/ai-generated-bird-owl-animal-8255570/)
  * open-door.wav - "A french double door opening and closing. Recorded at The Home Depot." by designerschoice (https://freesound.org/people/designerschoice/sounds/806875/)
  * paper.wav - "Crumpled Up Paper, Me crumpling up a paper. Recorded with a Genius MIC-01A Black 3.5mm Connector Metallic Microphone." by Natty23 (https://freesound.org/people/Natty23/sounds/257272/)
  * ping-pong.wav - "Hit a ping pong ball with a bat. Recorded in a small room for a short distance. Recorded with Zoom H6 recorder. The sound was postprocessed." by 14FPanskaBubik_Lukas (https://freesound.org/people/14FPanskaBubik_Lukas/sounds/418556/)

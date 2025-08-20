@@ -5,9 +5,9 @@ import app.Color;
 import app.EventListener;
 import app.Icon;
 import app.Utility;
-import app.control.BaseControl;
-import app.control.LabelControl;
-import app.control.LinkControl;
+import app.model.BaseModel;
+import app.model.LabelModel;
+import app.model.LinkModel;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -92,7 +92,7 @@ public class Inventory extends app.ApplicationView implements EventListener {
     public void render() {
         System.out.println("Inventory: render");
         this.lastRenderContainedNewItems = false;
-        Map<String, ArrayList<BaseControl>> gridCells = new LinkedHashMap<>();
+        Map<String, ArrayList<BaseModel>> gridCells = new LinkedHashMap<>();
         for (String key : this.quest.book.inventory.keySet()) {
             InventoryItem bookItem = this.quest.book.inventory.get(key);
             String linkText = bookItem.unicodeSurrogatePair + " " + key;
@@ -112,11 +112,11 @@ public class Inventory extends app.ApplicationView implements EventListener {
                 System.out.println("Inventory: render: Item NOT in quest inventory: " + key);
                 backgroundColor = new Color(169, 169, 169); // Dark Gray
             }
-            ArrayList<BaseControl> controlList = new ArrayList();
-            LinkControl linkControl = new LinkControl(linkText, backgroundColor);
+            ArrayList<BaseModel> controlList = new ArrayList();
+            LinkModel linkControl = new LinkModel(linkText, backgroundColor);
             controlList.add(linkControl);
             if (labelText != null) {
-                LabelControl labelControl = new LabelControl(labelText, backgroundColor);
+                LabelModel labelControl = new LabelModel(labelText, backgroundColor);
                 controlList.add(labelControl);
             }
             System.out.println("Inventory: onLoad: Adding " + key);

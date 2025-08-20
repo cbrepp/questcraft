@@ -3,12 +3,12 @@ package quest.view;
 import app.ApplicationController;
 import app.Color;
 import app.EventListener;
-import app.control.BaseControl;
-import app.control.LabelControl;
+import app.model.BaseModel;
+import app.model.LabelModel;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import app.control.ImageControl;
-import app.control.LinkControl;
+import app.model.ImageModel;
+import app.model.LinkModel;
 import java.util.List;
 import quest.model.Act;
 import quest.model.Scene;
@@ -98,21 +98,21 @@ public class SceneMap extends app.ApplicationView implements EventListener {
         }
         
         // Populate the grid cells using the sorted cells
-        java.util.Map<String, ArrayList<BaseControl>> gridCells = new LinkedHashMap<>();
+        java.util.Map<String, ArrayList<BaseModel>> gridCells = new LinkedHashMap<>();
         int emptyCellCount = 0;
         for (int y = 0; y < mapHeight; y++) {
             for (int x = 0; x <= mapWidth; x++) {
                 if (x == mapWidth) {
                     if (y == 0) {
                         // The last column is reserved for the compass
-                        ArrayList<BaseControl> controlList = new ArrayList();
-                        ImageControl imageControl = new ImageControl("/assets/images/compass-small.png", null);
+                        ArrayList<BaseModel> controlList = new ArrayList();
+                        ImageModel imageControl = new ImageModel("/assets/images/compass-small.png", null);
                         controlList.add(imageControl);
-                        LinkControl linkControl = new LinkControl("<a>Return to Quest</a>", null);
+                        LinkModel linkControl = new LinkModel("<a>Return to Quest</a>", null);
                         controlList.add(linkControl);
                         gridCells.put(COMPASS, controlList);
                     } else {
-                        ArrayList<BaseControl> controlList = new ArrayList();
+                        ArrayList<BaseModel> controlList = new ArrayList();
                         emptyCellCount++;   // TODO - This is ugly
                         String compassCell = "EMPTY SCENE " + emptyCellCount;
                         gridCells.put(compassCell, controlList);
@@ -121,7 +121,7 @@ public class SceneMap extends app.ApplicationView implements EventListener {
                 }
                 
                 String sceneName = sortedScenes[x][y];
-                ArrayList<BaseControl> controlList = new ArrayList();
+                ArrayList<BaseModel> controlList = new ArrayList();
                 Color backgroundColor = null;
                 List<String> observedActScenes = this.quest.observedScenes.get(this.quest.currentAct);
                 if (sceneName == null) {
@@ -130,13 +130,13 @@ public class SceneMap extends app.ApplicationView implements EventListener {
                     System.out.println("SceneMap: render: Nothing to add to " + x + ", " + y);
                 } else {
                     Scene scene = act.scenes.get(sceneName);
-                    LabelControl labelControl;
+                    LabelModel labelControl;
                     if ((observedActScenes.isEmpty()) || (!observedActScenes.contains(sceneName))) {
-                        labelControl = new LabelControl("?", backgroundColor);
+                        labelControl = new LabelModel("?", backgroundColor);
                         System.out.println("SceneMap: render: Adding unobserved scene to " + x + ", " + y);
                     } else {
                         backgroundColor = scene.color;
-                        labelControl = new LabelControl(sceneName, backgroundColor);
+                        labelControl = new LabelModel(sceneName, backgroundColor);
                         System.out.println("SceneMap: render: Adding " + sceneName + " to " + x + ", " + y);
                     }
                     controlList.add(labelControl);
@@ -149,14 +149,14 @@ public class SceneMap extends app.ApplicationView implements EventListener {
                         case Quest.DIRECTION_SOUTH -> playerSymbol += " " + "\u2B07";
                         case Quest.DIRECTION_WEST -> playerSymbol += " " + "\u2B05";
                     }
-                    LabelControl labelControl = new LabelControl(playerSymbol, backgroundColor);
+                    LabelModel labelControl = new LabelModel(playerSymbol, backgroundColor);
                     controlList.add(labelControl);
                     System.out.println("SceneMap: render: Added " + playerSymbol + " to " + x + ", " + y);
                 }
                 if (sceneName != null) {
                     Scene scene = act.scenes.get(sceneName);
                     if ((scene != null) && (scene.symbol != null) && (observedActScenes.contains(sceneName))) {
-                        LabelControl labelControl2 = new LabelControl(scene.symbol, backgroundColor);
+                        LabelModel labelControl2 = new LabelModel(scene.symbol, backgroundColor);
                         controlList.add(labelControl2);
                         System.out.println("SceneMap: render: Added " + scene.symbol + " to " + x + ", " + y);
                     }

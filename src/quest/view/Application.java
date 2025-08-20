@@ -33,6 +33,7 @@ public class Application extends app.ApplicationView {
     
     public ApplicationController appController;
     public Book bookFile;
+    public String flavorText;
     
     public Application(String name) {
         super(name);
@@ -53,12 +54,13 @@ public class Application extends app.ApplicationView {
                 this.appController.clearScreen(this.name);
                 this.display();
                 this.publishEvent("book", bookFile);
-            }
-            case "quit" -> {
+            } case "create" -> {
+                this.appController.displayMessageBox("Coming soon!", "Creating a new quest is not available at this time.", app.Icon.INFORMATION);
+            } case "options" -> {
+                this.appController.displayMessageBox("Coming soon!", "Application options are not available at this time.", app.Icon.INFORMATION);
+            } case "quit" -> {
                 this.appController.close();
-            }
-            default ->
-                System.err.println("Application: onEvent: Unsupported event");
+            } default -> System.err.println("Application: onEvent: Unsupported event");
         }
     }
     
@@ -69,6 +71,10 @@ public class Application extends app.ApplicationView {
         this.appController = appController;
         
         Utility.playSound("/assets/sounds/questcraft.mp3", true);
+        
+        String[] responses = {"Keep your hands and feet inside the quest at all times", "Presented in Questo-Vision (where available)", "Filmed on location", "Proudly made in your imagination", "Naturally gluten free", "The game that plays you", "A stern warning of things to come", "Painstakingly rendered before a live studio audience", "Sock puppets not included", "The official questing game of gnomes", "Or is it?", "It makes a nice sandwich!", "Tips are not expected but appreciated", "There will be a test at the end", "Made you look!", "No shirt, no shoes, no business", "Soon to be a hit game", "Made from 100% recycled pixels", "WARNING: Do not show to axolotls", "WARNING: May cause tentacles to emerge from your screen", "Featuring a new invisible character who doesn't speak", "You have been warned", "Don't look behind you", "Ask about our new pumpkin spice flavor!"};
+        int randomResponseIndex = (int) (Math.random() * responses.length);
+        this.flavorText = responses[randomResponseIndex];
         
         this.display();
         
@@ -83,21 +89,23 @@ public class Application extends app.ApplicationView {
         int gifColumn = parentColumns - spiderColumns + 2;    // Puts the spider in the upper right-hand corner
         appController.displayGif(this.name, "/assets/images/spider.gif", 1, gifColumn);
         
-        appController.displayOpenFileButton(this.name, "quest", "Choose Quest", 16, 44, 18, 82, false, "Minecraft", true, this);        
-        appController.displayButton(this.name, "options", "Options...", 19, 44, 21, 82, false, "Minecraft", true, this);        
-        appController.displayButton(this.name, "quit", "Quit Game", 22, 44, 24, 82, false, "Minecraft", true, this);        
+        appController.displayButton(this.name, "quit", "Quit Game", 22, 67, 24, 84, false, "Minecraft", true, this);        
+        appController.displayButton(this.name, "options", "Options...", 22, 46, 24, 64, false, "Minecraft", true, this);        
+        appController.displayButton(this.name, "create", "Create Quest", 19, 46, 21, 84, false, "Minecraft", true, this);        
+        appController.displayOpenFileButton(this.name, "quest", "Select Quest", 16, 46, 18, 84, false, "Minecraft", true, this);        
 
-        app.Color fontColor = new app.Color(74, 74, 74);
-        appController.displayFloatingText(this.name, "QUESTCRAFT", 7, 34, null, null, fontColor, 64, FontStyle.BOLD, "Minecraft");
-        appController.displayFloatingText(this.name, "JAVA  EDITION", 11, 40, null, null, fontColor, 48, FontStyle.BOLD, "Minecraft");
+        app.Color titleColor = new app.Color(74, 74, 74);   // Dark gray
+        app.Color infoTextColor = new Color(139, 0, 139); // Dark magenta
+        appController.displayFloatingText(this.name, this.flavorText, 14, 42, 15, 88, infoTextColor, 12, FontStyle.ITALIC, "Minecraft");
+        appController.displayFloatingText(this.name, "- JAVA  EDITION -", 11, 42, 13, 88, titleColor, 32, FontStyle.BOLD, "Minecraft");
+        appController.displayFloatingText(this.name, "QUESTCRAFT", 7, 32, 11, 98, titleColor, 64, FontStyle.BOLD, "Minecraft");
 
         if (bookFile != null) {
             // Display "Now Playing" info
-            appController.displayFloatingText(this.name, "Now Playing:", 31, 7, null, null, null, 20, FontStyle.BOLD, null);
-            appController.displayFloatingText(this.name, this.bookFile.title, 34, 7, null, null, null, 16, FontStyle.BOLD, null);
-            appController.displayFloatingText(this.name, "by " + this.bookFile.author, 36, 7, null, null, null, 16, FontStyle.BOLD, null);
-            appController.displayFloatingText(this.name, this.bookFile.updateDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.getDefault())), 38, 7, null, null, null, 16, FontStyle.BOLD, null);
-            appController.displayOverlay(this.name, "app", new Color(255, 255, 255), 30, 5, 40, 50, 200);
+            appController.displayFloatingText(this.name, this.bookFile.updateDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.getDefault())), 35, 42, 37, 88, infoTextColor, 18, null, "Minecraft");
+            appController.displayFloatingText(this.name, "by " + this.bookFile.author, 33, 42, 35, 88, infoTextColor, 18, null, "Minecraft");
+            appController.displayFloatingText(this.name, this.bookFile.title, 31, 42, 33, 88, infoTextColor, 18, null, "Minecraft");
+            appController.displayFloatingText(this.name, "Now Playing...", 28, 42, 30, 88, infoTextColor, 18, FontStyle.BOLD, "Minecraft");
         }
         
         appController.displayFloatingText(this.name, "Coming soon... JavaFX support!", 41, 102, 42, 128, null, 12, FontStyle.BOLD, "Minecraft");
@@ -708,7 +716,7 @@ public class Application extends app.ApplicationView {
         noGoldSubpage.contents.add("So this elevator has a sink?  Does she live here?");
         noGoldSubpage.contents.add("<br>");
         noGoldSubpage.contents.add("You have so many questions.  But for now, you better leave.");
-        noGoldSubpage.contents.add("<br>");
+        noGoldSubpage.contents.add("<br></color");
         noGoldSubpage.contents.add("<get-validated-input action Listen+&down; Leave Elevator>");
         noGoldSubpage.contents.add("<second-page>");
         noGoldSubpage.contents.add("<image center /assets/images/mylee-sink.jpg>");
@@ -719,20 +727,122 @@ public class Application extends app.ApplicationView {
         mainPage.subpages.put("Has Gold", hasGoldSubpage);
         
         Story dragonAttackSubpage = new Story();
-        dragonAttackSubpage.contents.add("TODO - Display dragon over clouds and button for learning player's final fate");
+        dragonAttackSubpage.contents.add("<color 0+0+0><play-sound /assets/sounds/banging-door.mp3 true><play-sound /assets/sounds/heavy-wings.mp3 true>You proudly step back into the elevator with your <inventory Gold>");
+        dragonAttackSubpage.contents.add("<br>");
+        dragonAttackSubpage.contents.add("However, Mylee does NOT look happy.");
+        dragonAttackSubpage.contents.add("<br>");
+        dragonAttackSubpage.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Please tell me you took care of the Dragon before coming back here with that gold!!!<quote>");
+        dragonAttackSubpage.contents.add("<br>");
+        dragonAttackSubpage.contents.add("<player-symbol> YOU: <quote>Oh, right.  Yeah about that...<quote>");
+        dragonAttackSubpage.contents.add("<br>");
+        dragonAttackSubpage.contents.add("You turn towards the elevator doors where a loud banging sound is coming from the outside.  It seems that something wants in and it's going to break through.");
+        dragonAttackSubpage.contents.add("<br></color");
+        dragonAttackSubpage.contents.add("<get-validated-input action *Brace Yourself>");
+        dragonAttackSubpage.contents.add("<second-page>");
+        dragonAttackSubpage.contents.add("<image center /assets/images/mylee.jpg>");
         mainPage.subpages.put("Dragon Attack", dragonAttackSubpage);
+        
+        Story braceYourselfSubpage = new Story();
+        braceYourselfSubpage.contents.add("<goto-page Dragon>");
+        mainPage.subpages.put("INPUT action=Brace Yourself", braceYourselfSubpage);
+        
+        Page dragonPage = new Page();
+        dragonPage.story.contents.add("<color 0+0+0><hp-change -100 false a dragon><play-sound /assets/sounds/dragon.mp3 false>The elevator door gives way and you see a rather angry-looking dragon.  With nowhere to hide, the dragon grabs you in his claws.");
+        dragonPage.story.contents.add("<br>");
+        dragonPage.story.contents.add("Maybe next time you'll take care of the dragon before trying to leave with its gold?</color");
+        dragonPage.story.contents.add("<second-page>");
+        dragonPage.story.contents.add("<image center /assets/images/dragon.png>");
+        dragonPage.story.contents.add("<second-page>");
+        dragonPage.story.contents.add("<image center /assets/images/clouds.jpg>");
+        myleesElevator.pages.put("Dragon", dragonPage);
         
         Story dragonDefeatedSubpage = new Story();
         dragonDefeatedSubpage.contents.add("<subpage-display condition=\"is-Gianni-tamed!=true\" Night Owl Attack><subpage-display condition=\"is-Gianni-tamed=true\" Night Owl Minigame>");
         mainPage.subpages.put("Dragon Defeated", dragonDefeatedSubpage);
         
         Story nightOwlAttackSubpage = new Story();
-        nightOwlAttackSubpage.contents.add("TODO - Display night owl over clouds and button for learning player's final fate");
+        nightOwlAttackSubpage.contents.add("");
+        nightOwlAttackSubpage.contents.add("<color 0+0+0><play-sound /assets/sounds/banging-door.mp3 true><play-sound /assets/sounds/heavy-wings.mp3 true>You proudly step back into the elevator with your <inventory Gold>");
+        nightOwlAttackSubpage.contents.add("<br>");
+        nightOwlAttackSubpage.contents.add("However, Mylee does NOT look happy.");
+        nightOwlAttackSubpage.contents.add("<br>");
+        nightOwlAttackSubpage.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Please tell me you found a long-range weapon before coming back here with that gold!!!<quote>");
+        nightOwlAttackSubpage.contents.add("<br>");
+        nightOwlAttackSubpage.contents.add("<player-symbol> YOU: <quote>Oh, right.  Yeah I knew I was forgetting something...<quote>");
+        nightOwlAttackSubpage.contents.add("<br>");
+        nightOwlAttackSubpage.contents.add("You turn towards the elevator doors where a loud banging sound is coming from the outside.  It seems that something wants in and it's going to break through.");
+        nightOwlAttackSubpage.contents.add("<br></color");
+        nightOwlAttackSubpage.contents.add("<get-validated-input action *Hold On Tight>");
+        nightOwlAttackSubpage.contents.add("<second-page>");
+        nightOwlAttackSubpage.contents.add("<image center /assets/images/mylee.jpg>");
         mainPage.subpages.put("Night Owl Attack", nightOwlAttackSubpage);
         
+        Story holdOnTightSubpage = new Story();
+        holdOnTightSubpage.contents.add("<goto-page Night Owl>");
+        mainPage.subpages.put("INPUT action=Hold On Tight", holdOnTightSubpage);
+        
+        Page nightOwlPage = new Page();
+        nightOwlPage.story.contents.add("<color 0+0+0><hp-change -100 false Night Owl><play-sound /assets/sounds/hooting.mp3 true>The elevator door gives way and you see a rather angry-looking Night Owl.  With nowhere to hide, Night Owl grabs you in his talons.");
+        nightOwlPage.story.contents.add("<br>");
+        nightOwlPage.story.contents.add("Maybe next time you'll talk to Gianni about a long-range weapon?</color");
+        nightOwlPage.story.contents.add("<second-page>");
+        nightOwlPage.story.contents.add("<image center /assets/images/night-owl.png>");
+        nightOwlPage.story.contents.add("<second-page>");
+        nightOwlPage.story.contents.add("<image center /assets/images/clouds.jpg>");
+        myleesElevator.pages.put("Night Owl", nightOwlPage);
+        
         Story nightOwlMinigameSubpage = new Story();
-        nightOwlMinigameSubpage.contents.add("TODO - Display page prepping player for mingame and button for launching minigame");
+        nightOwlMinigameSubpage.contents.add("<color 0+0+0><play-sound /assets/sounds/banging-door.mp3 true><play-sound /assets/sounds/heavy-wings.mp3 true>You proudly step back into the elevator with your <inventory Gold>");
+        nightOwlMinigameSubpage.contents.add("<br>");
+        nightOwlMinigameSubpage.contents.add("However, Mylee does NOT look happy.");
+        nightOwlMinigameSubpage.contents.add("<br>");
+        nightOwlMinigameSubpage.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Please tell me you found a long-range weapon before coming back here with that gold!!!<quote>");
+        nightOwlMinigameSubpage.contents.add("<br>");
+        nightOwlMinigameSubpage.contents.add("<player-symbol> YOU: <quote>Of course!  Gianni gave me this <inventory condition=\"player=Greyson\" UNO Reverse><inventory condition=\"player=Zara\" Zara's Sword><inventory condition=\"player=Shmebulock\" Faery Launcher>.<quote>");
+        nightOwlMinigameSubpage.contents.add("<br>");
+        nightOwlMinigameSubpage.contents.add("You turn towards the elevator doors where a loud banging sound is coming from the outside.  It seems that something wants in and it's going to break through.");
+        nightOwlMinigameSubpage.contents.add("<br></color>");
+        nightOwlMinigameSubpage.contents.add("<get-validated-input action *Open Elevator Doors and Attack>");
+        nightOwlMinigameSubpage.contents.add("<second-page>");
+        nightOwlMinigameSubpage.contents.add("<image center /assets/images/mylee.jpg>");
         mainPage.subpages.put("Night Owl Minigame", nightOwlMinigameSubpage);
+        
+        Story kickSomeTailFeathersSubpage = new Story();
+        kickSomeTailFeathersSubpage.contents.add("<variable-set night-owl-hp 100><goto-page Night Owl Minigame>");
+        mainPage.subpages.put("INPUT action=Open Elevator Doors and Attack", kickSomeTailFeathersSubpage);
+        
+        // TODO - Reimplement MonsterShooter in TQ.BAS
+        // TODO - Add spell for going straight to this after selecting your player
+        Page nightOwlMinigamePage = new Page();
+        nightOwlMinigamePage.story.contents.add("<subpage-display Player Stats><br><color 0+0+0><i>INSTRUCTIONS: Use the buttons or arrow keys to move left or right and launch an upwards attack.</i>");
+        nightOwlMinigamePage.story.contents.add("<br>");
+        nightOwlMinigamePage.story.contents.add("<get-validated-input condition=\"night-owl-hp&gt;0\" action Pause><get-validated-input condition=\"night-owl-hp=0\" action *Continue>");
+        nightOwlMinigamePage.story.contents.add("</color>");
+        nightOwlMinigamePage.story.contents.add("<button-row>");
+        nightOwlMinigamePage.story.contents.add("<get-validated-input align=right navigation-prompt &left; Move Left+&up; Launch+&right; Move Right>");
+        nightOwlMinigamePage.story.contents.add("<second-page>");
+        nightOwlMinigamePage.story.contents.add("<arcade-shooter /assets/images/wilderness.jpg TODO-music TODO-player-sprite TODO-missile-left TODO-missile-right TODO-monster-image TODO-monster-sound TODO-monster-visible>");
+        myleesElevator.pages.put("Night Owl Minigame", nightOwlMinigamePage);
+        
+        Story moveLeftSubpage = new Story();
+        moveLeftSubpage.contents.add("<variable-add condition=\"player-x&gt;0\" player-x -1>");
+        nightOwlMinigamePage.subpages.put("INPUT navigation-prompt= Move Left", moveLeftSubpage);
+        
+        Story moveRightSubpage = new Story();
+        moveRightSubpage.contents.add("<variable-add condition=\"player-x&lt;50\" player-x 1>");
+        nightOwlMinigamePage.subpages.put("INPUT navigation-prompt= Move Right", moveRightSubpage);
+        
+        Story launchSubpage = new Story();
+        launchSubpage.contents.add("TODO");
+        nightOwlMinigamePage.subpages.put("INPUT navigation-prompt= Launch", launchSubpage);
+        
+        Story pauseSubpage = new Story();
+        pauseSubpage.contents.add("TODO - Pause the active events, play the pause sound, and ignore player input");
+        nightOwlMinigamePage.subpages.put("INPUT action=Pause", pauseSubpage);
+        
+        Story continueSubpage = new Story();
+        continueSubpage.contents.add("TODO - Show gif of darkness and eyes, then elevator over black backdrop, then Mylee explaing that Big Chung showed up during the fight and she distracted him by making fun of his weight and challenging him to go on a light diet, only for him to take her literally and eat all of the light.");
+        nightOwlMinigamePage.subpages.put("INPUT action=Continue", continueSubpage);
         
         Story leaveElevatorSubpage = new Story();
         leaveElevatorSubpage.contents.add("<move-back>");
@@ -1354,7 +1464,7 @@ public class Application extends app.ApplicationView {
         deadPage.story.contents.add("<second-page>");
         deadPage.story.contents.add("<image center /assets/images/night-owl.jpg>");
         deadPage.story.contents.add("<first-page>");
-        deadPage.story.contents.add("<play-sound /assets/sounds/heavy-wings.mp3 false><play-sound /assets/sounds/hooting.mp3 false><hp-change -100 false Night Owl>");
+        deadPage.story.contents.add("<hp-change -100 false Night Owl><play-sound /assets/sounds/heavy-wings.mp3 false><play-sound /assets/sounds/hooting.mp3 false>");
         deadPage.story.contents.add("<color 85+85+85>Too late.</color>");
         deadPage.story.contents.add("<br>");
         woods.pages.put("Dead", deadPage);
@@ -1861,12 +1971,14 @@ public class Application extends app.ApplicationView {
         //  - Shmebulock's hits and dragon's hits both yeild 25% damage
         //  - Shmebulock attack causes temporary black overlay
         
-        Page dragonPage = new Page();
+        dragonPage = new Page();
         dragonPage.story.contents.add("<subpage-display Player Stats><br><color 139+0+0>You begin exploring the cave when something jumps out at you...");
         dragonPage.story.contents.add("<br>");
         dragonPage.story.contents.add("Oh no!  It's a dragon!!!");
         dragonPage.story.contents.add("<br>");
-        dragonPage.story.contents.add("<if condition=\"inventory-has Gold!=true\" Thankfully you have nothing heavy to weigh you down so you have the option to run away...><if condition=\"inventory-has Gold=true\" Because of your heavy Gold you can't run away.  ><if condition=\"inventory-has UNO Reverse=true\" You need to stand your ground and fight!  You pull out your trusty UNO Reverse...><if condition=\"inventory-has Zara's Sword=true\" You need to stand your ground and fight!  You unsheathe your trusty sword...><if condition=\"inventory-has Cosmic Wonder #1=true\" You need to stand your ground and fight!  You focus on the cosmic wonder you collected and make manifest a terrible fear...>");
+        dragonPage.story.contents.add("<if condition=\"inventory-has Gold!=true\" Thankfully you have nothing heavy to weigh you down so you have the option to run away...><if condition=\"inventory-has Gold=true\" Because of your heavy Gold you can't run away.  ><if condition=\"inventory-has UNO Reverse=true\" You need to stand your ground and fight!  You pull out your trusty UNO Reverse...><if condition=\"inventory-has Zara's Sword=true\" You need to stand your ground and fight!  You unsheathe your trusty sword.><if condition=\"inventory-has Cosmic Wonder #1=true\" You need to stand your ground and fight!  You focus on the cosmic wonder you collected and make manifest a terrible fear...>");
+        dragonPage.story.contents.add("<br>");
+        dragonPage.story.contents.add("<i><if condition=\"inventory-has UNO Reverse=true\" INSTRUCTIONS: Be prepared to attack as soon as the dragon launches its flames at you.  You need to redirect its attack back at it BEFORE the flames hit you.><if condition=\"inventory-has Zara's Sword=true\" INSTRUCTIONS: Be prepared to attack BEFORE the dragon launches its flames at you.  Strike as soon as you can.><if condition=\"inventory-has Cosmic Wonder #1=true\" INSTRUCTIONS: Be prepared to attack as soon as the dragon's flames hit you.  Your cosmic wonder can punish the dragon for its malice.> </i>");
         dragonPage.story.contents.add("</color>");
         dragonPage.story.contents.add("<subpage-display condition=\"hp!=0\" Actions>");
         dragonPage.story.contents.add("<second-page>");
@@ -1893,7 +2005,7 @@ public class Application extends app.ApplicationView {
         actionsSubpage.contents.add("<subpage-display condition=\"variable event!=0\" Fight Or Flight Actions>");
         dragonPage.subpages.put("Actions", actionsSubpage);
         
-        Story continueSubpage = new Story();
+        continueSubpage = new Story();
         continueSubpage.contents.add("<timer-start condition=\"variable event=0\" 1 Event 1>");
         dragonPage.subpages.put("INPUT action=Continue...", continueSubpage);
         
@@ -1910,9 +2022,9 @@ public class Application extends app.ApplicationView {
         attackSubpage.contents.add("<play-sound condition=\"inventory-has UNO Reverse=true\" /assets/sounds/reverse.wav false>");
         attackSubpage.contents.add("<play-sound condition=\"inventory-has Zara's Sword=true\" /assets/sounds/sword.wav false>");
         attackSubpage.contents.add("<play-sound condition=\"inventory-has Cosmic Wonder #1=true\" /assets/sounds/cosmic-wonder-1.wav false>");
-        attackSubpage.contents.add("<variable-add condition=\"variable difficulty=Easy\" dragon-hp -100>");
-        attackSubpage.contents.add("<variable-add condition=\"variable difficulty=Normal\" dragon-hp -50>");
-        attackSubpage.contents.add("<variable-add condition=\"variable difficulty=Hard\" dragon-hp -25>");
+        attackSubpage.contents.add("<variable-add condition=\"variable difficulty=Easy\" dragon-hp -50>");
+        attackSubpage.contents.add("<variable-add condition=\"variable difficulty=Normal\" dragon-hp -25>");
+        attackSubpage.contents.add("<variable-add condition=\"variable difficulty=Hard\" dragon-hp -10>");
         attackSubpage.contents.add("<variable-add condition=\"variable difficulty=Magical\" dragon-hp -25>");
         attackSubpage.contents.add("<play-sound /assets/sounds/dragon-hurt.wav false>");
         attackSubpage.contents.add("<variable-set dragon-attacked true>");
