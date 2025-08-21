@@ -44,6 +44,12 @@ public class GetValidatedInputControl extends QuestControl {
         } else {
             values = getTagToken(tag, 2, true);
         }
+        Boolean allowMultipleClicks = false;
+        if (variable.charAt(0) == '*') {
+            // TODO - This is ugly magic
+            allowMultipleClicks = true;
+            variable = variable.substring(1);   // Trim off the first character because it was a special code indicating that the variable's buttons can be clicked more than once
+        }
         ArrayList<String> valueList = new ArrayList<>(Arrays.asList(values.split("\\+")));
         String eventName = Quest.VARIABLE_EVENT_PREFIX + ":" + variable;
         int startColumn;
@@ -56,7 +62,7 @@ public class GetValidatedInputControl extends QuestControl {
             endColumn = this.quest.leftPageEndingColumn;
         }
         int realRow = this.quest.titleRow + 1 + this.quest.textRow;
-        this.quest.appController.displayValidatedInputField(this.quest.name, eventName, valueList, realRow, startColumn, endColumn, alignment, this.quest, false);
+        this.quest.appController.displayValidatedInputField(this.quest.name, eventName, valueList, realRow, startColumn, endColumn, alignment, this.quest, allowMultipleClicks);
         this.quest.textRow = this.quest.textRow + 2;
         this.quest.textColumn = 1;
         return "";

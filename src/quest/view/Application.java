@@ -813,35 +813,48 @@ public class Application extends app.ApplicationView {
         
         // TODO - Reimplement MonsterShooter in TQ.BAS
         // TODO - Add spell for going straight to this after selecting your player
+        // TODO - How to know that the page needs to be refreshed when the player is hit and hp needs to be updated?
         Page nightOwlMinigamePage = new Page();
         nightOwlMinigamePage.story.contents.add("<subpage-display Player Stats><br><color 0+0+0><i>INSTRUCTIONS: Use the buttons or arrow keys to move left or right and launch an upwards attack.</i>");
         nightOwlMinigamePage.story.contents.add("<br>");
-        nightOwlMinigamePage.story.contents.add("<get-validated-input condition=\"night-owl-hp&gt;0\" action Pause><get-validated-input condition=\"night-owl-hp=0\" action *Continue>");
+        nightOwlMinigamePage.story.contents.add("<subpage-display condition=\"animation-on=true\" PauseUnpause><get-validated-input condition=\"animation-on!=true\" action *Continue>");
         nightOwlMinigamePage.story.contents.add("</color>");
         nightOwlMinigamePage.story.contents.add("<button-row>");
-        nightOwlMinigamePage.story.contents.add("<get-validated-input align=right navigation-prompt &left; Move Left+&up; Launch+&right; Move Right>");
+        nightOwlMinigamePage.story.contents.add("<get-validated-input align=right *navigation-prompt &left; Move Left+&up; Launch+&right; Move Right>");
         nightOwlMinigamePage.story.contents.add("<second-page>");
-        nightOwlMinigamePage.story.contents.add("<arcade-shooter /assets/images/wilderness.jpg TODO-music TODO-player-sprite TODO-missile-left TODO-missile-right TODO-monster-image TODO-monster-sound TODO-monster-visible>");
+        nightOwlMinigamePage.story.contents.add("");
         myleesElevator.pages.put("Night Owl Minigame", nightOwlMinigamePage);
         
         Story moveLeftSubpage = new Story();
-        moveLeftSubpage.contents.add("<variable-add condition=\"player-x&gt;0\" player-x -1>");
+        moveLeftSubpage.contents.add("<variable-set animation-left true>");
         nightOwlMinigamePage.subpages.put("INPUT navigation-prompt= Move Left", moveLeftSubpage);
         
         Story moveRightSubpage = new Story();
-        moveRightSubpage.contents.add("<variable-add condition=\"player-x&lt;50\" player-x 1>");
+        moveRightSubpage.contents.add("<variable-set animation-left true>");
         nightOwlMinigamePage.subpages.put("INPUT navigation-prompt= Move Right", moveRightSubpage);
         
         Story launchSubpage = new Story();
-        launchSubpage.contents.add("TODO");
+        launchSubpage.contents.add("<variable-set animation-up true>");
         nightOwlMinigamePage.subpages.put("INPUT navigation-prompt= Launch", launchSubpage);
         
-        Story pauseSubpage = new Story();
-        pauseSubpage.contents.add("TODO - Pause the active events, play the pause sound, and ignore player input");
-        nightOwlMinigamePage.subpages.put("INPUT action=Pause", pauseSubpage);
+        Story pauseUnpauseSubpage = new Story();
+        pauseUnpauseSubpage.contents.add("<get-validated-input condition=\"animation-paused!=true\" action *Pause><get-validated-input condition=\"animation-paused=true\" action *Unpause>");
+        nightOwlMinigamePage.subpages.put("PauseUnpause", pauseUnpauseSubpage);
         
+        Story pauseSubpage = new Story();
+        pauseSubpage.contents.add("<variable-set animation-paused true>");
+        nightOwlMinigamePage.subpages.put("INPUT navigation-prompt=Pause", pauseSubpage);
+        
+        Story unpauseSubpage = new Story();
+        unpauseSubpage.contents.add("<variable-set animation-paused false>");
+        nightOwlMinigamePage.subpages.put("INPUT navigation-prompt=Unpause", unpauseSubpage);
+        
+        // TODO - If animation hasn't started (night-owl-hp and player's hp aren't zero) then start animation
+        // TODO - Show gif of darkness and eyes, then elevator over black backdrop, then Mylee explaing that Big Chung showed up during the fight and she distracted him by making fun of his weight and challenging him to go on a light diet, only for him to take her literally and eat all of the light.
         Story continueSubpage = new Story();
-        continueSubpage.contents.add("TODO - Show gif of darkness and eyes, then elevator over black backdrop, then Mylee explaing that Big Chung showed up during the fight and she distracted him by making fun of his weight and challenging him to go on a light diet, only for him to take her literally and eat all of the light.");
+        continueSubpage.contents.add("<second-page condition=\"minigame-started!=true\">");
+        continueSubpage.contents.add("<arcade-shooter condition=\"minigame-started!=true\" /assets/images/wilderness.jpg TODO-music TODO-player-sprite TODO-missile-left TODO-missile-right TODO-monster-image TODO-monster-sound TODO-monster-visible>");
+        continueSubpage.contents.add("<variable-set condition=\"minigame-started!=true\" minigame-started true>");
         nightOwlMinigamePage.subpages.put("INPUT action=Continue", continueSubpage);
         
         Story leaveElevatorSubpage = new Story();
@@ -860,6 +873,128 @@ public class Application extends app.ApplicationView {
         listenPage.story.contents.add("<second-page>");
         listenPage.story.contents.add("<image left /assets/images/mylee-sink.jpg>");
         myleesElevator.pages.put("Listen", listenPage);
+        
+        Page eyesOfChungPage = new Page();
+        eyesOfChungPage.nextPageName = "Back To Elevator";
+        eyesOfChungPage.story.contents.add("<subpage-display Scene Header>");
+        eyesOfChungPage.story.contents.add("<color 0+0+0>");
+        eyesOfChungPage.story.contents.add("You did it!  You defeated Night Owl!");
+        eyesOfChungPage.story.contents.add("<br>");
+        eyesOfChungPage.story.contents.add("You look around for Mylee and don't see her.  Perhaps she returned to the elevator?");
+        eyesOfChungPage.story.contents.add("<br>");
+        eyesOfChungPage.story.contents.add("Wait... is the sky turning dark?  What's going on???");
+        eyesOfChungPage.story.contents.add("<br>");
+        eyesOfChungPage.story.contents.add("<get-validated-input align=left action *Brace Yourself>");
+        eyesOfChungPage.story.contents.add("</color>");
+        eyesOfChungPage.story.contents.add("<second-page>");
+        eyesOfChungPage.story.contents.add("<image left /assets/images/wilderness3.jpg>");
+        myleesElevator.pages.put("The Eyes Of Chung", eyesOfChungPage);
+        
+        Story eyesOfChungSubpage = new Story();
+        eyesOfChungSubpage.contents.add("TODO - Play suspenseful music");
+        eyesOfChungSubpage.contents.add("TODO - Set timer");
+        eyesOfChungSubpage.contents.add("TODO - display dark overlay over the entire book");
+        eyesOfChungSubpage.contents.add("TODO - Set timer");
+        eyesOfChungSubpage.contents.add("TODO - Play impact.wav");
+        eyesOfChungSubpage.contents.add("TODO - display cat-eyes.gif");
+        eyesOfChungSubpage.contents.add("TODO - Set timer");
+        eyesOfChungSubpage.contents.add("TODO - Remove overlay");
+        eyesOfChungSubpage.contents.add("TODO - Turn the page");
+        mainPage.subpages.put("INPUT action=Brace Yourself", eyesOfChungSubpage);
+        
+        Page backToElevatorPage = new Page();
+        backToElevatorPage.nextPageName = "Give The Mylee Her Due";
+        backToElevatorPage.story.contents.add("<subpage-display Scene Header><play-sound /assets/sounds/elevator-open.mp3 false>");
+        backToElevatorPage.story.contents.add("<color 0+0+0>");
+        backToElevatorPage.story.contents.add("You run back to the elevator where you find a panic-stricken Mylee.");
+        backToElevatorPage.story.contents.add("<br>");
+        backToElevatorPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Quick!  We need to get out of here!<quote>");
+        backToElevatorPage.story.contents.add("<br>");
+        backToElevatorPage.story.contents.add("<player-symbol> YOU: <quote>Why?  Is Big Chung coming after us?<quote>");
+        backToElevatorPage.story.contents.add("<br>");
+        backToElevatorPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>No, but in order to distract him I lectured him on his weight.  And because I told him that he needs to go on a <i>light diet</i>, he's now busy devouring all light in the seven kingdoms!<quote>");
+        backToElevatorPage.story.contents.add("<br>");
+        backToElevatorPage.story.contents.add("<player-symbol> YOU: <quote>He's... eating <i>light</i>?<quote>");
+        backToElevatorPage.story.contents.add("<br>");
+        backToElevatorPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Yes!  And at an alarming speed!<quote>");
+        backToElevatorPage.story.contents.add("<br>");
+        backToElevatorPage.story.contents.add("</color>");
+        backToElevatorPage.story.contents.add("<second-page>");
+        backToElevatorPage.story.contents.add("<image left /assets/images/mylee.jpg>");
+        myleesElevator.pages.put("Back To Elevator", backToElevatorPage);
+        
+        Page giveMyleeHerDuePage = new Page();
+        giveMyleeHerDuePage.nextPageName = "";
+        giveMyleeHerDuePage.story.contents.add("<subpage-display Scene Header>");
+        giveMyleeHerDuePage.story.contents.add("<color 0+0+0>");
+        giveMyleeHerDuePage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Umm... aren't you forgetting to give me something?<quote>");
+        giveMyleeHerDuePage.story.contents.add("<br>");
+        giveMyleeHerDuePage.story.contents.add("<player-symbol> YOU: <quote>I thought we were in a hurry?<quote>");
+        giveMyleeHerDuePage.story.contents.add("<br>");
+        giveMyleeHerDuePage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>We are, but this elevator isn't going anywhere until you give me your gold!<quote>");
+        giveMyleeHerDuePage.story.contents.add("<br>");
+        giveMyleeHerDuePage.story.contents.add("<get-validated-input align=left action *Give Mylee Gold>");
+        giveMyleeHerDuePage.story.contents.add("</color>");
+        giveMyleeHerDuePage.story.contents.add("<second-page>");
+        giveMyleeHerDuePage.story.contents.add("<image left /assets/images/mylee.jpg>");
+        myleesElevator.pages.put("Give The Mylee Her Due", giveMyleeHerDuePage);
+        
+        Story giveMyleeHerDueSubpage = new Story();
+        eyesOfChungSubpage.contents.add("TODO - Remove Gold from inventory");
+        eyesOfChungSubpage.contents.add("<play-sound /assets/sounds/elevator-open.mp3 false>");
+        eyesOfChungSubpage.contents.add("TODO - Play elevator music");
+        eyesOfChungSubpage.contents.add("TODO - Turn to Elevator Goes Up");
+        mainPage.subpages.put("INPUT action=Give Mylee Gold", giveMyleeHerDueSubpage);
+        
+        Page elevatorGoesUpPage = new Page();
+        elevatorGoesUpPage.nextPageName = "Get Me Some White Meat Chicken!";
+        elevatorGoesUpPage.story.contents.add("<subpage-display Scene Header>");
+        elevatorGoesUpPage.story.contents.add("<color 0+0+0>");
+        elevatorGoesUpPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Thank you!  Keep your human hands in feet inside the elevator at all times.  We're going up to the second kingdom!<quote>");
+        elevatorGoesUpPage.story.contents.add("<br>");
+        elevatorGoesUpPage.story.contents.add("<player-symbol> YOU: <quote>The second kingdom?  Is that where <variable twin> is?<quote>");
+        elevatorGoesUpPage.story.contents.add("<br>");
+        elevatorGoesUpPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Maybe.  We're going to have to check them all.<quote>");
+        elevatorGoesUpPage.story.contents.add("<br>");
+        elevatorGoesUpPage.story.contents.add("<player-symbol> YOU: <quote>What's the second kingdom like?<quote>");
+        elevatorGoesUpPage.story.contents.add("<br>");
+        elevatorGoesUpPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Oh you know.  It's a bit more modern.  Cars.  Spaceships.  And the whole place is run by chickens.<quote>");
+        elevatorGoesUpPage.story.contents.add("<br>");
+        elevatorGoesUpPage.story.contents.add("<player-symbol> YOU: <quote>Chickens?<quote>");
+        elevatorGoesUpPage.story.contents.add("<br>");
+        elevatorGoesUpPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Oh yes... tasty, tasty chickens!<quote>");
+        elevatorGoesUpPage.story.contents.add("</color>");
+        elevatorGoesUpPage.story.contents.add("<second-page>");
+        elevatorGoesUpPage.story.contents.add("<image left /assets/images/mylee.jpg>");
+        myleesElevator.pages.put("Elevator Goes Up", elevatorGoesUpPage);
+        
+        Page getMeWhiteMeatChickenPage = new Page();
+        getMeWhiteMeatChickenPage.nextPageName = "";
+        getMeWhiteMeatChickenPage.story.contents.add("<subpage-display Scene Header><play-sound /assets/sounds/elevator-open.mp3 false>");
+        getMeWhiteMeatChickenPage.story.contents.add("<color 0+0+0>");
+        getMeWhiteMeatChickenPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>And... we're here!  Get out!<quote>");
+        getMeWhiteMeatChickenPage.story.contents.add("<br>");
+        getMeWhiteMeatChickenPage.story.contents.add("<player-symbol> YOU: <quote>But what do I do?<quote>");
+        getMeWhiteMeatChickenPage.story.contents.add("<br>");
+        getMeWhiteMeatChickenPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Go looking for <variable twin>!<quote>");
+        getMeWhiteMeatChickenPage.story.contents.add("<br>");
+        getMeWhiteMeatChickenPage.story.contents.add("<player-symbol> YOU: <quote>Anything I need to know first?<quote>");
+        getMeWhiteMeatChickenPage.story.contents.add("<br>");
+        getMeWhiteMeatChickenPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Of course!  This elevator is solar-powered.  Thanks to the lack light, it's about to die and go plummeting back down the elevator shaft!<quote>");
+        getMeWhiteMeatChickenPage.story.contents.add("<br>");
+        getMeWhiteMeatChickenPage.story.contents.add("<player-symbol> YOU: <quote>Oh no!<quote>");
+        getMeWhiteMeatChickenPage.story.contents.add("<br>");
+        getMeWhiteMeatChickenPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>But don't worry, you can find me again if you get help from a certain, fluffy friend.  And I expect that you'll get me some white meat chicken!!!<quote>");
+        getMeWhiteMeatChickenPage.story.contents.add("<br>");
+        getMeWhiteMeatChickenPage.story.contents.add("<get-validated-input align=left action *Leave Elevator>");
+        getMeWhiteMeatChickenPage.story.contents.add("</color>");
+        getMeWhiteMeatChickenPage.story.contents.add("<second-page>");
+        getMeWhiteMeatChickenPage.story.contents.add("<image left /assets/images/mylee.jpg>");
+        myleesElevator.pages.put("Get Me Some White Meat Chicken!", getMeWhiteMeatChickenPage);
+        
+        Story exitElevatorSubpage = new Story();
+        eyesOfChungSubpage.contents.add("TODO - Change to page that describes the elevator falling back down the shaft, then takes the player to chapter 2");
+        mainPage.subpages.put("INPUT action=Leave Elevator", exitElevatorSubpage);
         
         Scene wilderness2 = new Scene();
         wilderness2.color = new Color(0, 100, 0);

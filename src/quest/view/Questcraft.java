@@ -22,6 +22,7 @@ import quest.model.Book;
  * camera.mp3 - "iOS Camera flash" by Rvgerxini (https://freesound.org/people/Rvgerxini/sounds/455511/)
  * castle.mp3 - Royal vibes (harp guitar and tuba) (https://freesound.org/people/kbrecordzz/sounds/595865/)
  * castle-interior.jpg - Ai Generated Gothic Castle royalty-free stock illustration. Free for use & download. (https://pixabay.com/illustrations/ai-generated-gothic-castle-room-8469399/)
+ * cat-eyes.gif - "a close up of a cat 's eyes with a dark background" (https://tenor.com/view/cat-eyes-blink-gif-5820964)
  * catapult.wav - "06177 wire launch.wav, Launching wire harpoon - simulated" by Robinhood76 (https://freesound.org/people/Robinhood76/sounds/329683/)
  * cat-storm.gif - "Cat, Love, Rain GIF. Free for use." by u_h70uxspxzf (https://pixabay.com/gifs/cat-love-rain-lightning-cave-974/)
  * clouds.jpg - OpenClipart-Vectors (https://pixabay.com/vectors/sunrise-clouds-rising-sun-sky-sun-153600/)
