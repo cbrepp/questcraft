@@ -1470,23 +1470,23 @@ public class SWTApplication extends ApplicationController {
         canvas.moveAbove(textArea);
         canvas.setBounds(topLeft.x, topLeft.y, widthAndHeight.x, widthAndHeight.y);
         canvas.addListener(SWT.Paint, (Event e) -> {
-            System.out.println("SWTApplication: addAnimation: painting canvas: entered, drawing image at " + topLeft.x + "," + topLeft.y);
+            //System.out.println("SWTApplication: addAnimation: painting canvas: entered, drawing image at " + topLeft.x + "," + topLeft.y);
             GC gc = e.gc;
             
             // Draw background image
-            System.out.println("SWTApplication: addAnimation: painting canvas: no sprites!");
-            gc.drawImage(backgroundImage, topLeft.x, topLeft.y);
+            //gc.drawImage(backgroundImage, topLeft.x, topLeft.y);
+            gc.drawImage(backgroundImage, 0, 0);
             
             // Draw each sprite
             // TODO - Should the sprites be drawn first or second?
             if (this.sprites == null) {
-                System.out.println("SWTApplication: addAnimation: painting canvas: no sprites!");
+                //System.out.println("SWTApplication: addAnimation: painting canvas: no sprites!");
                 return;
             }
             
             for (SpriteModel sprite : this.sprites) {
                 if (sprite.imageFile == null) {
-                    System.out.println("SWTApplication: addAnimation: painting canvas: skipping sprite with no image file!");
+                    //System.out.println("SWTApplication: addAnimation: painting canvas: skipping sprite with no image file!");
                     continue;
                 }
                 
@@ -1502,8 +1502,9 @@ public class SWTApplication extends ApplicationController {
                                  0, 0, newWidth, newHeight);
                 */
                 
-                System.out.println("SWTApplication: addAnimation: painting canvas: drawing " + sprite.imageFile + " at " + sprite.x + "," + sprite.y);
-                gc.drawImage(spriteImages.get(sprite.imageFile), sprite.x, sprite.y);
+                //System.out.println("SWTApplication: addAnimation: painting canvas: drawing " + sprite.imageFile + " at " + sprite.x + "," + sprite.y);
+                // Coordinates (1,1) for a sprite equate to the upper left-hand corner for the background image
+                gc.drawImage(spriteImages.get(sprite.imageFile), sprite.x - 1, sprite.y - 1);
             }
         });
         final EventListener timerListener = new EventListener() {

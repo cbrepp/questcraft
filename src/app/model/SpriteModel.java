@@ -8,7 +8,6 @@ import app.*;
  */
 public class SpriteModel extends BaseModel {
     
-    public Coordinates dimensions;
     public String imageFile;
     public Double imageScale = 1.0;
     public Integer x;
@@ -30,7 +29,6 @@ public class SpriteModel extends BaseModel {
         this.imageScale = imageScale;
         this.x = x;
         this.y = y;
-        this.dimensions = controller.getDimensions(imageFile);
     }
     
 }
