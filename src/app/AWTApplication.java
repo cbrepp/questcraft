@@ -1,6 +1,7 @@
 package app;
 
 import app.model.BaseModel;
+import app.model.Coordinates;
 import app.model.SpriteModel;
 import java.util.ArrayList;
 import java.util.List;
@@ -173,6 +174,11 @@ public class AWTApplication extends ApplicationController {
     
     @Override
     public void removeTimer(String name) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public Coordinates getDimensions(String imageFileName) {
         throw new UnsupportedOperationException("Not supported.");
     }
     

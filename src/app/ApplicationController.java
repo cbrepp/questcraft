@@ -17,6 +17,7 @@ package app;
  */
 
 import app.model.BaseModel;
+import app.model.Coordinates;
 import app.model.SpriteModel;
 import java.io.IOException;
 import java.io.InputStream;
@@ -70,6 +71,7 @@ public abstract class ApplicationController {
     public abstract int displayGif(String viewName, String fileName, int row, int column);
     public abstract void setTimer(String name, double seconds, EventListener listener);
     public abstract void removeTimer(String name);
+    public abstract Coordinates getDimensions(String imageFileName);
     public abstract int getTextColumns();
     public abstract int getTextRows();
     public abstract int getColumns(String fileName);

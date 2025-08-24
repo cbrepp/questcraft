@@ -44,9 +44,12 @@ public abstract class QuestControl {
         
         String[] conditionParts = condition.split(operator);
         System.out.println("QuestControl: evalauteCondition: conditions parts=" + conditionParts.length);
-        if (conditionParts.length != 2) {
+        if (conditionParts.length > 2) {
             System.err.println("QuestControl: evalauteCondition: Operator exists more than once in the condition!");
-            return true;
+            return false;
+        } else if (conditionParts.length == 0) {
+            System.err.println("QuestControl: evalauteCondition: Operator does not exist in the condition!");
+            return false;
         }
         
         String leftExpression = conditionParts[0];
@@ -54,7 +57,12 @@ public abstract class QuestControl {
         String leftValue = evaluateExpression(leftExpression);
         System.out.println("QuestControl: evalauteCondition: leftExpression translated=" + leftValue);
         
-        String rightExpression = conditionParts[1];
+        String rightExpression;
+        if (conditionParts.length == 1) {
+            rightExpression = "";
+        } else {
+            rightExpression = conditionParts[1];
+        }
         System.out.println("QuestControl: evalauteCondition: rightExpression raw=" + rightExpression);
         String rightValue = evaluateExpression(rightExpression);
         System.out.println("QuestControl: evalauteCondition: rightExpression translated=" + rightValue);

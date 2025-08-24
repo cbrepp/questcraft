@@ -1,6 +1,7 @@
 package app;
 
 import app.model.BaseModel;
+import app.model.Coordinates;
 import app.model.SpriteModel;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -143,8 +144,8 @@ public class SWTApplication extends ApplicationController {
         shell.setText(view.name);
 
         // Size the application window        
-        Point dimensions = getDimensions(view.backgroundImage);
-        shell.setSize(dimensions);
+        Coordinates dimensions = getDimensions(view.backgroundImage);
+        shell.setSize(dimensions.x, dimensions.y);
         
         // Set the application icon
         Image iconImage = null;
@@ -393,7 +394,7 @@ public class SWTApplication extends ApplicationController {
             composite.setLayout(null);
             
             String appImageFile = this.parentView.backgroundImage;
-            Point dimensions = getDimensions(appImageFile);
+            Coordinates dimensions = getDimensions(appImageFile);
             composite.setBounds(0, 0, dimensions.x, dimensions.y);
             
             tab.setControl(composite);
@@ -431,7 +432,7 @@ public class SWTApplication extends ApplicationController {
             // Not using a layout allows controls to overlay.  This is needed so controls can display on top of the text area.
             StyledText textArea = new StyledText(composite, SWT.NONE);
             String appImageFile = this.parentView.backgroundImage;
-            Point dimensions = getDimensions(appImageFile);
+            Coordinates dimensions = getDimensions(appImageFile);
             textArea.setBounds(0, 0, dimensions.x, dimensions.y);
             textArea.moveAbove(composite);
             textArea.setEditable(false);
@@ -481,17 +482,18 @@ public class SWTApplication extends ApplicationController {
         }
     }
     
-    public static Point getDimensions(String imageFile) {
-        System.out.println("SWTApplication: getDimensions: imageFile=" + imageFile);
-        Point dimensions = null;
-        try (InputStream inputStream = SWTApplication.class.getResourceAsStream(imageFile)) {
+    @Override
+    public Coordinates getDimensions(String imageFileName) {
+        System.out.println("SWTApplication: getDimensions: imageFileName=" + imageFileName);
+        Coordinates dimensions = null;
+        try (InputStream inputStream = SWTApplication.class.getResourceAsStream(imageFileName)) {
             if (inputStream == null) {
-                throw new IllegalArgumentException("Image not found at path: " + imageFile);
+                throw new IllegalArgumentException("Image not found at path: " + imageFileName);
             }
             BufferedImage bufferedImage = ImageIO.read(inputStream);
-            dimensions = new Point(bufferedImage.getWidth(), bufferedImage.getHeight());
+            dimensions = new Coordinates(bufferedImage.getWidth(), bufferedImage.getHeight());
         } catch (IOException e) {
-            throw new RuntimeException("Failed to load image from path: " + imageFile, e);
+            throw new RuntimeException("Failed to load image from path: " + imageFileName, e);
         }
         return dimensions;
     }
@@ -548,7 +550,7 @@ public class SWTApplication extends ApplicationController {
     @Override
     public int getColumns(String fileName) {
         System.out.println("SWTApplication: getColumns: fileName=" + fileName);
-        Point dimensions = getDimensions(fileName);
+        Coordinates dimensions = getDimensions(fileName);
         int columns = getColumns(dimensions.x);
         return columns;
     }
@@ -556,7 +558,7 @@ public class SWTApplication extends ApplicationController {
     @Override
     public int getRows(String fileName) {
         System.out.println("SWTApplication: getRows: fileName=" + fileName);
-        Point dimensions = getDimensions(fileName);
+        Coordinates dimensions = getDimensions(fileName);
         int rows = getRows(dimensions.x);
         return rows;
     }
@@ -1098,7 +1100,7 @@ public class SWTApplication extends ApplicationController {
         Composite composite = this.tabCompositeMap.get(viewName);
 
         final Image image = loadImage(fileName);
-        Point dimensions = getDimensions(fileName);
+        Coordinates dimensions = getDimensions(fileName);
 
         Label label = new Label(composite, SWT.NONE);
         label.setImage(image);
@@ -1131,7 +1133,7 @@ public class SWTApplication extends ApplicationController {
             return row;
         }
         
-        Point dimensions = getDimensions(fileName);
+        Coordinates dimensions = getDimensions(fileName);
         Point coordinates = this.convertToCoordinates(row, column);
         browser.setBounds(coordinates.x + 1, coordinates.y + 1, dimensions.x, dimensions.y);
         browser.moveAbove(textArea);
@@ -1446,8 +1448,11 @@ public class SWTApplication extends ApplicationController {
         System.out.println("SWTApplication: addAnimation: viewName=" + viewName + ", name=" + name + ", row=" + row + ", column=" + column + ", backgroundImageFileName=" + backgroundImageFileName + ", sprite count=" + sprites.size() + ", animationDelay=" + animationDelay + ", listener=" + listener);
         
         Composite composite = this.tabCompositeMap.get(viewName);
-        Point coordinates = this.convertToCoordinates(row, column);
+        StyledText textArea = this.tabStyledTextMap.get(viewName);
+        
+        Point topLeft = this.convertToCoordinates(row, column);
         Image backgroundImage = this.loadImage(backgroundImageFileName);
+        Coordinates widthAndHeight = this.getDimensions(backgroundImageFileName);
         Map<String, Image> spriteImages = new HashMap();
         this.sprites = sprites;
         for (SpriteModel sprite : sprites) {
@@ -1461,20 +1466,27 @@ public class SWTApplication extends ApplicationController {
             spriteImages.put(sprite.imageFile, spriteImage);
         }
         Canvas canvas = new Canvas(composite, SWT.DOUBLE_BUFFERED); // Use double buffering for smoother animation
+        canvas.setBackgroundImage(backgroundImage);
+        canvas.moveAbove(textArea);
+        canvas.setBounds(topLeft.x, topLeft.y, widthAndHeight.x, widthAndHeight.y);
         canvas.addListener(SWT.Paint, (Event e) -> {
+            System.out.println("SWTApplication: addAnimation: painting canvas: entered, drawing image at " + topLeft.x + "," + topLeft.y);
             GC gc = e.gc;
             
             // Draw background image
-            gc.drawImage(backgroundImage, coordinates.x, coordinates.y);
+            System.out.println("SWTApplication: addAnimation: painting canvas: no sprites!");
+            gc.drawImage(backgroundImage, topLeft.x, topLeft.y);
             
             // Draw each sprite
             // TODO - Should the sprites be drawn first or second?
             if (this.sprites == null) {
+                System.out.println("SWTApplication: addAnimation: painting canvas: no sprites!");
                 return;
             }
             
             for (SpriteModel sprite : this.sprites) {
                 if (sprite.imageFile == null) {
+                    System.out.println("SWTApplication: addAnimation: painting canvas: skipping sprite with no image file!");
                     continue;
                 }
                 
@@ -1490,15 +1502,18 @@ public class SWTApplication extends ApplicationController {
                                  0, 0, newWidth, newHeight);
                 */
                 
+                System.out.println("SWTApplication: addAnimation: painting canvas: drawing " + sprite.imageFile + " at " + sprite.x + "," + sprite.y);
                 gc.drawImage(spriteImages.get(sprite.imageFile), sprite.x, sprite.y);
             }
         });
         final EventListener timerListener = new EventListener() {
             @Override
             public void onEvent(String eventName, Object eventValue) {
+                System.out.println("SWTApplication: addAnimation: onEvent: viewName=" + viewName + ", redrawing canvas");
                 SWTApplication.this.sprites = listener.onAnimate();
                 canvas.redraw();
                 if (SWTApplication.this.sprites != null) {
+                    System.out.println("SWTApplication: addAnimation: onEvent: viewName=" + viewName + ", sprites so resetting timer, sprites=" + SWTApplication.this.sprites.size());
                     SWTApplication.this.setTimer(name, animationDelay, this);
                 }
             }

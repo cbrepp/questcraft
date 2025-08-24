@@ -9,13 +9,17 @@ import quest.model.Book;
  * 
  * The following resources were provided courtesy of the respective authors and are also for personal use only:
  * achievement.wav - "An uplifting and straight forward orchestral jingle achiecement completed sound to be used in fantasy games. Useful for when a character has completed an objective, an achievement or other pleasant events." by LittleRobotSoundFactory (https://freesound.org/people/LittleRobotSoundFactory/sounds/270404/)
+ * action-figure-female.png, action-figure-female-red.png, action-figure-male.png, action-figure-male-red.png - "Kids, Black, Boy royalty-free vector graphic. Free for use & download." by clker-free-vector-images-3736 (https://pixabay.com/vectors/kids-black-boy-silhouette-girl-303544/)
+ * action-figure-owl.png, action-figure-owl-red.png - "Owl, Bird, Mascot royalty-free vector graphic. Free for use & download." by GlyphX (https://pixabay.com/vectors/owl-bird-mascot-logo-wings-design-5466568/)
  * app.jpg - "Vision, Nature, Future royalty-free stock illustration. Free for use & download." by TheDigitalArtist (https://pixabay.com/illustrations/vision-future-dream-fantasy-book-8386199/)
  * arcade.jpg - Teddy bear, Arcade, Claw machines image. Free for use. (https://pixabay.com/photos/teddy-bear-arcade-claw-machines-7558723/)
  * arrow.mp3 - "arrow-shot.mp3, An arrow being shot as part of my iPad game Knights vs Knightesses (http://versuspad.com). This sound is a simulation." by JPhilipp (https://freesound.org/people/JPhilipp/sounds/119060/)
+ * arrow.png - "Arrow, Bow, Weapon royalty-free vector graphic. Free for use & download." by OpenClipart-Vectors (https://pixabay.com/vectors/arrow-bow-weapon-medieval-weapon-161517/)
  * banging-door.mp3 - "Creepy Metal Door Bang" by qubodup (https://freesound.org/people/qubodup/sounds/448947/)
  * bionic-bunny.jpg - Bionic Bunny Soldier by Zara
  * bionic-bunny-commander.jpg - Bionic Bunny Commander by Zara
  * book.png - "Empty book" by Darkmoon_Art (https://pixabay.com/illustrations/reserve-pages-empty-book-open-book-3057904/)
+ * boss-battle.mp3 - Neon Dreams: A Retro-Futuristic Synthwave Track - MP3 Mixdown (https://freesound.org/people/Robbnix/sounds/685538/)
  * bunny.jpg -  Rabbit, Field, Animal image. Free for use. by SvenZiegler (https://pixabay.com/photos/rabbit-field-animal-field-hare-6063733/)
  * bunny2.jpg - Hare, Animal, Mammal image. Free for use. by apnear40 (https://pixabay.com/photos/hare-animal-mammal-wildlife-fauna-8585802/)
  * bunny-caught.jpg - "Ai Generated, Rabbit, Easter Bunny royalty-free stock illustration. Free for use & download." by Alexandra_Koch (https://pixabay.com/illustrations/ai-generated-rabbit-easter-bunny-7940373/)
@@ -23,6 +27,7 @@ import quest.model.Book;
  * castle.mp3 - Royal vibes (harp guitar and tuba) (https://freesound.org/people/kbrecordzz/sounds/595865/)
  * castle-interior.jpg - Ai Generated Gothic Castle royalty-free stock illustration. Free for use & download. (https://pixabay.com/illustrations/ai-generated-gothic-castle-room-8469399/)
  * cat-eyes.gif - "a close up of a cat 's eyes with a dark background" (https://tenor.com/view/cat-eyes-blink-gif-5820964)
+ * cat-missile-left.png and cat-missile-right.png - Cat Kitten Animal royalty-free vector graphic. Free for use & download. (https://pixabay.com/vectors/cat-kitten-lazy-tired-sleepy-pet-8633535/)
  * catapult.wav - "06177 wire launch.wav, Launching wire harpoon - simulated" by Robinhood76 (https://freesound.org/people/Robinhood76/sounds/329683/)
  * cat-storm.gif - "Cat, Love, Rain GIF. Free for use." by u_h70uxspxzf (https://pixabay.com/gifs/cat-love-rain-lightning-cave-974/)
  * clouds.jpg - OpenClipart-Vectors (https://pixabay.com/vectors/sunrise-clouds-rising-sun-sky-sun-153600/)
@@ -88,6 +93,7 @@ import quest.model.Book;
  * night-owl.gif - "Owl, Bird, Barn owl GIF. Free for use." by KiFoKu (https://pixabay.com/gifs/owl-bird-barn-owl-plumage-beak-17686/)
  * night-owl.jpg - "Scary, Owl, Eyes image. Free for use." by Skitterphoto (https://pixabay.com/photos/scary-owl-eyes-spooky-halloween-3595742/)
  * night-owl.png - "Ai Generated, Bird, Nature royalty-free vector graphic. Free for use & download." by MickeyLIT (https://pixabay.com/vectors/ai-generated-bird-owl-animal-8255570/)
+ * night-owl-sketch.png - "Ai Generated, Owl, Bird royalty-free vector graphic. Free for use & download." by GDJ (https://pixabay.com/vectors/ai-generated-owl-bird-animal-8928309/)
  * open-door.wav - "A french double door opening and closing. Recorded at The Home Depot." by designerschoice (https://freesound.org/people/designerschoice/sounds/806875/)
  * paper.wav - "Crumpled Up Paper, Me crumpling up a paper. Recorded with a Genius MIC-01A Black 3.5mm Connector Metallic Microphone." by Natty23 (https://freesound.org/people/Natty23/sounds/257272/)
  * ping-pong.wav - "Hit a ping pong ball with a bat. Recorded in a small room for a short distance. Recorded with Zoom H6 recorder. The sound was postprocessed." by 14FPanskaBubik_Lukas (https://freesound.org/people/14FPanskaBubik_Lukas/sounds/418556/)
@@ -117,6 +123,7 @@ import quest.model.Book;
  * victory.mp3 - "This sound was generated using an AI model (elevenlabs). No real-world recording was used ." by mokasza (https://freesound.org/people/mokasza/sounds/810330/)
  * wayne-chung-classic.jpg - "Image of Wayne Chung manipulated by AI to make him look like a video game character" by repp
  * wayne-chung-dragon.jpg - "Image of Wayne Chung manipulated by AI to make him look like an epic dragon lord" by repp
+ * wayne-chung-dark.jpg - "Image of Wayne Chung manipulated by AI to make him look like dark and cool" by repp
  * wayne-chung.jpg - "Image of Wayne Chung wondering what's going on" by repp
  * wilderness.jpg and wilderness-full.jpg - Nature, Fog, Travel image. Free for use. by jameswheeler (https://pixabay.com/photos/nature-fog-travel-foggy-haze-mist-3787200/)
  * wilderness.mp3 - birds_210513_0088.mp3 (https://freesound.org/people/titi2/sounds/571247/)
@@ -125,6 +132,7 @@ import quest.model.Book;
  * wooden-sign.png - "Sign, Wood, Wooden royalty-free vector graphic. Free for use & download." by OpenClipart-Vectors (https://pixabay.com/vectors/sign-wood-wooden-brown-rustic-576261/)
  * woods.mp3 - forestsurroundings.mp3 (https://freesound.org/people/Luftrum/sounds/48411/)
  * woods.png - "Ai Generated, Woods, Forest royalty-free stock illustration. Free for use & download." by FreeFunArt (https://pixabay.com/illustrations/ai-generated-woods-forest-fog-8684933/)
+ * zap.wav - "Electric zap sound" by michael_grinnell (https://freesound.org/people/michael_grinnell/sounds/512471/)
  * zara.mp3 - 050816 a crowded grocery store Sapporo.mp3 (https://freesound.org/people/pflanigan/sounds/390254/)
  * 
  * @author repp

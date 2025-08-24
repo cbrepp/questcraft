@@ -96,7 +96,7 @@ public class Application extends app.ApplicationView {
 
         app.Color titleColor = new app.Color(74, 74, 74);   // Dark gray
         app.Color infoTextColor = new Color(139, 0, 139); // Dark magenta
-        appController.displayFloatingText(this.name, this.flavorText, 14, 42, 15, 88, infoTextColor, 12, FontStyle.ITALIC, "Minecraft");
+        appController.displayFloatingText(this.name, this.flavorText, 14, 40, 15, 90, infoTextColor, 12, FontStyle.ITALIC, "Minecraft");
         appController.displayFloatingText(this.name, "- JAVA  EDITION -", 11, 42, 13, 88, titleColor, 32, FontStyle.BOLD, "Minecraft");
         appController.displayFloatingText(this.name, "QUESTCRAFT", 7, 32, 11, 98, titleColor, 64, FontStyle.BOLD, "Minecraft");
 
@@ -226,6 +226,27 @@ public class Application extends app.ApplicationView {
         flipBookSubpage.isSpell = true;
         flipBookSubpage.contents.add("<flip-book>");
         book.subpages.put("FLIP BOOK", flipBookSubpage);
+        
+        // Once the player has selected a difficulty level, allow them to skip straight to the first Night Owl miniboss game
+        Story nightOwlSubpage = new Story();
+        nightOwlSubpage.isSpell = true;
+        nightOwlSubpage.contents.add("<variable-set condition=\"variable difficulty!=\" is-Gianni-tamed true>");
+        nightOwlSubpage.contents.add("<variable-set condition=\"variable difficulty!=\" is-dragon-defeated true>");
+        nightOwlSubpage.contents.add("<subpage-display condition=\"variable difficulty!=\" Chapter 1 Equipment>");
+        nightOwlSubpage.contents.add("<goto-act condition=\"variable difficulty!=\" Chapter 1>");
+        nightOwlSubpage.contents.add("<goto-scene condition=\"variable difficulty!=\" MYLEE'S ELEVATOR>");
+        book.subpages.put("NIGHT OWL", nightOwlSubpage);
+        
+        Story chapter1EquipmentSubpage = new Story();
+        chapter1EquipmentSubpage.contents.add("<inventory-add condition=\"inventory-has Gold!=true\" true Gold>");
+        chapter1EquipmentSubpage.contents.add("<inventory-add condition=\"inventory-has Ring of Taming!=true\" true Ring of Taming>");
+        chapter1EquipmentSubpage.contents.add("<inventory-add condition=\"player=Greyson\" true Greyson's Great Bow>");
+        chapter1EquipmentSubpage.contents.add("<inventory-add condition=\"player=Greyson\" true UNO Reverse>");
+        chapter1EquipmentSubpage.contents.add("<inventory-add condition=\"player=Zara\" true Zara's Sword>");
+        chapter1EquipmentSubpage.contents.add("<inventory-add condition=\"player=Zara\" true Cat-apult>");
+        chapter1EquipmentSubpage.contents.add("<inventory-add condition=\"player=Shmebulock\" true Cosmic Wonder #1>");
+        chapter1EquipmentSubpage.contents.add("<inventory-add condition=\"player=Shmebulock\" true Faery Launcher>");
+        book.subpages.put("Chapter 1 Equipment", chapter1EquipmentSubpage);
         
         Act opening = new Act();
         opening.firstSceneName = "Title Page";
@@ -377,7 +398,7 @@ public class Application extends app.ApplicationView {
         introduction.firstSceneName = "Introduction";
         introduction.nextActName = "Chapter 1";
         book.acts.put("Introduction", introduction);
-        
+                
         Scene introScene = new Scene();
         introScene.firstPageName = "1a";
         introScene.hidePageHeaders = false;
@@ -683,8 +704,6 @@ public class Application extends app.ApplicationView {
         page1.story.contents.add("<u>CHAPTER 1</u>");
         page1.story.contents.add("<br>");
         page1.story.contents.add("A Dragon in the Kingdom");
-        page1.story.contents.add("<variable-set is-Gianni-tamed false>");
-        page1.story.contents.add("<variable-set is-fluff-tamed false>");
         page1.story.contents.add("<set-player-direction SOUTH>");
         page1.story.contents.add("<observed-scene-add MYLEE'S ELEVATOR>");
         chapterScene.pages.put("1", page1);
@@ -727,7 +746,7 @@ public class Application extends app.ApplicationView {
         mainPage.subpages.put("Has Gold", hasGoldSubpage);
         
         Story dragonAttackSubpage = new Story();
-        dragonAttackSubpage.contents.add("<color 0+0+0><play-sound /assets/sounds/banging-door.mp3 true><play-sound /assets/sounds/heavy-wings.mp3 true>You proudly step back into the elevator with your <inventory Gold>");
+        dragonAttackSubpage.contents.add("<color 0+0+0><play-sound /assets/sounds/banging-door.mp3 true><play-sound /assets/sounds/heavy-wings.mp3 true>You proudly step back into the elevator with your hard-earned <inventory Gold>.");
         dragonAttackSubpage.contents.add("<br>");
         dragonAttackSubpage.contents.add("However, Mylee does NOT look happy.");
         dragonAttackSubpage.contents.add("<br>");
@@ -762,7 +781,7 @@ public class Application extends app.ApplicationView {
         
         Story nightOwlAttackSubpage = new Story();
         nightOwlAttackSubpage.contents.add("");
-        nightOwlAttackSubpage.contents.add("<color 0+0+0><play-sound /assets/sounds/banging-door.mp3 true><play-sound /assets/sounds/heavy-wings.mp3 true>You proudly step back into the elevator with your <inventory Gold>");
+        nightOwlAttackSubpage.contents.add("<color 0+0+0><play-sound /assets/sounds/banging-door.mp3 true><play-sound /assets/sounds/heavy-wings.mp3 true>You proudly step back into the elevator with your hard-earned <inventory Gold>.");
         nightOwlAttackSubpage.contents.add("<br>");
         nightOwlAttackSubpage.contents.add("However, Mylee does NOT look happy.");
         nightOwlAttackSubpage.contents.add("<br>");
@@ -792,15 +811,19 @@ public class Application extends app.ApplicationView {
         myleesElevator.pages.put("Night Owl", nightOwlPage);
         
         Story nightOwlMinigameSubpage = new Story();
-        nightOwlMinigameSubpage.contents.add("<color 0+0+0><play-sound /assets/sounds/banging-door.mp3 true><play-sound /assets/sounds/heavy-wings.mp3 true>You proudly step back into the elevator with your <inventory Gold>");
+        nightOwlMinigameSubpage.contents.add("<color 0+0+0><play-sound /assets/sounds/banging-door.mp3 true><play-sound /assets/sounds/heavy-wings.mp3 true>You proudly step back into the elevator with your hard-earned <inventory Gold>.");
         nightOwlMinigameSubpage.contents.add("<br>");
         nightOwlMinigameSubpage.contents.add("However, Mylee does NOT look happy.");
         nightOwlMinigameSubpage.contents.add("<br>");
         nightOwlMinigameSubpage.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Please tell me you found a long-range weapon before coming back here with that gold!!!<quote>");
         nightOwlMinigameSubpage.contents.add("<br>");
-        nightOwlMinigameSubpage.contents.add("<player-symbol> YOU: <quote>Of course!  Gianni gave me this <inventory condition=\"player=Greyson\" UNO Reverse><inventory condition=\"player=Zara\" Zara's Sword><inventory condition=\"player=Shmebulock\" Faery Launcher>.<quote>");
+        nightOwlMinigameSubpage.contents.add("<player-symbol> YOU: <quote>Of course!  Gianni gave me this rather impressive <inventory condition=\"player=Greyson\" Greyson's Great Bow><inventory condition=\"player=Zara\" Cat-apult><inventory condition=\"player=Shmebulock\" Faery Launcher>.<quote>");
         nightOwlMinigameSubpage.contents.add("<br>");
-        nightOwlMinigameSubpage.contents.add("You turn towards the elevator doors where a loud banging sound is coming from the outside.  It seems that something wants in and it's going to break through.");
+        nightOwlMinigameSubpage.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Good because I can sense that my brother is coming down the stairwell.  You take care of the beast that's on the other side of those doors and I'll take care of Big Chung.<quote>");
+        nightOwlMinigameSubpage.contents.add("<br>");
+        nightOwlMinigameSubpage.contents.add("There are two things to worry about?  You turn towards the elevator doors where a loud banging sound is coming from the outside.  It seems that something wants in and it's going to break through unless you do something.");
+        nightOwlMinigameSubpage.contents.add("<br>");
+        nightOwlMinigameSubpage.contents.add("If it's not Big Chung, what could be banging on the doors?");
         nightOwlMinigameSubpage.contents.add("<br></color>");
         nightOwlMinigameSubpage.contents.add("<get-validated-input action *Open Elevator Doors and Attack>");
         nightOwlMinigameSubpage.contents.add("<second-page>");
@@ -808,33 +831,45 @@ public class Application extends app.ApplicationView {
         mainPage.subpages.put("Night Owl Minigame", nightOwlMinigameSubpage);
         
         Story kickSomeTailFeathersSubpage = new Story();
-        kickSomeTailFeathersSubpage.contents.add("<variable-set night-owl-hp 100><goto-page Night Owl Minigame>");
+        kickSomeTailFeathersSubpage.contents.add("<variable-set minigame-display false><animation-init><stop-sound><variable-set night-owl-hp 100><play-sound /assets/sounds/elevator-open.mp3 false><play-sound /assets/sounds/heavy-wings.mp3 false><play-sound /assets/sounds/boss-battle.mp3 true><goto-page Night Owl Minigame>");
         mainPage.subpages.put("INPUT action=Open Elevator Doors and Attack", kickSomeTailFeathersSubpage);
         
         // TODO - Reimplement MonsterShooter in TQ.BAS
         // TODO - Add spell for going straight to this after selecting your player
         // TODO - How to know that the page needs to be refreshed when the player is hit and hp needs to be updated?
         Page nightOwlMinigamePage = new Page();
-        nightOwlMinigamePage.story.contents.add("<subpage-display Player Stats><br><color 0+0+0><i>INSTRUCTIONS: Use the buttons or arrow keys to move left or right and launch an upwards attack.</i>");
+        nightOwlMinigamePage.story.contents.add("<first-page><color 0+0+0>You open the elevator doors and wave your weapon in the face of none other than Night Owl himself.  Night Owl sees immediately that you have a weapon worthy of battle and flies up into the sky to begin an aerial assault.");
         nightOwlMinigamePage.story.contents.add("<br>");
-        nightOwlMinigamePage.story.contents.add("<subpage-display condition=\"animation-on=true\" PauseUnpause><get-validated-input condition=\"animation-on!=true\" action *Continue>");
+        nightOwlMinigamePage.story.contents.add("This is it!  It's time to fight!!!");
+        nightOwlMinigamePage.story.contents.add("<br>");
+        nightOwlMinigamePage.story.contents.add("<i>INSTRUCTIONS: Use the buttons or arrow keys to move left or right and launch an upwards attack.</i>");
+        nightOwlMinigamePage.story.contents.add("<br>");
+        nightOwlMinigamePage.story.contents.add("<subpage-display condition=\"animation-on=true\" PauseUnpause><get-validated-input condition=\"animation-started!=true\" action *Continue>");
         nightOwlMinigamePage.story.contents.add("</color>");
         nightOwlMinigamePage.story.contents.add("<button-row>");
         nightOwlMinigamePage.story.contents.add("<get-validated-input align=right *navigation-prompt &left; Move Left+&up; Launch+&right; Move Right>");
         nightOwlMinigamePage.story.contents.add("<second-page>");
-        nightOwlMinigamePage.story.contents.add("");
+        nightOwlMinigamePage.story.contents.add("<monster-shooter condition=\"minigame-display=true\" night-owl left /assets/images/wilderness3.jpg /assets/images/action-figure-male.png /assets/images/action-figure-male-red.png /assets/images/arrow.png /assets/images/arrow.png /assets/sounds/arrow.mp3 /assets/images/action-figure-owl.png /assets/images/action-figure-owl-red.png /assets/images/lightning-bolt-left-mini.png /assets/images/lightning-bolt-left.png /assets/images/lightning-bolt-left-chungus.png /assets/images/lightning-bolt-right-mini.png /assets/images/lightning-bolt-right.png /assets/images/lightning-bolt-right-chungus.png /assets/sounds/zap.wav /assets/sounds/hooting.mp3 true>");
+        nightOwlMinigamePage.story.contents.add("<second-page>");
+        nightOwlMinigamePage.story.contents.add("<if condition=\"minigame-display!=true\" BOSS: Night Owl>");
+        nightOwlMinigamePage.story.contents.add("<if condition=\"minigame-display!=true\" LEVEL: 1>");
+        nightOwlMinigamePage.story.contents.add("<if condition=\"minigame-display!=true\" ATTACK: Lightning Bolts>");
+        nightOwlMinigamePage.story.contents.add("<if condition=\"minigame-display!=true\" STRENGTHS: Immune to all close-range attacks>");
+        nightOwlMinigamePage.story.contents.add("<if condition=\"minigame-display!=true\" WEAKNESSES: Long-range attacks>");
+        nightOwlMinigamePage.story.contents.add("<br condition=\"minigame-display!=true\">");
+        nightOwlMinigamePage.story.contents.add("<image condition=\"minigame-display!=true\" center /assets/images/night-owl-sketch.png>");
         myleesElevator.pages.put("Night Owl Minigame", nightOwlMinigamePage);
         
         Story moveLeftSubpage = new Story();
-        moveLeftSubpage.contents.add("<variable-set animation-left true>");
+        moveLeftSubpage.contents.add("<variable-set condition=\"animation-on=true\" animation-left true>");
         nightOwlMinigamePage.subpages.put("INPUT navigation-prompt= Move Left", moveLeftSubpage);
         
         Story moveRightSubpage = new Story();
-        moveRightSubpage.contents.add("<variable-set animation-left true>");
+        moveRightSubpage.contents.add("<variable-set condition=\"animation-on=true\" animation-right true>");
         nightOwlMinigamePage.subpages.put("INPUT navigation-prompt= Move Right", moveRightSubpage);
         
         Story launchSubpage = new Story();
-        launchSubpage.contents.add("<variable-set animation-up true>");
+        launchSubpage.contents.add("<variable-set condition=\"animation-on=true\" animation-up true>");
         nightOwlMinigamePage.subpages.put("INPUT navigation-prompt= Launch", launchSubpage);
         
         Story pauseUnpauseSubpage = new Story();
@@ -852,9 +887,8 @@ public class Application extends app.ApplicationView {
         // TODO - If animation hasn't started (night-owl-hp and player's hp aren't zero) then start animation
         // TODO - Show gif of darkness and eyes, then elevator over black backdrop, then Mylee explaing that Big Chung showed up during the fight and she distracted him by making fun of his weight and challenging him to go on a light diet, only for him to take her literally and eat all of the light.
         Story continueSubpage = new Story();
-        continueSubpage.contents.add("<second-page condition=\"minigame-started!=true\">");
-        continueSubpage.contents.add("<arcade-shooter condition=\"minigame-started!=true\" /assets/images/wilderness.jpg TODO-music TODO-player-sprite TODO-missile-left TODO-missile-right TODO-monster-image TODO-monster-sound TODO-monster-visible>");
-        continueSubpage.contents.add("<variable-set condition=\"minigame-started!=true\" minigame-started true>");
+        continueSubpage.contents.add("<variable-set condition=\"minigame-display!=true\" minigame-display true>");
+        continueSubpage.contents.add("<page-refresh>");
         nightOwlMinigamePage.subpages.put("INPUT action=Continue", continueSubpage);
         
         Story leaveElevatorSubpage = new Story();
@@ -993,7 +1027,8 @@ public class Application extends app.ApplicationView {
         myleesElevator.pages.put("Get Me Some White Meat Chicken!", getMeWhiteMeatChickenPage);
         
         Story exitElevatorSubpage = new Story();
-        eyesOfChungSubpage.contents.add("TODO - Change to page that describes the elevator falling back down the shaft, then takes the player to chapter 2");
+        exitElevatorSubpage.contents.add("TODO - Change to page that describes the elevator falling back down the shaft, then takes the player to chapter 2");
+        exitElevatorSubpage.contents.add("<goto-act Chapter 2>");
         mainPage.subpages.put("INPUT action=Leave Elevator", exitElevatorSubpage);
         
         Scene wilderness2 = new Scene();
@@ -2299,6 +2334,26 @@ public class Application extends app.ApplicationView {
         Story returnSubpage = new Story();
         returnSubpage.contents.add("<goto-page main>");
         dragonDefeatedPage.subpages.put("INPUT action=Return To Cave Entrance", returnSubpage);
+        
+        Act chapter2 = new Act();
+        chapter2.firstSceneName = "Chapter";
+        book.acts.put("Chapter 2", chapter2);
+        
+        chapterScene = new Scene();
+        chapterScene.firstPageName = "1";
+        chapterScene.hidePageHeaders = true;
+        chapterScene.nextSceneName = "MYLEE'S ELEVATOR";
+        chapterScene.soundFileName = "";
+        chapter2.scenes.put("Chapter", chapterScene);
+        
+        page1 = new Page();
+        page1.story.contents.add("<image center /assets/images/wayne-chung-dark.jpg>");
+        page1.story.contents.add("<second-page>");
+        page1.story.contents.add("<u>CHAPTER 2</u>");
+        page1.story.contents.add("<br>");
+        page1.story.contents.add("A Darkness over the Land");
+        page1.story.contents.add("<set-player-direction SOUTH>");
+        chapterScene.pages.put("1", page1);
         
         book.highScores = new ArrayList<>();
         book.highScores.add(new HighScore(300, "GRT", LocalDate.of(2024, Month.MARCH, 9)));
