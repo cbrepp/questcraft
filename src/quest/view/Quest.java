@@ -135,6 +135,7 @@ public class Quest extends app.ApplicationView {
         this.questControls.put(PlayerHPChangeControl.NAME, new PlayerHPChangeControl(this));
         this.questControls.put(PlayerHPControl.NAME, new PlayerHPControl(this));
         this.questControls.put(PlayerMPChangeControl.NAME, new PlayerMPChangeControl(this));
+        this.questControls.put(PlayerMPControl.NAME, new PlayerMPControl(this));
         this.questControls.put(PlayerSymbolControl.NAME, new PlayerSymbolControl(this));
         this.questControls.put(PlayerSymbolSetControl.NAME, new PlayerSymbolSetControl(this));
         this.questControls.put(PlayerXPChangeControl.NAME, new PlayerXPChangeControl(this));
@@ -764,11 +765,11 @@ public class Quest extends app.ApplicationView {
         }
         
         if (delta < 0) {
-            this.appController.displayOverlay(this.name, overlayName, new Color(128, 0, 128), null, null, null, null, null);
-            appController.setTimer(overlayName, 0.5, this);
+            //this.appController.displayOverlay(this.name, overlayName, new Color(128, 0, 128), null, null, null, null, null);
+            //appController.setTimer(overlayName, 0.5, this);
         } else if (delta > 0) {
-            this.appController.displayOverlay(this.name, overlayName, new Color(128, 0, 128), null, null, null, null, null);
-            appController.setTimer(overlayName, 0.5, this);
+            //this.appController.displayOverlay(this.name, overlayName, new Color(128, 0, 128), null, null, null, null, null);
+            //appController.setTimer(overlayName, 0.5, this);
         }  
 
         if (this.playerXP < 0) {

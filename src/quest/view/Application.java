@@ -735,7 +735,7 @@ public class Application extends app.ApplicationView {
         noGoldSubpage.contents.add("So this elevator has a sink?  Does she live here?");
         noGoldSubpage.contents.add("<br>");
         noGoldSubpage.contents.add("You have so many questions.  But for now, you better leave.");
-        noGoldSubpage.contents.add("<br></color");
+        noGoldSubpage.contents.add("<br></color>");
         noGoldSubpage.contents.add("<get-validated-input action Listen+&down; Leave Elevator>");
         noGoldSubpage.contents.add("<second-page>");
         noGoldSubpage.contents.add("<image center /assets/images/mylee-sink.jpg>");
@@ -838,56 +838,64 @@ public class Application extends app.ApplicationView {
         // TODO - Add spell for going straight to this after selecting your player
         // TODO - How to know that the page needs to be refreshed when the player is hit and hp needs to be updated?
         Page nightOwlMinigamePage = new Page();
+        nightOwlMinigamePage.story.contents.add("<second-page>");
+        nightOwlMinigamePage.story.contents.add("<subpage-display condition=\"variable minigame-display=true\" Monster Shooter>");
+        nightOwlMinigamePage.story.contents.add("<second-page>");
+        nightOwlMinigamePage.story.contents.add("<if condition=\"variable minigame-display!=true\" BOSS: Night Owl>");
+        nightOwlMinigamePage.story.contents.add("<if condition=\"variable minigame-display!=true\" LEVEL: 1>");
+        nightOwlMinigamePage.story.contents.add("<if condition=\"variable minigame-display!=true\" ATTACK: Lightning>");
+        nightOwlMinigamePage.story.contents.add("<if condition=\"variable minigame-display!=true\" STRENGTHS: Immune to all close-range attacks>");
+        nightOwlMinigamePage.story.contents.add("<if condition=\"variable minigame-display!=true\" WEAKNESSES: Long-range attacks>");
+        nightOwlMinigamePage.story.contents.add("<br condition=\"variable minigame-display!=true\">");
+        nightOwlMinigamePage.story.contents.add("<image condition=\"variable minigame-display!=true\" center /assets/images/night-owl-sketch.png>");
         nightOwlMinigamePage.story.contents.add("<first-page><color 0+0+0>You open the elevator doors and wave your weapon in the face of none other than Night Owl himself.  Night Owl sees immediately that you have a weapon worthy of battle and flies up into the sky to begin an aerial assault.");
         nightOwlMinigamePage.story.contents.add("<br>");
         nightOwlMinigamePage.story.contents.add("This is it!  It's time to fight!!!");
         nightOwlMinigamePage.story.contents.add("<br>");
         nightOwlMinigamePage.story.contents.add("<i>INSTRUCTIONS: Use the buttons or arrow keys to move left or right and launch an upwards attack.</i>");
         nightOwlMinigamePage.story.contents.add("<br>");
-        nightOwlMinigamePage.story.contents.add("<subpage-display condition=\"animation-on=true\" PauseUnpause><get-validated-input condition=\"animation-started!=true\" action *Continue>");
+        nightOwlMinigamePage.story.contents.add("<subpage-display condition=\"variable animation-on=true\" PauseUnpause><get-validated-input condition=\"variable animation-started!=true\" action *Continue>");
         nightOwlMinigamePage.story.contents.add("</color>");
         nightOwlMinigamePage.story.contents.add("<button-row>");
         nightOwlMinigamePage.story.contents.add("<get-validated-input align=right *navigation-prompt &left; Move Left+&up; Launch+&right; Move Right>");
-        nightOwlMinigamePage.story.contents.add("<second-page>");
-        nightOwlMinigamePage.story.contents.add("<monster-shooter condition=\"minigame-display=true\" night-owl left /assets/images/wilderness3.jpg /assets/images/action-figure-male.png /assets/images/action-figure-male-red.png /assets/images/arrow.png /assets/images/arrow.png /assets/sounds/arrow.mp3 /assets/images/action-figure-owl.png /assets/images/action-figure-owl-red.png /assets/images/lightning-bolt-left-mini.png /assets/images/lightning-bolt-left.png /assets/images/lightning-bolt-left-chungus.png /assets/images/lightning-bolt-right-mini.png /assets/images/lightning-bolt-right.png /assets/images/lightning-bolt-right-chungus.png /assets/sounds/zap.wav /assets/sounds/hooting.mp3 true>");
-        nightOwlMinigamePage.story.contents.add("<second-page>");
-        nightOwlMinigamePage.story.contents.add("<if condition=\"minigame-display!=true\" BOSS: Night Owl>");
-        nightOwlMinigamePage.story.contents.add("<if condition=\"minigame-display!=true\" LEVEL: 1>");
-        nightOwlMinigamePage.story.contents.add("<if condition=\"minigame-display!=true\" ATTACK: Lightning Bolts>");
-        nightOwlMinigamePage.story.contents.add("<if condition=\"minigame-display!=true\" STRENGTHS: Immune to all close-range attacks>");
-        nightOwlMinigamePage.story.contents.add("<if condition=\"minigame-display!=true\" WEAKNESSES: Long-range attacks>");
-        nightOwlMinigamePage.story.contents.add("<br condition=\"minigame-display!=true\">");
-        nightOwlMinigamePage.story.contents.add("<image condition=\"minigame-display!=true\" center /assets/images/night-owl-sketch.png>");
         myleesElevator.pages.put("Night Owl Minigame", nightOwlMinigamePage);
         
+        Story monsterShooterSubpage = new Story();
+        monsterShooterSubpage.contents.add("<monster-shooter condition=\"variable animation-on!=true\" night-owl left /assets/images/wilderness3.jpg /assets/images/action-figure-male.png /assets/images/action-figure-male-red.png /assets/images/arrow.png /assets/images/arrow.png /assets/sounds/arrow.mp3 /assets/images/action-figure-owl.png /assets/images/action-figure-owl-red.png /assets/images/lightning-bolt-left-mini.png /assets/images/lightning-bolt-left.png /assets/images/lightning-bolt-left-chungus.png /assets/images/lightning-bolt-right-mini.png /assets/images/lightning-bolt-right.png /assets/images/lightning-bolt-right-chungus.png /assets/sounds/zap.wav /assets/sounds/hooting.mp3 true>");
+        nightOwlMinigamePage.subpages.put("Monster Shooter", monsterShooterSubpage);
+        
         Story moveLeftSubpage = new Story();
-        moveLeftSubpage.contents.add("<variable-set condition=\"animation-on=true\" animation-left true>");
+        moveLeftSubpage.contents.add("<variable-set condition=\"variable animation-on=true\" animation-left true>");
         nightOwlMinigamePage.subpages.put("INPUT navigation-prompt= Move Left", moveLeftSubpage);
         
         Story moveRightSubpage = new Story();
-        moveRightSubpage.contents.add("<variable-set condition=\"animation-on=true\" animation-right true>");
+        moveRightSubpage.contents.add("<variable-set condition=\"variable animation-on=true\" animation-right true>");
         nightOwlMinigamePage.subpages.put("INPUT navigation-prompt= Move Right", moveRightSubpage);
         
         Story launchSubpage = new Story();
-        launchSubpage.contents.add("<variable-set condition=\"animation-on=true\" animation-up true>");
+        launchSubpage.contents.add("<variable-set condition=\"variable animation-on=true\" animation-up true>");
         nightOwlMinigamePage.subpages.put("INPUT navigation-prompt= Launch", launchSubpage);
         
         Story pauseUnpauseSubpage = new Story();
-        pauseUnpauseSubpage.contents.add("<get-validated-input condition=\"animation-paused!=true\" action *Pause><get-validated-input condition=\"animation-paused=true\" action *Unpause>");
+        pauseUnpauseSubpage.contents.add("<get-validated-input condition=\"variable animation-paused!=true\" action *Pause><get-validated-input condition=\"variable animation-paused=true\" action *Unpause>");
         nightOwlMinigamePage.subpages.put("PauseUnpause", pauseUnpauseSubpage);
         
         Story pauseSubpage = new Story();
         pauseSubpage.contents.add("<variable-set animation-paused true>");
-        nightOwlMinigamePage.subpages.put("INPUT navigation-prompt=Pause", pauseSubpage);
+        pauseSubpage.contents.add("<play-sound /assets/sounds/pause.mp3 false>");
+        pauseSubpage.contents.add("<page-refresh>");
+        nightOwlMinigamePage.subpages.put("INPUT action=Pause", pauseSubpage);
         
         Story unpauseSubpage = new Story();
         unpauseSubpage.contents.add("<variable-set animation-paused false>");
-        nightOwlMinigamePage.subpages.put("INPUT navigation-prompt=Unpause", unpauseSubpage);
+        unpauseSubpage.contents.add("<play-sound /assets/sounds/pause.mp3 false>");
+        unpauseSubpage.contents.add("<page-refresh>");
+        nightOwlMinigamePage.subpages.put("INPUT action=Unpause", unpauseSubpage);
         
         // TODO - If animation hasn't started (night-owl-hp and player's hp aren't zero) then start animation
         // TODO - Show gif of darkness and eyes, then elevator over black backdrop, then Mylee explaing that Big Chung showed up during the fight and she distracted him by making fun of his weight and challenging him to go on a light diet, only for him to take her literally and eat all of the light.
         Story continueSubpage = new Story();
-        continueSubpage.contents.add("<variable-set condition=\"minigame-display!=true\" minigame-display true>");
+        continueSubpage.contents.add("<variable-set condition=\"variable minigame-display!=true\" minigame-display true>");
         continueSubpage.contents.add("<page-refresh>");
         nightOwlMinigamePage.subpages.put("INPUT action=Continue", continueSubpage);
         
@@ -2105,13 +2113,7 @@ public class Application extends app.ApplicationView {
         listenSubpage.contents.add("<goto-page Listen>");
         mainPage.subpages.put("INPUT action=Listen", listenSubpage);
         Story exploreCaveSubpage = new Story();
-        exploreCaveSubpage.contents.add("<variable-set event 0>");
-        exploreCaveSubpage.contents.add("<variable-set dragon-hp 100>");
-        exploreCaveSubpage.contents.add("<variable-set dragon-attacked false>");
-        exploreCaveSubpage.contents.add("<variable-set dragon-attacking false>");
-        exploreCaveSubpage.contents.add("<play-sound /assets/sounds/dragon.mp3 false>");
-        exploreCaveSubpage.contents.add("<variable-set brandish-weapon false>");
-        exploreCaveSubpage.contents.add("<goto-page Dragon>");
+        exploreCaveSubpage.contents.add("<goto-page Pre-Dragon>");
         mainPage.subpages.put("INPUT action=Explore Cave", exploreCaveSubpage);
         
         listenPage = new Page();
@@ -2141,6 +2143,39 @@ public class Application extends app.ApplicationView {
         //  - Shmebulock's hits and dragon's hits both yeild 25% damage
         //  - Shmebulock attack causes temporary black overlay
         
+        // TODO - Finish integrating this page
+        Page preDragonPage = new Page();
+        preDragonPage = new Page();
+        preDragonPage.story.contents.add("<subpage-display Player Stats><br><color 139+0+0>You begin exploring the cave when something jumps out at you...");
+        preDragonPage.story.contents.add("<br>");
+        preDragonPage.story.contents.add("Oh no!  It's a dragon!!!");
+        preDragonPage.story.contents.add("<br>");
+        preDragonPage.story.contents.add("<if condition=\"inventory-has Gold!=true\" Thankfully you have nothing heavy to weigh you down so you have the option to run away...><if condition=\"inventory-has Gold=true\" Because of your heavy Gold you can't run away.  ><if condition=\"inventory-has UNO Reverse=true\" You need to stand your ground and fight!  You pull out your trusty UNO Reverse...><if condition=\"inventory-has Zara's Sword=true\" You need to stand your ground and fight!  You unsheathe your trusty sword.><if condition=\"inventory-has Cosmic Wonder #1=true\" You need to stand your ground and fight!  You focus on the cosmic wonder you collected and make manifest a terrible fear...>");
+        preDragonPage.story.contents.add("<br>");
+        preDragonPage.story.contents.add("<i><if condition=\"inventory-has UNO Reverse=true\" INSTRUCTIONS: Be prepared to attack as soon as the dragon launches its flames at you.  You need to redirect its attack back at it BEFORE the flames hit you.><if condition=\"inventory-has Zara's Sword=true\" INSTRUCTIONS: Be prepared to attack BEFORE the dragon launches its flames at you.  Strike as soon as you can.><if condition=\"inventory-has Cosmic Wonder #1=true\" INSTRUCTIONS: Be prepared to attack as soon as the dragon's flames hit you.  Your cosmic wonder can punish the dragon for its malice.> </i>");
+        preDragonPage.story.contents.add("</color>");
+        preDragonPage.story.contents.add("<get-validated-input action *Continue>");
+        preDragonPage.story.contents.add("<second-page>");
+        preDragonPage.story.contents.add("MINIBOSS: Dragon");
+        preDragonPage.story.contents.add("LEVEL: 1");
+        preDragonPage.story.contents.add("ATTACK: Fire");
+        preDragonPage.story.contents.add("STRENGTHS: Toughness, Immune to all long-range attacks");
+        preDragonPage.story.contents.add("WEAKNESSES: Easily scared");
+        preDragonPage.story.contents.add("<br>");
+        preDragonPage.story.contents.add("<image center /assets/images/dragon-sketch.png>");
+        dragonsDen.pages.put("Pre-Dragon", preDragonPage);
+        
+        continueSubpage = new Story();
+        continueSubpage.contents.add("<variable-set event 0>");
+        continueSubpage.contents.add("<variable-set dragon-hp 100>");
+        continueSubpage.contents.add("<variable-set dragon-attacked false>");
+        continueSubpage.contents.add("<variable-set dragon-attacking false>");
+        continueSubpage.contents.add("<play-sound /assets/sounds/dragon.mp3 false>");
+        continueSubpage.contents.add("<variable-set brandish-weapon false>");
+        continueSubpage.contents.add("<timer-start condition=\"variable event=0\" 1 Event 1>");
+        continueSubpage.contents.add("<goto-page Dragon>");
+        preDragonPage.subpages.put("INPUT action=Continue", continueSubpage);
+        
         dragonPage = new Page();
         dragonPage.story.contents.add("<subpage-display Player Stats><br><color 139+0+0>You begin exploring the cave when something jumps out at you...");
         dragonPage.story.contents.add("<br>");
@@ -2150,7 +2185,7 @@ public class Application extends app.ApplicationView {
         dragonPage.story.contents.add("<br>");
         dragonPage.story.contents.add("<i><if condition=\"inventory-has UNO Reverse=true\" INSTRUCTIONS: Be prepared to attack as soon as the dragon launches its flames at you.  You need to redirect its attack back at it BEFORE the flames hit you.><if condition=\"inventory-has Zara's Sword=true\" INSTRUCTIONS: Be prepared to attack BEFORE the dragon launches its flames at you.  Strike as soon as you can.><if condition=\"inventory-has Cosmic Wonder #1=true\" INSTRUCTIONS: Be prepared to attack as soon as the dragon's flames hit you.  Your cosmic wonder can punish the dragon for its malice.> </i>");
         dragonPage.story.contents.add("</color>");
-        dragonPage.story.contents.add("<subpage-display condition=\"hp!=0\" Actions>");
+        dragonPage.story.contents.add("<subpage-display condition=\"hp!=0\" Fight Or Flight Actions>");
         dragonPage.story.contents.add("<second-page>");
         dragonPage.story.contents.add("<subpage-display condition=\"variable dragon-attacked=true\" Display Weapon>");
         dragonPage.story.contents.add("<second-page>");
@@ -2169,15 +2204,6 @@ public class Application extends app.ApplicationView {
         displayDragonAttackSubpage.contents.add("<second-page><br><br><br><br><br><br><br><image condition=\"variable event=2\" center /assets/images/flame-small.png>");
         displayDragonAttackSubpage.contents.add("<second-page><image condition=\"variable event=3\" center /assets/images/flame.png>");
         dragonPage.subpages.put("Display Dragon Attack", displayDragonAttackSubpage);
-        
-        Story actionsSubpage = new Story();
-        actionsSubpage.contents.add("<get-validated-input condition=\"variable event=0\" action *Continue...>");
-        actionsSubpage.contents.add("<subpage-display condition=\"variable event!=0\" Fight Or Flight Actions>");
-        dragonPage.subpages.put("Actions", actionsSubpage);
-        
-        continueSubpage = new Story();
-        continueSubpage.contents.add("<timer-start condition=\"variable event=0\" 1 Event 1>");
-        dragonPage.subpages.put("INPUT action=Continue...", continueSubpage);
         
         Story fightOrFlightActions = new Story();
         fightOrFlightActions.contents.add("<get-validated-input condition=\"inventory-has Gold!=true\" action Run Away><subpage-display condition=\"inventory-has Gold=true\" Handle Weapon>");

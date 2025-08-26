@@ -64,142 +64,145 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
     public List<SpriteModel> onAnimate() {
         List<SpriteModel> sprites = new ArrayList();
         
-        // TODO - Add difficulty variances
-        
-        // For each monster missile that is launched, increase its y coordinate
-        ListIterator<SpriteModel> iterator = this.monsterMissilesLaunched.listIterator();
-        while (iterator.hasNext()) {
-            SpriteModel sprite = iterator.next();
-            int speed = 1;
-            if ((sprite.imageFile.equals(this.monsterMissileLeftMiniImageFileName)) || (sprite.imageFile.equals(this.monsterMissileRightMiniImageFileName))) {
-                speed = 5;
-            } else if ((sprite.imageFile.equals(this.monsterMissileLeftImageFileName)) || (sprite.imageFile.equals(this.monsterMissileRightImageFileName))) {
-                speed = 3;
-            } else if ((sprite.imageFile.equals(this.monsterMissileLeftChungusImageFileName)) || (sprite.imageFile.equals(this.monsterMissileRightChungusImageFileName))) {
-                speed = 1;
-            }
-            sprite.y += speed;
-            if (sprite.y > (this.backgroundDimensions.y)) {
-                iterator.remove();  // Missile hit the bottom boundary, remove
-            }
-        }
-        
-        // For each player missile that is launched, decrease its y coordinate
-        iterator = this.playerMissilesLaunched.listIterator();
-        while (iterator.hasNext()) {
-            SpriteModel sprite = iterator.next();
-            sprite.y--;
-            if (sprite.y < 1) {
-                iterator.remove();  // Missile hit the top boundary, remove
-            }
-        }
-        
-        // Move the monster
-        this.monster.x += this.monsterDirection;
-        
-        // Move each attached monster missile
-        iterator = this.monsterMissilesAttached.listIterator();
-        while (iterator.hasNext()) {
-            SpriteModel sprite = iterator.next();
-            sprite.x += this.monsterDirection;
-        }
-        
-        // Handle if the monster is now halfway to its destination. (Toggle between spawning and releasing missiles.)
-        Boolean spawnMissiles = false;
-        if ((!this.monsterHalfwayReached) && (((this.monsterDirection == 1) && (this.monster.x >= this.monsterHalfwayPoint)) || ((this.monsterDirection == -1) && (this.monster.x <= this.monsterHalfwayPoint)))) {
-            this.monsterHalfwayReached = true;
-            if (!this.monsterMissilesSpawned) {
-                System.out.println("MonsterShooterControl: onAnimate: SPAWNING MISSILES!");
-                spawnMissiles = true;
-            } else {
-                System.out.println("MonsterShooterControl: onAnimate: DROPPING MISSILES!");
-                // Move the missile from being attached to being launched
-                iterator = this.monsterMissilesAttached.listIterator();
-                while (iterator.hasNext()) {
-                    SpriteModel sprite = iterator.next();
-                    this.monsterMissilesLaunched.add(sprite);
-                    iterator.remove();
+        String isPaused = this.quest.variables.get("animation-paused");
+        if ((isPaused == null) || (!isPaused.toLowerCase().equals("true"))) {
+            // TODO - Add difficulty variances
+
+            // For each monster missile that is launched, increase its y coordinate
+            ListIterator<SpriteModel> iterator = this.monsterMissilesLaunched.listIterator();
+            while (iterator.hasNext()) {
+                SpriteModel sprite = iterator.next();
+                int speed = 1;
+                if ((sprite.imageFile.equals(this.monsterMissileLeftMiniImageFileName)) || (sprite.imageFile.equals(this.monsterMissileRightMiniImageFileName))) {
+                    speed = 5;
+                } else if ((sprite.imageFile.equals(this.monsterMissileLeftImageFileName)) || (sprite.imageFile.equals(this.monsterMissileRightImageFileName))) {
+                    speed = 3;
+                } else if ((sprite.imageFile.equals(this.monsterMissileLeftChungusImageFileName)) || (sprite.imageFile.equals(this.monsterMissileRightChungusImageFileName))) {
+                    speed = 1;
                 }
-                this.monsterMissilesSpawned = false;
+                sprite.y += speed;
+                if (sprite.y > (this.backgroundDimensions.y)) {
+                    iterator.remove();  // Missile hit the bottom boundary, remove
+                }
             }
-        }
-        
-        // Spawn new missiles
-        if (spawnMissiles) {
-            Coordinates monsterDimensions = this.dimensionsMap.get(this.monsterImageFileName);
-            Coordinates monsterMissileLeftChungusDimensions = this.dimensionsMap.get(this.monsterMissileLeftChungusImageFileName);
-            Coordinates monsterMissileLeftDimensions = this.dimensionsMap.get(this.monsterMissileLeftImageFileName);
-            Coordinates monsterMissileLeftMiniDimensions = this.dimensionsMap.get(this.monsterMissileLeftMiniImageFileName);
-            // Right edge of the left-side missiles is staggered at 25%, 50%, and 100% of the distance from the x-axis center of the monster
-            this.monsterMissilesAttached.add(new SpriteModel(this.quest.appController, this.monsterMissileLeftChungusImageFileName, 1.0, this.monster.x -  monsterMissileLeftChungusDimensions.x, 1));
-            this.monsterMissilesAttached.add(new SpriteModel(this.quest.appController, this.monsterMissileLeftImageFileName, 1.0, this.monster.x + (int) (0.5 * monsterDimensions.x * 0.5) -  monsterMissileLeftDimensions.x, 1));
-            this.monsterMissilesAttached.add(new SpriteModel(this.quest.appController, this.monsterMissileLeftMiniImageFileName, 1.0, this.monster.x + (int) (0.75 * monsterDimensions.x * 0.5) -  monsterMissileLeftMiniDimensions.x, 1));
-            // Left edge of the right-side missiles is staggered at 25%, 50%, and 100% of the distance from the x-axis center of the monster
-            this.monsterMissilesAttached.add(new SpriteModel(this.quest.appController, this.monsterMissileRightMiniImageFileName, 1.0, this.monster.x + monsterDimensions.x - (int) (0.75 * monsterDimensions.x * 0.5), 1));
-            this.monsterMissilesAttached.add(new SpriteModel(this.quest.appController, this.monsterMissileRightImageFileName, 1.0, this.monster.x + monsterDimensions.x - (int) (0.5 * monsterDimensions.x * 0.5), 1));
-            this.monsterMissilesAttached.add(new SpriteModel(this.quest.appController, this.monsterMissileRightChungusImageFileName, 1.0, this.monster.x + monsterDimensions.x, 1));
-            this.monsterMissilesSpawned = true;
-        }
-        
-        // Handle if the monster is now at its destination. (Change direction and calculate new destination.)
-        if (((this.monsterDirection == 1) && (this.monster.x >= this.monsterDestinationX)) || ((this.monsterDirection == -1) && (this.monster.x <= this.monsterDestinationX))) {
-            this.monsterHalfwayReached = false;
-            System.out.println("MonsterShooterControl: onAnimate: PIVOT!!!!");
-            this.monsterDirection *= -1;
-            if (this.monsterDirection == 1) {
-                // Moving right
-                this.monsterDestinationX = this.monster.x + (int) (Math.random() * (this.backgroundDimensions.x - this.monster.x));
+
+            // For each player missile that is launched, decrease its y coordinate
+            iterator = this.playerMissilesLaunched.listIterator();
+            while (iterator.hasNext()) {
+                SpriteModel sprite = iterator.next();
+                sprite.y--;
+                if (sprite.y < 1) {
+                    iterator.remove();  // Missile hit the top boundary, remove
+                }
+            }
+
+            // Move the monster
+            this.monster.x += this.monsterDirection;
+
+            // Move each attached monster missile
+            iterator = this.monsterMissilesAttached.listIterator();
+            while (iterator.hasNext()) {
+                SpriteModel sprite = iterator.next();
+                sprite.x += this.monsterDirection;
+            }
+
+            // Handle if the monster is now halfway to its destination. (Toggle between spawning and releasing missiles.)
+            Boolean spawnMissiles = false;
+            if ((!this.monsterHalfwayReached) && (((this.monsterDirection == 1) && (this.monster.x >= this.monsterHalfwayPoint)) || ((this.monsterDirection == -1) && (this.monster.x <= this.monsterHalfwayPoint)))) {
+                this.monsterHalfwayReached = true;
+                if (!this.monsterMissilesSpawned) {
+                    System.out.println("MonsterShooterControl: onAnimate: SPAWNING MISSILES!");
+                    spawnMissiles = true;
+                } else {
+                    System.out.println("MonsterShooterControl: onAnimate: DROPPING MISSILES!");
+                    // Move the missile from being attached to being launched
+                    iterator = this.monsterMissilesAttached.listIterator();
+                    while (iterator.hasNext()) {
+                        SpriteModel sprite = iterator.next();
+                        this.monsterMissilesLaunched.add(sprite);
+                        iterator.remove();
+                    }
+                    this.monsterMissilesSpawned = false;
+                }
+            }
+
+            // Spawn new missiles
+            if (spawnMissiles) {
+                Coordinates monsterDimensions = this.dimensionsMap.get(this.monsterImageFileName);
+                Coordinates monsterMissileLeftChungusDimensions = this.dimensionsMap.get(this.monsterMissileLeftChungusImageFileName);
+                Coordinates monsterMissileLeftDimensions = this.dimensionsMap.get(this.monsterMissileLeftImageFileName);
+                Coordinates monsterMissileLeftMiniDimensions = this.dimensionsMap.get(this.monsterMissileLeftMiniImageFileName);
+                // Right edge of the left-side missiles is staggered at 25%, 50%, and 100% of the distance from the x-axis center of the monster
+                this.monsterMissilesAttached.add(new SpriteModel(this.quest.appController, this.monsterMissileLeftChungusImageFileName, 1.0, this.monster.x -  monsterMissileLeftChungusDimensions.x, 1));
+                this.monsterMissilesAttached.add(new SpriteModel(this.quest.appController, this.monsterMissileLeftImageFileName, 1.0, this.monster.x + (int) (0.5 * monsterDimensions.x * 0.5) -  monsterMissileLeftDimensions.x, 1));
+                this.monsterMissilesAttached.add(new SpriteModel(this.quest.appController, this.monsterMissileLeftMiniImageFileName, 1.0, this.monster.x + (int) (0.75 * monsterDimensions.x * 0.5) -  monsterMissileLeftMiniDimensions.x, 1));
+                // Left edge of the right-side missiles is staggered at 25%, 50%, and 100% of the distance from the x-axis center of the monster
+                this.monsterMissilesAttached.add(new SpriteModel(this.quest.appController, this.monsterMissileRightMiniImageFileName, 1.0, this.monster.x + monsterDimensions.x - (int) (0.75 * monsterDimensions.x * 0.5), 1));
+                this.monsterMissilesAttached.add(new SpriteModel(this.quest.appController, this.monsterMissileRightImageFileName, 1.0, this.monster.x + monsterDimensions.x - (int) (0.5 * monsterDimensions.x * 0.5), 1));
+                this.monsterMissilesAttached.add(new SpriteModel(this.quest.appController, this.monsterMissileRightChungusImageFileName, 1.0, this.monster.x + monsterDimensions.x, 1));
+                this.monsterMissilesSpawned = true;
+            }
+
+            // Handle if the monster is now at its destination. (Change direction and calculate new destination.)
+            if (((this.monsterDirection == 1) && (this.monster.x >= this.monsterDestinationX)) || ((this.monsterDirection == -1) && (this.monster.x <= this.monsterDestinationX))) {
+                this.monsterHalfwayReached = false;
+                System.out.println("MonsterShooterControl: onAnimate: PIVOT!!!!");
+                this.monsterDirection *= -1;
+                if (this.monsterDirection == 1) {
+                    // Moving right
+                    this.monsterDestinationX = this.monster.x + (int) (Math.random() * (this.backgroundDimensions.x - this.monster.x));
+                } else {
+                    // Moving left
+                    this.monsterDestinationX = this.monster.x - (int) (Math.random() * (this.monster.x));
+                }
+                this.monsterHalfwayPoint = (Math.floorDiv(Math.abs(this.monster.x - this.monsterDestinationX), 2) * this.monsterDirection) + this.monster.x;
+            }
+
+            // Move the player based on input
+            Coordinates playerDimensions = this.dimensionsMap.get(this.playerImageFileName);
+            int origPlayerX = player.x;
+            if (this.quest.variables.get("animation-left").toLowerCase().equals("true")) {
+                // Count consecutive times the player held down the same key and magnify distance accordingly
+                this.playerMovedLeftCount++;
+                if (this.playerMovedLeftCount > 15) {
+                    this.playerMovedLeftCount = 15;
+                }
+                System.out.println("MonsterShooterControl: onAnimate: PLAYER GOES LEFT!");
+                player.x -= this.playerMovedLeftCount;
+                if (player.x < 1) {
+                    player.x = 1;
+                }
+                this.quest.variables.put("animation-left", "false");
             } else {
-                // Moving left
-                this.monsterDestinationX = this.monster.x - (int) (Math.random() * (this.monster.x));
+                this.playerMovedLeftCount = 0;
             }
-            this.monsterHalfwayPoint = (Math.floorDiv(Math.abs(this.monster.x - this.monsterDestinationX), 2) * this.monsterDirection) + this.monster.x;
+            if (this.quest.variables.get("animation-right").toLowerCase().equals("true")) {
+                this.playerMovedRightCount++;
+                if (this.playerMovedRightCount > 15) {
+                    this.playerMovedRightCount = 15;
+                }
+                System.out.println("MonsterShooterControl: onAnimate: PLAYER GOES RIGHT!");
+                player.x += this.playerMovedRightCount;
+                if (player.x > (this.backgroundDimensions.x - playerDimensions.x)) {
+                    player.x = (this.backgroundDimensions.x - playerDimensions.x);
+                }
+                this.quest.variables.put("animation-right", "false");
+            } else {
+                this.playerMovedRightCount = 0;
+            }
+
+            // Move each attached player missile
+            if (origPlayerX != player.x) {
+                int playerDeltaX = player.x - origPlayerX;
+                for (SpriteModel sprite : this.playerMissilesAttached) {
+                    sprite.x += playerDeltaX;
+                }
+            }
+
+            // TODO - Detect collisions between missiles
+            // TODO - Detect collisions between monster missiles and player
+            // TODO - Detect collisions between player missiles and monster
         }
-        
-        // Move the player based on input
-        Coordinates playerDimensions = this.dimensionsMap.get(this.playerImageFileName);
-        int origPlayerX = player.x;
-        if (this.quest.variables.get("animation-left").toLowerCase().equals("true")) {
-            // Count consecutive times the player held down the same key and magnify distance accordingly
-            this.playerMovedLeftCount++;
-            if (this.playerMovedLeftCount > 15) {
-                this.playerMovedLeftCount = 15;
-            }
-            System.out.println("MonsterShooterControl: onAnimate: PLAYER GOES LEFT!");
-            player.x -= this.playerMovedLeftCount;
-            if (player.x < 1) {
-                player.x = 1;
-            }
-            this.quest.variables.put("animation-left", "false");
-        } else {
-            this.playerMovedLeftCount = 0;
-        }
-        if (this.quest.variables.get("animation-right").toLowerCase().equals("true")) {
-            this.playerMovedRightCount++;
-            if (this.playerMovedRightCount > 15) {
-                this.playerMovedRightCount = 15;
-            }
-            System.out.println("MonsterShooterControl: onAnimate: PLAYER GOES RIGHT!");
-            player.x += this.playerMovedRightCount;
-            if (player.x > (this.backgroundDimensions.x - playerDimensions.x)) {
-                player.x = (this.backgroundDimensions.x - playerDimensions.x);
-            }
-            this.quest.variables.put("animation-right", "false");
-        } else {
-            this.playerMovedRightCount = 0;
-        }
-        
-        // Move each attached player missile
-        if (origPlayerX != player.x) {
-            int playerDeltaX = player.x - origPlayerX;
-            for (SpriteModel sprite : this.playerMissilesAttached) {
-                sprite.x += playerDeltaX;
-            }
-        }
-        
-        // TODO - Detect collisions between missiles
-        // TODO - Detect collisions between monster missiles and player
-        // TODO - Detect collisions between player missiles and monster
         
         // Return all sprites
         sprites.add(this.player);

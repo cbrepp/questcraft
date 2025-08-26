@@ -33,6 +33,8 @@ import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
@@ -588,9 +590,11 @@ public class SWTApplication extends ApplicationController {
         // Remove all children
         Control[] controls = tabComposite.getChildren();
         for (Control control : controls) {
-            System.out.println("SWTApplication: clearScreen: Disposing " + control);
-            if (!control.getClass().toString().equals("class org.eclipse.swt.custom.StyledText")) {
-                System.out.println("SWTApplication: class is " + control.getClass().toString());
+            Class childClass = control.getClass();
+            String childClassName = childClass.toString();
+            System.out.println("SWTApplication: clearScreen: Iterating " + childClassName);
+            if ((!(control instanceof org.eclipse.swt.custom.StyledText)) && (!(control instanceof org.eclipse.swt.widgets.Canvas))) {
+                System.out.println("SWTApplication: clearScreen: Disposing " + childClassName);
                 control.dispose();
             }
         }
@@ -1465,6 +1469,7 @@ public class SWTApplication extends ApplicationController {
             Image spriteImage = this.loadImage(sprite.imageFile);
             spriteImages.put(sprite.imageFile, spriteImage);
         }
+        // TODO - Add onDispose diplay of when canvas is disposed, if from clearScreen()
         Canvas canvas = new Canvas(composite, SWT.DOUBLE_BUFFERED); // Use double buffering for smoother animation
         canvas.setBackgroundImage(backgroundImage);
         canvas.moveAbove(textArea);
@@ -1512,8 +1517,10 @@ public class SWTApplication extends ApplicationController {
             public void onEvent(String eventName, Object eventValue) {
                 System.out.println("SWTApplication: addAnimation: onEvent: viewName=" + viewName + ", redrawing canvas");
                 SWTApplication.this.sprites = listener.onAnimate();
-                canvas.redraw();
-                if (SWTApplication.this.sprites != null) {
+                if (!canvas.isDisposed()) {
+                    canvas.redraw();
+                }
+                if ((!canvas.isDisposed()) && (SWTApplication.this.sprites != null)) {
                     System.out.println("SWTApplication: addAnimation: onEvent: viewName=" + viewName + ", sprites so resetting timer, sprites=" + SWTApplication.this.sprites.size());
                     SWTApplication.this.setTimer(name, animationDelay, this);
                 }
