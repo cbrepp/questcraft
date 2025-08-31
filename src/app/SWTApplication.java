@@ -1448,6 +1448,16 @@ public class SWTApplication extends ApplicationController {
     }
     
     @Override
+    public Boolean checkOverlap(int image1X, int image1Y, int image1Width, int image1Height, int image2X, int image2Y, int image2Width, int image2Height) {
+        Rectangle rect1 = new Rectangle(image1X, image1Y, image1Width, image1Height);
+        Rectangle rect2 = new Rectangle(image2X, image2Y, image2Width, image2Height);
+        
+        // TODO - If true, check pixel overlap using buffered images stored at the class level
+        
+        return rect1.intersects(rect2);
+    }
+    
+    @Override
     public void addAnimation(String viewName, String name, int row, int column, String backgroundImageFileName, List<SpriteModel> sprites, double animationDelay, AnimationView listener) {
         System.out.println("SWTApplication: addAnimation: viewName=" + viewName + ", name=" + name + ", row=" + row + ", column=" + column + ", backgroundImageFileName=" + backgroundImageFileName + ", sprite count=" + sprites.size() + ", animationDelay=" + animationDelay + ", listener=" + listener);
         

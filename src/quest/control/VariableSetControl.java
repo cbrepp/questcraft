@@ -24,7 +24,7 @@ public class VariableSetControl extends QuestControl {
         
         // If the variable is named the same as a quest control, error
         if (this.quest.questControls.get(variable) != null) {
-            System.err.println("VariableSetControl: A variable can NOT be named the same as a control tag!");
+            System.err.println("VariableSetControl: onExecute: A variable can NOT be named the same as a control tag!");
             return "";
         }
         
@@ -33,10 +33,11 @@ public class VariableSetControl extends QuestControl {
             // Special handling for getting the value from a control
             String questControlTag = '<' + value + '>';
             QuestControl control = this.quest.questControls.get(value);
-            System.out.println("Quest: displayPage: Executing tag " + value);
+            System.out.println("VariableSetControl: onExecute: displayPage: Executing tag " + value);
             value = control.onExecute(questControlTag);
         }
         
+        System.out.println("VariableSetControl: onExecute: Set '" + variable + "' to '" + value + "'");
         this.quest.variables.put(variable, value);
         
         return "";

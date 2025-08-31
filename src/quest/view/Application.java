@@ -2246,6 +2246,7 @@ public class Application extends app.ApplicationView {
         playerHitSubpage.contents.add("<hp-change condition=\"variable difficulty=Normal\" -50 false a dragon>");
         playerHitSubpage.contents.add("<hp-change condition=\"variable difficulty=Hard\" -100 false a dragon>");
         playerHitSubpage.contents.add("<hp-change condition=\"variable difficulty=Magical\" -25 false a dragon>");
+        playerHitSubpage.contents.add("<variable-set player-hit true>");
         dragonPage.subpages.put("Player Hit", playerHitSubpage);
         
         Story handleWeaponSubpage = new Story();
@@ -2289,6 +2290,7 @@ public class Application extends app.ApplicationView {
         Story event2Subpage = new Story();
         event2Subpage.contents.add("<variable-set event 2>");
         event2Subpage.contents.add("<remove cosmic-terror>");
+        event2Subpage.contents.add("<variable-set player-hit false>");
         event2Subpage.contents.add("<variable-set condition=\"variable dragon-attacked!=true\" dragon-attacking true>");    // Dragon only attacks if not attacked the last round
         event2Subpage.contents.add("<subpage-display condition=\"inventory-has Cosmic Wonder #1=true\" Check Shmebulock's Weapon 2>");
         event2Subpage.contents.add("<variable-set dragon-attacked false>");
@@ -2320,8 +2322,8 @@ public class Application extends app.ApplicationView {
         checkShmebulockWeapon1Subpage.contents.add("<variable-set condition=\"variable dragon-attacking!=true\" brandish-weapon false>");
         dragonPage.subpages.put("Check Shmebulock's Weapon 1", checkShmebulockWeapon1Subpage);
         Story checkShmebulockWeapon2Subpage = new Story();
-        checkShmebulockWeapon2Subpage.contents.add("<variable-set condition=\"variable dragon-attacked=true\" brandish-weapon true>");
-        checkShmebulockWeapon2Subpage.contents.add("<variable-set condition=\"variable dragon-attacked!=true\" brandish-weapon false>");
+        checkShmebulockWeapon2Subpage.contents.add("<variable-set condition=\"variable player-hit=true\" brandish-weapon true>");
+        checkShmebulockWeapon2Subpage.contents.add("<variable-set condition=\"variable player-hit!=true\" brandish-weapon false>");
         dragonPage.subpages.put("Check Shmebulock's Weapon 2", checkShmebulockWeapon2Subpage);
         
         Page dragonDefeatedPage = new Page();

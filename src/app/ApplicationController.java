@@ -80,6 +80,7 @@ public abstract class ApplicationController {
     public abstract int getButtonRows();
     public abstract void setBackgroundImage(String viewName, String imageFileName);
     public abstract void addAnimation(String viewName, String name, int row, int startColumn, String backgroundImageFileName, List<SpriteModel> sprites, double animationDelay, AnimationView listener);
+    public abstract Boolean checkOverlap(int image1X, int image1Y, int image1Width, int image1Height, int image2X, int image2Y, int image2Width, int image2Height);
     
     public static void main(String[] args) {
         System.out.println("ApplicationController: main: args=" + Arrays.toString(args));

@@ -204,6 +204,15 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
             // TODO - Detect collisions between player missiles and monster
         }
         
+        // *** Detect collisions ***
+        
+        // TODO - Combine monster's launched and attached missiles into a single list
+        // TODO - Combine player's launched and attached missiles into a single list
+        // TODO - Check for collisions between the monster's missiles and the player's missiles and the player
+        // TODO - Check for collisions between the player's missiles and the monster
+        // TODO - For each collision, track for a duration of time in a list and display an impact image
+        // TODO - For each collision with the monster or player, also change the image to the red image
+        
         // Return all sprites
         sprites.add(this.player);
         sprites.add(this.monster);

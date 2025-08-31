@@ -335,4 +335,8 @@ public class JavaFXApplication extends ApplicationController {
         throw new UnsupportedOperationException("Not supported.");
     }
     
+    @Override
+    public Boolean checkOverlap(int image1X, int image1Y, int image1Width, int image1Height, int image2X, int image2Y, int image2Width, int image2Height) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
 }
