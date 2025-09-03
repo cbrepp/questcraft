@@ -30,6 +30,7 @@ public class Quest extends app.ApplicationView {
     public final static String HP_CHANGE = "hp-change";
     public final static String HP_CHANGE_REFRESH = "hp-change-refresh";
     public final static int LEFT_PAGE = 1;
+    public final static String LINK_EVENT_PREFIX = "LINK";
     public final static String LOADING_COMPLETE = "loading-complete";
     public final static String MAP = "Map";
     public final static String MP_CHANGE = "mp-change";
@@ -122,6 +123,7 @@ public class Quest extends app.ApplicationView {
         this.questControls.put(InventoryHasControl.NAME, new InventoryHasControl(this));
         this.questControls.put(ItalicsTextControl.NAME, new ItalicsTextControl(this));
         this.questControls.put(ItalicsTextOffControl.NAME, new ItalicsTextOffControl(this));
+        this.questControls.put(LinkControl.NAME, new LinkControl(this));
         this.questControls.put(MaskControl.NAME, new MaskControl(this));
         this.questControls.put(MonsterShooterControl.NAME, new MonsterShooterControl(this));
         this.questControls.put(MoveAheadControl.NAME, new MoveAheadControl(this));
@@ -214,8 +216,16 @@ public class Quest extends app.ApplicationView {
                 Act act = book.acts.get(this.currentAct);
                 Scene scene = act.scenes.get(this.currentScene);
                 Page page = scene.pages.get(this.currentPage);
-                this.currentPage = page.previousPageName;
-                this.display();
+                if (page.previousPageName != null) {
+                    this.currentPage = page.previousPageName;
+                    this.display();
+                } else if ((scene.firstPageName.equals(this.currentPage)) && (scene.previousSceneName != null)) {
+                    this.startScene(scene.previousSceneName, false, false);
+                    this.display();
+                } else if ((scene.firstPageName.equals(this.currentPage)) && (act.firstSceneName.equals(this.currentScene)) && (act.previousActName != null)) {
+                    this.startAct(act.previousActName);
+                    this.display();
+                }
             }
             case GAME_OVER -> {
                 // TODO - Make this a configurable Story that can be added to any level of the Book
@@ -260,6 +270,13 @@ public class Quest extends app.ApplicationView {
                     if (subpage != null) {
                         this.displayPage(subpage.contents, true);
                     }
+                } else if (eventNameParts[0].equals(LINK_EVENT_PREFIX)) {
+                    String key = eventNameParts[1];
+                    String subpageName = "LINK " + key;
+                    Story subpage = getSubpage(subpageName, false);
+                    if (subpage != null) {
+                        this.displayPage(subpage.contents, true);
+                    }
                 } else {
                     System.err.println("Quest: onEvent: Unsupported event");
                 }
@@ -273,17 +290,19 @@ public class Quest extends app.ApplicationView {
         this.appController = appController;
         
         // Loading screen
-        int halfColumns = (appController.getTextColumns() / 2);
-        int halfGifWidth = (appController.getColumns(this.book.animationFileName) / 2);
-        int gifColumn = halfColumns - halfGifWidth;
-        int nextRow = appController.displayGif(this.name, this.book.animationFileName, 3, gifColumn);
-        int halfTextWidth = ("Loading...".length() / 2);
-        int loadingTextColumn = halfColumns - halfTextWidth;
-        appController.displayText(this.name, "Loading...", nextRow, loadingTextColumn, new Color(255, 255, 255));
-        Act firstAct = book.acts.get(this.book.firstActName);
-        Scene firstScene = firstAct.scenes.get(firstAct.firstSceneName);
-        app.Utility.playSound(firstScene.soundFileName, true);
-        appController.setTimer(LOADING_COMPLETE, 3, this);
+        if (this.book.animationFileName != null) {
+            int halfColumns = (appController.getTextColumns() / 2);
+            int halfGifWidth = (appController.getColumns(this.book.animationFileName) / 2);
+            int gifColumn = halfColumns - halfGifWidth;
+            int nextRow = appController.displayGif(this.name, this.book.animationFileName, 3, gifColumn);
+            int halfTextWidth = ("Loading...".length() / 2);
+            int loadingTextColumn = halfColumns - halfTextWidth;
+            appController.displayText(this.name, "Loading...", nextRow, loadingTextColumn, new Color(255, 255, 255));
+            Act firstAct = book.acts.get(this.book.firstActName);
+            Scene firstScene = firstAct.scenes.get(firstAct.firstSceneName);
+            app.Utility.playSound(firstScene.soundFileName, true);
+            appController.setTimer(LOADING_COMPLETE, 3, this);
+        }
         
         // Calculate book margins
         int parentColumns = this.appController.getTextColumns();
@@ -296,6 +315,12 @@ public class Quest extends app.ApplicationView {
         this.rightPageEndingColumn = (int) (parentColumns * 0.92) + 1;
         int buttonRows = appController.getButtonRows();
         this.buttonRow = parentRows - buttonRows;
+        
+        // Start book (if not waiting for the animation to complete and the LOADING_COMPLETE event to be raised)
+        if (this.book.animationFileName == null) {
+            this.startAct(this.book.firstActName);
+            this.display();
+        }
     }
     
     public void addInventoryItem(String inventoryItemName) {
@@ -385,8 +410,8 @@ public class Quest extends app.ApplicationView {
             isNextPageDisplaying = true;
         }
 
-        // Previous page button
-        if ((this.playerHP != 0) && (!page.hidePreviousButton) && (page.previousPageName != null)) {
+        // Previous page button (return to previous page, scene, or act)
+        if ((this.playerHP != 0) && (!page.hidePreviousButton) && ((page.previousPageName != null) || ((scene.firstPageName.equals(this.currentPage)) && (scene.previousSceneName != null))  || ((scene.firstPageName.equals(this.currentPage)) && (act.firstSceneName.equals(this.currentScene)) && (act.previousActName != null)))) {
             String buttonText = "< Previous";
             int buttonColumn = this.leftPageStartingColumn;
             Boolean glow = ((!isNextPageDisplaying) && (!page.noGlow));   // If there is no Next Page button, then attention should be called to going back
@@ -441,6 +466,8 @@ public class Quest extends app.ApplicationView {
                                 pageLineContainsText = true;
                                 this.displayTextOnPage(storyText, this.textRow, this.textColumn, this.textColor, this.textStyle);
                                 storyText = "";
+                                newText = "";
+                                this.textColumn = this.textColumn - 1;
                             }
                             System.out.println("Quest: displayPage: Executing tag " + questControlName);
                             // TODO - If displaying an in-line control (like 'inventory'), need to display all of the text accumulated thus far
@@ -459,6 +486,7 @@ public class Quest extends app.ApplicationView {
                     storyText = "";
                     currentTextColor = this.textColor;
                     currentTextStyle = this.textStyle;
+                    //this.textColumn = this.textColumn - 1;
                     System.out.println("Quest: displayPage: Updated text style!");
                 }
             }
@@ -578,7 +606,7 @@ public class Quest extends app.ApplicationView {
         Scene currentScene = currentAct.scenes.get(this.currentScene);
         
         if ((currentScene.x == null) || (currentScene.y == null)) {
-            System.err.println("Quest: getNextScene: Outside of a scene! x=" + currentScene.x + ", y=" + currentScene.y);
+            System.out.println("Quest: getNextScene: Outside of a scene! x=" + currentScene.x + ", y=" + currentScene.y);
             return Quest.EDGE_OF_THE_WORLD;
         }
         

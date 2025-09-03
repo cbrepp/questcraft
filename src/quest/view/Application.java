@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -72,13 +73,14 @@ public class Application extends app.ApplicationView {
         
         Utility.playSound("/assets/sounds/questcraft.mp3", true);
         
-        String[] responses = {"Keep your hands and feet inside the quest at all times", "Presented in Questo-Vision (where available)", "Filmed on location", "Proudly made in your imagination", "Naturally gluten free", "The game that plays you", "A stern warning of things to come", "Painstakingly rendered before a live studio audience", "Sock puppets not included", "The official questing game of gnomes", "Or is it?", "It makes a nice sandwich!", "Tips are not expected but appreciated", "There will be a test at the end", "Made you look!", "No shirt, no shoes, no business", "Soon to be a hit game", "Made from 100% recycled pixels", "WARNING: Do not show to axolotls", "WARNING: May cause tentacles to emerge from your screen", "Featuring a new invisible character who doesn't speak", "You have been warned", "Don't look behind you", "Ask about our new pumpkin spice flavor!"};
+        String[] responses = {"Keep your hands and feet inside the quest at all times", "Presented in Questo-Vision (where available)", "Filmed on location", "Proudly made in your imagination", "Recommended by 4 out of 5 unicorns", "The game that plays you", "A stern warning of things to come", "Painstakingly rendered before a live studio audience", "Sock puppets not included", "The official questing game of gnomes", "Or is it?", "It makes a nice sandwich!", "Tips are not expected but appreciated", "There will be a test at the end", "Made you look!", "Proud supporter of the Lollipop Guild", "Soon to be a hit game", "Made from 100% recycled pixels", "WARNING: Do not show to axolotls", "WARNING: May cause tentacles to emerge from your screen", "Featuring a new invisible character who doesn't speak", "You have been warned", "Don't look behind you", "Ask about our new pumpkin spice flavor!"};
         int randomResponseIndex = (int) (Math.random() * responses.length);
         this.flavorText = responses[randomResponseIndex];
         
         this.display();
         
-        serializeBook();
+        serializeTwinQuestBook();
+        serializeMadQuestBook();
     }
     
     public void display() {
@@ -137,16 +139,225 @@ public class Application extends app.ApplicationView {
         return bf;
     }
     
-    // TODO - Just a temporary helper method to get the book going.  Eventually the Craft Table should be used for this purpose.
-    public void serializeBook() {
-        System.out.println("Application: serializeBook");
+    // TODO - Just a temporary helper method to get the book going.  Eventually the Crafting Table should be used for this purpose.
+    public void serializeMadQuestBook() {
+        System.out.println("Application: serializeMadQuestBook");
+        
+        Book book = new Book();
+        book.author = "Mr. Chris (with Google AI)";
+        book.firstActName = "Opening";
+        book.title = "Mad Quest";
+        book.updateDate = LocalDate.now();
+
+        Act opening = new Act();
+        opening.firstSceneName = "Title Page";
+        book.acts.put("Opening", opening);
+        
+        Scene titlePage = new Scene();
+        titlePage.firstPageName = "1";
+        titlePage.hidePageHeaders = true;
+        opening.scenes.put("Title Page", titlePage);
+        Page page1 = new Page();
+        page1.story.contents.add("<color 0+0+0><b><book-title></b>");
+        page1.story.contents.add("by <book-author>");
+        page1.story.contents.add("<br>");
+        page1.story.contents.add("Last Updated: <book-last-updated-date>");
+        page1.story.contents.add("<second-page>");
+        page1.story.contents.add("TABLE OF CONTENTS");
+        page1.story.contents.add("<br>");
+        page1.story.contents.add("1... <link The Mystery of the Glimmering Portal>");
+        page1.story.contents.add("2... <link The Giggling Gnomes of Jumbledoor>");
+        page1.story.contents.add("3... <link The Creepy Clown Carnival>");
+        page1.story.contents.add("</color>");
+        titlePage.pages.put("1", page1);
+        
+        Story introStory = new Story();
+        introStory.contents.add("<goto-act The Mystery of the Glimmering Portal>");
+        page1.subpages.put("LINK The Mystery of the Glimmering Portal", introStory);
+        Story comedyStory = new Story();
+        comedyStory.contents.add("<goto-act The Giggling Gnomes of Jumbledoor>");
+        page1.subpages.put("LINK The Giggling Gnomes of Jumbledoor", comedyStory);
+        Story scaryStory = new Story();
+        scaryStory.contents.add("<goto-act The Creepy Clown Carnival>");
+        page1.subpages.put("LINK The Creepy Clown Carnival", scaryStory);
+        
+        Act introQuest = new Act();
+        introQuest.firstSceneName = "Word Entry";
+        introQuest.previousActName = "Opening";
+        book.acts.put("The Mystery of the Glimmering Portal", introQuest);
+        
+        Scene wordEntry = new Scene();
+        wordEntry.firstPageName = "1";
+        wordEntry.hidePageHeaders = false;
+        wordEntry.nextSceneName = "Quest";
+        introQuest.scenes.put("Word Entry", wordEntry);
+        page1 = new Page();
+        page1.story.contents.add("<color 0+0+0>");
+        page1.story.contents.add("<first-page><get-input brothers-name 20 false false true true Brother's Name>");
+        page1.story.contents.add("<get-input sisters-name 20 false false true true Sister's Name>");
+        page1.story.contents.add("<get-input adjective-1 20 false false true true Adjective>");
+        page1.story.contents.add("<get-input adjective-2 20 false false true true Adjective>");
+        page1.story.contents.add("<get-input furniture 20 false false true true Noun (a piece of furniture)>");
+        page1.story.contents.add("<get-input adverb 20 false false true true Adverb (describing an adjective)>");
+        page1.story.contents.add("<get-input plural-noun 20 false false true true Plural Noun (magical creatures)>");
+        page1.story.contents.add("<get-input verb-ing 20 false false true true Verb (ending in -ing)>");
+        page1.story.contents.add("<second-page>");
+        page1.story.contents.add("<get-input past-tense-verb 20 false false true true Past Tense Verb>");
+        page1.story.contents.add("<get-input weather 20 false false true true Type of Weather>");
+        page1.story.contents.add("<get-input mythical-object 20 false false true true Noun (a mythical object)>");
+        page1.story.contents.add("<get-input number 20 false false true true A Number>");
+        page1.story.contents.add("<get-input exclamation 20 false false true true Exclamation>");
+        page1.story.contents.add("<get-input adjective-3 20 false false true true Adjective>");
+        page1.story.contents.add("<get-input color 20 false false true true Color>");
+        page1.story.contents.add("</color>");
+        wordEntry.pages.put("1", page1);
+        
+        Scene quest = new Scene();
+        quest.firstPageName = "1";
+        quest.hidePageHeaders = false;
+        quest.previousSceneName = "Word Entry";
+        introQuest.scenes.put("Quest", quest);
+        page1 = new Page();
+        page1.story.contents.add("<color 0+0+0>");
+        page1.story.contents.add("<first-page>It all started on a <variable adjective-1> and <variable weather> afternoon.  <variable brothers-name> was <variable verb-ing> under the <variable furniture>, when he noticed a strange glimmer.  His sister, <variable sisters-name>, came to investigate.  They looked closely and saw a swirling, magical portal!");
+        page1.story.contents.add("<br>");
+        page1.story.contents.add("<quote><variable exclamation>!<quote> they both shouted.  <variable brothers-name>, feeling brave, reached for it.  Suddenly, they were sucked through the portal, and they landed with a thud in a world filled with <variable plural-noun>.  The air smelled of <variable adjective-2> flowers and the sky was a bright <variable color>.");
+        page1.story.contents.add("<second-page>");
+        page1.story.contents.add("<quote>We're in a magical realm!<quote> <variable sisters-name> said, looking at the glowing <variable mythical-object> that floated above a nearby pond. But their wonder quickly turned to alarm. A group of <variable number> <variable plural-noun> were blocking their way.");
+        page1.story.contents.add("<br>");
+        page1.story.contents.add("The siblings remembered the secret instructions their grandmother had given them: to always behave <variable adverb>. So instead of fighting, they <variable past-tense-verb> a song, and the <variable plural-noun> were so surprised they let the children pass. With their wits and kindness, <variable brothers-name> and <variable sisters-name> found their way home, just in time for a <variable adjective-3> dinner.");
+        page1.story.contents.add("</color>");
+        quest.pages.put("1", page1);
+        
+        Act comedyQuest = new Act();
+        comedyQuest.firstSceneName = "Word Entry";
+        comedyQuest.previousActName = "Opening";
+        book.acts.put("The Giggling Gnomes of Jumbledoor", comedyQuest);
+        
+        wordEntry = new Scene();
+        wordEntry.firstPageName = "1";
+        wordEntry.hidePageHeaders = false;
+        wordEntry.nextSceneName = "Quest";
+        comedyQuest.scenes.put("Word Entry", wordEntry);
+        page1 = new Page();
+        page1.story.contents.add("<color 0+0+0>");
+        page1.story.contents.add("<first-page><get-input brothers-name 20 false false true true Brother's Name>");
+        page1.story.contents.add("<get-input sisters-name 20 false false true true Sister's Name>");
+        page1.story.contents.add("<get-input magical-creatures 20 false false true true Plural Noun (magical creatures)>");
+        page1.story.contents.add("<get-input food 20 false false true true Type of Food>");
+        page1.story.contents.add("<get-input exclamation 20 false false true true Type of Exclamation>");
+        page1.story.contents.add("<get-input number 20 false false true true A Number>");
+        page1.story.contents.add("<second-page>");
+        page1.story.contents.add("<get-input adjective-1 20 false false true true Adjective>");
+        page1.story.contents.add("<get-input verb 20 false false true true Verb (ending in -ing)>");
+        page1.story.contents.add("<get-input furniture 20 false false true true Noun (a piece of furniture)>");
+        page1.story.contents.add("<get-input adverb 20 false false true true Adverb (describing an action)>");
+        page1.story.contents.add("<get-input noun-singular 20 false false true true Noun (singular)>");
+        page1.story.contents.add("<get-input adjective-2 20 false false true true Adjective>");
+        page1.story.contents.add("</color>");
+        wordEntry.pages.put("1", page1);
+        
+        quest = new Scene();
+        quest.firstPageName = "1";
+        quest.hidePageHeaders = false;
+        quest.previousSceneName = "Word Entry";
+        comedyQuest.scenes.put("Quest", quest);
+        page1 = new Page();
+        page1.story.contents.add("<color 0+0+0>");
+        page1.story.contents.add("<first-page>The siblings <variable brothers-name> and <variable sisters-name> stumbled through a shimmering rainbow mist and found themselves in the magical realm of Jumbledoor.  All around them, tiny, mischievous <variable magical-creatures> were <variable verb>.  <quote>What are they doing?<quote> <variable sisters-name> asked.  One of the creatures ran up to them and asked, <quote>Why did the wizard cross the road?<quote>");
+        page1.story.contents.add("<br>");
+        page1.story.contents.add("<variable brothers-name> shrugged, <quote>I don't know, why?<quote>");
+        page1.story.contents.add("<br>");
+        page1.story.contents.add("<quote>To get to the <variable adjective-1> side!<quote> the creature squeaked, then exploded into a puff of <variable food>.");
+        page1.story.contents.add("<br>");
+        page1.story.contents.add("Feeling very <variable adjective-2>, they continued on their quest to find the legendary <variable noun-singular>.  They had just passed a talking <variable furniture> when another voice was heard.  <quote>What do you call a magical bear with no teeth?<quote>");
+        page1.story.contents.add("<second-page>");
+        page1.story.contents.add("<quote><variable exclamation>!<quote> shouted <variable sisters-name>.  <quote>This place is full of comedians!<quote>");
+        page1.story.contents.add("<br>");
+        page1.story.contents.add("<quote>I don't know, what?<quote> she asked.");
+        page1.story.contents.add("<br>");
+        page1.story.contents.add("<quote>A gummy bear!<quote> shouted the <variable number> <variable magical-creatures>.");
+        page1.story.contents.add("<br>");
+        page1.story.contents.add("The siblings burst out laughing and continued their journey <variable adverb>, realizing that even in a magical land, a good joke can be the best kind of magic.");
+        page1.story.contents.add("</color>");
+        quest.pages.put("1", page1);
+        
+        Act scaryQuest = new Act();
+        scaryQuest.firstSceneName = "Word Entry";
+        scaryQuest.previousActName = "Opening";
+        book.acts.put("The Creepy Clown Carnival", scaryQuest);
+        
+        wordEntry = new Scene();
+        wordEntry.firstPageName = "1";
+        wordEntry.hidePageHeaders = false;
+        wordEntry.nextSceneName = "Quest";
+        scaryQuest.scenes.put("Word Entry", wordEntry);
+        page1 = new Page();
+        page1.story.contents.add("<color 0+0+0>");
+        page1.story.contents.add("<first-page><get-input brothers-name 20 false false true true Brother's Name>");
+        page1.story.contents.add("<get-input sisters-name 20 false false true true Sister's Name>");
+        page1.story.contents.add("<get-input adjective-1 20 false false true true Adjective>");
+        page1.story.contents.add("<get-input adjective-2 20 false false true true Adjective>");
+        page1.story.contents.add("<get-input body-part 20 false false true true Noun (a body part, plural)>");
+        page1.story.contents.add("<get-input bug 20 false false true true Plural Noun (a bug or insect)>");
+        page1.story.contents.add("<get-input food 20 false false true true Noun (a type of food)>");
+        page1.story.contents.add("<second-page>");
+        page1.story.contents.add("<get-input verb 20 false false true true Verb (past tense, ended in -ed)>");
+        page1.story.contents.add("<get-input adverb 20 false false true true Adverb (describing an action)>");
+        page1.story.contents.add("<get-input color 20 false false true true Color>");
+        page1.story.contents.add("<get-input scary-character 20 false false true true Noun (a scary character)>");
+        page1.story.contents.add("<get-input number 20 false false true true A Number>");
+        page1.story.contents.add("<get-input exclamation 20 false false true true Exclamation>");
+        page1.story.contents.add("</color>");
+        wordEntry.pages.put("1", page1);
+        
+        quest = new Scene();
+        quest.firstPageName = "1";
+        quest.hidePageHeaders = false;
+        quest.previousSceneName = "Word Entry";
+        scaryQuest.scenes.put("Quest", quest);
+        page1 = new Page();
+        page1.story.contents.add("<color 0+0+0>");
+        page1.story.contents.add("<first-page>On a <variable adjective-1> night, <variable brothers-name> and <variable sisters-name> snuck into an abandoned carnival.  The ferris wheel <variable verb> slowly in the wind, and a rusty calliope played a <variable adjective-2> tune.  They had heard stories of the carnival's past: how all the clowns disappeared <variable adverb> many years ago.");
+        page1.story.contents.add("<br>");
+        page1.story.contents.add("As they walked past the <variable color> ticket booth, they heard a terrifying giggle.  A large <variable scary-character> appeared from the shadows, his face painted with a creepy smile.  <quote>Want some <variable bug>?<quote> he asked, holding out a dirty bag.  The children ran away screaming, their <variable body-part> pounding in their chests.");
+        page1.story.contents.add("<br>");
+        page1.story.contents.add("They found refuge in a funhouse, but the mirrors distorted their reflections in horrible ways.  A <variable number>-legged clown walked out of a mirrored wall, offering them a <variable food>.  The clowns weren't disappearing; they were multiplying!");
+        page1.story.contents.add("<second-page>");
+        page1.story.contents.add("<quote><variable exclamation>!<quote> <variable brothers-name> yelled, <quote>This place is a trap!<quote>");
+        page1.story.contents.add("<br>");
+        page1.story.contents.add("They ran out of the funhouse and found their way back out of the carnival.  The music had stopped, and all the creepy clowns were gone.  The <variable adjective-2> siblings went home, promising each other never to return to the Creepy Clown Carnival.");
+        page1.story.contents.add("</color>");
+        quest.pages.put("1", page1);
+        
+        String fileName = "/home/repp/Documents/quests/mad.quest";
+        FileOutputStream file;
+        try {
+            file = new FileOutputStream(fileName);
+            ObjectOutputStream out;
+            try {
+                out = new ObjectOutputStream(file);
+                out.writeObject(book);
+            } catch (IOException ex) {
+                Logger.getLogger(Application.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Application.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    // TODO - Just a temporary helper method to get the book going.  Eventually the Crafting Table should be used for this purpose.
+    public void serializeTwinQuestBook() {
+        System.out.println("Application: serializeTwinQuestBook");
         
         Book book = new Book();
         book.animationFileName = "/assets/images/dragon.gif";
         book.author = "R. W. Chung";
         book.firstActName = "Opening";
         book.title = "BIG CHUNG, Destroyer of Worlds";
-        book.updateDate = LocalDate.now();
+        book.updateDate = LocalDate.now();    
+        book.inventory = new LinkedHashMap<>();
+
         
         // Inventory items are added in alphabetical order
         InventoryItem item = new InventoryItem("Inscribed on a scroll in arcane symbols, this spell unlocks powerful magic that you can cast with your Spell Book.", "/assets/sounds/magic.wav", "\uD83D\uDCDC");
@@ -1320,7 +1531,7 @@ public class Application extends app.ApplicationView {
         openDoorPage.story.contents.add("<br>");
         openDoorPage.story.contents.add("Now what was that password...");
         openDoorPage.story.contents.add("<br>");
-        openDoorPage.story.contents.add("<get-input password 14 true false Enter password here>");
+        openDoorPage.story.contents.add("<get-input password 14 true true true false Enter password here>");
         toadstoolCircle.pages.put("Open Door", openDoorPage);
         Story spokeRightPasswordSubpage = new Story();
         spokeRightPasswordSubpage.contents.add("<play-sound /assets/sounds/magic.mp3 false><player-symbol> YOU: <quote><variable password><quote>");
@@ -1391,7 +1602,7 @@ public class Application extends app.ApplicationView {
         speakNamePage.story.contents.add("<first-page>");
         speakNamePage.story.contents.add("<color 184+115+51>You take a deep breath and loudly speak a name...");
         speakNamePage.story.contents.add("<br>");
-        speakNamePage.story.contents.add("<get-input name 12 true false Enter name here>");
+        speakNamePage.story.contents.add("<get-input name 12 true true true false Enter name here>");
         toadstoolCircle.pages.put("Speak Name", speakNamePage);
         Story spokeRightNameSubpage = new Story();
         spokeRightNameSubpage.contents.add("<play-sound /assets/sounds/magic.mp3 false><player-symbol> YOU: <quote><variable name><quote>");
@@ -1788,7 +1999,7 @@ public class Application extends app.ApplicationView {
         acceptChallengePage.story.contents.add("<subpage-display Second Page>");
         acceptChallengePage.story.contents.add("<first-page><color 0+0+0><br><subpage-display condition=\"player!=Shmebulock\" Non-Magical Riddle><subpage-display condition=\"player=Shmebulock\" Magical Riddle>");
         acceptChallengePage.story.contents.add("<br></color>");
-        acceptChallengePage.story.contents.add("<get-input condition=\"player!=Shmebulock\" answer 15 true false Enter answer here><get-input condition=\"player=Shmebulock\" magical-answer 15 true false Enter answer here>");
+        acceptChallengePage.story.contents.add("<get-input condition=\"player!=Shmebulock\" answer 15 true true true false Enter answer here><get-input condition=\"player=Shmebulock\" magical-answer 15 true true true false Enter answer here>");
         mountFluff.pages.put("Accept Challenge", acceptChallengePage);
         
         skiLodgeSecondPageSubpage = new Story();

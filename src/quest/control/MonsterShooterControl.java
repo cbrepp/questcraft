@@ -199,19 +199,26 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
                 }
             }
 
-            // TODO - Detect collisions between missiles
-            // TODO - Detect collisions between monster missiles and player
-            // TODO - Detect collisions between player missiles and monster
+            // *** Detect collisions ***
+
+            // TODO - Check for collisions between the monster's launched missiles and the player's launched missiles, attached missiles, and the player
+            iterator = this.monsterMissilesLaunched.listIterator();
+            while (iterator.hasNext()) {
+                SpriteModel sprite = iterator.next();
+                
+                
+            }
+            
+            // TODO - Check for collisions between the player's launched missiles and the monster's attached missiles and the monster
+            
+            // TODO - For each collision, track for a duration of time in a list and display an impact image
+            // TODO - Each non-paused call back into this method iterates the duration
+            // TODO - Once a few seconds has passed (longer wait time for bigger/Chungus collisions), stop tracking the collision
+            
+            // TODO - For each collision with the monster or player, also change the image to the red image
         }
         
-        // *** Detect collisions ***
-        
-        // TODO - Combine monster's launched and attached missiles into a single list
-        // TODO - Combine player's launched and attached missiles into a single list
-        // TODO - Check for collisions between the monster's missiles and the player's missiles and the player
-        // TODO - Check for collisions between the player's missiles and the monster
-        // TODO - For each collision, track for a duration of time in a list and display an impact image
-        // TODO - For each collision with the monster or player, also change the image to the red image
+
         
         // Return all sprites
         sprites.add(this.player);

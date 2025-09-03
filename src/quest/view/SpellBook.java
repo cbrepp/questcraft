@@ -65,7 +65,7 @@ public class SpellBook extends app.ApplicationView {
         System.out.println("SpellBook: onLoad");
         
         this.appController = appController;
-        this.appController.displayInputField(this.name, CAST_SPELL, "Enter spell here", 20, 3, 5, false, true, true, this);
+        this.appController.displayInputField(this.name, CAST_SPELL, "Enter spell here", 20, 3, 5, "", true, false, true, true, this);
     }
 
 }

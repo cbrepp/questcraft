@@ -16,6 +16,7 @@ public class Scene extends BookPart implements Serializable {
     public Boolean hidePageHeaders = false;
     public String nextSceneName;
     public Map<String, Page> pages;
+    public String previousSceneName;
     public String soundFileName;
     public String symbol;
     public Integer x;

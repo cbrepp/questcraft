@@ -95,11 +95,13 @@ import quest.model.Book;
  * night-owl.jpg - "Scary, Owl, Eyes image. Free for use." by Skitterphoto (https://pixabay.com/photos/scary-owl-eyes-spooky-halloween-3595742/)
  * night-owl.png - "Ai Generated, Bird, Nature royalty-free vector graphic. Free for use & download." by MickeyLIT (https://pixabay.com/vectors/ai-generated-bird-owl-animal-8255570/)
  * night-owl-sketch.png - "Ai Generated, Owl, Bird royalty-free vector graphic. Free for use & download." by GDJ (https://pixabay.com/vectors/ai-generated-owl-bird-animal-8928309/)
+ * notocoloremoji.ttf - https://github.com/googlefonts/noto-emoji
  * open-door.wav - "A french double door opening and closing. Recorded at The Home Depot." by designerschoice (https://freesound.org/people/designerschoice/sounds/806875/)
  * paper.wav - "Crumpled Up Paper, Me crumpling up a paper. Recorded with a Genius MIC-01A Black 3.5mm Connector Metallic Microphone." by Natty23 (https://freesound.org/people/Natty23/sounds/257272/)
  * pause.mp3 - This is a sound I created to the game https://apps.facebook.com/social-snakes/ using Garage Band.  It's a small sound, just like old school video games.  The "pause" sound it's simply the notes C, D, E.  (https://freesound.org/people/crisstanza/sounds/167127/)
  * ping-pong.wav - "Hit a ping pong ball with a bat. Recorded in a small room for a short distance. Recorded with Zoom H6 recorder. The sound was postprocessed." by 14FPanskaBubik_Lukas (https://freesound.org/people/14FPanskaBubik_Lukas/sounds/418556/)
  * polaroid-landscape.png,polaroid-portrait.png - "Polaroid, Film, Blank royalty-free vector graphic. Free for use & download." by Clker-Free-Vector-Images (https://pixabay.com/vectors/polaroid-film-blank-retro-32180/)
+ * quest-world.jpg - "Ai Generated, Fairytale, Fantasy royalty-free stock illustration. Free for use & download." by haidermah (https://pixabay.com/illustrations/ai-generated-fairytale-fantasy-8158055/)
  * questcraft.mp3 - "SCI-FI SURVIVAL DREAMSCAPE APOCALYPSE - SURVIVAL - LOADING SCREEN MUSIC" by onderwish (https://freesound.org/people/onderwish/sounds/468407/)
  * race-car.wav - "A recording of a 3.2L V6 V-Tec Engine and the exhaust pipe mixed together. This is a single rev." by EvanBoyerman (https://freesound.org/people/EvanBoyerman/sounds/755999/)
  * reverse.wav - "reverse fx 12.wav, just some reverse" by reathance (https://freesound.org/people/reathance/sounds/503813/)
@@ -170,6 +172,8 @@ public class Questcraft extends app.ApplicationView {
         
         switch(eventName) {
             case "book" -> {
+                Book questBook = (Book) eventValue;
+                
                 // Remove tabs for the previous book
                 if (this.highScores != null) {
                     this.appController.removeTab(HIGH_SCORES);
@@ -187,17 +191,31 @@ public class Questcraft extends app.ApplicationView {
                 }
                 
                 // Initialize the new book
-                this.highScores = new HighScores(HIGH_SCORES);
-                this.inventory = new Inventory(INVENTORY);
+                if (questBook.highScores != null) {
+                    this.highScores = new HighScores(HIGH_SCORES);
+                }
+                if (questBook.inventory != null) {
+                    this.inventory = new Inventory(INVENTORY);
+                }
                 this.quest = new Quest(QUEST);
-                this.quest.book = (Book) eventValue;
-                this.quest.inventoryView = this.inventory;
+                this.quest.book = questBook;
+                if (questBook.inventory != null) {
+                    this.quest.inventoryView = this.inventory;
+                }
                 this.appController.addView(this.quest);
-                this.inventory.quest = this.quest;
-                this.appController.addView(this.inventory);
-                this.highScores.setHighScores(this.quest.book.highScores);
-                this.highScores.quest = this.quest;
-                this.appController.addView(this.highScores);
+                if (questBook.inventory != null) {
+                    this.inventory.quest = this.quest;
+                }
+                if (questBook.inventory != null) {
+                    this.appController.addView(this.inventory);
+                }
+                if (questBook.highScores != null) {
+                    this.highScores.setHighScores(this.quest.book.highScores);
+                    this.highScores.quest = this.quest;
+                }
+                if (questBook.highScores != null) {
+                    this.appController.addView(this.highScores);
+                }
                 this.craftingTable = new CraftingTable(CRAFTING_TABLE);
                 this.appController.addView(this.craftingTable);
                 this.appController.displayView(this.quest);

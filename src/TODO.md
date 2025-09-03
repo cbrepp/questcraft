@@ -6,22 +6,21 @@ Upcoming changes.
 
 1. Finish animation support and Night Owl minigame
 2. Finish transition to Chapter 2
-3. Implement Mad Libs quest
-4. Finish JavaFX app controller inasmuch as is needed for Mad Libs quest
-5. Prototype simple web page that runs JavaFX version of Mad Libs quest
-6. Deploy Mad Libs quest to hosted website
-7. Separate this repo into:
+3. Finish JavaFX app controller inasmuch as is needed for Mad Libs quest
+4. Prototype simple web page that runs JavaFX version of Mad Libs quest
+5. Deploy Mad Libs quest to hosted website
+6. Separate this repo into:
     1. Appcraft repo
     2. Questcraft repo
     3. One repo for each quest
-8. Begin implementing each Chapter 2 level
-9. Start designing the Twinquest prequel about Big Chung, the mystery solving chief of police
+7. Begin implementing each Chapter 2 level
+8. Start designing the Twinquest prequel about Big Chung, the mystery solving chief of police
+9. Fix annoying spacing issues around changing font color, etc.  Add dark magenta color to variables used by Mad Quest.
 
 ## Questcraft
 
 * Start a CHANGELOG
 * Start a README
-* Implement a simple Mad Libs style quest that can be used as an example for teaching how to use the Crafting Table
 * Start working on Super Genie Journey with Greyson
 
 ### App

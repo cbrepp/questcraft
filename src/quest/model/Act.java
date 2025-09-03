@@ -12,6 +12,7 @@ public class Act extends BookPart implements Serializable {
     
     public String firstSceneName;
     public String nextActName;
+    public String previousActName;
     public Map<String, Scene> scenes;
     
     public Act() {

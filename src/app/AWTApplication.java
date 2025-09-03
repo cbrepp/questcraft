@@ -153,7 +153,7 @@ public class AWTApplication extends ApplicationController {
     }
     
     @Override
-    public void displayInputField(String viewName, String name, String label, int length, int row, int column, Boolean isMonospace, Boolean isUpperCase, Boolean isMultiUse, EventListener listener) {
+    public void displayInputField(String viewName, String name, String label, int length, int row, int column, String initValue, Boolean addButton, Boolean isMonospace, Boolean isUpperCase, Boolean isMultiUse, EventListener listener) {
         throw new UnsupportedOperationException("Not supported.");
     }
     

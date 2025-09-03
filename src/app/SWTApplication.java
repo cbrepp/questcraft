@@ -33,11 +33,10 @@ import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -740,7 +739,7 @@ public class SWTApplication extends ApplicationController {
         Link link = new Link(composite, SWT.NONE);
         link.setFont(this.monospaceFont);
         link.setText(linkText);
-        link.setBounds(upperLeftCoordinates.x + 1, upperLeftCoordinates.y + 1, width, height);
+        link.setBounds(upperLeftCoordinates.x + 1, upperLeftCoordinates.y + 1, width, height - 1);
         link.moveAbove(textArea);
         link.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -1176,14 +1175,11 @@ public class SWTApplication extends ApplicationController {
     }
     
     @Override
-    public void displayInputField(String viewName, String name, String label, int length, int row, int column, Boolean isMonospace, Boolean isUpperCase, Boolean isMultiUse, EventListener listener) {
-        System.out.println("SWTApplication: displayInputField: viewName=" + viewName + ", text=" + label + ", row=" + row + ", column=" + column + ", isMonospace=" + isMonospace + ", isUpperCase=" + isUpperCase + ", isMultiUse=" + isMultiUse + ", listener=" + listener);
+    public void displayInputField(String viewName, String name, String label, int length, int row, int column, String initValue, Boolean addButton, Boolean isMonospace, Boolean isUpperCase, Boolean isMultiUse, EventListener listener) {
+        System.out.println("SWTApplication: displayInputField: viewName=" + viewName + ", text=" + label + ", row=" + row + ", column=" + column + ", initValue=" + initValue + ", addButton=" + addButton + ", isMonospace=" + isMonospace + ", isUpperCase=" + isUpperCase + ", isMultiUse=" + isMultiUse + ", listener=" + listener);
         
         StyledText textArea = this.tabStyledTextMap.get(viewName);
         Composite composite = this.tabCompositeMap.get(viewName);
-        
-        // Display a label for the input field
-        //this.displayText(viewName, label, row, column);
 
         // Display the input field
         Text textInput = new Text(composite, SWT.BORDER);
@@ -1195,33 +1191,45 @@ public class SWTApplication extends ApplicationController {
         textInput.setTextLimit(length);
         textInput.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
         Point coordinates = this.convertToCoordinates(row, column);
-        int labelWidth = label.length() * this.fontWidth;
         int inputWidth = (length * this.fontWidth) + (2 * this.fontWidth);    // Calculate width of text plus buffer of two imaginary characters
         int height = 2 * this.fontHeight;   // Calculate double height of text
         //textInput.setBounds(coordinates.x + 1 + labelWidth + (1 * this.fontWidth), coordinates.y + 1, inputWidth, height);
         textInput.setBounds(coordinates.x + 1, coordinates.y + 1, inputWidth, height);
         textInput.moveAbove(textArea);
         
-        // Display a button for submitting the input
-        Button button = this.newButton(viewName, name, "Submit", row, column + length + 1 + 1, null, null, isMonospace, null, false, listener);
-        button.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                listener.onEvent(name, textInput.getText());
-                if (isMultiUse) {
-                    if (!textInput.isDisposed()) {
-                        textInput.setText("");
-                    }
-                } else {
-                    if (!textInput.isDisposed()) {
-                        textInput.setEnabled(false);
-                    }
-                    if (!button.isDisposed()) {
-                        button.setEnabled(false);
+        if ((initValue != null) && (!initValue.equals(""))) {
+            textInput.setText(initValue);
+        }
+        
+        // Handle entered text
+        if (!addButton) {
+            // Raise an event for each entered character
+            textInput.addModifyListener((ModifyEvent e) -> {
+                Text source = (Text) e.widget;
+                listener.onEvent(name, source.getText());
+            });
+        } else {
+            // Display a button for submitting the input
+            Button button = this.newButton(viewName, name, "Submit", row, column + length + 1 + 1, null, null, isMonospace, null, false, listener);
+            button.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    listener.onEvent(name, textInput.getText());
+                    if (isMultiUse) {
+                        if (!textInput.isDisposed()) {
+                            textInput.setText("");
+                        }
+                    } else {
+                        if (!textInput.isDisposed()) {
+                            textInput.setEnabled(false);
+                        }
+                        if (!button.isDisposed()) {
+                            button.setEnabled(false);
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
     }
     
     @Override

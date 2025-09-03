@@ -3,9 +3,7 @@ package quest.model;
 import java.io.Serializable;
 import java.util.List;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -71,8 +69,6 @@ public class Book extends BookPart implements Serializable {
     
     public Book() {
         this.acts = new HashMap();
-        this.highScores = new ArrayList();
-        this.inventory = new LinkedHashMap<>();
         this.variables = new HashMap<>();
     }
     
