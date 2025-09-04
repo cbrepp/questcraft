@@ -1,5 +1,35 @@
+# General
 build/*
 dist/*
 nbproject/*
 build.xml
 manifest.mf
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# IntelliJ
+.idea/
+*.iml
+
+# NetBeans
+nbproject/private/
+nbbuild/
+nbdist/
+nb-configuration.xml
+nbactions.xml
+
+# IDE-specific (common)
+.idea/
+*.iml
+*.iws
+.vscode/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Maven
+target/
