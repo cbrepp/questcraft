@@ -59,7 +59,7 @@ public class Utility {
             switch (fileType) {
                 case "mp3" -> {
 
-                    new Thread(() -> {
+                    Thread backgroundThread = new Thread(() -> {
                         try {
                             if (isLoop) {                                
                                 // Find the parent thread
@@ -106,7 +106,9 @@ public class Utility {
                         } catch (JavaLayerException e) {
                             System.err.println("Utility: playSound: Error playing MP3 file: " + e.toString());
                         }
-                    }).start();
+                    });
+                    backgroundThread.setDaemon(true);
+                    backgroundThread.start();
                 }
                 case "wav" -> {
                     InputStream inputStream = getInputStream(fileName);
@@ -117,7 +119,7 @@ public class Utility {
                     AudioInputStream audioInputStream = getAudioInputStream(fileName, inputStream);
                     Clip clip = getClip(fileName);
                     clip.open(audioInputStream);
-                    new Thread(() -> {
+                    Thread backgroundThread = new Thread(() -> {
                         audioInputStreams.put(fileName, audioInputStream);
                         inputStreams.put(fileName, inputStream);
                         audioPlayers.put(fileName, clip);
@@ -132,7 +134,9 @@ public class Utility {
                                 stopSound(fileName, true);
                             }
                         });
-                    }).start();
+                    });
+                    backgroundThread.setDaemon(true);
+                    backgroundThread.start();
                 }
                 default -> System.err.println("Utility: playSound: Unsupported file type: " + fileType);
             }

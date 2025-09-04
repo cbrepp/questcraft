@@ -116,6 +116,8 @@ public class JavaFXApplication extends ApplicationController {
     @Override
     public void close() {
         System.out.println("JavaFXApplication: close");
+        Platform.exit();    // Gracefully stop all processes in the JavaFX application
+        System.exit(0);     // Stop any remaining framework processes, including background processes
     }
     
     public void displayStage(ApplicationView view) {
