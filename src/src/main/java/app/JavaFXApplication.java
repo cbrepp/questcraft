@@ -22,6 +22,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.effect.Glow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
@@ -593,6 +594,14 @@ public class JavaFXApplication extends ApplicationController {
         
         // Add a special glow effect to the button to call the user's attention to it
         if (glow) {
+            // The standard glow effect just makes the controls exceptionally bright
+            /*
+            Glow glowEffect = new Glow(0.8);
+            button.setEffect(glowEffect);
+            */
+            
+            // Drop shadow is better but not as elegant as providing styling for normal shadow and mouse hover
+            /*
             DropShadow dropShadow = new DropShadow();
             dropShadow.setOffsetX(0);   // Centered
             dropShadow.setOffsetY(0);   // Centered
@@ -601,6 +610,13 @@ public class JavaFXApplication extends ApplicationController {
             dropShadow.setRadius(15);
             dropShadow.setSpread(0.6);
             button.setEffect(dropShadow);
+            */
+            
+            String defaultStyle = "-fx-effect: dropshadow(three-pass-box, rgba(139, 0, 139, 0.8), 10, 0.8, 0, 0);";
+            String hoverStyle = "-fx-effect: dropshadow(three-pass-box, rgba(139, 0, 139, 1), 20, 0.8, 0, 0);";
+            button.setStyle(defaultStyle);
+            button.setOnMouseEntered(e -> button.setStyle(hoverStyle));
+            button.setOnMouseExited(e -> button.setStyle(defaultStyle));
         }
         
         return button;

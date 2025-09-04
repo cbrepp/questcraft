@@ -5,8 +5,14 @@ Upcoming changes.
 ## Priorities
 
 1. Finish animation support and Night Owl minigame and transition to Chapter 2
-2. Start new repo for maven version of Questcraft?
-3. Finish JavaFX app controller inasmuch as is needed for Mad Libs quest
+2. Finish JavaFX app controller inasmuch as is needed for Mad Libs quest
+    1. TextEditor height is wrong for some reason
+    2. Italics doesn't work for some reason
+    3. Unicode emoticons don't work for some reason
+    4. Columns (and likely rows) are calculated differently than with SWT and shifts the text
+    5. Need to figure out how to dispose nodes
+    6. Need new sound system... a better one that allows playing the same sound concurrently
+    7. Implement remaining AppController methods
 4. Prototype simple web page that runs JavaFX version of Mad Libs quest
     1. Attempt WebFX - https://docs.webfx.dev/#_getting_started
 5. Deploy Mad Libs quest to hosted website
