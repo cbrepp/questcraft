@@ -4,10 +4,11 @@ Upcoming changes.
 
 ## Priorities
 
-1. Finish animation support and Night Owl minigame
-2. Finish transition to Chapter 2
+1. Finish animation support and Night Owl minigame and transition to Chapter 2
+2. Start new repo for maven version of Questcraft?
 3. Finish JavaFX app controller inasmuch as is needed for Mad Libs quest
 4. Prototype simple web page that runs JavaFX version of Mad Libs quest
+    1. Attempt WebFX - https://docs.webfx.dev/#_getting_started
 5. Deploy Mad Libs quest to hosted website
 6. Separate this repo into:
     1. Appcraft repo
@@ -33,6 +34,7 @@ Upcoming changes.
 
 ### Quest
 
+* Convert quest files to standard XML format using maven artifacts jakarta.xml.bind-api and jaxb-runtime
 * Implement the Create Quest button on the main application screen.  It instances a new Book and presents the Quest and Crafting Table tabs.
 * Implement the Options... button on the main application screen.  Pop a dialog window that offers to select which UI to use... SWT or JavaFX
 * When no book is loaded, the bottom left-hand corner displays the top section of the Questcraft CHANGELOG file and the right-hand corner the top section of the TODO file
@@ -51,7 +53,6 @@ Upcoming changes.
 * Rename quest controls to be noun-action so they're easier to find
 * Add category to the quest controls so they can be grouped
 * Figure out how to document each quest control with example usage in such a way that the Crafting Table can dynamically display help text
-* Convert quest files to standard XML format
 * Fix spell-cast.wav... it has a 1/4 second delay
 * Implement a collection for each inventory item.  (ie, a collection of keys, a collection of spells, etc.)
 * Fix the performance issue with displaying magic (multi-shades of purple) text.  The random number generation is likely to blame.

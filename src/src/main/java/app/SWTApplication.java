@@ -165,7 +165,7 @@ public class SWTApplication extends ApplicationController {
         final SWTApplication thisController = this;
         tabFolder = new CTabFolder(composite, SWT.BORDER);
         if (view.backgroundColor != null) {
-            tabFolder.setBackground(new Color(view.backgroundColor.red, view.backgroundColor.green, view.backgroundColor.blue));
+            tabFolder.setBackground(new Color(this.display, view.backgroundColor.red, view.backgroundColor.green, view.backgroundColor.blue));
         }
         tabFolder.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -390,7 +390,7 @@ public class SWTApplication extends ApplicationController {
             }
             composite = new Composite(this.tabFolder, SWT.NONE);
             if (view.backgroundColor != null) {
-                composite.setBackground(new Color(view.backgroundColor.red, view.backgroundColor.green, view.backgroundColor.blue));
+                composite.setBackground(new Color(this.display, view.backgroundColor.red, view.backgroundColor.green, view.backgroundColor.blue));
             }
             composite.setLayout(null);
             
@@ -660,7 +660,7 @@ public class SWTApplication extends ApplicationController {
     public void displayText(String viewName, String text, Integer row, Integer column, app.Color color, int style) {
         System.out.println("SWTApplication: displayText: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", color=" + color + ", style=" + style);
         
-        Color SWTColor = new Color(color.red, color.green, color.blue);
+        Color SWTColor = new Color(this.display, color.red, color.green, color.blue);
         
         int SWTStyle;
         int SWTUnderlineStyle = 0;
@@ -758,6 +758,7 @@ public class SWTApplication extends ApplicationController {
         Composite composite = this.tabCompositeMap.get(viewName);
         composite.setLayout(null);
         composite.layout(true, true);
+        composite.setBackgroundMode(SWT.INHERIT_FORCE);
         
         // This control is only available when the view does NOT have a text area
         if (textArea != null) {
@@ -794,7 +795,7 @@ public class SWTApplication extends ApplicationController {
                 System.out.println("SWTApplication: displayGrid: Cell count: " + controls.size());
                 app.Color genericBackgroundColor = controls.getFirst().backgroundColor;
                 if (genericBackgroundColor != null) {
-                    backgroundColor = new Color(genericBackgroundColor.red, genericBackgroundColor.green, genericBackgroundColor.blue);
+                    backgroundColor = new Color(this.display, genericBackgroundColor.red, genericBackgroundColor.green, genericBackgroundColor.blue);
                     rgbSum = genericBackgroundColor.red + genericBackgroundColor.green + genericBackgroundColor.blue;
                 }
             } else {
@@ -808,11 +809,12 @@ public class SWTApplication extends ApplicationController {
                 cellComposite.setBackground(backgroundColor);
                 if (rgbSum > 382) {
                     // 255 * 3 = 765 as a maximum value for white.  Use black as the font color if on the lighter half of the color scale.
-                    foregroundColor = new Color(0, 0, 0);
+                    foregroundColor = new Color(this.display, 0, 0, 0);
                 } else {
-                    foregroundColor = new Color(255, 255, 255);
+                    foregroundColor = new Color(this.display, 255, 255, 255);
                 }
             } else {
+                // SWT.COLOR_TRANSPARENT isn't available until SWT 4.5
                 cellComposite.setBackground(this.display.getSystemColor(SWT.COLOR_TRANSPARENT)); // Set label background to transparent
             }
             
@@ -867,6 +869,7 @@ public class SWTApplication extends ApplicationController {
                 if (control != null) {
                     control.setFont(this.monospaceFont);
                     control.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
+                    // SWT.COLOR_TRANSPARENT isn't available until SWT 4.5
                     control.setBackground(this.display.getSystemColor(SWT.COLOR_TRANSPARENT));
                     if (backgroundColor != null) {
                         control.setBackground(backgroundColor);
@@ -936,7 +939,9 @@ public class SWTApplication extends ApplicationController {
                 int blue = 0;
                 red = CURRENT_COLOR_INDEX;
                 blue = CURRENT_COLOR_INDEX;
+                // The final parameter is not yet available in this version of SWT
                 gc.setForeground(new Color(localDisplay, red, 0, blue, 100));
+                //gc.setForeground(new Color(localDisplay, red, 0, blue));
                 gc.setLineWidth(1); // Thin border for a glowing effect
                 gc.drawRectangle(0, 0, bounds.width - 1, bounds.height - 1);
             });
@@ -1243,8 +1248,11 @@ public class SWTApplication extends ApplicationController {
         
         StyledText textArea = this.tabStyledTextMap.get(viewName);
         Composite composite = this.tabCompositeMap.get(viewName);
+        composite.setBackgroundMode(SWT.INHERIT_FORCE);
         
         Canvas overlay = new Canvas(composite, SWT.NO_BACKGROUND);
+        
+        // SWT.COLOR_TRANSPARENT isn't available until SWT 4.5
         overlay.setBackground(this.display.getSystemColor(SWT.COLOR_TRANSPARENT));
         if ((startRow == null) || (startRow == 0) || (startColumn == null) || (startColumn == 0) || (endRow == null) || (endRow == 0) || (endColumn == null) || (endColumn == 0)) {
             System.out.println("SWTApplication: displayOverlay: Using composite dimensions");
@@ -1425,6 +1433,8 @@ public class SWTApplication extends ApplicationController {
                         int blue = 0;
                         red = CURRENT_COLOR_INDEX;
                         blue = CURRENT_COLOR_INDEX;
+                        // The final parameter isn't supported yet in this version of SWT
+                        //gc.setForeground(new Color(localDisplay, red, 0, blue));
                         gc.setForeground(new Color(localDisplay, red, 0, blue, 100));
                         gc.setLineWidth(1); // Thin border for a glowing effect
                         gc.drawRectangle(0, 0, bounds.width - 1, bounds.height - 1);
