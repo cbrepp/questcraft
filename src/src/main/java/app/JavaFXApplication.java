@@ -21,8 +21,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.effect.DropShadow;
-import javafx.scene.effect.Glow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
@@ -44,7 +42,11 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextFlow;
 import javafx.scene.web.HTMLEditor;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
 import javafx.stage.FileChooser;
+import javafx.stage.Screen;
+import netscape.javascript.JSObject;
 
 /**
  *
@@ -66,6 +68,7 @@ public class JavaFXApplication extends ApplicationController {
     public Scene primaryScene;
     public ApplicationView splashView;
     public HashMap<String, Pane> tabContentMap;
+    public HashMap<String, HTMLEditor> tabEditorMap;
     public HashMap<String, String> tabEditorTextMap;
     public TabPane tabFolder;
     public HashMap<String, Integer> tabIndexMap;
@@ -260,6 +263,7 @@ public class JavaFXApplication extends ApplicationController {
 
         // Share important state with the other instance methods
         this.tabContentMap = new HashMap<>();
+        this.tabEditorMap = new HashMap<>();
         this.tabEditorTextMap = new HashMap<>();
 
         this.tabIndexMap = new HashMap<>();
@@ -269,8 +273,8 @@ public class JavaFXApplication extends ApplicationController {
         this.namedControls = new HashMap();
             
         // Init a font for all text areas and buttons to use
-        this.monospaceFont = Font.font("Consolas", FontWeight.NORMAL, 12);
-        this.buttonFont = Font.font("Consolas", FontWeight.NORMAL, 10);
+        this.monospaceFont = Font.font("Consolas", FontWeight.NORMAL, adjustFontSizeForDPI(12));
+        this.buttonFont = Font.font("Consolas", FontWeight.NORMAL, adjustFontSizeForDPI(10));
         
         // Calculate the height and width of the fonts
         Text textNode = new Text("W");
@@ -305,6 +309,14 @@ public class JavaFXApplication extends ApplicationController {
         // TODO - Stop all sounds
     }
     
+    public static double adjustFontSizeForDPI(int fontSize) {
+        Screen screen = Screen.getPrimary();
+        double dpi = screen.getDpi();
+        double scaleFactor = dpi / 96.0;    // Standard DPI is typically 96.0, so this calculates the scaling factor
+        double newFontSize = fontSize * scaleFactor;
+        return newFontSize;
+    }
+    
     public void addView(ApplicationView view, Boolean isParent) {
         Integer index = this.tabIndexMap.get(view.name);
         if (index == null) {
@@ -329,8 +341,24 @@ public class JavaFXApplication extends ApplicationController {
     }
     
     @Override
-    public void clearScreen(String name) {
-        throw new UnsupportedOperationException("Not supported.");
+    public void clearScreen(String viewName) {
+        System.out.println("JavaFXApplication: clearScreen : viewName=" + viewName); 
+
+        if (this.namedControls.get(viewName) != null) {
+            this.namedControls.get(viewName).clear();
+        }
+        
+        Pane content = this.tabContentMap.get(viewName);
+        HTMLEditor editor = this.tabEditorMap.get(viewName);
+        
+        if (content != null) {
+            content.getChildren().removeIf(node -> node != editor);
+        }
+        
+        // Clear the book text if this view uses a text area
+        if (editor != null) {
+            this.tabEditorTextMap.put(viewName, this.emptyBook);
+        }
     }
     
     @Override
@@ -355,7 +383,41 @@ public class JavaFXApplication extends ApplicationController {
     
     @Override
     public void removeTab(String viewName) {
-        throw new UnsupportedOperationException("Not supported.");
+        System.out.println("JavaFXApplication: removeTab: viewName=" + viewName);
+        
+        this.clearScreen(viewName);
+        
+        if (!tabItemMap.containsKey(viewName)) {
+            return;
+        }
+        
+        // *** Dispose of the UI objects ***
+        Tab tab = this.tabItemMap.get(viewName);
+        this.tabFolder.getTabs().remove(tab);
+        
+        this.tabItemViewMap.remove(tab);
+
+        this.tabItemMap.remove(viewName);
+        
+        this.namedControls.remove(viewName);
+        
+        // Remove all references to the view
+        if ((this.lastSelectedView != null) && (this.lastSelectedView.name.equals(viewName))) {
+            this.lastSelectedView = null;
+        }
+        
+        // Shift all indices to the right left by 1
+        int tabIndex = tabIndexMap.get(viewName);
+        tabIndexMap.remove(viewName);
+        for (String tabViewName : this.tabIndexMap.keySet()) {
+            int currentIndex = this.tabIndexMap.get(tabViewName);
+            if (currentIndex > tabIndex) {
+                currentIndex--;
+                this.tabIndexMap.put(tabViewName, currentIndex);
+            }
+        }
+
+        this.views.remove(viewName);
     }
     
     @Override
@@ -455,8 +517,9 @@ public class JavaFXApplication extends ApplicationController {
            
         if (view.addTextArea) {
             // Add a text area to the composite
-            tabEditorTextMap.put(view.name, this.emptyBook);
-            HTMLEditor htmlEditor = new HTMLEditor();            
+            this.tabEditorTextMap.put(view.name, this.emptyBook);
+            HTMLEditor htmlEditor = new HTMLEditor();
+            this.tabEditorMap.put(view.name, htmlEditor);
             htmlEditor.setBackground(background);
             // Without contentEditable=\"true\" in the body the editor is read-only by default
             //String transparentContentCss = "<style>"
@@ -491,8 +554,7 @@ public class JavaFXApplication extends ApplicationController {
                     backgroundImageDimensions.x,
                     backgroundImageDimensions.y
                 );
-                htmlEditor.setPrefWidth(backgroundImageDimensions.x);
-                htmlEditor.setPrefHeight(backgroundImageDimensions.y);
+                htmlEditor.setPrefSize(backgroundImageDimensions.x, backgroundImageDimensions.y);
                 System.out.println("TEST: backgroundImageDimensions.x=" + backgroundImageDimensions.x + ", backgroundImageDimensions.y=" + backgroundImageDimensions.y);
             }
             htmlEditor.setHtmlText(initialHTML);
@@ -517,17 +579,69 @@ public class JavaFXApplication extends ApplicationController {
     
     @Override
     public void displayText(String viewName, String text, Integer row, Integer column) {
-        throw new UnsupportedOperationException("Not supported.");
+        System.out.println("JavaFXApplication: displayText: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column);
+        displayText(viewName, text, row, column, new app.Color(0, 0, 0));
     }
     
     @Override
     public void displayText(String viewName, String text, Integer row, Integer column, app.Color color) {
-        throw new UnsupportedOperationException("Not supported.");
+        System.out.println("JavaFXApplication: displayText: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", color=" + color);
+        displayText(viewName, text, row, column, color, FontStyle.NORMAL);
     }
     
     @Override
     public void displayText(String viewName, String text, Integer row, Integer column, app.Color color, int style) {
-        throw new UnsupportedOperationException("Not supported.");
+        System.out.println("JavaFXApplication: displayText: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", color=" + color + ", style=" + style);
+        
+        HTMLEditor editor = this.tabEditorMap.get(viewName);
+        
+        Color fxColor = Color.rgb(color.red, color.green, color.blue);
+        
+        FontPosture fxStyle = null;
+        FontWeight fxWeight = FontWeight.NORMAL;
+        switch (style) {
+            case FontStyle.NORMAL -> fxWeight = FontWeight.NORMAL;
+            case FontStyle.BOLD -> fxWeight = FontWeight.BOLD;
+            case FontStyle.ITALIC -> fxStyle = FontPosture.ITALIC;
+            case FontStyle.UNDERLINE_DOUBLE -> {
+                // TODO - Not supported, needs styling
+                fxWeight = FontWeight.NORMAL;
+                //label.setUnderline(true);
+            }
+            case FontStyle.UNDERLINE_ERROR -> {
+                // TODO - Not supported, needs styling
+                fxWeight = FontWeight.NORMAL;
+                //label.setUnderline(true);
+            }
+            case FontStyle.UNDERLINE_LINK -> {
+                // TODO - Not supported, needs styling
+                fxWeight = FontWeight.NORMAL;
+                //label.setUnderline(true);
+            }
+            case FontStyle.UNDERLINE_SINGLE -> {
+                fxWeight = FontWeight.NORMAL;
+                //label.setUnderline(true);
+            }
+            case FontStyle.UNDERLINE_SQUIGGLE -> {
+                // TODO - Not supported, needs styling
+                fxWeight = FontWeight.NORMAL;
+                //label.setUnderline(true);
+            }
+            default -> {
+                System.err.println("JavaFXApplication: displayText: Unsupported font style!");
+                fxWeight = FontWeight.NORMAL;
+            }
+        }
+        
+        String currentText = editor.getHtmlText();
+        Integer position = column - 1; // String positions start at zero
+        position = position + (this.textColumns * (row - 1)) + (row - 1);
+        System.out.println("JavaFXApplication: displayText: this.textColumns=" + this.textColumns + ", position=" + position + ", SWTStyle=" + fxStyle + ", color=" + fxColor);
+        StringBuilder sb = new StringBuilder(currentText);
+        sb.replace(position, position + text.length(), text);
+        editor.setHtmlText(sb.toString());
+        
+        // TODO - Add styling by tracking each entry in a separate data structure with proper HTML styling tags
     }
     
     @Override
@@ -537,7 +651,42 @@ public class JavaFXApplication extends ApplicationController {
       
     @Override
     public void displayLink(String viewName, String name, String linkText, int row, int column, int length, EventListener listener) {
-        throw new UnsupportedOperationException("Not supported.");
+        System.out.println("JavaFXApplication: displayLink: viewName=" + viewName + ", name=" + name + ", linkText=" + linkText + ",row=" + row + ", column=" + column + ", length=" + length);
+        
+        HTMLEditor editor = this.tabEditorMap.get(viewName);
+        
+        String currentText = editor.getHtmlText();
+        Integer position = column - 1; // String positions start at zero
+        position = position + (this.textColumns * (row - 1)) + (row - 1);
+        StringBuilder sb = new StringBuilder(currentText);
+        linkText = "<a href=\"" + name + "\">" + linkText + "</a>";
+        sb.replace(position, position + linkText.length(), linkText);
+        editor.setHtmlText(sb.toString());
+        
+        // After the HTMLEditor is laid out, access its WebEngine
+        WebView webView = new WebView();
+        WebEngine webEngine = webView.getEngine();
+        
+        webEngine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue == javafx.concurrent.Worker.State.SUCCEEDED) {
+                JSObject window = (JSObject) webEngine.executeScript("window");
+                window.setMember("listener", listener);
+
+                String script = """
+                    document.body.addEventListener('click', function(event) {
+                        var target = event.target;
+                        if (target.tagName === 'A' || target.closest('a')) {
+                            event.preventDefault();
+                            var anchor = target.tagName === 'A' ? target : target.closest('a');
+                            var eventName = anchor.href;
+                            console.log('Link clicked with URL: ' + eventName);
+                            listener.onEvent(eventName);
+                        }
+                    });
+                """;
+                webEngine.executeScript(script);
+            }
+        });
     }
     
     @Override
@@ -612,8 +761,8 @@ public class JavaFXApplication extends ApplicationController {
             button.setEffect(dropShadow);
             */
             
-            String defaultStyle = "-fx-effect: dropshadow(three-pass-box, rgba(139, 0, 139, 0.8), 10, 0.8, 0, 0);";
-            String hoverStyle = "-fx-effect: dropshadow(three-pass-box, rgba(139, 0, 139, 1), 20, 0.8, 0, 0);";
+            String defaultStyle = "-fx-effect: dropshadow(three-pass-box, rgba(139, 0, 139, 0.8), 5, 0.8, 0, 0);";
+            String hoverStyle = "-fx-effect: dropshadow(three-pass-box, rgba(139, 0, 139, 1), 10, 0.8, 0, 0);";
             button.setStyle(defaultStyle);
             button.setOnMouseEntered(e -> button.setStyle(hoverStyle));
             button.setOnMouseExited(e -> button.setStyle(defaultStyle));
@@ -707,12 +856,14 @@ public class JavaFXApplication extends ApplicationController {
         if (fontName == null) {
             fontName = Font.getDefault().getName();
         }
+        // Adjust for DPI
+        double newFontSize = adjustFontSizeForDPI(fontSize);
         Font font;
         if (fxStyle != null) {
             // TODO - For some reason this doesn't use Italics
-            font = Font.font(fontName, fxStyle, fontSize);
+            font = Font.font(fontName, fxStyle, newFontSize);
         } else {
-            font = Font.font(fontName, fxWeight, fontSize);
+            font = Font.font(fontName, fxWeight, newFontSize);
         }
         label.setFont(font);
         if (fontColor != null) {
@@ -724,10 +875,10 @@ public class JavaFXApplication extends ApplicationController {
         Coordinates endCoordinates;
         if ((endRow != null) && (endColumn != null)) {
             endCoordinates = this.convertToCoordinates(endRow, endColumn);
-        } else if (fontSize <= 12) {
+        } else if (newFontSize <= 12) {
             endCoordinates = this.convertToCoordinates(startRow + 1, startColumn + text.length());
         } else {
-            endCoordinates = this.convertToCoordinates(startRow + 4, (int) (startColumn + (text.length() * (fontSize / 12) * 1.5) + 1));
+            endCoordinates = this.convertToCoordinates(startRow + 4, (int) (startColumn + (text.length() * (newFontSize / 12) * 1.5) + 1));
         }
         
         label.setLayoutX(startCoordinates.x);
@@ -850,19 +1001,56 @@ public class JavaFXApplication extends ApplicationController {
         return rows;
     }
     
+    public int getColumns(int x) {
+        int columns = ((int) x / this.fontWidth) + 1;
+        return columns;
+    }
+    
+    public int getRows(int y) {
+        int rows = ((int) y / this.fontHeight) + 1;
+        return rows;
+    }
+    
     @Override
     public int getButtonColumns(String buttonText) {
-        throw new UnsupportedOperationException("Not supported.");
+        int width = (buttonText.length() * this.fontWidth) + (2 * this.fontWidth);    // Calculate width of text plus buffer of two imaginary characters
+        int columns = this.getColumns(width);
+        return columns;
     }
     
     @Override
     public int getButtonRows() {
-        throw new UnsupportedOperationException("Not supported.");
+        int height = 2 * this.fontHeight;   // Calculate double height of text
+        int rows = getRows(height);
+        return rows;
     }
     
     @Override
     public void setBackgroundImage(String viewName, String imageFileName) {
-        throw new UnsupportedOperationException("Not supported.");
+        System.out.println("JavaFXApplication: setBackgroundImage : viewName=" + viewName + ", imageFileName=" + imageFileName);
+        
+        Pane content = this.tabContentMap.get(viewName);
+        HTMLEditor editor = this.tabEditorMap.get(viewName);
+        
+        Image image = loadImage(imageFileName);
+        Coordinates dimensions = this.getDimensions(imageFileName);
+        BackgroundImage backgroundImage = new BackgroundImage(
+            image,
+            BackgroundRepeat.NO_REPEAT, // Repeat in X direction
+            BackgroundRepeat.NO_REPEAT, // Repeat in Y direction
+            BackgroundPosition.DEFAULT,   // Position of the image
+            // TODO - Other examples use 1.0
+            new BackgroundSize(dimensions.x, dimensions.y, true, true, false, false) // Size of the image (100% width and height)
+        );
+        
+        Background background = new Background(backgroundImage);
+        
+        content.setBackground(background);
+        content.setPrefSize(dimensions.x, dimensions.y);
+        if (editor != null) {
+            editor.setBackground(background);
+            editor.setPrefSize(dimensions.x, dimensions.y);
+        }
     }
     
     @Override

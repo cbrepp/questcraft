@@ -14,7 +14,8 @@ Upcoming changes.
     6. Need new sound system... a better one that allows playing the same sound concurrently
     7. Implement remaining AppController methods
 4. Prototype simple web page that runs JavaFX version of Mad Libs quest
-    1. Attempt WebFX - https://docs.webfx.dev/#_getting_started
+    1. WebFX (https://docs.webfx.dev/#_getting_started) can't be used because after commenting out unsupported classes (like Class, HTMLEditor, etc.) a successful build shows a blank webpage
+    2. JPro (https://www.jpro.one/docs/jpro-webapi/docs/1/1/creating-a-project)
 5. Deploy Mad Libs quest to hosted website
 6. Separate this repo into:
     1. Appcraft repo
