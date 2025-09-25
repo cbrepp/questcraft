@@ -18,9 +18,12 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
@@ -42,11 +45,8 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextFlow;
 import javafx.scene.web.HTMLEditor;
-import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebView;
 import javafx.stage.FileChooser;
 import javafx.stage.Screen;
-import netscape.javascript.JSObject;
 
 /**
  *
@@ -593,6 +593,10 @@ public class JavaFXApplication extends ApplicationController {
     public void displayText(String viewName, String text, Integer row, Integer column, app.Color color, int style) {
         System.out.println("JavaFXApplication: displayText: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", color=" + color + ", style=" + style);
         
+        this.displayFloatingText(viewName, text, row, column, null, null, color, 12, style, "Consolas");
+        
+        /*
+        
         HTMLEditor editor = this.tabEditorMap.get(viewName);
         
         Color fxColor = Color.rgb(color.red, color.green, color.blue);
@@ -642,6 +646,7 @@ public class JavaFXApplication extends ApplicationController {
         editor.setHtmlText(sb.toString());
         
         // TODO - Add styling by tracking each entry in a separate data structure with proper HTML styling tags
+        */
     }
     
     @Override
@@ -653,6 +658,23 @@ public class JavaFXApplication extends ApplicationController {
     public void displayLink(String viewName, String name, String linkText, int row, int column, int length, EventListener listener) {
         System.out.println("JavaFXApplication: displayLink: viewName=" + viewName + ", name=" + name + ", linkText=" + linkText + ",row=" + row + ", column=" + column + ", length=" + length);
         
+        Pane content = this.tabContentMap.get(viewName);
+        
+        // TODO - The other controllers should NOT expect the <a> tag to be included.  If needed, they should wrap the text themselves.
+        linkText = linkText.replace("<a>", "");
+        linkText = linkText.replace("</a>", "");
+
+        Hyperlink hyperlink = new Hyperlink(linkText);
+        Coordinates coordinates = this.convertToCoordinates(row, column);
+        hyperlink.relocate(coordinates.x, coordinates.y);
+        hyperlink.setOnAction(e -> {
+            System.out.println("JavaFXApplication: displayLink: Link clicked: name=" + name);
+            listener.onEvent(name, null);
+        });
+        
+        content.getChildren().add(hyperlink);
+        
+        /*
         HTMLEditor editor = this.tabEditorMap.get(viewName);
         
         String currentText = editor.getHtmlText();
@@ -687,6 +709,7 @@ public class JavaFXApplication extends ApplicationController {
                 webEngine.executeScript(script);
             }
         });
+        */
     }
     
     @Override
@@ -889,7 +912,66 @@ public class JavaFXApplication extends ApplicationController {
     
     @Override
     public void displayInputField(String viewName, String name, String label, int length, int row, int column, String initValue, Boolean addButton, Boolean isMonospace, Boolean isUpperCase, Boolean isMultiUse, EventListener listener) {
-        throw new UnsupportedOperationException("Not supported.");
+        System.out.println("JavaFXApplication: displayInputField: viewName=" + viewName + ", name=" + name + ", label=" + label + ", length=" + length + ", row=" + row + ", column=" + column + ", initValue=" + initValue + ", addButton=" + addButton + ", isMonospace=" + isMonospace + ", isUpperCase=" + isUpperCase + ", isMultiUse=" + isMultiUse + ", listener=" + listener);
+        
+        Pane content = this.tabContentMap.get(viewName);
+        
+        TextField field = new TextField();
+        field.setPromptText(label);
+        TextFormatter<String> textFormatter = new TextFormatter<>(change -> {
+            if (isUpperCase) {
+                // Apply the uppercase conversion to the new text
+                change.setText(change.getText().toUpperCase());
+            }
+
+            // Enforce the character limit
+            if (change.getControlNewText().length() > length) {
+                return null; // Reject the change
+            }
+            
+            if (!addButton) {
+                // Raise an event for each entered character
+                listener.onEvent(name, change.getControlNewText());
+            }
+            
+            return change; // Accept the change
+        });
+        field.setTextFormatter(textFormatter);
+        
+        Font font;
+        if (isMonospace) {
+            font = this.monospaceFont;
+        } else {
+            font = this.buttonFont;
+        }
+        field.setFont(font);
+        
+        Coordinates startCoordinates = this.convertToCoordinates(row, column);        
+        field.setLayoutX(startCoordinates.x);
+        field.setLayoutY(startCoordinates.y);
+        // TODO - setPrefSize?
+        
+        if ((initValue != null) && (!initValue.equals(""))) {
+            field.setText(initValue);
+        }
+        
+        content.getChildren().add(field);
+        
+        // Handle entered text
+        if (addButton) {
+            // Display a button for submitting the input
+            Button button = this.newButton(viewName, name, "Submit", row, column + length + 1 + 1, null, null, isMonospace, null, false, listener);
+            button.setOnAction(e -> {
+                    listener.onEvent(name, null);
+                    if (isMultiUse) {
+                        field.setText("");
+                    } else {
+                        field.setDisable(true);
+                        button.setDisable(true);
+                    }
+                }
+            );
+        }
     }
     
     @Override
