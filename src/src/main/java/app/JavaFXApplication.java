@@ -7,6 +7,7 @@ import app.model.SpriteModel;
 import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -17,6 +18,8 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
@@ -68,8 +71,8 @@ public class JavaFXApplication extends ApplicationController {
     public Scene primaryScene;
     public ApplicationView splashView;
     public HashMap<String, Pane> tabContentMap;
-    public HashMap<String, HTMLEditor> tabEditorMap;
-    public HashMap<String, String> tabEditorTextMap;
+    //public HashMap<String, HTMLEditor> tabEditorMap;
+    //public HashMap<String, String> tabEditorTextMap;
     public TabPane tabFolder;
     public HashMap<String, Integer> tabIndexMap;
     public HashMap<String, Tab> tabItemMap;
@@ -263,8 +266,8 @@ public class JavaFXApplication extends ApplicationController {
 
         // Share important state with the other instance methods
         this.tabContentMap = new HashMap<>();
-        this.tabEditorMap = new HashMap<>();
-        this.tabEditorTextMap = new HashMap<>();
+        //this.tabEditorMap = new HashMap<>();
+        //this.tabEditorTextMap = new HashMap<>();
 
         this.tabIndexMap = new HashMap<>();
         this.tabItemMap = new HashMap<>();
@@ -349,16 +352,19 @@ public class JavaFXApplication extends ApplicationController {
         }
         
         Pane content = this.tabContentMap.get(viewName);
-        HTMLEditor editor = this.tabEditorMap.get(viewName);
+        //HTMLEditor editor = this.tabEditorMap.get(viewName);
         
         if (content != null) {
-            content.getChildren().removeIf(node -> node != editor);
+            //content.getChildren().removeIf(node -> node != editor);
+            content.getChildren().clear();
         }
         
         // Clear the book text if this view uses a text area
+        /*
         if (editor != null) {
             this.tabEditorTextMap.put(viewName, this.emptyBook);
         }
+        */
     }
     
     @Override
@@ -470,6 +476,7 @@ public class JavaFXApplication extends ApplicationController {
         // Configure the background
         Background background = null;
         if (view.backgroundImage != null) {
+            System.out.println("JavaFXApplication: addView: name=" + view.name + ", using background image " + view.backgroundImage);
             Image image = loadImage(view.backgroundImage);
             Coordinates dimensions = this.getDimensions(view.backgroundImage);
             BackgroundImage backgroundImage = new BackgroundImage(
@@ -478,13 +485,23 @@ public class JavaFXApplication extends ApplicationController {
                 BackgroundRepeat.NO_REPEAT, // Repeat in Y direction
                 BackgroundPosition.DEFAULT,   // Position of the image
                 // TODO - Other examples use 1.0
-                new BackgroundSize(dimensions.x, dimensions.y, true, true, false, false) // Size of the image (100% width and height)
+                new BackgroundSize(dimensions.x, dimensions.y, true, true, true, false) // Size of the image (100% width and height)
             );
-            background = new Background(backgroundImage);
+            
+            // TODO - Check and handle for no background color
+            Color backgroundColor = Color.rgb(view.backgroundColor.red, view.backgroundColor.green, view.backgroundColor.blue);
+            BackgroundFill backgroundFill = new BackgroundFill(
+                backgroundColor, // The color to use
+                CornerRadii.EMPTY, // No rounded corners
+                Insets.EMPTY // No padding
+            );
+            
+            background = new Background(Collections.singletonList(backgroundFill), Collections.singletonList(backgroundImage));
             content.setBackground(background);
             content.setPrefSize(dimensions.x, dimensions.y);
             // TODO - How to specify background color for images with transparency?
         } else if (view.backgroundColor != null) {
+            System.out.println("JavaFXApplication: addView: name=" + view.name + ", using background color " + view.backgroundColor);
             Color backgroundColor = Color.rgb(view.backgroundColor.red, view.backgroundColor.green, view.backgroundColor.blue);
             BackgroundFill backgroundFill = new BackgroundFill(backgroundColor, CornerRadii.EMPTY, Insets.EMPTY);
             background = new Background(backgroundFill);
@@ -514,7 +531,8 @@ public class JavaFXApplication extends ApplicationController {
         if (this.namedControls.get(view.name) == null) {
             this.namedControls.put(view.name, new HashMap());
         }
-           
+        
+        /*
         if (view.addTextArea) {
             // Add a text area to the composite
             this.tabEditorTextMap.put(view.name, this.emptyBook);
@@ -530,20 +548,7 @@ public class JavaFXApplication extends ApplicationController {
                 initialHTML = "<body style='background-color: transparent;'>"
                                         + this.emptyBook
                                         + "</body>";
-                /*
-                String editorControlStyles = 
-                            "-fx-background-color: transparent;" +
-                            ".html-editor .tool-bar { " +
-                            "    -fx-max-height: 0; " +
-                            "    -fx-pref-height: 0; " +
-                            "    -fx-min-height: 0; " +
-                            "    -fx-padding: 0; " +
-                            "    -fx-border-width: 0; " +
-                            "    -fx-opacity: 0; " +
-                            "    visibility: hidden; " +
-                            "}";
-                htmlEditor.setStyle(editorControlStyles);
-                */
+
                 //htmlEditor.setStyle("-fx-background-color: rgba(0, 0, 0, 0);"); // Transparent black
             } else {
                 String imagePath = getClass().getResource(view.backgroundImage).toExternalForm();
@@ -563,6 +568,7 @@ public class JavaFXApplication extends ApplicationController {
             content.getChildren().add(htmlEditor);
             //htmlEditor.setPrefHeight(250);
         }
+        */
         
         // Add overlay pane AFTER HTMLEditor as StackPane displays its contents back-to-front
         Pane overlayPane = new Pane();
@@ -574,7 +580,19 @@ public class JavaFXApplication extends ApplicationController {
     
     @Override
     public void displayMessageBox(String title, String text, int level) {
-        throw new UnsupportedOperationException("Not supported.");
+        System.out.println("JavaFXApplication: displayMessageBox: title=" + title + ", text=" + text + ", level=" + level);
+        
+        AlertType type = switch (level) {
+            case Icon.INFORMATION -> AlertType.INFORMATION;
+            case Icon.WARNING -> AlertType.WARNING;
+            case Icon.ERROR -> AlertType.ERROR;
+            default -> AlertType.INFORMATION;
+        };
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(text);
+        alert.showAndWait();
     }
     
     @Override
@@ -1112,7 +1130,7 @@ public class JavaFXApplication extends ApplicationController {
         System.out.println("JavaFXApplication: setBackgroundImage : viewName=" + viewName + ", imageFileName=" + imageFileName);
         
         Pane content = this.tabContentMap.get(viewName);
-        HTMLEditor editor = this.tabEditorMap.get(viewName);
+        //HTMLEditor editor = this.tabEditorMap.get(viewName);
         
         Image image = loadImage(imageFileName);
         Coordinates dimensions = this.getDimensions(imageFileName);
@@ -1129,10 +1147,12 @@ public class JavaFXApplication extends ApplicationController {
         
         content.setBackground(background);
         content.setPrefSize(dimensions.x, dimensions.y);
+        /*
         if (editor != null) {
             editor.setBackground(background);
             editor.setPrefSize(dimensions.x, dimensions.y);
         }
+        */
     }
     
     @Override
