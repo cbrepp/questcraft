@@ -4,18 +4,18 @@ Upcoming changes.
 
 ## Priorities
 
-1. Finish animation support and Night Owl minigame and transition to Chapter 2
-2. Finish JavaFX app controller inasmuch as is needed for Mad Libs quest
-    1. TextEditor height is wrong for some reason
-    2. Italics doesn't work for some reason
-    3. Unicode emoticons don't work for some reason
-    4. Columns (and likely rows) are calculated differently than with SWT and shifts the text
-    5. Need to figure out how to dispose nodes
-    6. Need new sound system... a better one that allows playing the same sound concurrently
-    7. Implement remaining AppController methods
+1. Refactor Z-order layout to match most recently added images being displayed on top of the other images
+2. Finish animation support and Night Owl minigame and transition to Chapter 2
+3. Finish JavaFX app controller inasmuch as is needed for Mad Libs quest
+    1. Italics doesn't work for some reason
+    2. Unicode emoticons don't work for some reason
+    3. Columns (and likely rows) are calculated differently than with SWT and shifts the text
+    4. Need new sound system... a better one that allows playing the same sound concurrently
+    5. Implement remaining AppController methods
 4. Prototype simple web page that runs JavaFX version of Mad Libs quest
-    1. WebFX (https://docs.webfx.dev/#_getting_started) can't be used because after commenting out unsupported classes (like Class, HTMLEditor, etc.) a successful build shows a blank webpage
-    2. JPro (https://www.jpro.one/docs/jpro-webapi/docs/1/1/creating-a-project)
+    1. WebFX (https://docs.webfx.dev/#_getting_started) - After a bit of refactoring, was able to get an OpenJFX version that mostly works.  The Web/GWT version requires custom image controls, lacks tab folder support, and basic layout support.
+    2. JPro (https://www.jpro.one/docs/jpro-webapi/docs/1/1/creating-a-project) - This requires a paid account and refactoring to separate the UI layer from the Java back-end.
+    3. Gluon Mobile (https://docs.gluonhq.com/) with Charm Glisten UI library - Free to use and supports converting to Android and iOS
 5. Deploy Mad Libs quest to hosted website
 6. Separate this repo into:
     1. Appcraft repo
