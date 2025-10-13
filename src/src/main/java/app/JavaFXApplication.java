@@ -42,12 +42,12 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextFlow;
-import javafx.scene.web.HTMLEditor;
 import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 
@@ -330,17 +330,44 @@ public class JavaFXApplication extends ApplicationController {
     
     @Override
     public void displayView(ApplicationView view) {
-        throw new UnsupportedOperationException("Not supported.");
+        System.out.println("JavaFXApplication: displayView: Displaying application view: " + view.name);
+        
+        int tabIndex = this.tabIndexMap.get(view.name);
+        System.out.println("JavaFXApplication: displayTab: Tab index=" + tabIndex);
+        
+        if (this.tabFolder != null) {
+            this.tabFolder.getSelectionModel().select(tabIndex);
+        }
+        
+        view.onDisplay(this);
     }
     
     @Override
     public void displayView(String viewName) {
-        throw new UnsupportedOperationException("Not supported.");
+        System.out.println("JavaFXApplication: displayView: Displaying application view: " + viewName);
+        
+        ApplicationView view = views.get(viewName);
+        if (view == null) {
+            System.out.println("JavaFXApplication: displayView: View does not exist!");
+            return;
+        }
+        
+        this.displayView(view);
     }
     
     @Override
     public void displayOverlay(String viewName, String name, app.Color color, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, Integer transparency) {
-        throw new UnsupportedOperationException("Not supported.");
+        System.out.println("JavaFXApplication: displayOverlay: viewName=" + viewName + ", name=" + name + ", color=" + color + ", startRow=" + startRow + ", startColumn=" + startColumn + ", endRow=" + endRow + ", endColumn=" + endColumn + ", transparency=" + transparency);
+        Pane content = this.tabContentMap.get(viewName);
+        Coordinates topLeftCoordinates = this.convertToCoordinates(startRow, startColumn);
+        Coordinates bottomRightCoordinates = this.convertToCoordinates(endRow, endColumn);
+        int width = bottomRightCoordinates.x - topLeftCoordinates.x;
+        int height = bottomRightCoordinates.y - topLeftCoordinates.y;
+        Rectangle overlay = new Rectangle(topLeftCoordinates.x, topLeftCoordinates.y, width, height);
+        double opacityPercent = (1.0 - ((double)transparency / 255.0)); // Transparency is 0-255
+        System.out.println("JavaFXApplication: displayOverlay: Converted opacity percent to " + opacityPercent);
+        overlay.setFill(new Color(1, 1, 1, opacityPercent));
+        content.getChildren().add(overlay);
     }
     
     @Override

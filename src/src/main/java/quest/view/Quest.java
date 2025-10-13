@@ -88,6 +88,7 @@ public class Quest extends app.ApplicationView {
     public Quest(String name) {
         super(name);
         
+        this.backgroundImage = "/assets/images/book.png";
         this.backgroundColor = new Color(0, 0, 0);
         this.isGameOver = false;
         this.playerHP = 100;
