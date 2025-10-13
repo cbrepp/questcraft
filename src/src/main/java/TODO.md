@@ -16,7 +16,7 @@ Upcoming changes.
     1. WebFX (https://docs.webfx.dev/#_getting_started) - After a bit of refactoring, was able to get an OpenJFX version that mostly works.  The Web/GWT version requires custom image controls, lacks tab folder support, and basic layout support.
     2. JPro (https://www.jpro.one/docs/jpro-webapi/docs/1/1/creating-a-project) - This requires a paid account and refactoring to separate the UI layer from the Java back-end.
     3. Gluon Mobile (https://docs.gluonhq.com/) with Charm Glisten UI library - Free to use and supports converting to Android and iOS
-5. Deploy Mad Libs quest to hosted website
+5. If Gluon Mobile is promising, work on Android build
 6. Separate this repo into:
     1. Appcraft repo
     2. Questcraft repo
