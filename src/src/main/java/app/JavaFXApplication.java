@@ -26,6 +26,7 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
+import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
@@ -429,7 +430,17 @@ public class JavaFXApplication extends ApplicationController {
     
     @Override
     public void selectTab(String viewName) {
-        throw new UnsupportedOperationException("Not supported.");
+        System.out.println("JavaFXApplication: selectTab: viewName=" + viewName);
+        
+        Integer index = this.getTabIndex(viewName);
+        if (index == null) {
+            System.err.println("JavaFXApplication: selectTab: The view does not have a tab!");
+            return;
+        }
+        
+        System.out.println("JavaFXApplication: selectTab: Setting tab selection to index " + index);
+        SingleSelectionModel<Tab> selectionModel = this.tabFolder.getSelectionModel();
+        selectionModel.select(index);
     }
     
     @Override
