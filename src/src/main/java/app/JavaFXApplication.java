@@ -12,7 +12,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -50,12 +53,15 @@ import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
 import javafx.stage.Screen;
+import javafx.util.Duration;
 
 /**
  *
  * @author repp
  */
 public class JavaFXApplication extends ApplicationController {
+    
+    public static List<String> TIMER_EVENTS = new ArrayList();
     
     public DelegateApplication app;
     public Font buttonFont;
@@ -358,16 +364,27 @@ public class JavaFXApplication extends ApplicationController {
     @Override
     public void displayOverlay(String viewName, String name, app.Color color, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, Integer transparency) {
         System.out.println("JavaFXApplication: displayOverlay: viewName=" + viewName + ", name=" + name + ", color=" + color + ", startRow=" + startRow + ", startColumn=" + startColumn + ", endRow=" + endRow + ", endColumn=" + endColumn + ", transparency=" + transparency);
+        
         Pane content = this.tabContentMap.get(viewName);
-        Coordinates topLeftCoordinates = this.convertToCoordinates(startRow, startColumn);
-        Coordinates bottomRightCoordinates = this.convertToCoordinates(endRow, endColumn);
+        
+        Coordinates topLeftCoordinates;
+        Coordinates bottomRightCoordinates;
+        if (startRow == null) {
+            topLeftCoordinates = new Coordinates(0, 0);
+            bottomRightCoordinates = new Coordinates((int) content.getWidth(), (int) content.getHeight());
+        } else {
+            topLeftCoordinates = this.convertToCoordinates(startRow, startColumn);
+            bottomRightCoordinates = this.convertToCoordinates(endRow, endColumn);
+        }
+        
         int width = bottomRightCoordinates.x - topLeftCoordinates.x;
         int height = bottomRightCoordinates.y - topLeftCoordinates.y;
         Rectangle overlay = new Rectangle(topLeftCoordinates.x, topLeftCoordinates.y, width, height);
         double opacityPercent = (1.0 - ((double)transparency / 255.0)); // Transparency is 0-255
         System.out.println("JavaFXApplication: displayOverlay: Converted opacity percent to " + opacityPercent);
-        overlay.setFill(new Color(1, 1, 1, opacityPercent));
+        overlay.setFill(new Color((color.red + 1) / 255, (color.green + 1) / 255, (color.blue + 1) / 255, opacityPercent));
         content.getChildren().add(overlay);
+        this.namedControls.get(viewName).put(name, overlay);
     }
     
     @Override
@@ -396,7 +413,13 @@ public class JavaFXApplication extends ApplicationController {
     
     @Override
     public void clearControl(String viewName, String controlName) {
-        throw new UnsupportedOperationException("Not supported.");
+        System.out.println("JavaFXApplication: clearControl : viewName=" + viewName + ", controlName=" + controlName);
+        Object control = this.namedControls.get(viewName).get(controlName);
+        if (control != null) {
+            Pane content = this.tabContentMap.get(viewName);
+            content.getChildren().remove((Node) control);
+            this.namedControls.get(viewName).remove(controlName);
+        }
     }
     
     @Override
@@ -411,7 +434,9 @@ public class JavaFXApplication extends ApplicationController {
     
     @Override
     public void renameTab(String viewName, String newViewName) {
-        throw new UnsupportedOperationException("Not supported.");
+        System.out.println("JavaFXApplication: renameTab: viewName=" + viewName + ", newViewName=" + newViewName);
+        Tab tab = this.tabItemMap.get(viewName);
+        tab.setText(newViewName);
     }
     
     @Override
@@ -455,7 +480,9 @@ public class JavaFXApplication extends ApplicationController {
     
     @Override
     public Integer getTabIndex(String viewName) {
-        throw new UnsupportedOperationException("Not supported.");
+        System.out.println("JavaFXApplication: getTabIndex: viewName=" + viewName);
+        Integer index = this.tabIndexMap.get(viewName);
+        return index;
     }
     
     @Override
@@ -479,21 +506,7 @@ public class JavaFXApplication extends ApplicationController {
         String tabName = view.name;
         Tab tab = new Tab(tabName);
         if (view.emoji != null) {
-            //tabName = view.emoji + " " + tabName;
-            
-            //tab.setGraphic(createEmoji(view.emoji)); // Add the emoji graphic
-            
-            //Text emojiNode = new Text(view.emoji);
-            //emojiNode.setStyle(String.format("-fx-font: %dpx %s;", 14, "NotoColorEmoji"));
-            //tab.setGraphic(new TextFlow(emojiNode));
-
-            Image iconImage = loadImage("/assets/images/books.png");
-
-            // 2. Create an ImageView and set the image
-            ImageView iconView = new ImageView(iconImage);
-            iconView.setFitWidth(16); // Set the size of the image
-            iconView.setFitHeight(16);
-            tab.setGraphic(iconView);
+            tabName = view.emoji + " " + tabName;
         }
         this.tabFolder.getTabs().add(index, tab);
         tab.setContent(content);
@@ -619,7 +632,7 @@ public class JavaFXApplication extends ApplicationController {
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(text);
-        alert.showAndWait();
+        alert.show();
     }
     
     @Override
@@ -862,7 +875,22 @@ public class JavaFXApplication extends ApplicationController {
     
     @Override
     public int displayImage(String viewName, String fileName, int row, int column) {
-        throw new UnsupportedOperationException("Not supported.");
+        System.out.println("JavaFXApplication: displayImage: viewName=" + viewName + ", fileName=" + fileName + ", row=" + row + ", column=" + column);
+        
+        Pane content = this.tabContentMap.get(viewName);
+
+        final Image image = loadImage(fileName);
+        Coordinates dimensions = getDimensions(fileName);
+        
+        ImageView imageView = new ImageView(image);
+        Coordinates coordinates = this.convertToCoordinates(row, column);
+        imageView.setLayoutX(coordinates.x + 1);
+        imageView.setLayoutY(coordinates.y + 1);
+        content.getChildren().add(imageView);
+        
+        // Advance the text cursor automatically
+        int nextRow = row + this.getRows(dimensions.y);
+        return nextRow;
     }
     
     @Override
@@ -1007,7 +1035,7 @@ public class JavaFXApplication extends ApplicationController {
             // Display a button for submitting the input
             Button button = this.newButton(viewName, name, "Submit", row, column + length + 1 + 1, null, null, isMonospace, null, false, listener);
             button.setOnAction(e -> {
-                    listener.onEvent(name, null);
+                    listener.onEvent(name, field.getText());
                     if (isMultiUse) {
                         field.setText("");
                     } else {
@@ -1021,7 +1049,154 @@ public class JavaFXApplication extends ApplicationController {
     
     @Override
     public void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, int alignment, EventListener listener, Boolean allowRepeatClicks) {
-        throw new UnsupportedOperationException("Not supported.");
+        System.out.println("JavaFXApplication: displayValidatedInputField: viewName=" + viewName + ", name=" + name + ", row=" + row + ", startColumn=" + startColumn + ", endColumn=" + endColumn + ", alignment=" + alignment + ", listener=" + listener + ", allowRepeatClicks=" + allowRepeatClicks);
+        
+        Pane content = this.tabContentMap.get(viewName);
+
+        // Display a row of buttons with the possible input values
+        int buttonHeight = 2 * this.buttonFontHeight;   // Calculate double height of text
+        Coordinates coordinates = this.convertToCoordinates(row, startColumn);
+        Coordinates terminalCoordinates = this.convertToCoordinates(row, endColumn);
+        int buttonX;
+        int buttonY;
+        switch (alignment) {
+            case Alignment.LEFT -> {
+                System.out.println("SWTApplication: displayValidatedInputField: Left alignment");
+            }
+            case Alignment.CENTER -> {
+                System.out.println("SWTApplication: displayValidatedInputField: Center alignment");
+                // Calculate the full width of the button row
+                int rowWidth = 0;
+                for (String value : values) {
+                    value = value.toUpperCase().replaceFirst("&UP;", "K");
+                    value = value.toUpperCase().replaceFirst("&DOWN;", "K");
+                    value = value.toUpperCase().replaceFirst("&LEFT;", "K");
+                    value = value.toUpperCase().replaceFirst("&RIGHT;", "K");
+                    if (value.charAt(0) == '*') {
+                        value = value.substring(1, value.length());
+                    }
+                    int tempButtonWidth = (value.length() * this.buttonFontWidth) + (2 * this.buttonFontWidth);    // Calculate width of text plus buffer of two imaginary characters
+                    rowWidth += tempButtonWidth + (1 * this.buttonFontWidth);   // Add a spacer between this button and the next
+                }
+                coordinates.x = (int) (terminalCoordinates.x - Math.floor(rowWidth / 2));
+            }
+            case Alignment.RIGHT -> {
+                System.out.println("SWTApplication: displayValidatedInputField: Right alignment");
+                // Calculate the full width of the button row
+                int rowWidth = 0;
+                for (String value : values) {
+                    value = value.toUpperCase().replaceFirst("&UP;", "K");
+                    value = value.toUpperCase().replaceFirst("&DOWN;", "K");
+                    value = value.toUpperCase().replaceFirst("&LEFT;", "K");
+                    value = value.toUpperCase().replaceFirst("&RIGHT;", "K");
+                    if (value.charAt(0) == '*') {
+                        value = value.substring(1, value.length());
+                    }
+                    int tempButtonWidth = (value.length() * this.buttonFontWidth) + (2 * this.buttonFontWidth);    // Calculate width of text plus buffer of two imaginary characters
+                    rowWidth += tempButtonWidth + (1 * this.buttonFontWidth);   // Add a spacer between this button and the next
+                }
+                coordinates.x = terminalCoordinates.x - rowWidth;
+            }
+            default -> {
+                System.err.println("SWTApplication: displayValidatedInputField: Unsupported alignment!");
+            }
+        }
+        buttonX = coordinates.x + 1;
+        buttonY = coordinates.y + 1;
+        
+        Boolean disable = false;
+        for (String value : values) {
+            if (value.charAt(0) == '!') {
+                // TODO - This is just a hack to support disabling buttons
+                value = value.substring(1, value.length());
+                
+            }
+            Boolean glow = false;
+            if (value.charAt(0) == '*') {
+                value = value.substring(1, value.length());
+                glow = true;
+            }
+            Integer keyBinding = null;
+            String eventValue = value;
+            if (value.toUpperCase().contains("&UP;")) {
+                //keyBinding = SWT.ARROW_UP;
+                eventValue = value.replaceFirst("(?i)" + "&UP;", "");
+                value = value.replaceFirst("(?i)" + "&UP;", "\u2B06");  // Case insensitive reg ex
+            } else if (value.toUpperCase().contains("&DOWN;")) {
+                //keyBinding = SWT.ARROW_DOWN;
+                eventValue = value.replaceFirst("(?i)" + "&DOWN;", "");
+                value = value.replaceFirst("(?i)" + "&DOWN;", "\u2B07");  // Case insensitive reg ex
+            } else if (value.toUpperCase().contains("&LEFT;")) {
+                //keyBinding = SWT.ARROW_LEFT;
+                eventValue = value.replaceFirst("(?i)" + "&LEFT;", "");
+                value = value.replaceFirst("(?i)" + "&LEFT;", "\u2190");  // Case insensitive reg ex
+            } else if (value.toUpperCase().contains("&RIGHT;")) {
+                //keyBinding = SWT.ARROW_RIGHT;
+                eventValue = value.replaceFirst("(?i)" + "&RIGHT;", "");
+                value = value.replaceFirst("(?i)" + "&RIGHT;", "\u27A1");  // Case insensitive reg ex
+            }
+            final String finalValue = eventValue;
+            Button button = new Button(value);
+            if (disable) {
+                button.setDisable(true);
+            }
+            button.setFont(this.buttonFont);
+            button.setOnAction(e -> {
+                if (!allowRepeatClicks) {
+                    button.setDisable(true);
+                }
+                listener.onEvent(name, finalValue);
+            });
+            
+            /*
+            if (keyBinding != null) {
+                // A button can only trap key events when it has focus, so add a key listener to the shell that gets removed when the button is disposed
+                final int finalKeyBinding = (int)keyBinding;
+                final SWTApplication thisAppController = this;
+                final KeyListener textAreaKeyListener = new KeyAdapter() {
+                    @Override
+                    public void keyPressed(KeyEvent e) {
+                        if ((e.keyCode == finalKeyBinding) && (!button.isDisposed())) {
+                            if ((thisAppController.lastProcessedKeyEvent == null) || (thisAppController.lastProcessedKeyEvent.time != e.time) || (thisAppController.lastProcessedKeyEvent.keyCode != e.keyCode)) {
+                                e.doit = false; // e hasn't been checked yet and the refreshed page's event handling will process the event in an infinite loop
+                                if (!allowRepeatClicks) {
+                                    button.setEnabled(false);
+                                }
+                                thisAppController.lastProcessedKeyEvent = e; // e.doit isn't processed until this method returns so to further prevent an infinite loop guarantee the key event is new
+                                listener.onEvent(name, finalValue);
+                            }
+                        }
+                    }
+                };
+                textArea.addKeyListener(textAreaKeyListener);
+                button.addDisposeListener(e -> {
+                    textArea.removeKeyListener(textAreaKeyListener);
+                });
+            }
+            */
+            int buttonWidth = (finalValue.length() * this.buttonFontWidth) + (2 * this.buttonFontWidth);    // Calculate width of text plus buffer of two imaginary characters
+            if ((buttonX + buttonWidth) > terminalCoordinates.x) {
+                // Wrap the button onto a new line
+                buttonX = coordinates.x + 1;
+                buttonY = (int) (buttonY + buttonHeight + ((1 * this.buttonFontWidth)));
+            }
+            //button.setBounds(buttonX, buttonY, buttonWidth, buttonHeight);
+            //button.moveAbove(textArea);
+            buttonX = buttonX + buttonWidth + (1 * this.buttonFontWidth);   // Add a spacer between this button and the next
+            
+            // TODO - newButton should be used to prevent code duplication
+            if (glow) {
+                String defaultStyle = "-fx-effect: dropshadow(three-pass-box, rgba(139, 0, 139, 0.8), 5, 0.8, 0, 0);";
+                String hoverStyle = "-fx-effect: dropshadow(three-pass-box, rgba(139, 0, 139, 1), 10, 0.8, 0, 0);";
+                button.setStyle(defaultStyle);
+                button.setOnMouseEntered(e -> button.setStyle(hoverStyle));
+                button.setOnMouseExited(e -> button.setStyle(defaultStyle));
+            }
+            
+            button.setLayoutX(buttonX);
+            button.setLayoutY(buttonY);
+            content.getChildren().add(button);
+        }
     }
     
     @Override
@@ -1061,12 +1236,37 @@ public class JavaFXApplication extends ApplicationController {
     
     @Override
     public void setTimer(String name, double seconds, EventListener listener) {
-        throw new UnsupportedOperationException("Not supported.");
+        System.out.println("JavaFXApplication: setTimer: name=" + name + ", seconds=" + seconds + ", listener=" + listener);
+        if (TIMER_EVENTS.contains(name)) {
+            System.out.println("JavaFXApplication: setTimer: Timer already exists for " + name + "!");
+            return;
+        }
+        Timeline timeline = new Timeline();
+        TIMER_EVENTS.add(name);
+        KeyFrame keyFrame = new KeyFrame(Duration.seconds(seconds), (ActionEvent event) -> {
+            System.out.println("JavaFXApplication: setTimer: Timer elapsed: name=" + name + ", seconds=" + seconds + ", listener=" + listener);
+            if (!TIMER_EVENTS.contains(name)) {
+                System.out.println("JavaFXApplication: setTimer: Timer " + name + " was removed!");
+                return;
+            }
+            TIMER_EVENTS.remove(name);
+            listener.onEvent(name, seconds);
+        });
+
+        timeline.getKeyFrames().add(keyFrame);
+        timeline.setCycleCount(1);
+        timeline.play();
     }
     
     @Override
     public void removeTimer(String name) {
-        throw new UnsupportedOperationException("Not supported.");
+        System.out.println("JavaFXApplication: removeTimer: name=" + name);
+        if (!TIMER_EVENTS.contains(name)) {
+            System.out.println("JavaFXApplication: removeTimer: Timer " + name + " was already removed!");
+        } else {
+            TIMER_EVENTS.remove(name);
+        }
+        // TODO - Could store the timeline and call timeline.stop();
     }
     
     @Override

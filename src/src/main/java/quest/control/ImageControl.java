@@ -2,7 +2,6 @@
 package quest.control;
 
 import quest.view.Quest;
-import static quest.view.Quest.SECOND_PAGE;
 import quest.view.Questcraft;
 
 /**

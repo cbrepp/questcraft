@@ -93,7 +93,7 @@ public class InventoryControl extends QuestControl implements EventListener {
     public void onEvent(String eventName, Object eventValue) {
         System.out.println("InventoryControl: onEvent: eventName=" + eventName + ", eventValue=" + eventValue);
         
-        InventoryItem item = this.quest.inventory.get(eventName);
+        InventoryItem item = this.quest.book.inventory.get(eventName);
         
         // If the item has a sound file, play it now
         if (item.soundFileName != null) {

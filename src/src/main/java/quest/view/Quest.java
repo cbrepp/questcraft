@@ -32,6 +32,7 @@ public class Quest extends app.ApplicationView {
     public final static int LEFT_PAGE = 1;
     public final static String LINK_EVENT_PREFIX = "LINK";
     public final static String LOADING_COMPLETE = "loading-complete";
+    public final static String LOADING_OVERLAY = "loading-overlay";
     public final static String MAP = "Map";
     public final static String MP_CHANGE = "mp-change";
     public final static String MP_CHANGE_REFRESH = "mp-change-refresh";
@@ -192,6 +193,7 @@ public class Quest extends app.ApplicationView {
                 this.display();
             }
             case LOADING_COMPLETE -> {
+                this.appController.clearControl(this.name, LOADING_OVERLAY);
                 this.startAct(this.book.firstActName);
                 this.display();
             }
@@ -292,6 +294,7 @@ public class Quest extends app.ApplicationView {
         
         // Loading screen
         if (this.book.animationFileName != null) {
+            this.appController.displayOverlay(this.name, LOADING_OVERLAY, new Color(0, 0, 0), 0, 0, 0, 0, 32);
             int halfColumns = (appController.getTextColumns() / 2);
             int halfGifWidth = (appController.getColumns(this.book.animationFileName) / 2);
             int gifColumn = halfColumns - halfGifWidth;
