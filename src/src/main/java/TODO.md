@@ -6,24 +6,27 @@ Upcoming changes.
 
 1. Refactor Z-order layout to match most recently added images being displayed on top of the other images
 2. Finish animation support and Night Owl minigame and transition to Chapter 2
-3. Finish JavaFX app controller inasmuch as is needed for Mad Libs quest
-    1. Italics doesn't work for some reason
-    2. Unicode emoticons don't work for some reason
-    3. Columns (and likely rows) are calculated differently than with SWT and shifts the text
-    4. Need new sound system... a better one that allows playing the same sound concurrently
-    5. Implement remaining AppController methods
-4. Prototype simple web page that runs JavaFX version of Mad Libs quest
-    1. WebFX (https://docs.webfx.dev/#_getting_started) - After a bit of refactoring, was able to get an OpenJFX version that mostly works.  The Web/GWT version requires custom image controls, lacks tab folder support, and basic layout support.  Only the application title displays, nothing else works.  But WebFX provides the full source and a simple and free solution like GitHub Pages (https://docs.github.com/en/pages/quickstart) can be used to host.  Need to test against future versions to see if there's improvement.
-    2. JPro (https://www.jpro.one/docs/jpro-webapi/docs/1/1/creating-a-project) - With a little tweaking of the example app was able to build a server that mostly works.  JPro hosting is over $100/month.  Need to look into cheaper server hosting-- https://www.hostinger.com/tutorials/how-to-set-up-vps.
-    3. Gluon Mobile (https://docs.gluonhq.com/) with Charm Glisten UI library - Free to use and supports converting to Android and iOS
-5. If Gluon Mobile is promising, work on Android build
-6. Separate this repo into:
+3. Finish JavaFX app controllerr
+    1. Columns (and likely rows) are calculated differently than with SWT and shifts the text
+    2. Need new sound system... a better one that allows playing the same sound concurrently
+    3. Implement remaining AppController methods, especially displayGrid() and addAnimation()
+4. Prototype a WebFX (https://docs.webfx.dev/#_getting_started) web page:
+    1. With WebFX "0.1.0-SNAPSHOT ~ 2025-09-04 13:28 GMT" the initial application screen displays only larger floating text with zero support for images, causing all elements to display at coordinate (0, 0)
+    2. Upgrade WebFX as new versions are published and redeploy to https://cbrepp.github.io/questcraft/
+    3. Research alternative JavaScript transpilers
+5. Prototype a JPro (https://www.jpro.one/docs/jpro-webapi/docs/1/1/creating-a-project) web page:
+    1. With a little tweaking of the example app was able to build a server that mostly works!
+    2. So far only the example Gradle app builds with Questcraft.  Need to get Maven app building.  Also need to clean up layout and positioning of controls and implement a stand-alone JavaFX sound solution.
+    3. JPro hosting is approx $132.93/month.  Need to look into cheap alternative server hosting-- https://www.hostinger.com/tutorials/how-to-set-up-vps.
+6. Prototype a Gluon Mobile (https://docs.gluonhq.com/) app using the Charm Glisten UI library
+    1. If Gluon Mobile is promising, work on Android build
+7. Separate this repo into:
     1. Appcraft repo
     2. Questcraft repo
     3. One repo for each quest
-7. Begin implementing each Chapter 2 level
-8. Start designing the Twinquest prequel about Big Chung, the mystery solving chief of police
-9. Fix annoying spacing issues around changing font color, etc.  Add dark magenta color to variables used by Mad Quest.
+8. Begin implementing each Chapter 2 level
+9. Start designing the Twinquest prequel about Big Chung, the mystery solving chief of police
+10. Fix annoying spacing issues around changing font color, etc.  Add dark magenta color to variables used by Mad Quest.
 
 ## Questcraft
 
