@@ -13,8 +13,8 @@ Upcoming changes.
     4. Need new sound system... a better one that allows playing the same sound concurrently
     5. Implement remaining AppController methods
 4. Prototype simple web page that runs JavaFX version of Mad Libs quest
-    1. WebFX (https://docs.webfx.dev/#_getting_started) - After a bit of refactoring, was able to get an OpenJFX version that mostly works.  The Web/GWT version requires custom image controls, lacks tab folder support, and basic layout support.  But WebFX provides the full source and a simple and free solution like GitHub Pages (https://docs.github.com/en/pages/quickstart) can be used to host.
-    2. JPro (https://www.jpro.one/docs/jpro-webapi/docs/1/1/creating-a-project) - This requires a paid account and refactoring to separate the UI layer from the Java back-end.
+    1. WebFX (https://docs.webfx.dev/#_getting_started) - After a bit of refactoring, was able to get an OpenJFX version that mostly works.  The Web/GWT version requires custom image controls, lacks tab folder support, and basic layout support.  Only the application title displays, nothing else works.  But WebFX provides the full source and a simple and free solution like GitHub Pages (https://docs.github.com/en/pages/quickstart) can be used to host.  Need to test against future versions to see if there's improvement.
+    2. JPro (https://www.jpro.one/docs/jpro-webapi/docs/1/1/creating-a-project) - With a little tweaking of the example app was able to build a server that mostly works.  JPro hosting is over $100/month.  Need to look into cheaper server hosting-- https://www.hostinger.com/tutorials/how-to-set-up-vps.
     3. Gluon Mobile (https://docs.gluonhq.com/) with Charm Glisten UI library - Free to use and supports converting to Android and iOS
 5. If Gluon Mobile is promising, work on Android build
 6. Separate this repo into:
