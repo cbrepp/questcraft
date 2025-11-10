@@ -3,7 +3,6 @@ package quest.view;
 import app.ApplicationController;
 import app.Color;
 import app.FontStyle;
-import app.Utility;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -294,17 +293,20 @@ public class Quest extends app.ApplicationView {
         
         // Loading screen
         if (this.book.animationFileName != null) {
-            this.appController.displayOverlay(this.name, LOADING_OVERLAY, new Color(0, 0, 0), 0, 0, 0, 0, 32);
+            this.appController.displayOverlay(this.name, LOADING_OVERLAY, new Color(0, 0, 0), null, null, null, null, null);
             int halfColumns = (appController.getTextColumns() / 2);
             int halfGifWidth = (appController.getColumns(this.book.animationFileName) / 2);
             int gifColumn = halfColumns - halfGifWidth;
-            int nextRow = appController.displayGif(this.name, this.book.animationFileName, 3, gifColumn);
+            int halfRows = (appController.getTextRows() / 2);
+            int gifHeight = appController.getRows(this.book.animationFileName);
+            int gifRow = halfRows - gifHeight;
+            int nextRow = appController.displayGif(this.name, this.book.animationFileName, gifRow, gifColumn);
             int halfTextWidth = ("Loading...".length() / 2);
             int loadingTextColumn = halfColumns - halfTextWidth;
             appController.displayText(this.name, "Loading...", nextRow, loadingTextColumn, new Color(255, 255, 255));
             Act firstAct = book.acts.get(this.book.firstActName);
             Scene firstScene = firstAct.scenes.get(firstAct.firstSceneName);
-            app.Utility.playSound(firstScene.soundFileName, true);
+            this.appController.playSound(firstScene.soundFileName, true);
             appController.setTimer(LOADING_COMPLETE, 3, this);
         }
         
@@ -347,7 +349,7 @@ public class Quest extends app.ApplicationView {
         // Play the item's sound if applicable
         if (item.soundFileName != null) {
             System.out.println("addInventoryItem: Playing inventory item's sound: " + item.soundFileName);
-            Utility.playSound(item.soundFileName, false);
+            this.appController.playSound(item.soundFileName, false);
         }
         
         // Give the player experience for aquiring the item
@@ -375,7 +377,7 @@ public class Quest extends app.ApplicationView {
         Scene scene = act.scenes.get(this.currentScene);
         
         // Play the page turn sound
-        app.Utility.playSound("/assets/sounds/turn-page.mp3", false);
+        this.appController.playSound("/assets/sounds/turn-page.mp3", false);
         
         // Display the book title and act
         if (!scene.hidePageHeaders) {
@@ -732,22 +734,22 @@ public class Quest extends app.ApplicationView {
         
         if (this.playerHP <= 0) {
             this.playerHP = 0;
-            app.Utility.stopAllSounds();
-            app.Utility.playSound("/assets/sounds/impact.wav false>", false);
-            app.Utility.playSound("/assets/sounds/death.mp3", true);
+            this.appController.stopAllSounds();
+            this.appController.playSound("/assets/sounds/impact.wav false>", false);
+            this.appController.playSound("/assets/sounds/death.mp3", true);
         }
         
         if (delta < 0) {
             this.lastEnemyThatAttacked = lastEnemyThatAttacked;
             if (delta >= -10) {
-                app.Utility.playSound("/assets/sounds/hit.mp3", false);
+                this.appController.playSound("/assets/sounds/hit.mp3", false);
             } else {
-                app.Utility.playSound("/assets/sounds/hit-harder.mp3", false);
+                this.appController.playSound("/assets/sounds/hit-harder.mp3", false);
             }
             this.appController.displayOverlay(this.name, overlayName, new Color(255, 0, 0), null, null, null, null, null);
             appController.setTimer(overlayName, 0.5, this);
         } else if (delta > 0) {
-            //app.Utility.playSound("/assets/sounds/TODO", false);
+            //this.appController.playSound("/assets/sounds/TODO", false);
             this.appController.displayOverlay(this.name, overlayName, new Color(0, 255, 0), null, null, null, null, null);
             appController.setTimer(overlayName, 0.5, this);
         }        
@@ -773,11 +775,11 @@ public class Quest extends app.ApplicationView {
         }
         
         if (delta < 0) {
-            app.Utility.playSound("/assets/sounds/spell-cast.wav", false);
+            this.appController.playSound("/assets/sounds/spell-cast.wav", false);
             this.appController.displayOverlay(this.name, overlayName, new Color(128, 0, 128), null, null, null, null, null);
             appController.setTimer(overlayName, 0.5, this);
         } else if (delta > 0) {
-            app.Utility.playSound("/assets/sounds/mp-up.wav", false);
+            this.appController.playSound("/assets/sounds/mp-up.wav", false);
             this.appController.displayOverlay(this.name, overlayName, new Color(128, 0, 128), null, null, null, null, null);
             appController.setTimer(overlayName, 0.5, this);
         }        
@@ -815,7 +817,7 @@ public class Quest extends app.ApplicationView {
         Boolean isFirstAct = (this.currentAct == null);
         if (!isFirstAct) {
             System.out.println("Quest: startAct: Stopping any sounds from previous act");
-            app.Utility.stopAllSounds();
+            this.appController.stopAllSounds();
         }
         this.currentAct = actName;
         
@@ -839,13 +841,13 @@ public class Quest extends app.ApplicationView {
         }
         if ((previousSoundFileName != null) && (!scene.soundFileName.equals(previousSoundFileName))) {
             System.out.println("Quest: startScene: Stopping sound file " + previousSoundFileName);
-            app.Utility.stopAllSounds();
+            this.appController.stopAllSounds();
         }
         
         // Start a new sound file if needed
         if ((!isFirstAct) && (scene.soundFileName != null) && (!scene.soundFileName.equals(previousSoundFileName))) {
             System.out.println("Quest: startScene: Playing sound file " + scene.soundFileName);
-            app.Utility.playSound(scene.soundFileName, true);
+            this.appController.playSound(scene.soundFileName, true);
         }
         
         // Track where we are in the book

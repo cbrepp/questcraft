@@ -1,7 +1,6 @@
 
 package quest.control;
 
-import app.Utility;
 import quest.view.Quest;
 
 /**
@@ -21,7 +20,7 @@ public class SoundPlayControl extends QuestControl {
         System.out.println("SoundPlayControl: onExecute: tag=" + tag);
         String soundFileName = getTagToken(tag, 1, false);
         Boolean loop = Boolean.valueOf(getTagToken(tag, 2, false).toLowerCase());   // Default is false
-        Utility.playSound(soundFileName, loop);
+        this.quest.appController.playSound(soundFileName, loop);
         return "";
     }
     

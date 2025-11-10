@@ -49,7 +49,7 @@ public class Application extends app.ApplicationView {
         
         switch (eventName) {
             case "quest" -> {
-                Utility.stopAllSounds();
+                this.appController.stopAllSounds();
                 String fileName = (String) eventValue;
                 this.bookFile = deserializeBook(fileName);
                 this.appController.clearScreen(this.name);
@@ -664,10 +664,10 @@ public class Application extends app.ApplicationView {
         page3.story.contents.add("<br>");
         page3.story.contents.add("You press the elevator button to open the door.  And... you step inside...");
         page3.story.contents.add("<second-page>");
+        page3.story.contents.add("<image center /assets/images/clouds.jpg>");
+        page3.story.contents.add("<second-page>");
         page3.story.contents.add("<br><br><br><br><br><br><br><br><br><br><br>");
         page3.story.contents.add("<image center /assets/images/elevator-doors.png>");
-        page3.story.contents.add("<second-page>");
-        page3.story.contents.add("<image center /assets/images/clouds.jpg>");
         introScene.pages.put("3", page3);
         
         Page page4 = new Page();
@@ -981,9 +981,9 @@ public class Application extends app.ApplicationView {
         dragonPage.story.contents.add("<br>");
         dragonPage.story.contents.add("Maybe next time you'll take care of the dragon before trying to leave with its gold?</color");
         dragonPage.story.contents.add("<second-page>");
-        dragonPage.story.contents.add("<image center /assets/images/dragon.png>");
-        dragonPage.story.contents.add("<second-page>");
         dragonPage.story.contents.add("<image center /assets/images/clouds.jpg>");
+        dragonPage.story.contents.add("<second-page>");
+        dragonPage.story.contents.add("<image center /assets/images/dragon.png>");
         myleesElevator.pages.put("Dragon", dragonPage);
         
         Story dragonDefeatedSubpage = new Story();
@@ -1016,9 +1016,9 @@ public class Application extends app.ApplicationView {
         nightOwlPage.story.contents.add("<br>");
         nightOwlPage.story.contents.add("Maybe next time you'll talk to Gianni about a long-range weapon?</color");
         nightOwlPage.story.contents.add("<second-page>");
-        nightOwlPage.story.contents.add("<image center /assets/images/night-owl.png>");
-        nightOwlPage.story.contents.add("<second-page>");
         nightOwlPage.story.contents.add("<image center /assets/images/clouds.jpg>");
+        nightOwlPage.story.contents.add("<second-page>");
+        nightOwlPage.story.contents.add("<image center /assets/images/night-owl.png>");
         myleesElevator.pages.put("Night Owl", nightOwlPage);
         
         Story nightOwlMinigameSubpage = new Story();
@@ -1050,8 +1050,6 @@ public class Application extends app.ApplicationView {
         // TODO - How to know that the page needs to be refreshed when the player is hit and hp needs to be updated?
         Page nightOwlMinigamePage = new Page();
         nightOwlMinigamePage.story.contents.add("<second-page>");
-        nightOwlMinigamePage.story.contents.add("<subpage-display condition=\"variable minigame-display=true\" Monster Shooter>");
-        nightOwlMinigamePage.story.contents.add("<second-page>");
         nightOwlMinigamePage.story.contents.add("<if condition=\"variable minigame-display!=true\" BOSS: Night Owl>");
         nightOwlMinigamePage.story.contents.add("<if condition=\"variable minigame-display!=true\" LEVEL: 1>");
         nightOwlMinigamePage.story.contents.add("<if condition=\"variable minigame-display!=true\" ATTACK: Lightning>");
@@ -1069,6 +1067,8 @@ public class Application extends app.ApplicationView {
         nightOwlMinigamePage.story.contents.add("</color>");
         nightOwlMinigamePage.story.contents.add("<button-row>");
         nightOwlMinigamePage.story.contents.add("<get-validated-input align=right *navigation-prompt &left; Move Left+&up; Launch+&right; Move Right>");
+        nightOwlMinigamePage.story.contents.add("<second-page>");
+        nightOwlMinigamePage.story.contents.add("<subpage-display condition=\"variable minigame-display=true\" Monster Shooter>");
         myleesElevator.pages.put("Night Owl Minigame", nightOwlMinigamePage);
         
         Story monsterShooterSubpage = new Story();
@@ -1325,7 +1325,7 @@ public class Application extends app.ApplicationView {
         almostBunniesSuccessSubpage.contents.add("<br>");
         almostBunniesSuccessSubpage.contents.add("Your Ring of Taming pulls the bunny straight into your hand.  It's a golden bunny!  What a triumph!!!");
         almostBunniesSuccessSubpage.contents.add("<second-page>");
-        almostBunniesSuccessSubpage.contents.add("<image left /assets/images/golden-rabbit.jpg.jpg>");
+        almostBunniesSuccessSubpage.contents.add("<image left /assets/images/golden-rabbit.jpg>");
         chaseBunniesPage.subpages.put("Almost Success", almostBunniesSuccessSubpage);
         Story troubleBunniesSubpage = new Story();
         troubleBunniesSubpage.contents.add("<play-sound /assets/sounds/spring.wav false>");
@@ -1463,13 +1463,10 @@ public class Application extends app.ApplicationView {
         shmebulockMainStory.contents.add("<br>");
         shmebulockMainStory.contents.add("<subpage-display Navigation Footer>");
         shmebulockMainStory.contents.add("<second-page>");
+        shmebulockMainStory.contents.add("<image center /assets/images/magic-door.jpg>");
+        shmebulockMainStory.contents.add("<second-page>");
         shmebulockMainStory.contents.add("<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>");
         shmebulockMainStory.contents.add("<image left /assets/images/toadstool.png>");
-        shmebulockMainStory.contents.add("<second-page>");
-        shmebulockMainStory.contents.add("<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>");
-        shmebulockMainStory.contents.add("<image right /assets/images/toadstool.png>");
-        shmebulockMainStory.contents.add("<second-page>");
-        shmebulockMainStory.contents.add("<image center /assets/images/magic-door.jpg>");
         mainPage.subpages.put("SHMEBULOCK main", shmebulockMainStory);
         Story twinMainStory = new Story();        
         twinMainStory.contents.add("Flying faeries spin in a dizzying circle before you, magnifying the power of the Ring of Toadstools!  They show you a magical vision of Mylee and her brother Big Chung.  Before things went wrong, that is.");
@@ -1486,11 +1483,11 @@ public class Application extends app.ApplicationView {
         twinMainStory.contents.add("<br>");
         twinMainStory.contents.add("<subpage-display Navigation Footer>");
         twinMainStory.contents.add("<second-page>");
-        twinMainStory.contents.add("<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><image center /assets/images/wooden-sign.png>");
+        twinMainStory.contents.add("<image left /assets/images/ring-of-toadstools.jpg>");
         twinMainStory.contents.add("<second-page>");
         twinMainStory.contents.add("<image left /assets/images/frame.png>");
         twinMainStory.contents.add("<second-page>");
-        twinMainStory.contents.add("<image left /assets/images/ring-of-toadstools.jpg>");
+        twinMainStory.contents.add("<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><image center /assets/images/wooden-sign.png>");
         mainPage.subpages.put("twin main", twinMainStory);
         listenSubpage = new Story();
         listenSubpage.contents.add("<goto-page condition=\"player!=Shmebulock\" Listen>");
@@ -1506,11 +1503,11 @@ public class Application extends app.ApplicationView {
         listenPage.story.contents.add("<br>");
         listenPage.story.contents.add("All other sounds are drowned out.</color>");
         listenPage.story.contents.add("<second-page>");
-        listenPage.story.contents.add("<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><image center /assets/images/wooden-sign.png>");
+        listenPage.story.contents.add("<image left /assets/images/ring-of-toadstools.jpg>");
         listenPage.story.contents.add("<second-page>");
         listenPage.story.contents.add("<image left /assets/images/frame.png>");
         listenPage.story.contents.add("<second-page>");
-        listenPage.story.contents.add("<image left /assets/images/ring-of-toadstools.jpg>");
+        listenPage.story.contents.add("<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><image center /assets/images/wooden-sign.png>");
         toadstoolCircle.pages.put("Listen", listenPage);
         
         Story openDoorSubpage = new Story();
@@ -1519,13 +1516,10 @@ public class Application extends app.ApplicationView {
         Page openDoorPage = new Page();
         openDoorPage.previousPageName = "main";
         openDoorPage.story.contents.add("<second-page>");
+        openDoorPage.story.contents.add("<image center /assets/images/magic-door.jpg>");
+        openDoorPage.story.contents.add("<second-page>");
         openDoorPage.story.contents.add("<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>");
         openDoorPage.story.contents.add("<image left /assets/images/toadstool.png>");
-        openDoorPage.story.contents.add("<second-page>");
-        openDoorPage.story.contents.add("<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>");
-        openDoorPage.story.contents.add("<image right /assets/images/toadstool.png>");
-        openDoorPage.story.contents.add("<second-page>");
-        openDoorPage.story.contents.add("<image center /assets/images/magic-door.jpg>");
         openDoorPage.story.contents.add("<first-page>");
         openDoorPage.story.contents.add("<color 184+115+51>You gleefully grab the handle to the door and... and... it won't pull open.  Oh no!  You've been away for so long that you forgot that it is protected by a secret password!");
         openDoorPage.story.contents.add("<br>");
@@ -1556,13 +1550,10 @@ public class Application extends app.ApplicationView {
         shmebulockListenPage.story.contents.add("<br>");
         shmebulockListenPage.story.contents.add("All other sounds are drowned out.</color>");
         shmebulockListenPage.story.contents.add("<second-page>");
-        shmebulockListenPage.story.contents.add("<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>");
-        shmebulockListenPage.story.contents.add("<image left /assets/images/toadstool.png>");
+        shmebulockListenPage.story.contents.add("<image center /assets/images/magic-door.jpg>");
         shmebulockListenPage.story.contents.add("<second-page>");
         shmebulockListenPage.story.contents.add("<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>");
         shmebulockListenPage.story.contents.add("<image right /assets/images/toadstool.png>");
-        shmebulockListenPage.story.contents.add("<second-page>");
-        shmebulockListenPage.story.contents.add("<image center /assets/images/magic-door.jpg>");
         toadstoolCircle.pages.put("Shmebulock Listen", shmebulockListenPage);
         
         Story walkThroughDoor = new Story();
@@ -1594,11 +1585,11 @@ public class Application extends app.ApplicationView {
         Page speakNamePage = new Page();
         speakNamePage.previousPageName = "main";
         speakNamePage.story.contents.add("<second-page>");
-        speakNamePage.story.contents.add("<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><image center /assets/images/wooden-sign.png>");
+        speakNamePage.story.contents.add("<image left /assets/images/ring-of-toadstools.jpg>");
         speakNamePage.story.contents.add("<second-page>");
         speakNamePage.story.contents.add("<image left /assets/images/frame.png>");
         speakNamePage.story.contents.add("<second-page>");
-        speakNamePage.story.contents.add("<image left /assets/images/ring-of-toadstools.jpg>");
+        speakNamePage.story.contents.add("<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><image center /assets/images/wooden-sign.png>");
         speakNamePage.story.contents.add("<first-page>");
         speakNamePage.story.contents.add("<color 184+115+51>You take a deep breath and loudly speak a name...");
         speakNamePage.story.contents.add("<br>");
@@ -1709,15 +1700,15 @@ public class Application extends app.ApplicationView {
         tamedGianniPage.story.contents.add("<br>");
         tamedGianniPage.story.contents.add("<get-validated-input action Photo 1+Photo 2+Photo 3+Photo 4+Photo 5+Photo 6+Photo 7>");
         tamedGianniPage.story.contents.add("<second-page>");
+        tamedGianniPage.story.contents.add("<image condition=\"action=Explore Living Quarters\" center /assets/images/gianni-bed.jpg>");
+        tamedGianniPage.story.contents.add("<second-page>");
+        tamedGianniPage.story.contents.add("<image condition=\"gianni-photo-landscape=true\" center /assets/images/polaroid-landscape.png><image condition=\"gianni-photo-portrait=true\" center /assets/images/polaroid-portrait.png>");
+        tamedGianniPage.story.contents.add("<second-page>");
         tamedGianniPage.story.contents.add("<br><br>");
         tamedGianniPage.story.contents.add("<image condition=\"action=Photo 7\" center /assets/images/gianni-photo7.jpg>");
         tamedGianniPage.story.contents.add("<second-page>");
         tamedGianniPage.story.contents.add("<br><br>");
         tamedGianniPage.story.contents.add("<image condition=\"action=Photo 1\" center /assets/images/gianni-photo1.jpg><image condition=\"action=Photo 2\" center /assets/images/gianni-photo2.jpg><image condition=\"action=Photo 3\" center /assets/images/gianni-photo3.jpg><image condition=\"action=Photo 4\" center /assets/images/gianni-photo4.jpg><image condition=\"action=Photo 5\" center /assets/images/gianni-photo5.jpg><image condition=\"action=Photo 6\" center /assets/images/gianni-photo6.jpg>");
-        tamedGianniPage.story.contents.add("<second-page>");
-        tamedGianniPage.story.contents.add("<image condition=\"gianni-photo-landscape=true\" center /assets/images/polaroid-landscape.png><image condition=\"gianni-photo-portrait=true\" center /assets/images/polaroid-portrait.png>");
-        tamedGianniPage.story.contents.add("<second-page>");
-        tamedGianniPage.story.contents.add("<image condition=\"action=Explore Living Quarters\" center /assets/images/gianni-bed.jpg>");
         giannisDen.pages.put("Tamed Gianni", tamedGianniPage);
         
         Story landscapePhotoSubpage = new Story();
@@ -1929,16 +1920,16 @@ public class Application extends app.ApplicationView {
         tameFluffPage.story.contents.add("<br>");
         tameFluffPage.story.contents.add("<get-validated-input condition=\"fluff-photo-count!=7\" action Photo 1+Photo 2+Photo 3+Photo 4+Photo 5+Photo 6+Photo 7>");
         tameFluffPage.story.contents.add("<second-page>");
-        tameFluffPage.story.contents.add("<br><br>");
-        tameFluffPage.story.contents.add("<image condition=\"action=Photo 1\" center /assets/images/fluff-photo1.jpg><image condition=\"action=Photo 3\" center /assets/images/fluff-photo3.jpg><image condition=\"action=Photo 5\" center /assets/images/fluff-photo5.jpg>");
+        tameFluffPage.story.contents.add("<subpage-display condition=\"action=Tame Fluff\" Tamed Fluff>");
+        tameFluffPage.story.contents.add("<hp-change condition=\"fluff-photo-count=7\" -100 false a fluffopotamus (you drowned in fluff)>");
+        tameFluffPage.story.contents.add("<second-page>");
+        tameFluffPage.story.contents.add("<image condition=\"fluff-photo-landscape=true\" center /assets/images/polaroid-landscape.png><image condition=\"fluff-photo-portrait=true\" center /assets/images/polaroid-portrait.png>");
         tameFluffPage.story.contents.add("<second-page>");
         tameFluffPage.story.contents.add("<br><br>");
         tameFluffPage.story.contents.add("<image condition=\"action=Photo 2\" center /assets/images/fluff-photo2.jpg><image condition=\"action=Photo 4\" center /assets/images/fluff-photo4.jpg><image condition=\"action=Photo 6\" center /assets/images/fluff-photo6.jpg><image condition=\"action=Photo 7\" center /assets/images/fluff-photo7.jpg>");
         tameFluffPage.story.contents.add("<second-page>");
-        tameFluffPage.story.contents.add("<image condition=\"fluff-photo-landscape=true\" center /assets/images/polaroid-landscape.png><image condition=\"fluff-photo-portrait=true\" center /assets/images/polaroid-portrait.png>");
-        tameFluffPage.story.contents.add("<second-page>");
-        tameFluffPage.story.contents.add("<subpage-display condition=\"action=Tame Fluff\" Tamed Fluff>");
-        tameFluffPage.story.contents.add("<hp-change condition=\"fluff-photo-count=7\" -100 false a fluffopotamus (you drowned in fluff)>");
+        tameFluffPage.story.contents.add("<br><br>");
+        tameFluffPage.story.contents.add("<image condition=\"action=Photo 1\" center /assets/images/fluff-photo1.jpg><image condition=\"action=Photo 3\" center /assets/images/fluff-photo3.jpg><image condition=\"action=Photo 5\" center /assets/images/fluff-photo5.jpg>");
         mountFluff.pages.put("Tame Fluff", tameFluffPage);
         
         Story photoSubpage = new Story();
@@ -2269,11 +2260,11 @@ public class Application extends app.ApplicationView {
         mainPage.story.contents.add("<br>");
         mainPage.story.contents.add("<get-validated-input condition=\"inventory-has Gold!=true\" action Listen+Take Gold><get-validated-input condition=\"inventory-has Gold=true\" action Listen>");
         mainPage.story.contents.add("<subpage-display Navigation Footer>");
-        mainPage.story.contents.add("</color><second-page>");
-        mainPage.story.contents.add("<br><br><br><br><br><br><br><br><br><br><br><br>");
-        mainPage.story.contents.add("<image condition=\"inventory-has Gold!=true\" center /assets/images/gold.png>");
+        mainPage.story.contents.add("</color>");
         mainPage.story.contents.add("<second-page>");
         mainPage.story.contents.add("<image center /assets/images/castle-interior.jpg>");
+        mainPage.story.contents.add("<second-page><br><br><br><br><br><br><br><br><br><br><br><br>");
+        mainPage.story.contents.add("<image condition=\"inventory-has Gold!=true\" center /assets/images/gold.png>");
         castle.pages.put("main", mainPage);
         
         listenSubpage = new Story();
@@ -2283,11 +2274,11 @@ public class Application extends app.ApplicationView {
         listenPage = new Page();
         listenPage.previousPageName = "main";
         listenPage.story.contents.add("<color 171+145+68>You hear royal music... A harp!  A guitar!  And also the deep sound of a tuba.  How splendid!  The music carries loudly from the castle courtyard.  However, you hear nothing here within the castle.</color>");
-        listenPage.story.contents.add("</color><second-page>");
-        listenPage.story.contents.add("<br><br><br><br><br><br><br><br><br><br><br><br>");
-        listenPage.story.contents.add("<image condition=\"inventory-has Gold!=true\" center /assets/images/gold.png>");
+        listenPage.story.contents.add("</color>");
         listenPage.story.contents.add("<second-page>");
         listenPage.story.contents.add("<image center /assets/images/castle-interior.jpg>");
+        listenPage.story.contents.add("<second-page><br><br><br><br><br><br><br><br><br><br><br><br>");
+        listenPage.story.contents.add("<image condition=\"inventory-has Gold!=true\" center /assets/images/gold.png>");
         castle.pages.put("Listen", listenPage);
         
         Story takeGoldSubpage = new Story();
@@ -2398,13 +2389,13 @@ public class Application extends app.ApplicationView {
         dragonPage.story.contents.add("</color>");
         dragonPage.story.contents.add("<subpage-display condition=\"hp!=0\" Fight Or Flight Actions>");
         dragonPage.story.contents.add("<second-page>");
-        dragonPage.story.contents.add("<subpage-display condition=\"variable dragon-attacked=true\" Display Weapon>");
-        dragonPage.story.contents.add("<second-page>");
-        dragonPage.story.contents.add("<subpage-display condition=\"variable dragon-attacking=true\" Display Dragon Attack>");
+        dragonPage.story.contents.add("<image center /assets/images/dragons-den2.jpg>");
         dragonPage.story.contents.add("<second-page>");
         dragonPage.story.contents.add("<image condition=\"variable dragon-attacked!=true\" center /assets/images/dragon.png><subpage-display condition=\"variable dragon-attacked=true\" Display Attacked Dragon>");
         dragonPage.story.contents.add("<second-page>");
-        dragonPage.story.contents.add("<image center /assets/images/dragons-den2.jpg>");
+        dragonPage.story.contents.add("<subpage-display condition=\"variable dragon-attacking=true\" Display Dragon Attack>");
+        dragonPage.story.contents.add("<second-page>");
+        dragonPage.story.contents.add("<subpage-display condition=\"variable dragon-attacked=true\" Display Weapon>");
         dragonsDen.pages.put("Dragon", dragonPage);
         
         Story displayAttackedDragonSubpage = new Story();
@@ -2412,8 +2403,8 @@ public class Application extends app.ApplicationView {
         dragonPage.subpages.put("Display Attacked Dragon", displayAttackedDragonSubpage);
         
         Story displayDragonAttackSubpage = new Story();
-        displayDragonAttackSubpage.contents.add("<second-page><br><br><br><br><br><br><br><image condition=\"variable event=2\" center /assets/images/flame-small.png>");
         displayDragonAttackSubpage.contents.add("<second-page><image condition=\"variable event=3\" center /assets/images/flame.png>");
+        displayDragonAttackSubpage.contents.add("<second-page><br><br><br><br><br><br><br><image condition=\"variable event=2\" center /assets/images/flame-small.png>");
         dragonPage.subpages.put("Display Dragon Attack", displayDragonAttackSubpage);
         
         Story fightOrFlightActions = new Story();
@@ -2545,11 +2536,11 @@ public class Application extends app.ApplicationView {
         dragonDefeatedPage.story.contents.add("<get-validated-input condition=\"event=4\" action *Return To Cave Entrance>");
         dragonDefeatedPage.story.contents.add("</color>");
         dragonDefeatedPage.story.contents.add("<second-page>");
-        dragonDefeatedPage.story.contents.add("<subpage-display condition=\"event!=4\" Display Weapon>");
+        dragonDefeatedPage.story.contents.add("<image center /assets/images/dragons-den2.jpg>");
         dragonDefeatedPage.story.contents.add("<second-page>");
         dragonDefeatedPage.story.contents.add("<subpage-display condition=\"event!=4\" Display Attacked Dragon>");
         dragonDefeatedPage.story.contents.add("<second-page>");
-        dragonDefeatedPage.story.contents.add("<image center /assets/images/dragons-den2.jpg>");
+        dragonDefeatedPage.story.contents.add("<subpage-display condition=\"event!=4\" Display Weapon>");
         dragonsDen.pages.put("Dragon Defeated", dragonDefeatedPage);
         
         displayAttackedDragonSubpage = new Story();

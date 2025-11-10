@@ -1,7 +1,6 @@
 
 package quest.control;
 
-import app.Utility;
 import quest.view.Quest;
 
 /**
@@ -21,9 +20,9 @@ public class SoundStopControl extends QuestControl {
         System.out.println("SoundStopControl: onExecute: tag=" + tag);
         String soundFileName = getTagToken(tag, 1, true);
         if (!soundFileName.equals("")) {
-            Utility.stopSound(soundFileName, true);
+            this.quest.appController.stopSound(soundFileName, true);
         } else {
-            Utility.stopAllSounds();
+            this.quest.appController.stopAllSounds();
         }
         return "";
     }

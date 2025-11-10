@@ -226,4 +226,19 @@ public class AWTApplication extends ApplicationController {
     public Boolean checkOverlap(int image1X, int image1Y, int image1Width, int image1Height, int image2X, int image2Y, int image2Width, int image2Height) {
         throw new UnsupportedOperationException("Not supported.");
     }
+    
+    @Override
+    public void playSound(String fileName, Boolean isLoop) {
+        Utility.playSound(fileName, isLoop);
+    }
+    
+    @Override
+    public void stopSound(String fileName, Boolean removeAudioPlayer) {
+        Utility.stopSound(fileName, true);
+    }
+    
+    @Override
+    public void stopAllSounds() {
+        Utility.stopAllSounds();
+    }
 }

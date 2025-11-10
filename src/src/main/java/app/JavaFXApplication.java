@@ -6,6 +6,7 @@ import app.model.Coordinates;
 import app.model.SpriteModel;
 import java.io.File;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -15,6 +16,7 @@ import java.util.Map;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
@@ -42,6 +44,8 @@ import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -87,6 +91,7 @@ public class JavaFXApplication extends ApplicationController {
     public int textColumns = 0;
     public int textRows = 0;
     public HashMap<String, ApplicationView> views;
+    public HashMap<String, List<MediaPlayer>> mediaPlayers = new HashMap();
     
     /**
      * The implementation of this method is a work-around to inheritance not being fully implemented in java
@@ -514,11 +519,14 @@ public class JavaFXApplication extends ApplicationController {
         }
         
         // Create a new tab
-        String tabName = view.name;
-        Tab tab = new Tab(tabName);
+        String tabName;
         if (view.emoji != null) {
-            tabName = view.emoji + " " + tabName;
+            tabName = view.emoji + " " + view.name;
+        } else {
+            tabName = view.name;
         }
+        Tab tab = new Tab(tabName);
+        tab.setClosable(false);
         this.tabFolder.getTabs().add(index, tab);
         tab.setContent(content);
         this.tabItemMap.put(view.name, tab);
@@ -662,7 +670,7 @@ public class JavaFXApplication extends ApplicationController {
     public void displayText(String viewName, String text, Integer row, Integer column, app.Color color, int style) {
         System.out.println("JavaFXApplication: displayText: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", color=" + color + ", style=" + style);
         
-        this.displayFloatingText(viewName, text, row, column, null, null, color, 12, style, "Consolas");
+        this.displayFloatingText(viewName, text, row, column, null, null, color, 12, style, "Arial Unicode MS"); // Previously, "Consolas"
         
         /*
         
@@ -1365,7 +1373,7 @@ public class JavaFXApplication extends ApplicationController {
     
     @Override
     public void setBackgroundImage(String viewName, String imageFileName) {
-        System.out.println("JavaFXApplication: setBackgroundImage : viewName=" + viewName + ", imageFileName=" + imageFileName);
+        System.out.println("JavaFXApplication: setBackgroundImage: viewName=" + viewName + ", imageFileName=" + imageFileName);
         
         Pane content = this.tabContentMap.get(viewName);
         //HTMLEditor editor = this.tabEditorMap.get(viewName);
@@ -1414,5 +1422,72 @@ public class JavaFXApplication extends ApplicationController {
         emojiNode.setStyle(String.format("-fx-font: %dpx %s;", 14, "NotoColorEmoji"));
 
         return new TextFlow(emojiNode);
+    }
+    
+    @Override
+    public void playSound(String fileName, Boolean isLoop) {
+        System.out.println("JavaFXApplication: playSound: fileName=" + fileName + ", isLoop=" + isLoop);
+        
+        URL resource = getClass().getResource(fileName);
+
+        if (resource != null) {
+            Media media = new Media(resource.toString());
+            MediaPlayer mediaPlayer = new MediaPlayer(media);
+            if (this.mediaPlayers.containsKey(fileName)) {
+                List<MediaPlayer> list = this.mediaPlayers.get(fileName);
+                list.add(mediaPlayer);
+                System.out.println("JavaFXApplication: playSound: Added new collection for file");
+            } else {
+                List<MediaPlayer> list = new ArrayList();
+                list.add(mediaPlayer);
+                mediaPlayers.put(fileName, list);
+                System.out.println("JavaFXApplication: playSound: Added file to collection");
+            }
+            mediaPlayer.play();
+        } else {
+            System.err.println("JavaFXApplication: playSound: File not found!");
+        }
+    }
+    
+    @Override
+    public void stopSound(String fileName, Boolean removeAudioPlayer) {
+        System.out.println("JavaFXApplication: stopSound: fileName=" + fileName + ", removeAudioPlayer=" + removeAudioPlayer);
+        if (this.mediaPlayers.containsKey(fileName)) {
+            List<MediaPlayer> list = this.mediaPlayers.get(fileName);
+            for (MediaPlayer mediaPlayer : list) {
+                if (mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
+                    mediaPlayer.stop();
+                    System.out.println("JavaFXApplication: stopSound: Stopped media");
+                }
+                if (removeAudioPlayer) {
+                    HashMap<String, List<MediaPlayer>> allMediaPlayers = this.mediaPlayers;
+                    mediaPlayer.statusProperty().addListener((ObservableValue<? extends MediaPlayer.Status> observable, MediaPlayer.Status oldValue, MediaPlayer.Status newValue) -> {
+                        if (newValue == MediaPlayer.Status.STOPPED) {
+                            System.out.println("JavaFXApplication: stopSound: Media has successfully stopped. Performing cleanup tasks now.");
+                            list.remove(mediaPlayer);
+                            if (list.isEmpty()) {
+                                allMediaPlayers.remove(fileName);
+                                mediaPlayer.dispose();
+                                System.out.println("JavaFXApplication: stopSound: Removed media player");
+                            }
+                        }
+                    });
+
+                }
+            }
+        } else {
+            System.out.println("JavaFXApplication: stopSound: Collection for file not found");
+        }
+    }
+    
+    @Override
+    public void stopAllSounds() {
+        System.out.println("JavaFXApplication: stopAllSvounds");
+        Iterator<Map.Entry<String, List<MediaPlayer>>> iterator = this.mediaPlayers.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, List<MediaPlayer>> entry = iterator.next();
+            this.stopSound(entry.getKey(), false);
+            iterator.remove();
+        }
     }
 }

@@ -1558,6 +1558,21 @@ public class SWTApplication extends ApplicationController {
     }
     
     @Override
+    public void playSound(String fileName, Boolean isLoop) {
+        Utility.playSound(fileName, isLoop);
+    }
+    
+    @Override
+    public void stopSound(String fileName, Boolean removeAudioPlayer) {
+        Utility.stopSound(fileName, true);
+    }
+    
+    @Override
+    public void stopAllSounds() {
+        Utility.stopAllSounds();
+    }
+    
+    @Override
     public void addDesigner(String viewName) {
         System.out.println("SWTApplication: addDesigner: viewName=" + viewName);
         
