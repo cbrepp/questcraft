@@ -59,6 +59,14 @@ import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.util.Duration;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.RowConstraints;
+import javafx.scene.layout.VBox;
+import javax.imageio.metadata.IIOMetadata;
+import org.w3c.dom.NamedNodeMap;
 
 /**
  *
@@ -378,6 +386,7 @@ public class JavaFXApplication extends ApplicationController {
         if (startRow == null) {
             topLeftCoordinates = new Coordinates(0, 0);
             bottomRightCoordinates = new Coordinates((int) content.getWidth(), (int) content.getHeight());
+            transparency = 128;
         } else {
             topLeftCoordinates = this.convertToCoordinates(startRow, startColumn);
             bottomRightCoordinates = this.convertToCoordinates(endRow, endColumn);
@@ -647,11 +656,14 @@ public class JavaFXApplication extends ApplicationController {
             case Icon.ERROR -> AlertType.ERROR;
             default -> AlertType.INFORMATION;
         };
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(text);
-        alert.show();
+        Platform.runLater(() -> {
+            Alert alert = new Alert(type);
+            alert.initOwner(this.app.primaryStage);
+            alert.setTitle(title);
+            alert.setHeaderText(null);
+            alert.setContentText(text);
+            alert.show();
+        });
     }
     
     @Override
@@ -727,8 +739,242 @@ public class JavaFXApplication extends ApplicationController {
     }
     
     @Override
-    public void displayGrid(String viewName, Map<String, ArrayList<BaseModel>> linkTexts, int columns, Boolean showBorders, EventListener listener) {
-        throw new UnsupportedOperationException("Not supported.");
+    public void displayGrid(String viewName, Map<String, ArrayList<BaseModel>> gridCells, int columns, Boolean showBorders, EventListener listener) {
+        System.out.println("JavaFXApplication: displayGrid: viewName=" + viewName + ", cells=" + gridCells.size());
+        
+        Tab tab = this.tabItemMap.get(viewName);
+        GridPane content = new GridPane();
+        tab.setContent(content);
+        if (showBorders) {
+            String borderColor = "#000000"; // Black
+            content.setStyle("-fx-background-color: " + borderColor + ";");
+        }
+        content.setPadding(new Insets(10));
+        content.setHgap(5);
+        content.setVgap(5);
+        Background background;
+        ApplicationView view = this.views.get(viewName);
+        if (view.backgroundImage != null) {
+            System.out.println("JavaFXApplication: displayGrid: name=" + view.name + ", using background image " + view.backgroundImage);
+            Image image = loadImage(view.backgroundImage);
+            Coordinates dimensions = this.getDimensions(view.backgroundImage);
+            BackgroundImage backgroundImage = new BackgroundImage(
+                image,
+                BackgroundRepeat.NO_REPEAT, // Repeat in X direction
+                BackgroundRepeat.NO_REPEAT, // Repeat in Y direction
+                BackgroundPosition.DEFAULT,   // Position of the image
+                // TODO - Other examples use 1.0
+                new BackgroundSize(dimensions.x, dimensions.y, true, true, true, false) // Size of the image (100% width and height)
+            );
+            
+            // TODO - Check and handle for no background color
+            Color backgroundColor = Color.rgb(view.backgroundColor.red, view.backgroundColor.green, view.backgroundColor.blue);
+            BackgroundFill backgroundFill = new BackgroundFill(
+                backgroundColor, // The color to use
+                CornerRadii.EMPTY, // No rounded corners
+                Insets.EMPTY // No padding
+            );
+            
+            background = new Background(Collections.singletonList(backgroundFill), Collections.singletonList(backgroundImage));
+            content.setBackground(background);
+            content.setPrefSize(dimensions.x, dimensions.y);
+            // TODO - How to specify background color for images with transparency?
+        } else if (view.backgroundColor != null) {
+            System.out.println("JavaFXApplication: displayGrid: name=" + view.name + ", using background color " + view.backgroundColor);
+            Color backgroundColor = Color.rgb(view.backgroundColor.red, view.backgroundColor.green, view.backgroundColor.blue);
+            BackgroundFill backgroundFill = new BackgroundFill(backgroundColor, CornerRadii.EMPTY, Insets.EMPTY);
+            background = new Background(backgroundFill);
+            content.setBackground(background);
+        }
+                    
+        if (columns == 0) {
+            double squareRoot = Math.sqrt(gridCells.size());
+            columns = (int) Math.ceil(squareRoot);
+        }
+        int rows = 0;
+        if (columns != 0) {
+            double rowsDiv = ((double) gridCells.size() / (double) columns);  // Make sure values are double so remainder causes rows count to round up
+            rows = (int) Math.ceil(rowsDiv);
+        }
+        
+        // Allow rows to expand as much as they can
+        int rowHeight = (int) Math.floor(100 / rows);
+        for (int rowI = 1; rowI <= rows; rowI++) {
+            RowConstraints row = new RowConstraints();
+            row.setPercentHeight(rowHeight);
+            content.getRowConstraints().add(row);
+        }
+        
+        // Allow columns to expand as much as they can
+        int columnWidth = (int) Math.floor(100 / columns);
+        for (int colI = 1; colI <= columns; colI++) {
+            ColumnConstraints column = new ColumnConstraints();
+            column.setPercentWidth(columnWidth);
+            content.getColumnConstraints().add(column);
+        }
+
+        System.out.println("JavaFXApplication: displayGrid: columns=" + columns + ", rows=" + rows + ", cells=" + gridCells.size());
+        
+        //GridLayout gridLayout = new GridLayout(columns, true); // 3 columns, equal width
+        //composite.setLayout(gridLayout);
+        int currentRow = 1;
+        int currentColumn = 0;
+        
+        for (String cellName : gridCells.keySet()) {
+            ArrayList<BaseModel> controls = gridCells.get(cellName);
+            
+            StackPane cell = new StackPane();
+            //cell.setStyle("-fx-background-color: transparent;");
+            currentColumn++;
+            if (currentColumn > columns) {
+                currentRow++;
+                currentColumn = 1;
+            }
+            String backgroundColor = "transparent";
+            Color fontColor = Color.rgb(0, 0, 0);
+            Boolean addBorder = false;
+            if (!controls.isEmpty()) {
+                app.Color genericBackgroundColor = controls.getFirst().backgroundColor;
+                if (genericBackgroundColor != null) {
+                    backgroundColor = String.format("#%02X%02X%02X", genericBackgroundColor.red, genericBackgroundColor.green, genericBackgroundColor.blue);
+                    addBorder = true;
+                    double luminance = (0.299 * genericBackgroundColor.red) + (0.587 * genericBackgroundColor.green) + (0.114 * genericBackgroundColor.blue);
+                    System.out.println("JavaFXApplication: displayGrid: luminance for " + genericBackgroundColor + " is " + luminance);
+                    if (luminance < 128) {
+                        fontColor = Color.rgb(255, 255, 255);
+                    }
+                }
+            }
+            content.add(this.createBorderedCellContent(cell, backgroundColor, addBorder), currentColumn - 1, currentRow - 1);
+            
+            // Ensure the cell content grows horizontally and vertically (Priority.ALWAYS)
+            GridPane.setHgrow(cell, Priority.ALWAYS);
+            GridPane.setVgrow(cell, Priority.ALWAYS);
+            cell.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE); 
+            
+            VBox verticalContainer = new VBox(10); // 10px spacing between children
+            verticalContainer.setAlignment(Pos.CENTER);
+            verticalContainer.setPadding(new Insets(20)); // Add padding around the edges
+            cell.getChildren().add(verticalContainer);
+
+            //cellComposite.setBackgroundMode(SWT.INHERIT_DEFAULT);
+            // TODO - Using the first control's background color is a little cludgy
+            //Color backgroundColor = null;
+            /*
+            int rgbSum = 0;
+            if (!controls.isEmpty()) {
+                System.out.println("JavaFXApplication: displayGrid: Cell count: " + controls.size());
+                app.Color genericBackgroundColor = controls.getFirst().backgroundColor;
+                if (genericBackgroundColor != null) {
+                    backgroundColor = new Color(this.display, genericBackgroundColor.red, genericBackgroundColor.green, genericBackgroundColor.blue);
+                    rgbSum = genericBackgroundColor.red + genericBackgroundColor.green + genericBackgroundColor.blue;
+                }
+            } else {
+                System.out.println("JavaFXApplication: displayGrid: Empty cell");
+            }
+            
+            cellComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true)); // Fill the cell
+            cellComposite.setLayout(new GridLayout());
+            Color foregroundColor = null;
+            if (backgroundColor != null) {
+                cellComposite.setBackground(backgroundColor);
+                if (rgbSum > 382) {
+                    // 255 * 3 = 765 as a maximum value for white.  Use black as the font color if on the lighter half of the color scale.
+                    foregroundColor = new Color(this.display, 0, 0, 0);
+                } else {
+                    foregroundColor = new Color(this.display, 255, 255, 255);
+                }
+            } else {
+                // SWT.COLOR_TRANSPARENT isn't available until SWT 4.5
+                cellComposite.setBackground(this.display.getSystemColor(SWT.COLOR_TRANSPARENT)); // Set label background to transparent
+            }
+            */
+            
+            // Add zero to many controls to the grid cell
+            for (BaseModel abstractControl : controls) {
+                System.out.println("JavaFXApplication: displayGrid: Adding control " + abstractControl.getClass().getName());
+                Node control = null;
+                if (abstractControl.getClass().equals(app.model.LinkModel.class)) {
+                    String linkText = abstractControl.text.replace("<a>", "");
+                    linkText = linkText.replace("</a>", "");
+                    Hyperlink hyperlink = new Hyperlink(linkText);
+                    Font currentFont = hyperlink.getFont();
+                    hyperlink.setFont(Font.font(currentFont.getFamily(), FontWeight.BOLD, currentFont.getSize()));
+                    hyperlink.setDisable(!abstractControl.isEnabled);
+                    if (listener != null) {
+                        hyperlink.setOnAction(e -> {
+                            System.out.println("JavaFXApplication: displayGrid: Link clicked: name=" + cellName);
+                            listener.onEvent(cellName, null);
+                        });
+                    }
+                    verticalContainer.getChildren().add(hyperlink);
+                    control = hyperlink;
+                    System.out.println("JavaFXApplication: displayGrid: Added link " + abstractControl.text + " for " + cellName);
+                } else if (abstractControl.getClass().equals(app.model.ButtonModel.class)) {
+                    Button button = new Button(abstractControl.text);
+                    button.setFont(this.buttonFont);
+                    if (listener != null) {
+                        System.out.println("JavaFXApplication: displayGrid: Button clicked: name=" + cellName);
+                        button.setOnAction(e -> listener.onEvent(cellName, null));
+                    }
+                    button.setDisable(!abstractControl.isEnabled);
+                    verticalContainer.getChildren().add(button);
+                    control = button;
+                    System.out.println("JavaFXApplication: displayGrid: Added button " + abstractControl.text + " for " + cellName);
+                } else if (abstractControl.getClass().equals(app.model.LabelModel.class)) {
+                    Label label = new Label(abstractControl.text);
+                    Font currentFont = label.getFont();
+                    label.setFont(Font.font(currentFont.getFamily(), FontWeight.BOLD, currentFont.getSize()));
+                    label.setTextFill(fontColor);
+                    label.setWrapText(true);
+                    label.setAlignment(Pos.CENTER);
+                    label.setTextAlignment(TextAlignment.CENTER);
+                    verticalContainer.getChildren().add(label);
+                    control = label;
+                    System.out.println("JavaFXApplication: displayGrid: Added label " + abstractControl.text + " for " + cellName);
+                } else if (abstractControl.getClass().equals(app.model.ImageModel.class)) {
+                    final Image image = loadImage(abstractControl.text);
+                    ImageView imageView = new ImageView(image);
+                    verticalContainer.getChildren().add(imageView);
+                    control = imageView;
+                    System.out.println("JavaFXApplication: displayGrid: Added image " + abstractControl.text + " for " + cellName);
+                }
+                
+                if (control != null) {
+                    control.setStyle("-fx-background-color: transparent;");
+                    System.out.println("JavaFXApplication: displayGrid: Added " + abstractControl.getClass().getName() + " control " + abstractControl.text + " for " + cellName);
+                }
+            }
+        }
+    }
+    
+    public StackPane createBorderedCellContent(Node content, String bgColor, Boolean addBorder) {
+        System.out.println("JavaFXApplication: createBorderedCellContent: bgColor=" + bgColor + ", addBorder=" + addBorder);
+        
+        StackPane cellWrapper = new StackPane(content);
+        
+        // --- Apply Borders and Background using Java Style Strings ---
+        String borderStyle = "-fx-border-color: black; -fx-border-width: 1px;";
+        String backgroundStyle = "-fx-background-color: " + bgColor + ";";
+        if (addBorder) {
+            cellWrapper.setStyle(borderStyle + backgroundStyle);
+        } else {
+            cellWrapper.setStyle(backgroundStyle);
+        }
+        
+        // Ensure the content inside the stackpane is centered (StackPane default)
+        if (content instanceof Label label) {
+            label.setAlignment(Pos.CENTER);
+        }
+
+        // Ensure the wrapper expands to fill the grid cell space
+        cellWrapper.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        
+        // Set growth priorities so the GridPane expands this wrapper
+        GridPane.setHgrow(cellWrapper, Priority.ALWAYS);
+        GridPane.setVgrow(cellWrapper, Priority.ALWAYS);
+        
+        return cellWrapper;
     }
       
     @Override
@@ -1123,12 +1369,14 @@ public class JavaFXApplication extends ApplicationController {
         buttonX = coordinates.x + 1;
         buttonY = coordinates.y + 1;
         
-        Boolean disable = false;
+        Boolean disable;
         for (String value : values) {
             if (value.charAt(0) == '!') {
                 // TODO - This is just a hack to support disabling buttons
                 value = value.substring(1, value.length());
-                
+                disable = true;
+            } else {
+                disable = false;
             }
             Boolean glow = false;
             if (value.charAt(0) == '*') {
@@ -1218,8 +1466,8 @@ public class JavaFXApplication extends ApplicationController {
         }
     }
     
-    @Override
-    public int displayGif(String viewName, String fileName, int row, int column) {
+    //@Override
+    public int displayGifOrig(String viewName, String fileName, int row, int column) {
         System.out.println("JavaFXApplication: displayGif: viewName=" + viewName + ", fileName=" + fileName + ", row=" + row + ", column=" + column);
         
         Pane content = this.tabContentMap.get(viewName);
@@ -1241,6 +1489,101 @@ public class JavaFXApplication extends ApplicationController {
         int nextRow = row + ((int) dimensions.y / this.fontHeight) + 1;
         
         return nextRow;
+    }
+    
+    @Override
+    public int displayGif(String viewName, String fileName, int row, int column) {
+        System.out.println("JavaFXApplication: displayGif: viewName=" + viewName + ", fileName=" + fileName + ", row=" + row + ", column=" + column);
+        
+        Pane content = this.tabContentMap.get(viewName);
+        
+        ImageView imageView = new ImageView();
+        Coordinates coordinates = this.convertToCoordinates(row, column);
+        imageView.setLayoutX(coordinates.x);
+        imageView.setLayoutY(coordinates.y);
+        
+        List<Image> frames = new ArrayList<>();
+        List<Duration> frameDelays = new ArrayList<>();
+        Timeline timeline;
+        
+        javax.imageio.ImageReader reader = javax.imageio.ImageIO.getImageReadersByFormatName("gif").next();
+        try (javax.imageio.stream.ImageInputStream ciis = javax.imageio.ImageIO.createImageInputStream(getClass().getResourceAsStream(fileName))) {
+            reader.setInput(ciis, false);
+            int numberOfImages = reader.getNumImages(true);
+
+            for (int i = 0; i < numberOfImages; i++) {
+                java.awt.image.BufferedImage image = reader.read(i);
+                Image fxImage = SwingFXUtils.toFXImage(image, null); // Convert to JavaFX Image
+                frames.add(fxImage);
+
+                // Extract frame delay
+                IIOMetadata metadata = reader.getImageMetadata(i);
+                int delayMs = getFrameDelay(metadata);
+                frameDelays.add(Duration.millis(delayMs));
+            }
+        } catch (Exception e) {
+            System.err.println("JavaFXApplication: displayGif: Error! " + e.toString());
+            // TODO - Handle error (e.g., load a fallback static image)
+        }
+        
+        if (frames.isEmpty()) {
+            return 0;
+        }
+
+        timeline = new Timeline();
+        timeline.setCycleCount(Timeline.INDEFINITE); // Loop indefinitely
+
+        Duration currentTime = Duration.ZERO;
+        for (int i = 0; i < frames.size(); i++) {
+            final int frameIndex = i;
+            // Add a KeyFrame at the specific time instant to switch the image
+            KeyFrame keyFrame = new KeyFrame(currentTime, event -> {
+                imageView.setImage(frames.get(frameIndex));
+            });
+            timeline.getKeyFrames().add(keyFrame);
+            // Advance the time by the frame's duration
+            currentTime = currentTime.add(frameDelays.get(i));
+        }
+        
+        // Add and play the image
+        content.getChildren().add(imageView);
+        timeline.play();
+        
+        Coordinates dimensions = getDimensions(fileName);
+        int nextRow = row + ((int) dimensions.y / this.fontHeight) + 1;
+        
+        return nextRow;
+    }
+    
+    public static int getFrameDelay(IIOMetadata metadata) {
+        String metadataFormat = metadata.getNativeMetadataFormatName();
+        org.w3c.dom.Node root = metadata.getAsTree(metadataFormat);
+        org.w3c.dom.Node graphicsControlExtension = getNode(root, "GraphicControlExtension");
+
+        if (graphicsControlExtension != null) {
+            NamedNodeMap attributes = graphicsControlExtension.getAttributes();
+            org.w3c.dom.Node delayTimeNode = attributes.getNamedItem("delayTime");
+            if (delayTimeNode != null) {
+                try {
+                    // Delay time is in hundredths of a second (centiseconds)
+                    int delay = Integer.parseInt(delayTimeNode.getNodeValue());
+                    // Convert to milliseconds
+                    return delay * 10; 
+                } catch (NumberFormatException e) {
+                    // Handle parse error, return default
+                }
+            }
+        }
+        return 100; // Default to 100ms if info can't be found
+    }
+    
+    public static org.w3c.dom.Node getNode(org.w3c.dom.Node rootNode, String nodeName) {
+        for (int i = 0; i < rootNode.getChildNodes().getLength(); i++) {
+            if (rootNode.getChildNodes().item(i).getNodeName().equalsIgnoreCase(nodeName)) {
+                return rootNode.getChildNodes().item(i);
+            }
+        }
+        return null;
     }
     
     public Coordinates convertToCoordinates(int row, int column) {
@@ -1490,4 +1833,5 @@ public class JavaFXApplication extends ApplicationController {
             iterator.remove();
         }
     }
+    
 }
