@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javafx.animation.KeyFrame;
+import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
@@ -90,8 +91,6 @@ public class JavaFXApplication extends ApplicationController {
     public Scene primaryScene;
     public ApplicationView splashView;
     public HashMap<String, Pane> tabContentMap;
-    //public HashMap<String, HTMLEditor> tabEditorMap;
-    //public HashMap<String, String> tabEditorTextMap;
     public TabPane tabFolder;
     public HashMap<String, Integer> tabIndexMap;
     public HashMap<String, Tab> tabItemMap;
@@ -1745,8 +1744,85 @@ public class JavaFXApplication extends ApplicationController {
     }
     
     @Override
-    public void addAnimation(String viewName, String name, int row, int startColumn, String backgroundImageFileName, List<SpriteModel> sprites, double animationDelay, AnimationView listener) {
-        throw new UnsupportedOperationException("Not supported.");
+    public void addAnimation(String viewName, String name, int row, int column, String backgroundImageFileName, List<SpriteModel> sprites, double animationDelay, AnimationView listener) {
+        System.out.println("JavaFXApplication: addAnimation: viewName=" + viewName + ", name=" + name + ", row=" + row + ", column=" + column + ", backgroundImageFileName=" + backgroundImageFileName + ", sprite count=" + sprites.size() + ", animationDelay=" + animationDelay + ", listener=" + listener);
+                
+        // Cache each sprite image
+        Map<String, Image> spriteImages = new HashMap();
+        for (SpriteModel sprite : sprites) {
+            if (sprite.imageFile == null) {
+                continue;
+            }
+            if (spriteImages.containsKey(sprite.imageFile)) {
+                continue;
+            }
+            Image spriteImage = this.loadImage(sprite.imageFile);
+            spriteImages.put(sprite.imageFile, spriteImage);
+        }
+        
+        // Place the animation background
+        Coordinates topLeft = this.convertToCoordinates(row, column);
+        Image backgroundImage = this.loadImage(backgroundImageFileName);
+        ImageView backgroundImageView = new ImageView(backgroundImage);
+        Coordinates animationDimensions = this.getDimensions(backgroundImageFileName);
+        backgroundImageView.setFitWidth(animationDimensions.x);
+        backgroundImageView.setFitHeight(animationDimensions.y);
+        backgroundImageView.setLayoutX(0);
+        backgroundImageView.setLayoutY(0);
+        Pane animationBackground = new Pane();
+        animationBackground.setPrefWidth(animationDimensions.x);
+        animationBackground.setPrefHeight(animationDimensions.y);
+        animationBackground.getChildren().add(backgroundImageView);
+        animationBackground.setLayoutX(topLeft.x + 1);
+        animationBackground.setLayoutY(topLeft.y + 1);
+        Pane content = this.tabContentMap.get(viewName);
+        content.getChildren().add(animationBackground);
+        
+        // Set a timer to fetch and display the current sprites
+        PauseTransition pause = new PauseTransition(Duration.seconds(animationDelay));
+        pause.setOnFinished(event -> animate(viewName, topLeft, pause, listener, animationBackground, backgroundImageView, spriteImages));
+        pause.play();
+    }
+    
+    public void animate(String viewName, Coordinates topLeft, PauseTransition pause, AnimationView listener, Pane animationBackground, ImageView backgroundImageView, Map<String, Image> spriteImages) {
+        System.out.println("JavaFXApplication: animate");
+
+        // Clean up the animation if the animation background no longer belongs to its parent
+        if (animationBackground.getParent() == null) {
+            System.out.println("JavaFXApplication: animate: No parent for animation background, done");
+            pause.stop();
+            return;
+        }
+        
+        // Retrieve updated sprites
+        List<SpriteModel> sprites = listener.onAnimate();
+        
+        // Clear the animation background and re-add the sprites
+        List<Node> nodesToRemove = new ArrayList<>();
+        for (Node node : animationBackground.getChildren()) {
+            // Check if the node is an ImageView
+            if (node instanceof ImageView currentImageView) {
+
+                // Check if this ImageView is NOT the one we want to keep (using reference equality)
+                if (currentImageView != backgroundImageView) {
+                    nodesToRemove.add(node);
+                }
+            }
+        }
+        animationBackground.getChildren().removeAll(nodesToRemove);
+        
+        // Re-add the sprites to the animation background
+        for (SpriteModel sprite : sprites) {
+            Image spriteImage = spriteImages.get(sprite.imageFile);
+            ImageView spriteView = new ImageView(spriteImage);
+            spriteView.setLayoutX(sprite.x);
+            spriteView.setLayoutY(sprite.y);
+            System.out.println("JavaFXApplication: animate: Added " + sprite.imageFile + " to " + sprite.x + ", " + sprite.y);
+            animationBackground.getChildren().add(spriteView);
+        }
+        
+        // Reset the timer
+        pause.playFromStart();
     }
     
     @Override

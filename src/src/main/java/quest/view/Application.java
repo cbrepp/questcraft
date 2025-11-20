@@ -392,7 +392,7 @@ public class Application extends app.ApplicationView {
         book.inventory.put("Golden Bunny", item);
         item = new InventoryItem("A royal-looking key.  But what does it unlock?", "/assets/sounds/key.wav", "\uD83D\uDD11");
         book.inventory.put("Golden Key", item);
-        item = new InventoryItem("An impressive mid-range weapon.  Great for slaying dragons!", "/assets/sounds/arrow.mp3", "\uD83C\uDFF9");
+        item = new InventoryItem("An impressive mid-range weapon.  Great for slaying flying monsters!", "/assets/sounds/arrow.mp3", "\uD83C\uDFF9");
         item.xp = 10;
         book.inventory.put("Greyson's Great Bow", item);
         item = new InventoryItem("This is a serious weapon!  The high-intensity laser beam can destory large objects with a single blast.", "/assets/sounds/laser.wav", "\uD83C\uDFEE");
