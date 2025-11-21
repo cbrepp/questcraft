@@ -1841,12 +1841,16 @@ public class JavaFXApplication extends ApplicationController {
         for (SpriteModel sprite : spriteImageViewMap.keySet()) {
             if ((sprite.potentialCollisionNames != null) && (sprite.collisionSprite == null)) {
                 ImageView imageView = spriteImageViewMap.get(sprite);
+                //System.out.println("JavaFXApplication: animate: level 4 : " + sprite.name);
                 for (String potentialCollisionName : sprite.potentialCollisionNames) {
+                    //System.out.println("JavaFXApplication: animate: level 3 : " + potentialCollisionName);
                     for (SpriteModel potentialCollisionSprite : spriteImageViewMap.keySet()) {
+                        //System.out.println("JavaFXApplication: animate: level 2 : " + potentialCollisionSprite.name);
                         if ((potentialCollisionSprite.name != null) && (potentialCollisionSprite.name.equals(potentialCollisionName)) && (potentialCollisionSprite.collisionSprite == null)) {
+                            //System.out.println("JavaFXApplication: animate: level 1 : " + potentialCollisionSprite.name);
                             ImageView potentialCollisionImageView = spriteImageViewMap.get(potentialCollisionSprite);
                             if (JavaFXApplication.isColliding(imageView, potentialCollisionImageView)) {
-                                System.out.println("JavaFXApplication: animate: Detected collision between " + sprite.name + " and " + potentialCollisionName);
+                                //System.out.println("JavaFXApplication: animate: Detected collision between " + sprite.name + " and " + potentialCollisionName);
                                 // Update each sprite to reference the other
                                 sprite.collisionSprite = potentialCollisionSprite;
                                 potentialCollisionSprite.collisionSprite = sprite;
@@ -1877,7 +1881,7 @@ public class JavaFXApplication extends ApplicationController {
         if (!bounds1.intersects(bounds2)) {
             return false; // No bounding box overlap, no collision possible
         }
-
+        
         // Get the intersecting area bounds in the parent's coordinate system
         double intersectX = Math.max(bounds1.getMinX(), bounds2.getMinX());
         double intersectY = Math.max(bounds1.getMinY(), bounds2.getMinY());

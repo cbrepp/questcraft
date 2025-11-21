@@ -229,18 +229,24 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
 
         
         // Return all sprites
+        this.player.collisionSprite = null;
         sprites.add(this.player);
+        this.monster.collisionSprite = null;
         sprites.add(this.monster);
         for (SpriteModel sprite : this.playerMissilesAttached) {
+            sprite.collisionSprite = null;
             sprites.add(sprite);
         }
         for (SpriteModel sprite : this.monsterMissilesAttached) {
+            sprite.collisionSprite = null;
             sprites.add(sprite);
         }
         for (SpriteModel sprite : this.playerMissilesLaunched) {
+            sprite.collisionSprite = null;
             sprites.add(sprite);
         }
         for (SpriteModel sprite : this.monsterMissilesLaunched) {
+            sprite.collisionSprite = null;
             sprites.add(sprite);
         }
         

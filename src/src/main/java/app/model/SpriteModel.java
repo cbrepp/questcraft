@@ -31,6 +31,7 @@ public class SpriteModel extends BaseModel {
     public SpriteModel(ApplicationController controller, String name, String imageFile, Double imageScale, Integer x, Integer y, List<String> potentialCollisionNames) {
         this.imageFile = imageFile;
         this.imageScale = imageScale;
+        this.name = name;
         this.x = x;
         this.y = y;
         this.potentialCollisionNames = potentialCollisionNames;
