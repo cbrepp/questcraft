@@ -61,6 +61,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.util.Duration;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.effect.ColorAdjust;
+import javafx.scene.image.PixelReader;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
@@ -1785,8 +1787,6 @@ public class JavaFXApplication extends ApplicationController {
     }
     
     public void animate(String viewName, Coordinates topLeft, PauseTransition pause, AnimationView listener, Pane animationBackground, ImageView backgroundImageView, Map<String, Image> spriteImages) {
-        System.out.println("JavaFXApplication: animate");
-
         // Clean up the animation if the animation background no longer belongs to its parent
         if (animationBackground.getParent() == null) {
             System.out.println("JavaFXApplication: animate: No parent for animation background, done");
@@ -1811,36 +1811,117 @@ public class JavaFXApplication extends ApplicationController {
         }
         animationBackground.getChildren().removeAll(nodesToRemove);
         
-        // Re-add the sprites to the animation background
+        // Build a list of sprite image views
+        List<ImageView> spriteImageViews = new ArrayList();
+        Map<SpriteModel, ImageView> spriteImageViewMap = new HashMap();
         for (SpriteModel sprite : sprites) {
             Image spriteImage = spriteImages.get(sprite.imageFile);
             ImageView spriteView = new ImageView(spriteImage);
             spriteView.setLayoutX(sprite.x);
             spriteView.setLayoutY(sprite.y);
-            System.out.println("JavaFXApplication: animate: Added " + sprite.imageFile + " to " + sprite.x + ", " + sprite.y);
-            animationBackground.getChildren().add(spriteView);
+            //System.out.println("JavaFXApplication: animate: Added " + sprite.imageFile + " to " + sprite.x + ", " + sprite.y);
+            
+            // Collect each ImageView in a list
+            spriteImageViews.add(spriteView);
+            spriteImageViewMap.put(sprite, spriteView);
+        }
+        
+        // For each collision, apply a red tint effect to both image views.
+        // Saturation 1.0 makes colors vivid.  Reducing it moves toward grayscale first.
+        // Hue adjustment shifts the color spectrum.  Red is around 0.0 or -1.0/1.0.
+        // Setting Hue to -0.3 is a good value to pull colors towards a strong red/magenta range.
+        // Might need to experiment with values between -1.0 and 1.0 to find the perfect shade of red.
+        // Increase brightness/contrast if the resulting image is too dark
+        ColorAdjust colorAdjust = new ColorAdjust();
+        colorAdjust.setSaturation(1.0); 
+        colorAdjust.setHue(-0.3); 
+        colorAdjust.setBrightness(0.1); 
+        
+        // Check for collisions
+        for (SpriteModel sprite : spriteImageViewMap.keySet()) {
+            if ((sprite.potentialCollisionNames != null) && (sprite.collisionSprite == null)) {
+                ImageView imageView = spriteImageViewMap.get(sprite);
+                for (String potentialCollisionName : sprite.potentialCollisionNames) {
+                    for (SpriteModel potentialCollisionSprite : spriteImageViewMap.keySet()) {
+                        if ((potentialCollisionSprite.name != null) && (potentialCollisionSprite.name.equals(potentialCollisionName)) && (potentialCollisionSprite.collisionSprite == null)) {
+                            ImageView potentialCollisionImageView = spriteImageViewMap.get(potentialCollisionSprite);
+                            if (JavaFXApplication.isColliding(imageView, potentialCollisionImageView)) {
+                                System.out.println("JavaFXApplication: animate: Detected collision between " + sprite.name + " and " + potentialCollisionName);
+                                // Update each sprite to reference the other
+                                sprite.collisionSprite = potentialCollisionSprite;
+                                potentialCollisionSprite.collisionSprite = sprite;
+                                // Adjust the color of each sprite
+                                imageView.setEffect(colorAdjust);
+                                potentialCollisionImageView.setEffect(colorAdjust);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Re-add the sprites to the animation background
+        for (ImageView spriteImageView : spriteImageViews) {
+            animationBackground.getChildren().add(spriteImageView);
         }
         
         // Reset the timer
         pause.playFromStart();
     }
     
-    @Override
-    public Boolean checkOverlap(int image1X, int image1Y, int image1Width, int image1Height, int image2X, int image2Y, int image2Width, int image2Height) {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-    
-    public static Node createEmoji(String emoji) {
-        // Load the custom emoji font before use
-        // Note: The font is already loaded via CSS (@font-face)
-        
-        // TODO - Only load once
-        //Font.loadFont(JavaFXApplication.class.getResourceAsStream("/assets/fonts/NotoColorEmoji.ttf"), 14);
-        
-        Text emojiNode = new Text(emoji);
-        emojiNode.setStyle(String.format("-fx-font: %dpx %s;", 14, "NotoColorEmoji"));
+    public static boolean isColliding(ImageView node1, ImageView node2) {
+        // Quick check using bounding boxes
+        Bounds bounds1 = node1.getBoundsInParent();
+        Bounds bounds2 = node2.getBoundsInParent();
 
-        return new TextFlow(emojiNode);
+        if (!bounds1.intersects(bounds2)) {
+            return false; // No bounding box overlap, no collision possible
+        }
+
+        // Get the intersecting area bounds in the parent's coordinate system
+        double intersectX = Math.max(bounds1.getMinX(), bounds2.getMinX());
+        double intersectY = Math.max(bounds1.getMinY(), bounds2.getMinY());
+        double intersectMaxX = Math.min(bounds1.getMaxX(), bounds2.getMaxX());
+        double intersectMaxY = Math.min(bounds1.getMaxY(), bounds2.getMaxY());
+
+        int overlapWidth = (int) Math.round(intersectMaxX - intersectX);
+        int overlapHeight = (int) Math.round(intersectMaxY - intersectY);
+
+        if (overlapWidth <= 0 || overlapHeight <= 0) {
+            return false;
+        }
+
+        // Prepare Image PixelReaders
+        Image image1 = node1.getImage();
+        Image image2 = node2.getImage();
+        PixelReader pr1 = image1.getPixelReader();
+        PixelReader pr2 = image2.getPixelReader();
+
+        // Iterate over the overlapping region pixel by pixel
+        for (int y = 0; y < overlapHeight; y++) {
+            for (int x = 0; x < overlapWidth; x++) {
+                
+                // Calculate local coordinates for both images
+                int localX1 = (int) Math.round(intersectX + x - bounds1.getMinX());
+                int localY1 = (int) Math.round(intersectY + y - bounds1.getMinY());
+                int localX2 = (int) Math.round(intersectX + x - bounds2.getMinX());
+                int localY2 = (int) Math.round(intersectY + y - bounds2.getMinY());
+
+                // Read pixel colors (includes transparency/alpha channel)
+                // Note: pr.getColor might return fully opaque black for non-loaded/missing pixels, 
+                // but for loaded PNGs, it should give correct alpha.
+                Color color1 = pr1.getColor(localX1, localY1);
+                Color color2 = pr2.getColor(localX2, localY2);
+
+                // Check if both pixels are opaque (alpha > a very small epsilon)
+                final double minOpaque = 0.001;
+                if (color1.getOpacity() > minOpaque && color2.getOpacity() > minOpaque) {
+                    return true; // Collision found!
+                }
+            }
+        }
+
+        return false; // No overlapping opaque pixels found
     }
     
     @Override
