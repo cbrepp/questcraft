@@ -61,6 +61,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.util.Duration;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.PixelReader;
 import javafx.scene.layout.ColumnConstraints;
@@ -1884,6 +1885,48 @@ public class JavaFXApplication extends ApplicationController {
             }
         }
         
+        // Handle edge of animation background boundaries
+        /*
+        int animationBackgroundWidth = (int) animationBackground.getWidth();
+        int animationBackgroundHeight = (int) animationBackground.getHeight();
+        for (SpriteModel sprite : spriteImageViewMap.keySet()) {
+            if (sprite.viewPortBuffer > 0) {
+                int x1Boundary = (int) Math.round(((double) animationBackgroundWidth) * sprite.viewPortBuffer);
+                int y1Boundary = (int) Math.round(((double) animationBackgroundHeight) * sprite.viewPortBuffer);
+                int x2Boundary = animationBackgroundWidth - x1Boundary;
+                int y2Boundary = animationBackgroundHeight - y1Boundary;
+                ImageView spriteView = spriteImageViewMap.get(sprite);
+                Bounds localBounds = spriteView.getBoundsInLocal();
+                Bounds boundsInParent = spriteView.localToParent(localBounds);
+                int x1 = 0;
+                int y1 = 0;
+                Bounds bounds = spriteView.getBoundsInLocal();
+                int x2 = (int) bounds.getWidth();
+                int y2 = (int) bounds.getHeight();
+                if (boundsInParent.getMinX() < x1Boundary) {
+                    x1 = x1Boundary - (int) boundsInParent.getMinX();
+                }
+                if (boundsInParent.getMinY() < y1Boundary) {
+                    y1 = y1Boundary - (int) boundsInParent.getMinY();
+                }
+                if (boundsInParent.getMaxX() > x2Boundary) {
+                    x2 = x2Boundary - (int) boundsInParent.getMaxX();
+                    if (x2 < 0) {
+                        x2 = 0;
+                    }
+                }
+                if (boundsInParent.getMaxY() > y2Boundary) {
+                    y2 = y2Boundary - (int) boundsInParent.getMaxY();
+                    if (y2 < 0) {
+                        y2 = 0;
+                    }
+                }
+                Rectangle2D viewPort = new Rectangle2D(x1, y1, x2, y2);
+                spriteView.setViewport(viewPort);
+            }
+        }
+        */
+        
         // Re-add the sprites to the animation background
         for (ImageView spriteImageView : spriteImageViews) {
             animationBackground.getChildren().add(spriteImageView);
@@ -1894,64 +1937,71 @@ public class JavaFXApplication extends ApplicationController {
     }
     
     public static boolean isColliding(ImageView node1, ImageView node2) {
-        // Quick check using bounding boxes
-        Bounds bounds1 = node1.getBoundsInParent();
-        Bounds bounds2 = node2.getBoundsInParent();
+        // 1. Check for bounding box overlap in the scene coordinates
+        // We use localToParent transform to get bounds relative to a common parent/scene
+        Bounds bounds1 = node1.localToParent(node1.getBoundsInLocal());
+        Bounds bounds2 = node2.localToParent(node2.getBoundsInLocal());
 
         if (!bounds1.intersects(bounds2)) {
-            //System.out.println("JavaFXApplication: isColliding: failed quick bounds check! " + bounds1.getMaxX() + ", " + bounds1.getMaxY() + " vs " + bounds2.getMaxX() + ", " + bounds2. getMaxY());
-            return false; // No bounding box overlap, no collision possible
-        }
-        
-        // Get the intersecting area bounds in the parent's coordinate system
-        double intersectX = Math.max(bounds1.getMinX(), bounds2.getMinX());
-        double intersectY = Math.max(bounds1.getMinY(), bounds2.getMinY());
-        double intersectMaxX = Math.min(bounds1.getMaxX(), bounds2.getMaxX());
-        double intersectMaxY = Math.min(bounds1.getMaxY(), bounds2.getMaxY());
-
-        int overlapWidth = (int) Math.round(intersectMaxX - intersectX);
-        int overlapHeight = (int) Math.round(intersectMaxY - intersectY);
-
-        if (overlapWidth <= 0 || overlapHeight <= 0) {
-            System.out.println("JavaFXApplication: isColliding: failed pixel check 1");
-            return false;
+            return false; // No overlap at all
         }
 
-        // Prepare Image PixelReaders
-        Image image1 = node1.getImage();
-        Image image2 = node2.getImage();
-        PixelReader pr1 = image1.getPixelReader();
-        PixelReader pr2 = image2.getPixelReader();
+        // Determine the overlapping rectangle in scene coordinates
+        double intersectionMinX = Math.max(bounds1.getMinX(), bounds2.getMinX());
+        double intersectionMinY = Math.max(bounds1.getMinY(), bounds2.getMinY());
+        double intersectionMaxX = Math.min(bounds1.getMaxX(), bounds2.getMaxX());
+        double intersectionMaxY = Math.min(bounds1.getMaxY(), bounds2.getMaxY());
 
-        // Iterate over the overlapping region pixel by pixel
-        for (int y = 0; y < overlapHeight; y++) {
-            for (int x = 0; x < overlapWidth; x++) {
-                // Calculate local coordinates for both images
-                int localX1 = (int) Math.round(intersectX + x - bounds1.getMinX());
-                int localY1 = (int) Math.round(intersectY + y - bounds1.getMinY());
-                int localX2 = (int) Math.round(intersectX + x - bounds2.getMinX());
-                int localY2 = (int) Math.round(intersectY + y - bounds2.getMinY());
+        // Iterate through every pixel in the intersection area (in scene coordinates)
+        for (double sceneX = intersectionMinX; sceneX < intersectionMaxX; sceneX += 1) {
+            for (double sceneY = intersectionMinY; sceneY < intersectionMaxY; sceneY += 1) {
 
-                // Read pixel colors (includes transparency/alpha channel)
-                // Note: pr.getColor might return fully opaque black for non-loaded/missing pixels, 
-                // but for loaded PNGs, it should give correct alpha.
-                Color color1 = pr1.getColor(localX1, localY1);
-                Color color2 = pr2.getColor(localX2, localY2);
+                // 2. Translate scene coordinates back to local coordinates for each ImageView
+                // localToParent().inverse() gets you back to the node's local bounds
+                // The coordinates returned will be relative to the ImageView's top-left, scaled bounds
+                double iv1LocalX = node1.parentToLocal(sceneX, sceneY).getX();
+                double iv1LocalY = node1.parentToLocal(sceneX, sceneY).getY();
+                double iv2LocalX = node2.parentToLocal(sceneX, sceneY).getX();
+                double iv2LocalY = node2.parentToLocal(sceneX, sceneY).getY();
 
-                // Check if both pixels are opaque (alpha > a very small epsilon)
-                final double minOpaque = 0.0001;
-                Boolean image1Hit = (color1.getOpacity() > minOpaque);
-                Boolean image2Hit = (color2.getOpacity() > minOpaque);
-                //System.out.println("JavaFXApplication: isColliding: image1Hit=" + image1Hit + ", image2Hit=" + image2Hit + ", image1op=" + color1.getOpacity() + ", image2op=" + color2.getOpacity());
-                if (image1Hit && image2Hit) {
-                    System.out.println("JavaFXApplication: isColliding: COLLISION!!!");
-                    return true; // Collision found!
+                // 3. Translate local (scaled) coordinates to original image coordinates
+                double iv1OriginalX = translateToOriginalX(node1, iv1LocalX);
+                double iv1OriginalY = translateToOriginalY(node1, iv1LocalY);
+                double iv2OriginalX = translateToOriginalX(node2, iv2LocalX);
+                double iv2OriginalY = translateToOriginalY(node2, iv2LocalY);
+
+                // 4. Perform the pixel-perfect check
+                double alpha1 = JavaFXApplication.getPixelAlpha(node1.getImage(), iv1OriginalX, iv1OriginalY);
+                double alpha2 = JavaFXApplication.getPixelAlpha(node2.getImage(), iv2OriginalX, iv2OriginalY);
+
+                if (alpha1 >= 0.0001 && alpha2 >= 0.0001) {
+                    // Collision detected at this specific pixel!
+                    return true;
                 }
             }
         }
 
-        //System.out.println("JavaFXApplication: isColliding: failed pixel check 2");
-        return false; // No overlapping opaque pixels found
+        return false; // No colliding pixels found in the intersection area
+    }
+    
+    public static double getPixelAlpha(Image image, double x, double y) {
+        // Check bounds first
+        if (x >= 0 && x < image.getWidth() && y >= 0 && y < image.getHeight()) {
+            PixelReader pr = image.getPixelReader();
+            if (pr != null) {
+                // Read color and return alpha component
+                return pr.getColor((int) x, (int) y).getOpacity();
+            }
+        }
+        return 0.0; // Transparent if out of bounds or no reader
+    }
+
+    public static double translateToOriginalX(ImageView iv, double localX) {
+        return localX * (iv.getImage().getWidth() / iv.getBoundsInLocal().getWidth());
+    }
+
+    public static double translateToOriginalY(ImageView iv, double localY) {
+        return localY * (iv.getImage().getHeight() / iv.getBoundsInLocal().getHeight());
     }
     
     @Override

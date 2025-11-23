@@ -15,6 +15,7 @@ public class SpriteModel extends BaseModel {
     public Double imageScale;
     public String name;
     public List<String> potentialCollisionNames;
+    public Double viewPortBuffer; // Percent of animation background that defines the edge beyond which the image will not be displayed
     public Integer x;
     public Integer y;
     
@@ -29,7 +30,7 @@ public class SpriteModel extends BaseModel {
         this.isEnabled = isEnabled;
     }
     
-    public SpriteModel(ApplicationController controller, String name, String imageFile, Double imageScale, Integer x, Integer y, List<String> potentialCollisionNames) {
+    public SpriteModel(ApplicationController controller, String name, String imageFile, Double imageScale, Integer x, Integer y, List<String> potentialCollisionNames, Double viewPortBuffer) {
         this.collisionSprites = new ArrayList();
         this.imageFile = imageFile;
         this.imageScale = imageScale;
@@ -37,6 +38,7 @@ public class SpriteModel extends BaseModel {
         this.x = x;
         this.y = y;
         this.potentialCollisionNames = potentialCollisionNames;
+        this.viewPortBuffer = viewPortBuffer;
     }
     
 }
