@@ -9,8 +9,6 @@ import quest.model.Book;
  * 
  * The following resources were provided courtesy of the respective authors and are also for personal use only:
  * achievement.wav - "An uplifting and straight forward orchestral jingle achiecement completed sound to be used in fantasy games. Useful for when a character has completed an objective, an achievement or other pleasant events." by LittleRobotSoundFactory (https://freesound.org/people/LittleRobotSoundFactory/sounds/270404/)
- * action-figure-female.png, action-figure-female-red.png, action-figure-male.png, action-figure-male-red.png - "Kids, Black, Boy royalty-free vector graphic. Free for use & download." by clker-free-vector-images-3736 (https://pixabay.com/vectors/kids-black-boy-silhouette-girl-303544/)
- * action-figure-owl.png, action-figure-owl-red.png - "Owl, Bird, Mascot royalty-free vector graphic. Free for use & download." by GlyphX (https://pixabay.com/vectors/owl-bird-mascot-logo-wings-design-5466568/)
  * app.jpg - "Vision, Nature, Future royalty-free stock illustration. Free for use & download." by TheDigitalArtist (https://pixabay.com/illustrations/vision-future-dream-fantasy-book-8386199/)
  * arcade.jpg - Teddy bear, Arcade, Claw machines image. Free for use. (https://pixabay.com/photos/teddy-bear-arcade-claw-machines-7558723/)
  * arrow.mp3 - "arrow-shot.mp3, An arrow being shot as part of my iPad game Knights vs Knightesses (http://versuspad.com). This sound is a simulation." by JPhilipp (https://freesound.org/people/JPhilipp/sounds/119060/)
@@ -60,6 +58,7 @@ import quest.model.Book;
  * fluff2.jpg - "Draco in a laundry box" by Mr. Chris
  * fluff3.jpg - "Draco reclining on a cardboard scratching post bed" by Mr. Chris
  * fluff-photo[1-7].jpg - Adorable photos of Draco by Mr. Chris
+ * flying-owl.png - "Owl" by Minecraft Advanced Wiki (https://mc-advanced.fandom.com/wiki/Owl)
  * frame.png - "Frame, Photo Frame, Openwork royalty-free stock illustration. Free for use & download." by AlLes (https://pixabay.com/illustrations/frame-photo-frame-openwork-design-1797353/)
  * gianni-bed.jpg - "AI filter of Gianni laying on his rainbow bed" by Mr. Chris
  * gvianni-escape.jpg - "AI filter of Gianni climbing up my stair railing" by Mr. Chris
@@ -79,6 +78,7 @@ import quest.model.Book;
  * impact.wav - "kicks bass impacts subs by CVLTIV8R" by CVLTIV8R (https://freesound.org/people/CVLTIV8R/sounds/794142/)
  * key.wav - "Key clacks while locking and unlocking entrance door." by hisoul (https://freesound.org/people/hisoul/sounds/462669/v)
  * laser.wav - "Slinky Laser." by Daleonfire (https://freesound.org/people/Daleonfire/sounds/376694/)
+ * lightning-bolt-left.png, lightning-bolt-right.png - "Lightning Bolt, Thunderstorm, Lightning royalty-free vector graphic. Free for use & download." by Clker-Free-Vector-Images (https://pixabay.com/vectors/lightning-bolt-thunderstorm-297807/)
  * magic.wav - "Recorded at 24bit 96kHz WAV. using the Zoom H6 Recorder." by EminYILDIRIM (https://freesound.org/people/EminYILDIRIM/sounds/547365/)
  * magic.mp3 - Magic.mp3 by Bastianhallo (https://freesound.org/people/Bastianhallo/sounds/434050/)
  * magic-door.jpg - "Door, Woods, Forest royalty-free stock illustration. Free for use & download." by betidraws (https://pixabay.com/illustrations/door-woods-forest-trees-autumn-7003670/)
@@ -133,6 +133,8 @@ import quest.model.Book;
  * wilderness.mp3 - birds_210513_0088.mp3 (https://freesound.org/people/titi2/sounds/571247/)
  * wilderness3.jpg and wilderness3-small.jpg - Ai Generated Meadow Mountain royalty-free stock illustration. Free for use & download. (https://pixabay.com/illustrations/ai-generated-meadow-mountain-8190587/)
  * wind.mp3 - A 1 min. 25 sec. raw audio mp3 recording of a rather strong-sounding wind blowing through pine trees. The wind eventually gets a little lighter toward the end of the recording. Includes a bit of breeze on the microphone but only enough to add to the effect. Recorded with a black Sony IC digital voice recorder. (https://freesound.org/people/FunWithSound/sounds/390740/)
+ * witch-back.png, witch-front.png - "Witch Skin for Minecraft" by ? (https://superminecraftskins.com/other/witch-101661)
+ * wizard-back.png, wizard-front.png - "The chosen WIZARD Skin for Minecraft" by ? (https://superminecraftskins.com/images/uploads/skinsminecraft/000/038/762/the-chosen-wizard-3d.png)
  * wooden-sign.png - "Sign, Wood, Wooden royalty-free vector graphic. Free for use & download." by OpenClipart-Vectors (https://pixabay.com/vectors/sign-wood-wooden-brown-rustic-576261/)
  * woods.mp3 - forestsurroundings.mp3 (https://freesound.org/people/Luftrum/sounds/48411/)
  * woods.png - "Ai Generated, Woods, Forest royalty-free stock illustration. Free for use & download." by FreeFunArt (https://pixabay.com/illustrations/ai-generated-woods-forest-fog-8684933/)

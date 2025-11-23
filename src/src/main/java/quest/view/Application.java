@@ -1063,7 +1063,7 @@ public class Application extends app.ApplicationView {
         nightOwlMinigamePage.story.contents.add("<br>");
         nightOwlMinigamePage.story.contents.add("<i>INSTRUCTIONS: Use the buttons or arrow keys to move left or right and launch an upwards attack.</i>");
         nightOwlMinigamePage.story.contents.add("<br>");
-        nightOwlMinigamePage.story.contents.add("<subpage-display condition=\"variable animation-on=true\" PauseUnpause><get-validated-input condition=\"variable animation-started!=true\" action *Continue>");
+        nightOwlMinigamePage.story.contents.add("<subpage-display condition=\"variable minigame-display=true\" PauseUnpause><get-validated-input condition=\"variable minigame-display!=true\" action *Continue>");
         nightOwlMinigamePage.story.contents.add("</color>");
         nightOwlMinigamePage.story.contents.add("<button-row>");
         nightOwlMinigamePage.story.contents.add("<get-validated-input align=right *navigation-prompt &left; Move Left+&up; Launch+&right; Move Right>");
@@ -1072,8 +1072,17 @@ public class Application extends app.ApplicationView {
         myleesElevator.pages.put("Night Owl Minigame", nightOwlMinigamePage);
         
         Story monsterShooterSubpage = new Story();
-        monsterShooterSubpage.contents.add("<monster-shooter condition=\"variable animation-on!=true\" night-owl left /assets/images/wilderness3.jpg /assets/images/action-figure-male.png /assets/images/action-figure-male-red.png /assets/images/arrow.png /assets/images/arrow.png /assets/sounds/arrow.mp3 /assets/images/action-figure-owl.png /assets/images/action-figure-owl-red.png /assets/images/lightning-bolt-left-mini.png /assets/images/lightning-bolt-left.png /assets/images/lightning-bolt-left-chungus.png /assets/images/lightning-bolt-right-mini.png /assets/images/lightning-bolt-right.png /assets/images/lightning-bolt-right-chungus.png /assets/sounds/zap.wav /assets/sounds/hooting.mp3 true>");
+        monsterShooterSubpage.contents.add("<subpage-display condition=\"player=Greyson\" Monster Shooter Greyson>");
+        monsterShooterSubpage.contents.add("<subpage-display condition=\"player=Zara\" Monster Shooter Zara>");
         nightOwlMinigamePage.subpages.put("Monster Shooter", monsterShooterSubpage);
+        
+        Story monsterShooterGreysonSubpage = new Story();
+        monsterShooterGreysonSubpage.contents.add("<monster-shooter condition=\"variable animation-on!=true\" night-owl left /assets/images/wilderness3.jpg /assets/images/wizard-back.png /assets/images/arrow.png /assets/images/arrow.png /assets/sounds/arrow.mp3 /assets/images/flying-owl.png /assets/images/lightning-bolt-left.png /assets/images/lightning-bolt-right.png /assets/sounds/zap.wav /assets/sounds/hooting.mp3 true>");
+        nightOwlMinigamePage.subpages.put("Monster Shooter Greyson", monsterShooterGreysonSubpage);
+        
+        Story monsterShooterZaraSubpage = new Story();
+        monsterShooterZaraSubpage.contents.add("<monster-shooter condition=\"variable animation-on!=true\" night-owl left /assets/images/wilderness3.jpg /assets/images/witch-back.png /assets/images/cat-missile-left.png /assets/images/cat-missile-right.png /assets/sounds/arrow.mp3 /assets/images/flying-owl.png /assets/images/lightning-bolt-left.png /assets/images/lightning-bolt-right.png /assets/sounds/zap.wav /assets/sounds/hooting.mp3 true>");
+        nightOwlMinigamePage.subpages.put("Monster Shooter Zara", monsterShooterZaraSubpage);
         
         Story moveLeftSubpage = new Story();
         moveLeftSubpage.contents.add("<variable-set condition=\"variable animation-on=true\" animation-left true>");

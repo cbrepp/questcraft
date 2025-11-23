@@ -1,6 +1,7 @@
 package app.model;
 
 import app.*;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -9,9 +10,9 @@ import java.util.List;
  */
 public class SpriteModel extends BaseModel {
     
-    public SpriteModel collisionSprite;
+    public List<SpriteModel> collisionSprites;
     public String imageFile;
-    public Double imageScale = 1.0;
+    public Double imageScale;
     public String name;
     public List<String> potentialCollisionNames;
     public Integer x;
@@ -29,6 +30,7 @@ public class SpriteModel extends BaseModel {
     }
     
     public SpriteModel(ApplicationController controller, String name, String imageFile, Double imageScale, Integer x, Integer y, List<String> potentialCollisionNames) {
+        this.collisionSprites = new ArrayList();
         this.imageFile = imageFile;
         this.imageScale = imageScale;
         this.name = name;

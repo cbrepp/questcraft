@@ -1772,30 +1772,36 @@ public class JavaFXApplication extends ApplicationController {
         backgroundImageView.setLayoutX(0);
         backgroundImageView.setLayoutY(0);
         Pane animationBackground = new Pane();
-        animationBackground.setPrefWidth(animationDimensions.x);
-        animationBackground.setPrefHeight(animationDimensions.y);
         animationBackground.getChildren().add(backgroundImageView);
-        animationBackground.setLayoutX(topLeft.x + 1);
-        animationBackground.setLayoutY(topLeft.y + 1);
-        Pane content = this.tabContentMap.get(viewName);
-        content.getChildren().add(animationBackground);
         
         // Set a timer to fetch and display the current sprites
         PauseTransition pause = new PauseTransition(Duration.seconds(animationDelay));
-        pause.setOnFinished(event -> animate(viewName, topLeft, pause, listener, animationBackground, backgroundImageView, spriteImages));
+        pause.setOnFinished(event -> animate(viewName, topLeft, pause, listener, animationDimensions, animationBackground, backgroundImageView, spriteImages));
         pause.play();
     }
     
-    public void animate(String viewName, Coordinates topLeft, PauseTransition pause, AnimationView listener, Pane animationBackground, ImageView backgroundImageView, Map<String, Image> spriteImages) {
-        // Clean up the animation if the animation background no longer belongs to its parent
+    public void animate(String viewName, Coordinates topLeft, PauseTransition pause, AnimationView listener, Coordinates animationDimensions, Pane animationBackground, ImageView backgroundImageView, Map<String, Image> spriteImages) {
+        // Add animation background to the parent if needed.
+        // (Expected for the first display of the animation and any subsequent refresh of the page.)
         if (animationBackground.getParent() == null) {
-            System.out.println("JavaFXApplication: animate: No parent for animation background, done");
-            pause.stop();
-            return;
+            System.out.println("JavaFXApplication: animate: No parent for animation background, adding to tab content");
+            animationBackground.setPrefWidth(animationDimensions.x);
+            animationBackground.setPrefHeight(animationDimensions.y);
+            animationBackground.setLayoutX(topLeft.x + 1);
+            animationBackground.setLayoutY(topLeft.y + 1);
+            Pane content = this.tabContentMap.get(viewName);
+            content.getChildren().add(animationBackground);
         }
         
         // Retrieve updated sprites
         List<SpriteModel> sprites = listener.onAnimate();
+        
+        // Clean up the animation 
+        if (sprites == null) {
+            System.out.println("JavaFXApplication: animate: No more sprite data, done");
+            pause.stop();
+            return;
+        }
         
         // Clear the animation background and re-add the sprites
         List<Node> nodesToRemove = new ArrayList<>();
@@ -1821,6 +1827,20 @@ public class JavaFXApplication extends ApplicationController {
             spriteView.setLayoutY(sprite.y);
             //System.out.println("JavaFXApplication: animate: Added " + sprite.imageFile + " to " + sprite.x + ", " + sprite.y);
             
+            // Scale each sprite relative to the size of the animation background
+            //Double spriteHeight = spriteView.getFitHeight();
+            //Double spriteWidth = spriteView.getFitWidth();
+            Double scaledSpriteHeight = animationDimensions.y * sprite.imageScale;
+            //Double scaledSpriteWidth = spriteWidth * (scaledSpriteHeight / spriteHeight);
+            spriteView.setFitHeight(scaledSpriteHeight);
+            spriteView.setPreserveRatio(true); 
+            //System.out.println("JavaFXApplication: animate: Sprite " + sprite.imageFile + " scale " + sprite.imageScale + ", height=" + spriteView.getFitHeight() + ", width=" + spriteView.getFitWidth());
+            //spriteView.setFitWidth(scaledSpriteWidth);
+            
+            // Make the sprite size responsive to changes in the size of the animation background
+            //spriteView.fitWidthProperty().bind(animationBackground.widthProperty());
+            //spriteView.fitHeightProperty().bind(animationBackground.heightProperty());
+            
             // Collect each ImageView in a list
             spriteImageViews.add(spriteView);
             spriteImageViewMap.put(sprite, spriteView);
@@ -1839,21 +1859,21 @@ public class JavaFXApplication extends ApplicationController {
         
         // Check for collisions
         for (SpriteModel sprite : spriteImageViewMap.keySet()) {
-            if ((sprite.potentialCollisionNames != null) && (sprite.collisionSprite == null)) {
+            if (sprite.potentialCollisionNames != null) {
                 ImageView imageView = spriteImageViewMap.get(sprite);
                 //System.out.println("JavaFXApplication: animate: level 4 : " + sprite.name);
                 for (String potentialCollisionName : sprite.potentialCollisionNames) {
                     //System.out.println("JavaFXApplication: animate: level 3 : " + potentialCollisionName);
                     for (SpriteModel potentialCollisionSprite : spriteImageViewMap.keySet()) {
                         //System.out.println("JavaFXApplication: animate: level 2 : " + potentialCollisionSprite.name);
-                        if ((potentialCollisionSprite.name != null) && (potentialCollisionSprite.name.equals(potentialCollisionName)) && (potentialCollisionSprite.collisionSprite == null)) {
-                            //System.out.println("JavaFXApplication: animate: level 1 : " + potentialCollisionSprite.name);
+                        if ((potentialCollisionSprite.name != null) && (potentialCollisionSprite.name.equals(potentialCollisionName))) {
+                            //System.out.println("JavaFXApplication: animate: level 1 : " + sprite.name + " vs " + potentialCollisionSprite.name);
                             ImageView potentialCollisionImageView = spriteImageViewMap.get(potentialCollisionSprite);
                             if (JavaFXApplication.isColliding(imageView, potentialCollisionImageView)) {
                                 //System.out.println("JavaFXApplication: animate: Detected collision between " + sprite.name + " and " + potentialCollisionName);
                                 // Update each sprite to reference the other
-                                sprite.collisionSprite = potentialCollisionSprite;
-                                potentialCollisionSprite.collisionSprite = sprite;
+                                sprite.collisionSprites.add(potentialCollisionSprite);
+                                potentialCollisionSprite.collisionSprites.add(sprite);
                                 // Adjust the color of each sprite
                                 imageView.setEffect(colorAdjust);
                                 potentialCollisionImageView.setEffect(colorAdjust);
@@ -1879,6 +1899,7 @@ public class JavaFXApplication extends ApplicationController {
         Bounds bounds2 = node2.getBoundsInParent();
 
         if (!bounds1.intersects(bounds2)) {
+            //System.out.println("JavaFXApplication: isColliding: failed quick bounds check! " + bounds1.getMaxX() + ", " + bounds1.getMaxY() + " vs " + bounds2.getMaxX() + ", " + bounds2. getMaxY());
             return false; // No bounding box overlap, no collision possible
         }
         
@@ -1892,6 +1913,7 @@ public class JavaFXApplication extends ApplicationController {
         int overlapHeight = (int) Math.round(intersectMaxY - intersectY);
 
         if (overlapWidth <= 0 || overlapHeight <= 0) {
+            System.out.println("JavaFXApplication: isColliding: failed pixel check 1");
             return false;
         }
 
@@ -1904,7 +1926,6 @@ public class JavaFXApplication extends ApplicationController {
         // Iterate over the overlapping region pixel by pixel
         for (int y = 0; y < overlapHeight; y++) {
             for (int x = 0; x < overlapWidth; x++) {
-                
                 // Calculate local coordinates for both images
                 int localX1 = (int) Math.round(intersectX + x - bounds1.getMinX());
                 int localY1 = (int) Math.round(intersectY + y - bounds1.getMinY());
@@ -1918,13 +1939,18 @@ public class JavaFXApplication extends ApplicationController {
                 Color color2 = pr2.getColor(localX2, localY2);
 
                 // Check if both pixels are opaque (alpha > a very small epsilon)
-                final double minOpaque = 0.001;
-                if (color1.getOpacity() > minOpaque && color2.getOpacity() > minOpaque) {
+                final double minOpaque = 0.0001;
+                Boolean image1Hit = (color1.getOpacity() > minOpaque);
+                Boolean image2Hit = (color2.getOpacity() > minOpaque);
+                //System.out.println("JavaFXApplication: isColliding: image1Hit=" + image1Hit + ", image2Hit=" + image2Hit + ", image1op=" + color1.getOpacity() + ", image2op=" + color2.getOpacity());
+                if (image1Hit && image2Hit) {
+                    System.out.println("JavaFXApplication: isColliding: COLLISION!!!");
                     return true; // Collision found!
                 }
             }
         }
 
+        //System.out.println("JavaFXApplication: isColliding: failed pixel check 2");
         return false; // No overlapping opaque pixels found
     }
     
