@@ -97,7 +97,7 @@ public class InventoryControl extends QuestControl implements EventListener {
         
         // If the item has a sound file, play it now
         if (item.soundFileName != null) {
-            Utility.playSound(item.soundFileName, Boolean.FALSE);
+            this.quest.appController.playSound(item.soundFileName, Boolean.FALSE);
         }
         
         if (item.onSelect == null) {

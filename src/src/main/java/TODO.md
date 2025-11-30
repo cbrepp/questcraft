@@ -20,13 +20,15 @@ Upcoming changes.
     3. JPro hosting is approx $132.93/month.  Need to look into cheap alternative server hosting-- https://www.hostinger.com/tutorials/how-to-set-up-vps.
 6. Prototype a Gluon Mobile (https://docs.gluonhq.com/) app using the Charm Glisten UI library
     1. If Gluon Mobile is promising, work on Android build
-7. Separate this repo into:
+7. Research CheerpJ
+8. Separate this repo into:
     1. Appcraft repo
     2. Questcraft repo
     3. One repo for each quest
-8. Begin implementing each Chapter 2 level
-9. Start designing the Twinquest prequel about Big Chung, the mystery solving chief of police
-10. Fix annoying spacing issues around changing font color, etc.  Add dark magenta color to variables used by Mad Quest.
+9. Begin implementing each Chapter 2 level
+10. Start designing the Twinquest prequel about Big Chung, the mystery solving chief of police
+11. Fix annoying spacing issues around changing font color, etc.  Add dark magenta color to variables used by Mad Quest.
+12. Document dependencies... for example, SWT requires libwebkit2gtk-4.1-0 for using the Browser class
 
 ## Questcraft
 

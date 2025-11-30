@@ -46,7 +46,7 @@ public class SpellBook extends app.ApplicationView {
                             this.quest.setPlayerMP(spell.mpCost * -1, false);
                         }
                     } else {
-                        app.Utility.playSound("/assets/sounds/spell-cast.wav", false);
+                        this.appController.playSound("/assets/sounds/spell-cast.wav", false);
                     }
                     String[] responses = {"Success!", "Huzzah!", "Abracadabra!"};
                     int randomResponseIndex = (int) (Math.random() * responses.length);

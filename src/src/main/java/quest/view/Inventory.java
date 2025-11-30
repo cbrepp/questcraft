@@ -51,7 +51,7 @@ public class Inventory extends app.ApplicationView implements EventListener {
             InventoryItem item = this.quest.book.inventory.get(eventName);
             String title = item.unicodeSurrogatePair + " " + eventName;
             if (item.soundFileName != null) {
-                Utility.playSound(item.soundFileName, Boolean.FALSE);
+                this.appController.playSound(item.soundFileName, Boolean.FALSE);
             }
             if (item.onSelect != null) {
                 System.out.println("Inventory: onEvent: Executing story");

@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -63,6 +64,8 @@ import javafx.util.Duration;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.effect.ColorAdjust;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.effect.Effect;
 import javafx.scene.image.PixelReader;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -1878,6 +1881,11 @@ public class JavaFXApplication extends ApplicationController {
                                 // Adjust the color of each sprite
                                 imageView.setEffect(colorAdjust);
                                 potentialCollisionImageView.setEffect(colorAdjust);
+                                // Glow the sprite if needed
+                                sprite.onCollision(potentialCollisionSprite);
+                                this.glowSprite(sprite, imageView, colorAdjust);
+                                potentialCollisionSprite.onCollision(sprite);
+                                this.glowSprite(potentialCollisionSprite, potentialCollisionImageView, colorAdjust);
                             }
                         }
                     }
@@ -1885,7 +1893,8 @@ public class JavaFXApplication extends ApplicationController {
             }
         }
         
-        // Handle edge of animation background boundaries
+        // TODO - Handle edge of animation background boundaries
+        // This is disabled for now because preserving scaling and preserving the image's ratio causes the clipped image to grow
         /*
         int animationBackgroundWidth = (int) animationBackground.getWidth();
         int animationBackgroundHeight = (int) animationBackground.getHeight();
@@ -1896,36 +1905,45 @@ public class JavaFXApplication extends ApplicationController {
                 int x2Boundary = animationBackgroundWidth - x1Boundary;
                 int y2Boundary = animationBackgroundHeight - y1Boundary;
                 ImageView spriteView = spriteImageViewMap.get(sprite);
-                Bounds localBounds = spriteView.getBoundsInLocal();
-                Bounds boundsInParent = spriteView.localToParent(localBounds);
-                int x1 = 0;
-                int y1 = 0;
-                Bounds bounds = spriteView.getBoundsInLocal();
-                int x2 = (int) bounds.getWidth();
-                int y2 = (int) bounds.getHeight();
-                if (boundsInParent.getMinX() < x1Boundary) {
-                    x1 = x1Boundary - (int) boundsInParent.getMinX();
+                Bounds bounds = spriteView.getBoundsInParent();
+                double currentTopY = bounds.getMinY();
+                double currentBottomY = bounds.getMaxY();
+                double sourceImageHeight = spriteView.getImage().getHeight();
+
+                if (currentBottomY < y2Boundary) {
+                    // No clipping needed if we are just ensuring it doesn't show below threshold
+                } else if (currentTopY >= y2Boundary) {
+                    // Clip it completely (set height to 0 or 1 pixel, effectively hiding it)
+                    spriteView.setViewport(new Rectangle2D(0, 0, spriteView.getImage().getWidth(), 1));
+                } else {
+                    // Calculate the distance from the parent's top (Y=0) to the clip threshold line (e.g., Y=250)
+                    double distanceAboveThresholdInParent = y2Boundary - currentTopY;
+
+                    // Calculate the total scaled height of the image in the parent system
+                    double totalHeightInParent = bounds.getHeight();
+
+                    // Determine what fraction of the total *scaled* image is above the threshold line
+                    double fractionAboveLine = distanceAboveThresholdInParent / totalHeightInParent;
+
+                    // Translate that fraction back to the height in *original source image pixels*
+                    double visibleSourceHeight = sourceImageHeight * fractionAboveLine;
+
+                    // Apply the new dynamic viewport
+                    spriteView.setViewport(new Rectangle2D(
+                        0, 
+                        0, // Start Y coordinate at the very top (Y=0) of the source image
+                        spriteView.getImage().getWidth(), 
+                        visibleSourceHeight // Only show the calculated height of the top portion
+                    ));
                 }
-                if (boundsInParent.getMinY() < y1Boundary) {
-                    y1 = y1Boundary - (int) boundsInParent.getMinY();
-                }
-                if (boundsInParent.getMaxX() > x2Boundary) {
-                    x2 = x2Boundary - (int) boundsInParent.getMaxX();
-                    if (x2 < 0) {
-                        x2 = 0;
-                    }
-                }
-                if (boundsInParent.getMaxY() > y2Boundary) {
-                    y2 = y2Boundary - (int) boundsInParent.getMaxY();
-                    if (y2 < 0) {
-                        y2 = 0;
-                    }
-                }
-                Rectangle2D viewPort = new Rectangle2D(x1, y1, x2, y2);
-                spriteView.setViewport(viewPort);
             }
         }
         */
+        
+        Rectangle clipRectangle = new Rectangle();
+        clipRectangle.setWidth(animationBackground.getWidth());
+        clipRectangle.setHeight(animationBackground.getHeight());
+        animationBackground.setClip(clipRectangle);
         
         // Re-add the sprites to the animation background
         for (ImageView spriteImageView : spriteImageViews) {
@@ -1934,6 +1952,21 @@ public class JavaFXApplication extends ApplicationController {
         
         // Reset the timer
         pause.playFromStart();
+    }
+    
+    public void glowSprite(SpriteModel sprite, ImageView spriteView, Effect currentEffect) {
+        if (sprite.glowColor == null) {
+            return;
+        }
+        
+        DropShadow glow = new DropShadow();
+        glow.setRadius(20);
+        glow.setColor(Color.rgb(sprite.glowColor.red, sprite.glowColor.green, sprite.glowColor.blue));
+        glow.setSpread(0.5);
+        glow.setOffsetX(0);
+        glow.setOffsetY(0);
+        glow.setInput(currentEffect);
+        spriteView.setEffect(glow);
     }
     
     public static boolean isColliding(ImageView node1, ImageView node2) {
@@ -2007,7 +2040,8 @@ public class JavaFXApplication extends ApplicationController {
     @Override
     public void playSound(String fileName, Boolean isLoop) {
         System.out.println("JavaFXApplication: playSound: fileName=" + fileName + ", isLoop=" + isLoop);
-        
+
+        /*
         URL resource = getClass().getResource(fileName);
 
         if (resource != null) {
@@ -2027,6 +2061,7 @@ public class JavaFXApplication extends ApplicationController {
         } else {
             System.err.println("JavaFXApplication: playSound: File not found!");
         }
+    */
     }
     
     @Override

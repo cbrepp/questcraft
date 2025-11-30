@@ -11,6 +11,7 @@ import java.util.List;
 public class SpriteModel extends BaseModel {
     
     public List<SpriteModel> collisionSprites;
+    public Color glowColor;
     public String imageFile;
     public Double imageScale;
     public String name;
@@ -41,4 +42,5 @@ public class SpriteModel extends BaseModel {
         this.viewPortBuffer = viewPortBuffer;
     }
     
+    public void onCollision(SpriteModel collidingSprite) {}
 }
