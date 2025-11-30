@@ -6,9 +6,7 @@ import app.model.Coordinates;
 import app.model.SpriteModel;
 import java.io.File;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -46,7 +44,6 @@ import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -57,12 +54,12 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
-import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.util.Duration;
 import javafx.embed.swing.SwingFXUtils;
-import javafx.geometry.Rectangle2D;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.Effect;
@@ -183,60 +180,7 @@ public class JavaFXApplication extends ApplicationController {
         }).start();
     }
     
-    private void showPrimaryStage() {
-        /*
-        // Create Text objects with different styles
-        Text text1 = new Text("Big italic red text. ");
-        text1.setFill(Color.RED);
-        text1.setFont(Font.font("Helvetica", FontPosture.ITALIC, 40));
-
-        Text text2 = new Text("This is normal black text. ");
-        text2.setFill(Color.BLACK);
-        text2.setFont(Font.font("Helvetica", 20));
-
-        Text text3 = new Text("And this is bold blue text.");
-        text3.setFill(Color.BLUE);
-        text3.setFont(Font.font("Helvetica", FontWeight.BOLD, 20));
-
-        // Create a TextFlow and add the Text objects
-        TextFlow textFlow = new TextFlow(text1, text2, text3);
-        textFlow.setLineSpacing(10);
-
-        // Load the background image
-        Image image = new Image(this.parentView.backgroundImage);
-        /*
-        ImageView imageView = new ImageView(backgroundImage);
-        imageView.setFitWidth(backgroundImage.getWidth());
-        imageView.setFitHeight(backgroundImage.getHeight());
-        //imageView.fitWidthProperty().bind(this.app.primaryStage.widthProperty()); // Bind to stage width
-        //imageView.fitHeightProperty().bind(this.app.primaryStage.heightProperty()); // Bind to stage height
-        imageView.setPreserveRatio(false);
-        imageView.setSmooth(true);
-        */
-        
-        /*
-        
-        BackgroundImage backgroundImage = new BackgroundImage(
-            image,
-            BackgroundRepeat.NO_REPEAT, // Repeat in X direction
-            BackgroundRepeat.NO_REPEAT, // Repeat in Y direction
-            BackgroundPosition.CENTER,   // Position of the image
-            new BackgroundSize(1.0, 1.0, true, true, false, false) // Size of the image (100% width and height)
-        );
-        Background background = new Background(backgroundImage);
-
-        // Create a StackPane to layer the background image and text
-        StackPane root = new StackPane(textFlow);
-        root.setBackground(background);
-        //root.set
-        root.setStyle("-fx-background-color: black;");
-        Scene scene = new Scene(root, 1280, 793);
-
-        this.app.primaryStage.setTitle(this.parentView.name);
-        this.app.primaryStage.setScene(scene);
-        this.app.primaryStage.show();
-        */
-        
+    private void showPrimaryStage() {        
         showPrimaryStageFull();
     }
     
@@ -248,23 +192,18 @@ public class JavaFXApplication extends ApplicationController {
 
         // Size the application dimensions        
         Coordinates dimensions = getDimensions(this.parentView.backgroundImage);
-        //this.app.primaryStage.setWidth(dimensions.x);
-        //this.app.primaryStage.setHeight(dimensions.y);
         
         // Set the application icon
-        Image iconImage = null;
         if (this.parentView.iconFileName != null) {
-            iconImage = loadImage(this.parentView.iconFileName);
+            Image iconImage = loadImage(this.parentView.iconFileName);
             this.app.primaryStage.getIcons().add(iconImage);
         }
         
         // Initialize the application's tab folder and set it as the application's primary scene
         this.tabFolder = new TabPane();
-        final JavaFXApplication thisApplication = this; // TODO - Can we use "this" inside of the listener?
         this.tabFolder.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
             String selectedTabTitle = newTab.getText();
             System.out.println("JavaFXApplication: showPrimaryStage: Selected tab " + selectedTabTitle);
-            //ApplicationView selectedView = thisApplication.tabItemViewMap.get(newTab);
             ApplicationView selectedView = this.tabItemViewMap.get(newTab);
             if (selectedView != null) {
                 selectedView.onSelected(this);
@@ -275,7 +214,12 @@ public class JavaFXApplication extends ApplicationController {
                 }
             }
         });
-        this.primaryScene = new Scene(this.tabFolder, dimensions.x, dimensions.y); // TODO - Do we need to set the dimensions here?
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.setContent(this.tabFolder);
+        scrollPane.setHbarPolicy(ScrollBarPolicy.AS_NEEDED);
+        scrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
+        //this.primaryScene = new Scene(this.tabFolder, dimensions.x, dimensions.y);
+        this.primaryScene = new Scene(scrollPane, dimensions.x, dimensions.y);
         final String CSS = 
             ".html-editor .tool-bar { " +
             "    -fx-max-height: 0; " +
