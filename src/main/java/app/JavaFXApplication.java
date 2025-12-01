@@ -1923,6 +1923,9 @@ public class JavaFXApplication extends ApplicationController {
             return false; // No overlap at all
         }
 
+        // TODO - For performance, use app.javafx.CollisionMask
+        //return mask.intersects(otherMask, this.getX(), this.getY(), other.getX(), other.getY());
+
         // Determine the overlapping rectangle in scene coordinates
         double intersectionMinX = Math.max(bounds1.getMinX(), bounds2.getMinX());
         double intersectionMinY = Math.max(bounds1.getMinY(), bounds2.getMinY());

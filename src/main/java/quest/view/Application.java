@@ -3,7 +3,6 @@ package quest.view;
 import app.ApplicationController;
 import app.Color;
 import app.FontStyle;
-import app.Utility;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -1057,7 +1056,9 @@ public class Application extends app.ApplicationView {
         nightOwlMinigamePage.story.contents.add("<if condition=\"variable minigame-display!=true\" WEAKNESSES: Long-range attacks>");
         nightOwlMinigamePage.story.contents.add("<br condition=\"variable minigame-display!=true\">");
         nightOwlMinigamePage.story.contents.add("<image condition=\"variable minigame-display!=true\" center /assets/images/night-owl-sketch.png>");
-        nightOwlMinigamePage.story.contents.add("<first-page><color 0+0+0>You open the elevator doors and wave your weapon in the face of none other than Night Owl himself.  Night Owl sees immediately that you have a weapon worthy of battle and flies up into the sky to begin an aerial assault.");
+        nightOwlMinigamePage.story.contents.add("<first-page><color 0+0+0>\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Remember the name of this boss.  If you fail to defeat it, you can cast its name as a spell to fight it again.<quote>");
+        nightOwlMinigamePage.story.contents.add("<br>");
+        nightOwlMinigamePage.story.contents.add("You open the elevator doors and wave your weapon in the face of none other than Night Owl himself.  Night Owl sees immediately that you have a weapon worthy of battle and flies up into the sky to begin an aerial assault.");
         nightOwlMinigamePage.story.contents.add("<br>");
         nightOwlMinigamePage.story.contents.add("This is it!  It's time to fight!!!");
         nightOwlMinigamePage.story.contents.add("<br>");
@@ -1074,14 +1075,15 @@ public class Application extends app.ApplicationView {
         Story monsterShooterSubpage = new Story();
         monsterShooterSubpage.contents.add("<subpage-display condition=\"player=Greyson\" Monster Shooter Greyson>");
         monsterShooterSubpage.contents.add("<subpage-display condition=\"player=Zara\" Monster Shooter Zara>");
+        // TODO - Add SHMEBULOCK        
         nightOwlMinigamePage.subpages.put("Monster Shooter", monsterShooterSubpage);
         
         Story monsterShooterGreysonSubpage = new Story();
-        monsterShooterGreysonSubpage.contents.add("<monster-shooter condition=\"variable animation-on!=true\" night-owl left /assets/images/wilderness3.jpg /assets/images/wizard-back.png /assets/images/arrow.png /assets/images/arrow.png /assets/sounds/arrow.mp3 /assets/images/flying-owl.png /assets/images/lightning-bolt-left.png /assets/images/lightning-bolt-right.png /assets/sounds/zap.wav /assets/sounds/hooting.mp3 true>");
+        monsterShooterGreysonSubpage.contents.add("<monster-shooter condition=\"variable animation-on!=true\" night-owl left /assets/images/wilderness3.jpg /assets/images/wizard-back.png /assets/images/arrow.png /assets/images/arrow.png /assets/sounds/arrow.mp3 /assets/images/flying-owl.png /assets/images/lightning-bolt-left.png /assets/images/lightning-bolt-right.png /assets/sounds/zap.wav /assets/sounds/hooting.mp3 true difficulty>");
         nightOwlMinigamePage.subpages.put("Monster Shooter Greyson", monsterShooterGreysonSubpage);
         
         Story monsterShooterZaraSubpage = new Story();
-        monsterShooterZaraSubpage.contents.add("<monster-shooter condition=\"variable animation-on!=true\" night-owl left /assets/images/wilderness3.jpg /assets/images/witch-back.png /assets/images/cat-missile-left.png /assets/images/cat-missile-right.png /assets/sounds/arrow.mp3 /assets/images/flying-owl.png /assets/images/lightning-bolt-left.png /assets/images/lightning-bolt-right.png /assets/sounds/zap.wav /assets/sounds/hooting.mp3 true>");
+        monsterShooterZaraSubpage.contents.add("<monster-shooter condition=\"variable animation-on!=true\" night-owl left /assets/images/wilderness3.jpg /assets/images/witch-back.png /assets/images/cat-missile-left.png /assets/images/cat-missile-right.png /assets/sounds/arrow.mp3 /assets/images/flying-owl.png /assets/images/lightning-bolt-left.png /assets/images/lightning-bolt-right.png /assets/sounds/zap.wav /assets/sounds/hooting.mp3 true difficulty>");
         nightOwlMinigamePage.subpages.put("Monster Shooter Zara", monsterShooterZaraSubpage);
         
         Story moveLeftSubpage = new Story();
