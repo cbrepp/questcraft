@@ -1825,18 +1825,24 @@ public class JavaFXApplication extends ApplicationController {
                                 // Adjust the color of each sprite
                                 imageView.setEffect(colorAdjust);
                                 potentialCollisionImageView.setEffect(colorAdjust);
-                                // Glow the sprite if needed
-                                sprite.onCollision(potentialCollisionSprite);
-                                this.glowSprite(sprite, imageView, colorAdjust);
+                                // Raise the sprite event for a collision on both sprites
+                                sprite.onCollision(potentialCollisionSprite);                                
                                 potentialCollisionSprite.onCollision(sprite);
-                                this.glowSprite(potentialCollisionSprite, potentialCollisionImageView, colorAdjust);
                             }
                         }
                     }
                 }
             }
         }
-        
+
+        // Check for collisions
+        for (SpriteModel sprite : spriteImageViewMap.keySet()) {
+            if (sprite.glowColor == null) {
+                continue;
+            }
+            ImageView imageView = spriteImageViewMap.get(sprite);
+            this.glowSprite(sprite, imageView, colorAdjust);
+        }        
         // TODO - Handle edge of animation background boundaries
         // This is disabled for now because preserving scaling and preserving the image's ratio causes the clipped image to grow
         /*

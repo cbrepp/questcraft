@@ -31,7 +31,7 @@ public class SpriteModel extends BaseModel {
         this.isEnabled = isEnabled;
     }
     
-    public SpriteModel(ApplicationController controller, String name, String imageFile, Double imageScale, Integer x, Integer y, List<String> potentialCollisionNames, Double viewPortBuffer) {
+    public SpriteModel(ApplicationController controller, String name, String imageFile, Double imageScale, Integer x, Integer y, List<String> potentialCollisionNames, Double viewPortBuffer, Color glowColor) {
         this.collisionSprites = new ArrayList();
         this.imageFile = imageFile;
         this.imageScale = imageScale;
@@ -40,6 +40,7 @@ public class SpriteModel extends BaseModel {
         this.y = y;
         this.potentialCollisionNames = potentialCollisionNames;
         this.viewPortBuffer = viewPortBuffer;
+        this.glowColor = glowColor;
     }
     
     public void onCollision(SpriteModel collidingSprite) {}
