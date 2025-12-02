@@ -97,19 +97,19 @@ public class Application extends app.ApplicationView {
 
         app.Color titleColor = new app.Color(74, 74, 74);   // Dark gray
         app.Color infoTextColor = new Color(139, 0, 139); // Dark magenta
-        appController.displayFloatingText(this.name, this.flavorText, 14, 40, 15, 90, infoTextColor, 12, FontStyle.ITALIC, "Minecraft");
-        appController.displayFloatingText(this.name, "- JAVA  EDITION -", 11, 42, 13, 88, titleColor, 32, FontStyle.BOLD, "Minecraft");
-        appController.displayFloatingText(this.name, "QUESTCRAFT", 7, 32, 11, 98, titleColor, 64, FontStyle.BOLD, "Minecraft");
+        appController.displayFloatingText(this.name, null, this.flavorText, 14, 40, 15, 90, infoTextColor, 12, FontStyle.ITALIC, "Minecraft");
+        appController.displayFloatingText(this.name, null, "- JAVA  EDITION -", 11, 42, 13, 88, titleColor, 32, FontStyle.BOLD, "Minecraft");
+        appController.displayFloatingText(this.name, null, "QUESTCRAFT", 7, 32, 11, 98, titleColor, 64, FontStyle.BOLD, "Minecraft");
 
         if (bookFile != null) {
             // Display "Now Playing" info
-            appController.displayFloatingText(this.name, this.bookFile.updateDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.getDefault())), 35, 42, 37, 88, infoTextColor, 18, null, "Minecraft");
-            appController.displayFloatingText(this.name, "by " + this.bookFile.author, 33, 42, 35, 88, infoTextColor, 18, null, "Minecraft");
-            appController.displayFloatingText(this.name, this.bookFile.title, 31, 42, 33, 88, infoTextColor, 18, null, "Minecraft");
-            appController.displayFloatingText(this.name, "Now Playing...", 28, 42, 30, 88, infoTextColor, 18, FontStyle.BOLD, "Minecraft");
+            appController.displayFloatingText(this.name, null, this.bookFile.updateDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.getDefault())), 35, 42, 37, 88, infoTextColor, 18, null, "Minecraft");
+            appController.displayFloatingText(this.name, null, "by " + this.bookFile.author, 33, 42, 35, 88, infoTextColor, 18, null, "Minecraft");
+            appController.displayFloatingText(this.name, null, this.bookFile.title, 31, 42, 33, 88, infoTextColor, 18, null, "Minecraft");
+            appController.displayFloatingText(this.name, null, "Now Playing...", 28, 42, 30, 88, infoTextColor, 18, FontStyle.BOLD, "Minecraft");
         }
         
-        appController.displayFloatingText(this.name, "Coming soon... JavaFX support!", 41, 102, 42, 128, null, 12, FontStyle.BOLD, "Minecraft");
+        appController.displayFloatingText(this.name, null, "Coming soon... JavaFX support!", 41, 102, 42, 128, null, 12, FontStyle.BOLD, "Minecraft");
     }
     
     public Book deserializeBook(String fileName) {
@@ -1066,10 +1066,10 @@ public class Application extends app.ApplicationView {
         nightOwlMinigamePage.story.contents.add("<br>");
         nightOwlMinigamePage.story.contents.add("<subpage-display condition=\"variable minigame-display=true\" PauseUnpause><get-validated-input condition=\"variable minigame-display!=true\" action *Continue>");
         nightOwlMinigamePage.story.contents.add("</color>");
-        nightOwlMinigamePage.story.contents.add("<button-row>");
-        nightOwlMinigamePage.story.contents.add("<get-validated-input align=right *navigation-prompt &left; Move Left+&up; Launch+&right; Move Right>");
         nightOwlMinigamePage.story.contents.add("<second-page>");
         nightOwlMinigamePage.story.contents.add("<subpage-display condition=\"variable minigame-display=true\" Monster Shooter>");
+        nightOwlMinigamePage.story.contents.add("<button-row>");
+        nightOwlMinigamePage.story.contents.add("<get-validated-input align=right *navigation-prompt &left; Move Left+&up; Launch+&right; Move Right>");
         myleesElevator.pages.put("Night Owl Minigame", nightOwlMinigamePage);
         
         Story monsterShooterSubpage = new Story();

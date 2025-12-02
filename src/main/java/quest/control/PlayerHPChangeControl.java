@@ -21,7 +21,7 @@ public class PlayerHPChangeControl extends QuestControl {
         int amount = Integer.parseInt(getTagToken(tag, 1, false));
         Boolean refreshPage = Boolean.valueOf(getTagToken(tag, 2, false));
         String damageSource = getTagToken(tag, 3, true);
-        this.quest.setPlayerHP(amount, refreshPage, damageSource);
+        this.quest.setPlayerHP(amount, refreshPage, damageSource, true);
         if (refreshPage) {
             this.quest.display();
         }

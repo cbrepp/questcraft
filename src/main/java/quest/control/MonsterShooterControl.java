@@ -29,6 +29,9 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
     public static String DIFFICULTY_NORMAL = "normal";
     public static String DIFFICULTY_HARD = "hard";
     public static String DIFFICULTY_MAGICAL = "magical";
+    public static String LABEL_MONSTER_HP = "monster hp";
+    public static String LABEL_PLAYER_HP = "player hp";
+    public static String LABEL_PLAYER_MP = "player mp";
     public static String MONSTER_MISSILE_CHUNGUS_NAME = "chungus monster missile";
     public static String MONSTER_MISSILE_MINI_NAME = "mini monster missile";
     public static String MONSTER_MISSILE_NAME = "monster missile";
@@ -374,11 +377,36 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
                 this.playerMissileSpawnTimer = PLAYER_MISSILE_SPAWN_DELAY;
             }
 
-            // TODO - Handle collisions with the player and monster
+            // Handle collisions with the player
             if (!this.player.collisionSprites.isEmpty()) {
+                for (SpriteModel collidingSprite : this.player.collisionSprites) {
+                    if (collidingSprite.name.equals(MONSTER_MISSILE_CHUNGUS_NAME)) {
+                        this.quest.setPlayerHP(-3, false, "Night Owl", false);
+                    } else if (collidingSprite.name.equals(MONSTER_MISSILE_NAME)) {
+                        this.quest.setPlayerHP(-2, false, "Night Owl", false);
+                    } else if (collidingSprite.name.equals(MONSTER_MISSILE_MINI_NAME)) {
+                        this.quest.setPlayerHP(-1, false, "Night Owl", false);
+                    }
+                    this.quest.appController.updateFloatingText(Questcraft.QUEST, LABEL_PLAYER_HP, "HP: " + String.valueOf(this.quest.getPlayerHP()));
+                    if (this.quest.getPlayerHP() <= 0) {
+                        this.quest.variables.put("animation-paused", "true");
+                    }
+                }
                 this.player.collisionSprites.clear();
+                this.player.glowColor = null;
             }
             if (!this.monster.collisionSprites.isEmpty()) {
+                for (SpriteModel collidingSprite : this.monster.collisionSprites) {
+                    if (collidingSprite.name.equals(PLAYER_MISSILE_CHUNGUS_NAME)) {
+                        this.monsterHP -= 3;
+                    } else if (collidingSprite.name.equals(PLAYER_MISSILE_MINI_NAME)) {
+                        this.monsterHP -= 1;
+                    }
+                    this.quest.appController.updateFloatingText(Questcraft.QUEST, LABEL_PLAYER_MP, "BOSS HP: " + String.valueOf(this.monsterHP));
+                    if (this.monsterHP <= 0) {
+                        this.quest.variables.put("animation-paused", "true");
+                    }
+                }
                 this.monster.collisionSprites.clear();
             }
         }
@@ -406,6 +434,7 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
     
     /*
         Game variables:
+        animation-complete - "true" when the animation has reached its conclusion
         animation-on - "true" when the animation is in progress
         animation-started - "true" when the animation has begun
         animation-left - "true" moves the player to the left
@@ -506,6 +535,7 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
         int monsterCenterX = Math.floorDiv(monsterDimensions.x, 2);
         int monsterPositionX = centerX - monsterCenterX;
         this.monster = new SpriteModel(this.quest.appController, MONSTER_NAME, monsterImageFileName, 0.2, monsterPositionX, 1, null, 0.0, null);
+        this.monsterHP = 100;
         this.monsterDirection = 1;
         this.monsterDestinationX = this.monster.x + (int) (Math.random() * (backgroundDimensions.x - this.monster.x));
         this.monsterHalfwayPoint = (Math.floorDiv(Math.abs(monsterPositionX - this.monsterDestinationX), 2) * this.monsterDirection) + monsterPositionX;
@@ -532,16 +562,23 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
         this.playerMissilesAttached = new ArrayList();
         this.playerMissilesLaunched = new ArrayList();
         
-        // TODO - Add floating text underneath the background image for the player's HP
-        
         // Initialize the animation variables
+        this.quest.variables.put("animation-complete", "false");
         this.quest.variables.put("animation-left", "false");
         this.quest.variables.put("animation-on", "true");
         this.quest.variables.put("animation-right", "false");
         this.quest.variables.put("animation-started", "true");
         this.quest.variables.put("animation-up", "false");
         
-        this.quest.appController.addAnimation(Questcraft.QUEST, name, row, column, backgroundImageFileName, images, ANIMATION_DELAY, this);
+        // Add floating text above the animation to indicate the player and monster's stats
+        this.quest.appController.displayFloatingText(Questcraft.QUEST, LABEL_PLAYER_HP, "HP: " + String.valueOf(this.quest.getPlayerHP()), row, column, null, null, null, 12, null, "RobotoMono-Medium");
+        this.quest.appController.displayFloatingText(Questcraft.QUEST, LABEL_PLAYER_MP, "MP: " + String.valueOf(this.quest.getPlayerMP()), row, column + 17, null, null, null, 12, null, "RobotoMono-Medium");
+        this.quest.appController.displayFloatingText(Questcraft.QUEST, LABEL_PLAYER_MP, "BOSS HP: " + String.valueOf(this.monsterHP), row, column + 34, null, null, null, 12, null, "RobotoMono-Medium");
+
+        // Initialize the animation
+        this.quest.appController.addAnimation(Questcraft.QUEST, name, row + 3, column, backgroundImageFileName, images, ANIMATION_DELAY, this);
+        
+        // Display the buttons used to control the animation
         
         return "";
     }

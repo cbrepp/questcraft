@@ -360,19 +360,11 @@ public class JavaFXApplication extends ApplicationController {
         }
         
         Pane content = this.tabContentMap.get(viewName);
-        //HTMLEditor editor = this.tabEditorMap.get(viewName);
         
         if (content != null) {
             //content.getChildren().removeIf(node -> node != editor);
             content.getChildren().clear();
         }
-        
-        // Clear the book text if this view uses a text area
-        /*
-        if (editor != null) {
-            this.tabEditorTextMap.put(viewName, this.emptyBook);
-        }
-        */
     }
     
     @Override
@@ -631,7 +623,7 @@ public class JavaFXApplication extends ApplicationController {
     public void displayText(String viewName, String text, Integer row, Integer column, app.Color color, int style) {
         System.out.println("JavaFXApplication: displayText: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", color=" + color + ", style=" + style);
         
-        this.displayFloatingText(viewName, text, row, column, null, null, color, 12, style, "Arial Unicode MS"); // Previously, "Consolas"
+        this.displayFloatingText(viewName, null, text, row, column, null, null, color, 12, style, "RobotoMono-Medium"); // Previously, "Consolas"
         
         /*
         
@@ -1108,8 +1100,15 @@ public class JavaFXApplication extends ApplicationController {
     }
     
     @Override
-    public void displayFloatingText(String viewName, String text, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, app.Color fontColor, Integer fontSize, Integer fontStyle, String fontName) {
-        System.out.println("JavaFXApplication: displayFloatingText: viewName=" + viewName + ", text=" + text + ", startRow=" + startRow + ", startColumn=" + startColumn + ", endRow=" + endRow + ", endColumn=" + endColumn + ", fontColor=" + fontColor + ", fontSize=" + fontSize + ", fontName=" + fontName);
+    public void updateFloatingText(String viewName, String name, String text) {
+        System.out.println("JavaFXApplication: updateFloatingText: viewName=" + viewName + ", name=" + name + ", text=" + text);
+        Label label = (Label) this.namedControls.get(viewName).get(name);
+        label.setText(text);
+    }
+
+    @Override
+    public void displayFloatingText(String viewName, String name, String text, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, app.Color fontColor, Integer fontSize, Integer fontStyle, String fontName) {
+        System.out.println("JavaFXApplication: displayFloatingText: viewName=" + viewName + ", name=" + name + ", text=" + text + ", startRow=" + startRow + ", startColumn=" + startColumn + ", endRow=" + endRow + ", endColumn=" + endColumn + ", fontColor=" + fontColor + ", fontSize=" + fontSize + ", fontName=" + fontName);
         
         Pane content = this.tabContentMap.get(viewName);
 
@@ -1195,6 +1194,10 @@ public class JavaFXApplication extends ApplicationController {
         label.setLayoutY(startCoordinates.y);
         label.setPrefSize(endCoordinates.x - startCoordinates.x - 1, endCoordinates.y - startCoordinates.y - 1);
         content.getChildren().add(label);
+        
+        if (name != null) {
+            this.namedControls.get(viewName).put(name, label);
+        }
     }
     
     @Override

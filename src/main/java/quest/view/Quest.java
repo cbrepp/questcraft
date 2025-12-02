@@ -720,7 +720,7 @@ public class Quest extends app.ApplicationView {
     }
     
     // TODO - Make this configurable as a Story element on any level of the Book
-    public void setPlayerHP(int delta, Boolean refreshPage, String lastEnemyThatAttacked) {
+    public void setPlayerHP(int delta, Boolean refreshPage, String lastEnemyThatAttacked, Boolean displayOverlay) {
         System.out.println("Quest: setPlayerHP: delta=" + delta + ", refreshPage=" + refreshPage);
         
         this.playerHP = this.playerHP + delta;
@@ -746,12 +746,16 @@ public class Quest extends app.ApplicationView {
             } else {
                 this.appController.playSound("/assets/sounds/hit-harder.mp3", false);
             }
-            this.appController.displayOverlay(this.name, overlayName, new Color(255, 0, 0), null, null, null, null, null);
-            appController.setTimer(overlayName, 0.5, this);
+            if (displayOverlay) {
+                this.appController.displayOverlay(this.name, overlayName, new Color(255, 0, 0), null, null, null, null, null);
+                appController.setTimer(overlayName, 0.5, this);
+            }
         } else if (delta > 0) {
             //this.appController.playSound("/assets/sounds/TODO", false);
-            this.appController.displayOverlay(this.name, overlayName, new Color(0, 255, 0), null, null, null, null, null);
-            appController.setTimer(overlayName, 0.5, this);
+            if (displayOverlay) {
+                this.appController.displayOverlay(this.name, overlayName, new Color(0, 255, 0), null, null, null, null, null);
+                appController.setTimer(overlayName, 0.5, this);
+            }
         }        
     }
     

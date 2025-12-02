@@ -998,10 +998,15 @@ public class SWTApplication extends ApplicationController {
             }
         });
     }
+    
+    @Override
+    public void updateFloatingText(String viewName, String name, String text) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
    
     @Override
-    public void displayFloatingText(String viewName, String text, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, app.Color fontColor, Integer fontSize, Integer fontStyle, String fontName) {
-        System.out.println("SWTApplication: displayFloatingText: viewName=" + viewName + ", fileName=" + text + ", startRow=" + startRow + ", startColumn=" + startColumn + ", endRow=" + endRow + ", endColumn=" + endColumn + ", fontColor=" + fontColor + ", fontSize=" + fontSize + ", fontName=" + fontName);
+    public void displayFloatingText(String viewName, String name, String text, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, app.Color fontColor, Integer fontSize, Integer fontStyle, String fontName) {
+        System.out.println("SWTApplication: displayFloatingText: viewName=" + viewName + ", name=" + name + ", fileName=" + text + ", startRow=" + startRow + ", startColumn=" + startColumn + ", endRow=" + endRow + ", endColumn=" + endColumn + ", fontColor=" + fontColor + ", fontSize=" + fontSize + ", fontName=" + fontName);
         
         StyledText textArea = this.tabStyledTextMap.get(viewName);
         Composite composite = this.tabCompositeMap.get(viewName);

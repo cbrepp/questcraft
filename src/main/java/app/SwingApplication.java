@@ -147,7 +147,12 @@ public class SwingApplication extends ApplicationController {
     }
     
     @Override
-    public void displayFloatingText(String viewName, String text, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, app.Color fontColor, Integer fontSize, Integer fontStyle, String fontName) {
+    public void updateFloatingText(String viewName, String name, String text) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public void displayFloatingText(String viewName, String name, String text, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, app.Color fontColor, Integer fontSize, Integer fontStyle, String fontName) {
         throw new UnsupportedOperationException("Not supported.");
     }
     

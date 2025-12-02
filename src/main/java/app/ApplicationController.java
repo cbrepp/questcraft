@@ -65,7 +65,7 @@ public abstract class ApplicationController {
     public abstract void displayButton(String viewName, String name, String text, Integer row, Integer column, Integer endRow, Integer endColumn, Boolean isMonospace, String fontName, Boolean glow, EventListener listener);
     public abstract void displayOpenFileButton(String viewName, String name, String text, Integer row, Integer column, Integer endRow, Integer endColumn, Boolean isMonospace, String fontName, Boolean glow, EventListener listener);
     public abstract int displayImage(String viewName, String fileName, int row, int column);
-    public abstract void displayFloatingText(String viewName, String text, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, app.Color fontColor, Integer fontSize, Integer fontStyle, String fontName);
+    public abstract void displayFloatingText(String viewName, String name, String text, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, app.Color fontColor, Integer fontSize, Integer fontStyle, String fontName);
     public abstract void displayInputField(String viewName, String name, String label, int length, int row, int column, String initValue, Boolean addButton, Boolean isMonospace, Boolean isUpperCase, Boolean isMultiUse, EventListener listener);
     public abstract void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, int alignment, EventListener listener, Boolean allowRepeatClicks);
     public abstract int displayGif(String viewName, String fileName, int row, int column);
@@ -83,6 +83,7 @@ public abstract class ApplicationController {
     public abstract void playSound(String fileName, Boolean isLoop);
     public abstract void stopSound(String fileName, Boolean removeAudioPlayer);
     public abstract void stopAllSounds();
+    public abstract void updateFloatingText(String viewName, String name, String text);
     
     public static void main(String[] args) {
         System.out.println("ApplicationController: main: args=" + Arrays.toString(args));
