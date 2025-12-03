@@ -1064,12 +1064,13 @@ public class Application extends app.ApplicationView {
         nightOwlMinigamePage.story.contents.add("<br>");
         nightOwlMinigamePage.story.contents.add("<i>INSTRUCTIONS: Use the buttons or arrow keys to move left or right and launch an upwards attack.</i>");
         nightOwlMinigamePage.story.contents.add("<br>");
-        nightOwlMinigamePage.story.contents.add("<subpage-display condition=\"variable minigame-display=true\" PauseUnpause><get-validated-input condition=\"variable minigame-display!=true\" action *Continue>");
+        //nightOwlMinigamePage.story.contents.add("<subpage-display condition=\"variable minigame-display=true\" PauseUnpause><get-validated-input condition=\"variable minigame-display!=true\" action *Continue>");
+        nightOwlMinigamePage.story.contents.add("<get-validated-input condition=\"variable minigame-display!=true\" action *Continue><get-validated-input condition=\"variable animation-complete=true\" action *Continue>");
         nightOwlMinigamePage.story.contents.add("</color>");
         nightOwlMinigamePage.story.contents.add("<second-page>");
         nightOwlMinigamePage.story.contents.add("<subpage-display condition=\"variable minigame-display=true\" Monster Shooter>");
-        nightOwlMinigamePage.story.contents.add("<button-row>");
-        nightOwlMinigamePage.story.contents.add("<get-validated-input align=right *navigation-prompt &left; Move Left+&up; Launch+&right; Move Right>");
+        //nightOwlMinigamePage.story.contents.add("<button-row>");
+        //nightOwlMinigamePage.story.contents.add("<get-validated-input align=right *navigation-prompt &left; Move Left+&up; Launch+&right; Move Right>");
         myleesElevator.pages.put("Night Owl Minigame", nightOwlMinigamePage);
         
         Story monsterShooterSubpage = new Story();
@@ -1086,6 +1087,7 @@ public class Application extends app.ApplicationView {
         monsterShooterZaraSubpage.contents.add("<monster-shooter condition=\"variable animation-on!=true\" night-owl left /assets/images/wilderness3.jpg /assets/images/witch-back.png /assets/images/cat-missile-left.png /assets/images/cat-missile-right.png /assets/sounds/arrow.mp3 /assets/images/flying-owl.png /assets/images/lightning-bolt-left.png /assets/images/lightning-bolt-right.png /assets/sounds/zap.wav /assets/sounds/hooting.mp3 true difficulty>");
         nightOwlMinigamePage.subpages.put("Monster Shooter Zara", monsterShooterZaraSubpage);
         
+        /*
         Story moveLeftSubpage = new Story();
         moveLeftSubpage.contents.add("<variable-set condition=\"variable animation-on=true\" animation-left true>");
         nightOwlMinigamePage.subpages.put("INPUT navigation-prompt= Move Left", moveLeftSubpage);
@@ -1097,7 +1099,9 @@ public class Application extends app.ApplicationView {
         Story launchSubpage = new Story();
         launchSubpage.contents.add("<variable-set condition=\"variable animation-on=true\" animation-up true>");
         nightOwlMinigamePage.subpages.put("INPUT navigation-prompt= Launch", launchSubpage);
+        */
         
+        /*
         Story pauseUnpauseSubpage = new Story();
         pauseUnpauseSubpage.contents.add("<get-validated-input condition=\"variable animation-paused!=true\" action *Pause><get-validated-input condition=\"variable animation-paused=true\" action *Unpause>");
         nightOwlMinigamePage.subpages.put("PauseUnpause", pauseUnpauseSubpage);
@@ -1113,13 +1117,23 @@ public class Application extends app.ApplicationView {
         unpauseSubpage.contents.add("<play-sound /assets/sounds/pause.mp3 false>");
         unpauseSubpage.contents.add("<page-refresh>");
         nightOwlMinigamePage.subpages.put("INPUT action=Unpause", unpauseSubpage);
+        */
         
         // TODO - If animation hasn't started (night-owl-hp and player's hp aren't zero) then start animation
         // TODO - Show gif of darkness and eyes, then elevator over black backdrop, then Mylee explaing that Big Chung showed up during the fight and she distracted him by making fun of his weight and challenging him to go on a light diet, only for him to take her literally and eat all of the light.
         Story continueSubpage = new Story();
-        continueSubpage.contents.add("<variable-set condition=\"variable minigame-display!=true\" minigame-display true>");
-        continueSubpage.contents.add("<page-refresh>");
+        continueSubpage.contents.add("<subpage-display condition=\"variable animation-complete!=true\" Begin Battle>");
+        continueSubpage.contents.add("<subpage-display condition=\"variable animation-complete=true\" Conclude Battle>");
         nightOwlMinigamePage.subpages.put("INPUT action=Continue", continueSubpage);
+
+        Story beginBattleSubpage = new Story();
+        beginBattleSubpage.contents.add("<variable-set condition=\"variable minigame-display!=true\" minigame-display true>");
+        beginBattleSubpage.contents.add("<page-refresh>");
+        nightOwlMinigamePage.subpages.put("Begin Battle", beginBattleSubpage);
+        
+        Story concludeBattleSubpage = new Story();
+        concludeBattleSubpage.contents.add("<goto-page condition=\"hp!=0\" The Eyes Of Chung>");
+        nightOwlMinigamePage.subpages.put("Conclude Battle", concludeBattleSubpage);
         
         Story leaveElevatorSubpage = new Story();
         leaveElevatorSubpage.contents.add("<move-back>");

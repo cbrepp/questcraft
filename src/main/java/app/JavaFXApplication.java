@@ -65,6 +65,7 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.Effect;
 import javafx.scene.image.PixelReader;
 import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
@@ -1268,58 +1269,23 @@ public class JavaFXApplication extends ApplicationController {
     public void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, int alignment, EventListener listener, Boolean allowRepeatClicks) {
         System.out.println("JavaFXApplication: displayValidatedInputField: viewName=" + viewName + ", name=" + name + ", row=" + row + ", startColumn=" + startColumn + ", endColumn=" + endColumn + ", alignment=" + alignment + ", listener=" + listener + ", allowRepeatClicks=" + allowRepeatClicks);
         
-        Pane content = this.tabContentMap.get(viewName);
+        // TODO - param "alignment" is not supported
+        // TODO - If using a custom font, calculate its dimensions
 
-        // Display a row of buttons with the possible input values
-        int buttonHeight = 2 * this.buttonFontHeight;   // Calculate double height of text
+        Pane content = this.tabContentMap.get(viewName);
         Coordinates coordinates = this.convertToCoordinates(row, startColumn);
         Coordinates terminalCoordinates = this.convertToCoordinates(row, endColumn);
-        int buttonX;
-        int buttonY;
-        switch (alignment) {
-            case Alignment.LEFT -> {
-                System.out.println("SWTApplication: displayValidatedInputField: Left alignment");
-            }
-            case Alignment.CENTER -> {
-                System.out.println("SWTApplication: displayValidatedInputField: Center alignment");
-                // Calculate the full width of the button row
-                int rowWidth = 0;
-                for (String value : values) {
-                    value = value.toUpperCase().replaceFirst("&UP;", "K");
-                    value = value.toUpperCase().replaceFirst("&DOWN;", "K");
-                    value = value.toUpperCase().replaceFirst("&LEFT;", "K");
-                    value = value.toUpperCase().replaceFirst("&RIGHT;", "K");
-                    if (value.charAt(0) == '*') {
-                        value = value.substring(1, value.length());
-                    }
-                    int tempButtonWidth = (value.length() * this.buttonFontWidth) + (2 * this.buttonFontWidth);    // Calculate width of text plus buffer of two imaginary characters
-                    rowWidth += tempButtonWidth + (1 * this.buttonFontWidth);   // Add a spacer between this button and the next
-                }
-                coordinates.x = (int) (terminalCoordinates.x - Math.floor(rowWidth / 2));
-            }
-            case Alignment.RIGHT -> {
-                System.out.println("SWTApplication: displayValidatedInputField: Right alignment");
-                // Calculate the full width of the button row
-                int rowWidth = 0;
-                for (String value : values) {
-                    value = value.toUpperCase().replaceFirst("&UP;", "K");
-                    value = value.toUpperCase().replaceFirst("&DOWN;", "K");
-                    value = value.toUpperCase().replaceFirst("&LEFT;", "K");
-                    value = value.toUpperCase().replaceFirst("&RIGHT;", "K");
-                    if (value.charAt(0) == '*') {
-                        value = value.substring(1, value.length());
-                    }
-                    int tempButtonWidth = (value.length() * this.buttonFontWidth) + (2 * this.buttonFontWidth);    // Calculate width of text plus buffer of two imaginary characters
-                    rowWidth += tempButtonWidth + (1 * this.buttonFontWidth);   // Add a spacer between this button and the next
-                }
-                coordinates.x = terminalCoordinates.x - rowWidth;
-            }
-            default -> {
-                System.err.println("SWTApplication: displayValidatedInputField: Unsupported alignment!");
-            }
-        }
-        buttonX = coordinates.x + 1;
-        buttonY = coordinates.y + 1;
+        FlowPane flowPane = new FlowPane();
+        flowPane.setHgap(10);
+        flowPane.setVgap(10);
+        flowPane.setPadding(new Insets(10));
+        content.getChildren().add(flowPane);
+        flowPane.setLayoutX(coordinates.x);
+        flowPane.setLayoutY(coordinates.y);
+        flowPane.setMaxSize(terminalCoordinates.x - coordinates.x, terminalCoordinates.y - coordinates.y);
+        
+        // Display a row of buttons with the possible input values
+        int buttonHeight = 2 * this.buttonFontHeight;   // Calculate double height of text
         
         Boolean disable;
         for (String value : values) {
@@ -1359,6 +1325,8 @@ public class JavaFXApplication extends ApplicationController {
             if (disable) {
                 button.setDisable(true);
             }
+            int buttonWidth = (value.length() * this.buttonFontWidth) + (1 * this.buttonFontWidth); // Add one character for padding
+            button.setPrefSize(buttonWidth, buttonHeight);
             button.setFont(this.buttonFont);
             button.setOnAction(e -> {
                 if (!allowRepeatClicks) {
@@ -1393,15 +1361,6 @@ public class JavaFXApplication extends ApplicationController {
                 });
             }
             */
-            int buttonWidth = (finalValue.length() * this.buttonFontWidth) + (2 * this.buttonFontWidth);    // Calculate width of text plus buffer of two imaginary characters
-            if ((buttonX + buttonWidth) > terminalCoordinates.x) {
-                // Wrap the button onto a new line
-                buttonX = coordinates.x + 1;
-                buttonY = (int) (buttonY + buttonHeight + ((1 * this.buttonFontWidth)));
-            }
-            //button.setBounds(buttonX, buttonY, buttonWidth, buttonHeight);
-            //button.moveAbove(textArea);
-            buttonX = buttonX + buttonWidth + (1 * this.buttonFontWidth);   // Add a spacer between this button and the next
             
             // TODO - newButton should be used to prevent code duplication
             if (glow) {
@@ -1412,9 +1371,7 @@ public class JavaFXApplication extends ApplicationController {
                 button.setOnMouseExited(e -> button.setStyle(defaultStyle));
             }
             
-            button.setLayoutX(buttonX);
-            button.setLayoutY(buttonY);
-            content.getChildren().add(button);
+            flowPane.getChildren().add(button);
         }
     }
     

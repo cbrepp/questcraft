@@ -3,9 +3,11 @@ package quest.control;
 
 import app.AnimationView;
 import app.Color;
+import app.EventListener;
 import app.model.Coordinates;
 import app.model.SpriteModel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
@@ -17,7 +19,7 @@ import quest.view.Questcraft;
  *
  * @author repp
  */
-public class MonsterShooterControl extends QuestControl implements AnimationView {
+public class MonsterShooterControl extends QuestControl implements AnimationView, EventListener {
     
     public static String NAME = "monster-shooter";
     
@@ -66,6 +68,8 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
     public Boolean monsterMissilesSpawned;
     public String monsterMissileSoundFileName;
     public String monsterSoundFileName;
+    public int monsterSpeed;
+    public int monsterSpeedDirection;
     public SpriteModel player;
     public String playerImageFileName;
     public Double playerMissileSpawnTimer;
@@ -80,6 +84,8 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
         this.collisionTimerMap = new HashMap();
         this.playerMissileSpawnTimer = PLAYER_MISSILE_SPAWN_DELAY;
         this.playerMissileChungusSpawnTimer = PLAYER_MISSILE_CHUNGUS_SPAWN_DELAY;
+        this.monsterSpeed = 0;
+        this.monsterSpeedDirection = 1;
     }
     
     @Override
@@ -203,9 +209,18 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
                 }
             }
 
-            // Move the monster
-            int monsterSpeed = 3;
-            this.monster.x += this.monsterDirection * monsterSpeed;
+            // Move the monster at an oscillating speed to simulate flapping wings
+            this.monsterSpeed += (1 * this.monsterSpeedDirection);
+            if (this.monsterSpeed > 10) {
+                // Slow down the monster's speed
+                this.monsterSpeed = 10;
+                this.monsterSpeedDirection = -1;
+            } else if (this.monsterSpeed < 1) {
+                // Speed up the monster's speed
+                this.monsterSpeed = 1;
+                this.monsterSpeedDirection = 1;
+            }
+            this.monster.x += this.monsterDirection * this.monsterSpeed;
 
             // Move each attached monster missile
             iterator = this.monsterMissilesAttached.listIterator();
@@ -388,9 +403,6 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
                         this.quest.setPlayerHP(-1, false, "Night Owl", false);
                     }
                     this.quest.appController.updateFloatingText(Questcraft.QUEST, LABEL_PLAYER_HP, "HP: " + String.valueOf(this.quest.getPlayerHP()));
-                    if (this.quest.getPlayerHP() <= 0) {
-                        this.quest.variables.put("animation-paused", "true");
-                    }
                 }
                 this.player.collisionSprites.clear();
                 this.player.glowColor = null;
@@ -403,12 +415,18 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
                         this.monsterHP -= 1;
                     }
                     this.quest.appController.updateFloatingText(Questcraft.QUEST, LABEL_PLAYER_MP, "BOSS HP: " + String.valueOf(this.monsterHP));
-                    if (this.monsterHP <= 0) {
-                        this.quest.variables.put("animation-paused", "true");
-                    }
                 }
                 this.monster.collisionSprites.clear();
             }
+        }
+        
+        if ((this.quest.getPlayerHP() <= 0) || (this.monsterHP <= 0)) {
+            this.quest.variables.put("animation-paused", "true");
+            this.quest.variables.put("animation-complete", "true");
+            // TODO - Disable the animation control buttons
+            // TODO - When the page refreshes, need a way to continue to display the final frame
+            this.quest.display(); // Refresh the pages
+            return null; // Returning a null sprite collection ends the animation
         }
         
         // Return all sprites
@@ -430,6 +448,29 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
         // Return null to stop the animation
         //System.out.println("MonsterShooterControl: onAnimate: Returning " + sprites.size() + " sprites");
         return sprites;
+    }
+    
+    @Override
+    public void onEvent(String eventName, Object eventValue) {
+        System.out.println("MonsterShooterControl: onEvent: eventName=" + eventName + ", eventValue=" + eventValue);
+        
+        // <get-validated-input condition=\"variable animation-paused!=true\" action *Pause><get-validated-input condition=\"variable animation-paused=true\" action *Unpause>
+        if (eventValue.equals(" Move Left")) {
+            this.quest.variables.put("animation-left", "true");
+        } else if (eventValue.equals(" Move Right")) {
+            this.quest.variables.put("animation-right", "true");
+        } else if (eventValue.equals(" Launch")) {
+            this.quest.variables.put("animation-up", "true");
+        } else if (eventValue.equals("P")) {
+            if (this.quest.variables.get("animation-paused").equals("true")) {
+                this.quest.variables.put("animation-paused", "false");
+            } else {
+                this.quest.variables.put("animation-paused", "true");
+            }
+            this.quest.appController.playSound("/assets/sounds/pause.mp3", false);
+        } else {
+            System.out.println("MonsterShooterControl: onEvent: Unsupported event value!");
+        }
     }
     
     /*
@@ -579,6 +620,15 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
         this.quest.appController.addAnimation(Questcraft.QUEST, name, row + 3, column, backgroundImageFileName, images, ANIMATION_DELAY, this);
         
         // Display the buttons used to control the animation
+        List<String> valueList = new ArrayList<>(Arrays.asList("&left; Move Left+&right; Move Right+&up; Launch+P".split("\\+")));
+        int buttonRow = this.quest.buttonRow;
+        int endColumn;
+        if (this.quest.currentDisplayPage == Quest.RIGHT_PAGE) {
+            endColumn = this.quest.rightPageEndingColumn;
+        } else {
+            endColumn = this.quest.leftPageEndingColumn;
+        }
+        this.quest.appController.displayValidatedInputField(this.quest.name, "animation controls", valueList, buttonRow, column, endColumn, 0, this, true);
         
         return "";
     }
