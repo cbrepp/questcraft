@@ -1373,6 +1373,8 @@ public class JavaFXApplication extends ApplicationController {
             
             flowPane.getChildren().add(button);
         }
+        
+        this.namedControls.get(viewName).put(name, flowPane);
     }
     
     //@Override
