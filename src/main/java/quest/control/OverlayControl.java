@@ -53,7 +53,7 @@ public class OverlayControl extends QuestControl {
         }
         */
                 
-        this.quest.appController.displayOverlay(this.quest.name, controlName, color, 0, 0, 0, 0, 0);
+        this.quest.appController.displayOverlay(this.quest.name, controlName, color, null, null, null, null, null);
         return "";
     }
     

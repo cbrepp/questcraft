@@ -48,6 +48,7 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
     public static String PLAYER_NAME = "player";
     
     public String name;
+    public Boolean animationComplete;
     public Double animationCompleteDelay;
     public Map<SpriteModel, Double> collisionTimerMap;
     public int column;
@@ -92,10 +93,15 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
         this.monsterSpeed = 0;
         this.monsterSpeedDirection = 1;
         this.animationCompleteDelay = ANIMATION_COMPLETE_DELAY;
+        this.animationComplete = false;
     }
     
     @Override
     public List<SpriteModel> onAnimate() {
+        if (this.animationComplete) {
+            return null;
+        }
+        
         List<SpriteModel> sprites = new ArrayList();
         
         Coordinates backgroundDimensions = this.dimensionsMap.get(BACKGROUND_NAME);
@@ -217,9 +223,9 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
 
             // Move the monster at an oscillating speed and height to simulate flapping wings
             this.monsterSpeed += (1 * this.monsterSpeedDirection);
-            if (this.monsterSpeed > 10) {
+            if (this.monsterSpeed > 7) {
                 // Slow down the monster's speed
-                this.monsterSpeed = 10;
+                this.monsterSpeed = 7;
                 this.monsterSpeedDirection = -1;
             } else if (this.monsterSpeed < 1) {
                 // Speed up the monster's speed
@@ -468,25 +474,27 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
     public void onEvent(String eventName, Object eventValue) {
         System.out.println("MonsterShooterControl: onEvent: eventName=" + eventName + ", eventValue=" + eventValue);
         
-        // <get-validated-input condition=\"variable animation-paused!=true\" action *Pause><get-validated-input condition=\"variable animation-paused=true\" action *Unpause>
-        if (eventValue.equals(" Move Left")) {
-            this.quest.variables.put("animation-left", "true");
-        } else if (eventValue.equals(" Move Right")) {
-            this.quest.variables.put("animation-right", "true");
-        } else if (eventValue.equals(" Launch")) {
-            this.quest.variables.put("animation-up", "true");
-        } else if (eventValue.equals("P")) {
-            if (this.quest.variables.get("animation-paused").equals("true")) {
-                this.quest.variables.put("animation-paused", "false");
-            } else {
-                this.quest.variables.put("animation-paused", "true");
-            }
-            this.quest.appController.playSound("/assets/sounds/pause.mp3", false);
-        } else if (eventValue.equals("Continue")) {
+        if (eventName.equals(CONTINUE_BUTTON_NAME)) {
+            this.animationComplete = true;
+            this.quest.appController.clearControl(this.quest.name, CONTINUE_BUTTON_NAME);
             this.quest.display(); // Refresh the pages
-            // TODO - Need a way to end the animation other than returning a null object for the sprites
         } else {
-            System.out.println("MonsterShooterControl: onEvent: Unsupported event value!");
+            if (eventValue.equals(" Move Left")) {
+                this.quest.variables.put("animation-left", "true");
+            } else if (eventValue.equals(" Move Right")) {
+                this.quest.variables.put("animation-right", "true");
+            } else if (eventValue.equals(" Launch")) {
+                this.quest.variables.put("animation-up", "true");
+            } else if (eventValue.equals("P")) {
+                if (this.quest.variables.get("animation-paused").equals("true")) {
+                    this.quest.variables.put("animation-paused", "false");
+                } else {
+                    this.quest.variables.put("animation-paused", "true");
+                }
+                this.quest.appController.playSound("/assets/sounds/pause.mp3", false);
+            } else {
+                System.out.println("MonsterShooterControl: onEvent: Unsupported event value!");
+            }
         }
     }
     

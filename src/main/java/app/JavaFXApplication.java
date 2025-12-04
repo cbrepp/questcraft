@@ -331,20 +331,22 @@ public class JavaFXApplication extends ApplicationController {
         
         Pane content = this.tabContentMap.get(viewName);
         
-        Coordinates topLeftCoordinates;
-        Coordinates bottomRightCoordinates;
+        Rectangle overlay;
         if (startRow == null) {
-            topLeftCoordinates = new Coordinates(0, 0);
-            bottomRightCoordinates = new Coordinates((int) content.getWidth(), (int) content.getHeight());
             transparency = 128;
+            overlay = new Rectangle();
+            overlay.widthProperty().bind(content.widthProperty());
+            overlay.heightProperty().bind(content.heightProperty());
         } else {
+            Coordinates topLeftCoordinates;
+            Coordinates bottomRightCoordinates;
             topLeftCoordinates = this.convertToCoordinates(startRow, startColumn);
             bottomRightCoordinates = this.convertToCoordinates(endRow, endColumn);
+            int width = bottomRightCoordinates.x - topLeftCoordinates.x;
+            int height = bottomRightCoordinates.y - topLeftCoordinates.y;
+            overlay = new Rectangle(topLeftCoordinates.x, topLeftCoordinates.y, width, height);
         }
         
-        int width = bottomRightCoordinates.x - topLeftCoordinates.x;
-        int height = bottomRightCoordinates.y - topLeftCoordinates.y;
-        Rectangle overlay = new Rectangle(topLeftCoordinates.x, topLeftCoordinates.y, width, height);
         double opacityPercent = (1.0 - ((double)transparency / 255.0)); // Transparency is 0-255
         System.out.println("JavaFXApplication: displayOverlay: Converted opacity percent to " + opacityPercent);
         overlay.setFill(new Color((color.red + 1) / 255, (color.green + 1) / 255, (color.blue + 1) / 255, opacityPercent));
@@ -1691,6 +1693,16 @@ public class JavaFXApplication extends ApplicationController {
     }
     
     public void animate(String viewName, Coordinates topLeft, PauseTransition pause, AnimationView listener, Coordinates animationDimensions, Pane animationBackground, ImageView backgroundImageView, Map<String, Image> spriteImages) {
+        // Retrieve updated sprites
+        List<SpriteModel> sprites = listener.onAnimate();
+        
+        // Clean up the animation 
+        if (sprites == null) {
+            System.out.println("JavaFXApplication: animate: No more sprite data, done");
+            pause.stop();
+            return;
+        }
+
         // Add animation background to the parent if needed.
         // (Expected for the first display of the animation and any subsequent refresh of the page.)
         if (animationBackground.getParent() == null) {
@@ -1701,17 +1713,7 @@ public class JavaFXApplication extends ApplicationController {
             animationBackground.setLayoutY(topLeft.y + 1);
             Pane content = this.tabContentMap.get(viewName);
             content.getChildren().add(animationBackground);
-        }
-        
-        // Retrieve updated sprites
-        List<SpriteModel> sprites = listener.onAnimate();
-        
-        // Clean up the animation 
-        if (sprites == null) {
-            System.out.println("JavaFXApplication: animate: No more sprite data, done");
-            pause.stop();
-            return;
-        }
+        }        
         
         // Clear the animation background and re-add the sprites
         List<Node> nodesToRemove = new ArrayList<>();
