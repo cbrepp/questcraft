@@ -705,7 +705,7 @@ public class Quest extends app.ApplicationView {
             }
         }
         
-        System.out.println("Quest: getSubpage: Did NOT find the subpage");
+        System.out.println("Quest: getSubpage: Did NOT find the subpage: page=" + this.currentPage + ", scene=" + this.currentScene + ", act=" + this.currentAct);
         
         return null;
     }

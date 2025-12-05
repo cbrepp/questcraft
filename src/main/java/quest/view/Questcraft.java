@@ -7,6 +7,9 @@ import quest.model.Book;
 /**
  * This application is for personal, non-commercial use only.
  * 
+ * To launch from the fat jar: LIBMANAGERS=alsa GDK_BACKEND=x11 java -jar target/questcraft-maven-shaded.jar &
+ * If audio doesn't work in KDE Neon, install package pavucontrol to fix missing system-level audio libraries/utilities.
+ * 
  * The following resources were provided courtesy of the respective authors and are also for personal use only:
  * achievement.wav - "An uplifting and straight forward orchestral jingle achiecement completed sound to be used in fantasy games. Useful for when a character has completed an objective, an achievement or other pleasant events." by LittleRobotSoundFactory (https://freesound.org/people/LittleRobotSoundFactory/sounds/270404/)
  * app.jpg - "Vision, Nature, Future royalty-free stock illustration. Free for use & download." by TheDigitalArtist (https://pixabay.com/illustrations/vision-future-dream-fantasy-book-8386199/)

@@ -1048,6 +1048,7 @@ public class Application extends app.ApplicationView {
         // TODO - Add spell for going straight to this after selecting your player
         // TODO - How to know that the page needs to be refreshed when the player is hit and hp needs to be updated?
         Page nightOwlMinigamePage = new Page();
+        nightOwlMinigamePage.hideNextButton = true;
         nightOwlMinigamePage.story.contents.add("<second-page>");
         nightOwlMinigamePage.story.contents.add("<if condition=\"variable minigame-display!=true\" BOSS: Night Owl>");
         nightOwlMinigamePage.story.contents.add("<if condition=\"variable minigame-display!=true\" LEVEL: 1>");
@@ -1068,6 +1069,7 @@ public class Application extends app.ApplicationView {
         nightOwlMinigamePage.story.contents.add("</color>");
         nightOwlMinigamePage.story.contents.add("<second-page>");
         nightOwlMinigamePage.story.contents.add("<subpage-display condition=\"variable minigame-display=true\" Monster Shooter>");
+        nightOwlMinigamePage.story.contents.add("<subpage-display condition=\"variable animation-complete=true\" Victory>");
         myleesElevator.pages.put("Night Owl Minigame", nightOwlMinigamePage);
         
         Story monsterShooterSubpage = new Story();
@@ -1093,6 +1095,12 @@ public class Application extends app.ApplicationView {
         leaveElevatorSubpage.contents.add("<move-back>");
         mainPage.subpages.put("INPUT action= Leave Elevator", leaveElevatorSubpage);
         
+        Story victorySubpage = new Story();
+        victorySubpage.contents.add("<play-sound condition=\"hp&gt;0\" /assets/sounds/victory.mp3 false>");
+        victorySubpage.contents.add("<xp-change condition=\"hp&gt;0\" 100 false>");
+        victorySubpage.contents.add("<goto-page condition=\"hp&gt;0\" The Eyes Of Chung>");
+        nightOwlMinigamePage.subpages.put("Victory", victorySubpage);
+        
         Story listenSubpage = new Story();
         listenSubpage.contents.add("<goto-page Listen>");
         mainPage.subpages.put("INPUT action=Listen", listenSubpage);
@@ -1107,6 +1115,7 @@ public class Application extends app.ApplicationView {
         myleesElevator.pages.put("Listen", listenPage);
         
         Page eyesOfChungPage = new Page();
+        eyesOfChungPage.hideNextButton = true;
         eyesOfChungPage.nextPageName = "Back To Elevator";
         eyesOfChungPage.story.contents.add("<subpage-display Scene Header>");
         eyesOfChungPage.story.contents.add("<color 0+0+0>");
@@ -1124,23 +1133,23 @@ public class Application extends app.ApplicationView {
                 
         Story eyesOfChungSubpage = new Story();
         eyesOfChungSubpage.contents.add("<play-sound /assets/sounds/ominous.wav false>");
-        eyesOfChungSubpage.contents.add("<timer-start 12 ominous>");
+        eyesOfChungSubpage.contents.add("<timer-start 6 ominous>");
         eyesOfChungSubpage.contents.add("<overlay eyes 0+0+0>");
-        mainPage.subpages.put("INPUT action=Brace Yourself", eyesOfChungSubpage);
+        eyesOfChungPage.subpages.put("INPUT action=Brace Yourself", eyesOfChungSubpage);
         
         Story showEyesSubpage = new Story();
         showEyesSubpage.contents.add("<timer-stop ominous>");
         showEyesSubpage.contents.add("<first-page>");
         showEyesSubpage.contents.add("<image left /assets/images/cat-eyes.gif>");
-        showEyesSubpage.contents.add("<timer-start 12 eyes>");
-        mainPage.subpages.put("TIMER ominous", showEyesSubpage);
+        showEyesSubpage.contents.add("<timer-start 6 eyes>");
+        eyesOfChungPage.subpages.put("TIMER ominous", showEyesSubpage);
 
         Story removeEyesSubpage = new Story();
         removeEyesSubpage.contents.add("<timer-stop eyes>");
         removeEyesSubpage.contents.add("<remove eyes>");
-        eyesOfChungSubpage.contents.add("TODO - Need to be able to name images so cat-eyes.gif can be removed");
-        eyesOfChungSubpage.contents.add("<goto-page Back To Elevator>");
-        mainPage.subpages.put("TIMER eyes", removeEyesSubpage);
+        removeEyesSubpage.contents.add("TODO - Need to be able to name images so cat-eyes.gif can be removed");
+        removeEyesSubpage.contents.add("<goto-page Back To Elevator>");
+        eyesOfChungPage.subpages.put("TIMER eyes", removeEyesSubpage);
         
         Page backToElevatorPage = new Page();
         backToElevatorPage.nextPageName = "Give The Mylee Her Due";
@@ -1164,7 +1173,7 @@ public class Application extends app.ApplicationView {
         myleesElevator.pages.put("Back To Elevator", backToElevatorPage);
         
         Page giveMyleeHerDuePage = new Page();
-        giveMyleeHerDuePage.nextPageName = "";
+        giveMyleeHerDuePage.hideNextButton = true;
         giveMyleeHerDuePage.story.contents.add("<subpage-display Scene Header>");
         giveMyleeHerDuePage.story.contents.add("<color 0+0+0>");
         giveMyleeHerDuePage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Umm... aren't you forgetting to give me something?<quote>");
@@ -1184,7 +1193,7 @@ public class Application extends app.ApplicationView {
         eyesOfChungSubpage.contents.add("<play-sound /assets/sounds/elevator-open.mp3 false>");
         eyesOfChungSubpage.contents.add("TODO - Play elevator music");
         eyesOfChungSubpage.contents.add("TODO - Turn to Elevator Goes Up");
-        mainPage.subpages.put("INPUT action=Give Mylee Gold", giveMyleeHerDueSubpage);
+        giveMyleeHerDuePage.subpages.put("INPUT action=Give Mylee Gold", giveMyleeHerDueSubpage);
         
         Page elevatorGoesUpPage = new Page();
         elevatorGoesUpPage.nextPageName = "Get Me Some White Meat Chicken!";

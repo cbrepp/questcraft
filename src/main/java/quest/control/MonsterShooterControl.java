@@ -106,6 +106,10 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
         
         Coordinates backgroundDimensions = this.dimensionsMap.get(BACKGROUND_NAME);
         
+        // TODO - Play hooting.mp3 each time the monster spawns new lightning bolts
+        // TODO - Play zap.wav each time a lightning bolt hits something
+        // TODO - Play impact.wav each time the monster is hit
+        
         String isPaused = this.quest.variables.get("animation-paused");
         if ((isPaused == null) || (!isPaused.toLowerCase().equals("true"))) {
             if (this.difficulty.equals(DIFFICULTY_MAGICAL)) {
@@ -439,6 +443,7 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
                 int buttonRow = this.quest.buttonRow;
                 this.quest.appController.displayButton(this.quest.name, CONTINUE_BUTTON_NAME, "Continue", buttonRow, this.column, null, null, false, null, true, this);
                 this.animationCompleteDelay = -1.0;
+                this.quest.appController.stopAllSounds();
             } else if (this.animationCompleteDelay > -1.0) {
                 // Wait a few iterations of the animation (to prevent the user from accidentally pressing it) before displaying the Continue button
                 this.animationCompleteDelay -= ANIMATION_DELAY;
@@ -600,12 +605,11 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
         int monsterCenterX = Math.floorDiv(monsterDimensions.x, 2);
         int monsterPositionX = centerX - monsterCenterX;
         this.monster = new SpriteModel(this.quest.appController, MONSTER_NAME, monsterImageFileName, 0.2, monsterPositionX, 1, null, 0.0, null);
-        this.monsterHP = 100;
         this.monsterDirection = 1;
         this.monsterDestinationX = this.monster.x + (int) (Math.random() * (backgroundDimensions.x - this.monster.x));
         this.monsterHalfwayPoint = (Math.floorDiv(Math.abs(monsterPositionX - this.monsterDestinationX), 2) * this.monsterDirection) + monsterPositionX;
         this.monsterHalfwayReached = false;
-        this.monsterHP = 100;
+        this.monsterHP = 0;
         Coordinates playerDimensions = this.dimensionsMap.get(PLAYER_NAME);
         int halfPlayerX = Math.floorDiv(playerDimensions.x, 2);
         SpriteModel player = new SpriteModel(this.quest.appController, PLAYER_NAME, playerImageFileName, 0.2, centerX - halfPlayerX, backgroundDimensions.y - playerDimensions.y, null, 0.0, null) {
@@ -638,7 +642,7 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
         // Add floating text above the animation to indicate the player and monster's stats
         this.quest.appController.displayFloatingText(Questcraft.QUEST, LABEL_PLAYER_HP, "HP: " + String.valueOf(this.quest.getPlayerHP()), row, this.column, null, null, null, 12, null, "RobotoMono-Medium");
         this.quest.appController.displayFloatingText(Questcraft.QUEST, LABEL_PLAYER_MP, "MP: " + String.valueOf(this.quest.getPlayerMP()), row, this.column + 17, null, null, null, 12, null, "RobotoMono-Medium");
-        this.quest.appController.displayFloatingText(Questcraft.QUEST, LABEL_PLAYER_MP, "BOSS HP: " + String.valueOf(this.monsterHP), row, this.column + 34, null, null, null, 12, null, "RobotoMono-Medium");
+        this.quest.appController.displayFloatingText(Questcraft.QUEST, LABEL_PLAYER_MP, "Monster HP: " + String.valueOf(this.monsterHP), row, this.column + 34, null, null, null, 12, null, "RobotoMono-Medium");
 
         // Initialize the animation
         this.quest.appController.addAnimation(Questcraft.QUEST, name, row + 3, this.column, backgroundImageFileName, images, ANIMATION_DELAY, this);
@@ -648,9 +652,9 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
         int buttonRow = this.quest.buttonRow;
         int endColumn;
         if (this.quest.currentDisplayPage == Quest.RIGHT_PAGE) {
-            endColumn = this.quest.rightPageEndingColumn + 1;
+            endColumn = this.quest.rightPageEndingColumn + 2;
         } else {
-            endColumn = this.quest.leftPageEndingColumn + 1;
+            endColumn = this.quest.leftPageEndingColumn + 2;
         }
         this.quest.appController.displayValidatedInputField(this.quest.name, ANIMATION_CONTROLS_NAME, valueList, buttonRow, this.column, endColumn, 0, this, true);
         

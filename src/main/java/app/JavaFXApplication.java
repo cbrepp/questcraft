@@ -6,6 +6,8 @@ import app.model.Coordinates;
 import app.model.SpriteModel;
 import java.io.File;
 import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -70,6 +72,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
+import javafx.scene.media.Media;
 import javax.imageio.metadata.IIOMetadata;
 import org.w3c.dom.NamedNodeMap;
 
@@ -1958,11 +1961,14 @@ public class JavaFXApplication extends ApplicationController {
     public void playSound(String fileName, Boolean isLoop) {
         System.out.println("JavaFXApplication: playSound: fileName=" + fileName + ", isLoop=" + isLoop);
 
-        /*
         URL resource = getClass().getResource(fileName);
+        if (resource == null) {
+            System.err.println("JavaFXApplication: playSound: File not found!");
+            return;
+        }
 
-        if (resource != null) {
-            Media media = new Media(resource.toString());
+        try {
+            Media media = new Media(resource.toURI().toString());        
             MediaPlayer mediaPlayer = new MediaPlayer(media);
             if (this.mediaPlayers.containsKey(fileName)) {
                 List<MediaPlayer> list = this.mediaPlayers.get(fileName);
@@ -1975,10 +1981,21 @@ public class JavaFXApplication extends ApplicationController {
                 System.out.println("JavaFXApplication: playSound: Added file to collection");
             }
             mediaPlayer.play();
-        } else {
-            System.err.println("JavaFXApplication: playSound: File not found!");
+            if (isLoop) {
+                mediaPlayer.setOnEndOfMedia(() -> {
+                    mediaPlayer.seek(javafx.util.Duration.ZERO);
+                });
+            }
+        } catch (URISyntaxException e) {
+            System.err.println("JavaFXApplication: playSound: Error setting up MediaPlayer: " + e.getMessage());
         }
-    */
+        
+        // Fallback code for troublshooting whether missing codecs are to blame
+        /*
+        AudioClip audioClip = new AudioClip(resource.toExternalForm());
+        audioClip.setVolume(0.8);
+        audioClip.play();
+        */
     }
     
     @Override
