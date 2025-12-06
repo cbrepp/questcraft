@@ -12,8 +12,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -141,7 +139,6 @@ public class Utility {
                 default -> System.err.println("Utility: playSound: Unsupported file type: " + fileType);
             }
         } catch (IOException | LineUnavailableException  e) {
-            Logger.getLogger(SWTApplication.class.getName()).log(Level.SEVERE, null, e);
             System.err.println("Utility: playSound: Error playing file: " + e.toString());
         }
     }
@@ -313,15 +310,12 @@ public class Utility {
                         instance = constructor.newInstance(parameter);
                     }
                 } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                    Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, e);
                     System.err.println("ERROR: " + e.toString());
                 }
             } catch (NoSuchMethodException | SecurityException e) {
-                Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, e);
                 System.err.println("ERROR: " + e.toString());
             }
         } catch (ClassNotFoundException e) {
-            Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, e);
             System.err.println("ERROR: " + e.toString());
         }
         return instance;
@@ -332,7 +326,6 @@ public class Utility {
         try {
             value = field.get(object);
         } catch (IllegalAccessException e) {
-            Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, e);
             System.err.println("ERROR: " + e.toString());
         }
         return value;

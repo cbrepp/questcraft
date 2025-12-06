@@ -15,8 +15,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import quest.model.Act;
 import quest.model.Book;
 import quest.model.HighScore;
@@ -125,14 +123,14 @@ public class Application extends app.ApplicationView {
                 try {
                     bf = (Book) in.readObject();
                     System.out.println("Read book! title=" + bf.title + " by " + bf.author);
-                } catch (ClassNotFoundException ex) {
-                    Logger.getLogger(Application.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (ClassNotFoundException e) {
+                    System.err.println("Application: deserializeBook: " + e.toString());
                 }
-            } catch (IOException ex) {
-                Logger.getLogger(Application.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException e) {
+                System.err.println("Application: deserializeBook: " + e.toString());
             }
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(Application.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (FileNotFoundException e) {
+            System.err.println("Application: deserializeBook: " + e.toString());
         }
         
         return bf;
@@ -337,11 +335,11 @@ public class Application extends app.ApplicationView {
             try {
                 out = new ObjectOutputStream(file);
                 out.writeObject(book);
-            } catch (IOException ex) {
-                Logger.getLogger(Application.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException e) {
+                System.err.println("Application: serializeMadQuestBook: " + e.toString());
             }
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(Application.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (FileNotFoundException e) {
+            System.err.println("Application: serializeMadQuestBook: " + e.toString());
         }
     }
     
@@ -2596,11 +2594,11 @@ public class Application extends app.ApplicationView {
             try {
                 out = new ObjectOutputStream(file);
                 out.writeObject(book);
-            } catch (IOException ex) {
-                Logger.getLogger(Application.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException e) {
+                System.err.println("Application: serializeTwinQuestBook: " + e.toString());
             }
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(Application.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (FileNotFoundException e) {
+            System.err.println("Application: serializeTwinQuestBook: " + e.toString());
         }
     }
 

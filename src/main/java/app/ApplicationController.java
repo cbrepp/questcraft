@@ -27,8 +27,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -157,7 +155,6 @@ public abstract class ApplicationController {
             String className = appClass.getSimpleName();
             appName = className + " " + appVersion;
         } catch (ClassNotFoundException e) {
-            Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, e);
             System.err.println("ApplicationController: getAppName: " + e.toString());
         }
 
@@ -190,8 +187,8 @@ public abstract class ApplicationController {
             Class<?> controllerClass = null;
             try {
                 controllerClass = Class.forName(gui);
-            } catch (ClassNotFoundException ex) {
-                Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (ClassNotFoundException e) {
+                System.err.println("ApplicationController: resolveController: " + e.toString());
             }
             if (controllerClass == null) {
                 System.err.println("ApplicationController: resolveController: Unsupported GUI: " + gui);
@@ -218,7 +215,6 @@ public abstract class ApplicationController {
             }
             props.load(input);
         } catch (IOException e) {
-            Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, e);
             System.err.println("ApplicationController: loadProperties: " + e.toString());
             return null;
         } 
@@ -251,18 +247,16 @@ public abstract class ApplicationController {
             try {
                 field = thisClass.getField(ApplicationController.NAME_PROPERTY);
             } catch (NoSuchFieldException | SecurityException e) {
-                Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, e);
                 System.err.println("ApplicationController: getGUIFromThisClass: " + e.toString());
                 return null;
             }
             try { 
                 gui = (String) field.get(null);
             } catch (IllegalArgumentException | IllegalAccessException e) {
-                Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, e);
+
                 System.err.println("ApplicationController: getGUIFromThisClass: " + e.toString());
             }
         } catch (ClassNotFoundException e) {
-            Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, e);
             System.err.println("ApplicationController: getGUIFromThisClass: " + e.toString());
         }
         
