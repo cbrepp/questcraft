@@ -47,6 +47,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
@@ -84,7 +85,7 @@ public class SWTApplication extends ApplicationController {
     public KeyEvent lastProcessedKeyEvent;
     public ApplicationView lastSelectedView;
     public Font monospaceFont;
-    public HashMap<String, Map<String, Composite>> namedControls;
+    public HashMap<String, Map<String, Control>> namedControls;
     public ApplicationView parentView;
     public Shell shell;
     public List<SpriteModel> sprites;
@@ -614,7 +615,7 @@ public class SWTApplication extends ApplicationController {
     @Override
     public void clearControl(String viewName, String controlName) {
         System.out.println("SWTApplication: clearControl : viewName=" + viewName + ", controlName=" + controlName);
-        Composite control = this.namedControls.get(viewName).get(controlName);
+        Control control = this.namedControls.get(viewName).get(controlName);
         if (control != null) {
             control.dispose();
             this.namedControls.get(viewName).remove(controlName);
@@ -1001,7 +1002,9 @@ public class SWTApplication extends ApplicationController {
     
     @Override
     public void updateFloatingText(String viewName, String name, String text) {
-        throw new UnsupportedOperationException("Not supported.");
+        System.out.println("SWTApplication: updateFloatingText: viewName=" + viewName + ", name=" + name + ", text=" + text);
+        Label label = (Label) this.namedControls.get(viewName).get(name);
+        label.setText(text);
     }
    
     @Override
@@ -1103,6 +1106,10 @@ public class SWTApplication extends ApplicationController {
         } else {
             label.moveAbove(composite);
         }
+        
+        if (name != null) {
+            this.namedControls.get(viewName).put(name, label);
+        }
     }
     
     @Override
@@ -1157,16 +1164,16 @@ public class SWTApplication extends ApplicationController {
     
     @Override
     public void setTimer(String name, double seconds, EventListener listener) {
-        System.out.println("SWTApplication: setTimer: name=" + name + ", seconds=" + seconds + ", listener=" + listener);
+        //System.out.println("SWTApplication: setTimer: name=" + name + ", seconds=" + seconds + ", listener=" + listener);
         if (TIMER_EVENTS.contains(name)) {
             System.out.println("SWTApplication: setTimer: Timer already exists for " + name + "!");
             return;
         }
         TIMER_EVENTS.add(name);
         this.display.timerExec((int)(seconds * 1000), () -> {
-            System.out.println("SWTApplication: setTimer: Timer elapsed: name=" + name + ", seconds=" + seconds + ", listener=" + listener);
+            //System.out.println("SWTApplication: setTimer: Timer elapsed: name=" + name + ", seconds=" + seconds + ", listener=" + listener);
             if (!TIMER_EVENTS.contains(name)) {
-                System.out.println("SWTApplication: setTimer: Timer " + name + " was removed!");
+                //System.out.println("SWTApplication: setTimer: Timer " + name + " was removed!");
                 return;
             }
             TIMER_EVENTS.remove(name);
@@ -1477,22 +1484,58 @@ public class SWTApplication extends ApplicationController {
         Composite composite = this.tabCompositeMap.get(viewName);
         StyledText textArea = this.tabStyledTextMap.get(viewName);
         
-        Point topLeft = this.convertToCoordinates(row, column);
+        Point topLeft = this.convertToCoordinates(row - 2, column);
         Image backgroundImage = this.loadImage(backgroundImageFileName);
         Coordinates widthAndHeight = this.getDimensions(backgroundImageFileName);
-        Map<String, Image> spriteImages = new HashMap();
         this.sprites = sprites;
+        
+        // Build a map of scaled images
+        Map<String, Image> spriteImages = new HashMap();
         for (SpriteModel sprite : sprites) {
             if (sprite.imageFile == null) {
                 continue;
             }
-            if (spriteImages.containsKey(sprite.imageFile)) {
+            if (spriteImages.containsKey(sprite.name)) {
                 continue;
             }
             Image spriteImage = this.loadImage(sprite.imageFile);
-            spriteImages.put(sprite.imageFile, spriteImage);
+            int newWidth = (int) (spriteImage.getBounds().width * (sprite.imageScale * 2)); // Unfortunate fudge factor
+            int newHeight = (int) (spriteImage.getBounds().height * (sprite.imageScale * 2)); // Unfortunate fudge factor
+            Image scaledImage = new Image(this.display, newWidth, newHeight);
+            GC scaledImageGC = new GC(scaledImage);
+            scaledImageGC.setAntialias(SWT.ON);
+            scaledImageGC.setInterpolation(SWT.HIGH);
+            scaledImageGC.drawImage(spriteImage, 0, 0, spriteImage.getBounds().width, spriteImage.getBounds().height, 0, 0, newWidth, newHeight);
+            scaledImageGC.dispose();
+            
+            // To preserve transparency, extract and file the alphaData array.
+            // For 32-bit data, every 4th byte (offset 3) is the alpha channel.
+            ImageData canvasData = scaledImage.getImageData();
+            
+            // 4. Manually extract and *invert* the alphaData array
+            canvasData.alphaData = new byte[newWidth * newHeight];
+
+            for (int idx = 0; idx < (newWidth * newHeight); idx++) {
+                // Calculate the position of the alpha byte in the main data array (3rd offset)
+                int coord = (idx * 4) + 3; 
+
+                // Read the byte value. Bytes in Java are signed (-128 to 127), 
+                // so we mask with & 0xFF to treat them as unsigned integers (0 to 255) for logic.
+                int alphaValue = canvasData.data[coord] & 0xFF;
+
+                // INVERT THE VALUE: 0 becomes 255, 255 becomes 0
+                int invertedAlpha = 255 - alphaValue;
+
+                // Cast back to a signed byte for storage in alphaData
+                canvasData.alphaData[idx] = (byte) invertedAlpha;
+            }
+            
+            Image finalImage = new Image(this.display, canvasData);
+            scaledImage.dispose();
+            spriteImages.put(sprite.name, finalImage);
         }
-        // TODO - Add onDispose diplay of when canvas is disposed, if from clearScreen()
+        
+        // TODO - Add onDispose display of when canvas is disposed, if from clearScreen()
         Canvas canvas = new Canvas(composite, SWT.DOUBLE_BUFFERED); // Use double buffering for smoother animation
         canvas.setBackgroundImage(backgroundImage);
         canvas.moveAbove(textArea);
@@ -1501,55 +1544,131 @@ public class SWTApplication extends ApplicationController {
             //System.out.println("SWTApplication: addAnimation: painting canvas: entered, drawing image at " + topLeft.x + "," + topLeft.y);
             GC gc = e.gc;
             
+            // Set quality hints for better scaling results
+            gc.setAntialias(SWT.ON);
+            gc.setInterpolation(SWT.HIGH);
+            
             // Draw background image
             //gc.drawImage(backgroundImage, topLeft.x, topLeft.y);
             gc.drawImage(backgroundImage, 0, 0);
             
-            // Draw each sprite
-            // TODO - Should the sprites be drawn first or second?
+            // Animation ends when a null collection is returned
             if (this.sprites == null) {
                 //System.out.println("SWTApplication: addAnimation: painting canvas: no sprites!");
                 return;
             }
             
+            // Check for collisions
+            for (SpriteModel sprite : this.sprites) {                
+                if (sprite.potentialCollisionNames != null) {
+                    Image scaledImage = spriteImages.get(sprite.name);
+                    for (String potentialCollisionName : sprite.potentialCollisionNames) {
+                        for (SpriteModel potentialCollisionSprite : this.sprites) {
+                            if ((potentialCollisionSprite.name != null) && (potentialCollisionSprite.name.equals(potentialCollisionName))) {
+                                //Image potentialCollisionImage = spriteImages.get(potentialCollisionSprite.imageFile);
+                                Image potentialCollisionScaledImage = spriteImages.get(potentialCollisionSprite.name);
+                                if (SWTApplication.isColliding(scaledImage.getImageData(), sprite.x - 1, sprite.y - 1, potentialCollisionScaledImage.getImageData(), potentialCollisionSprite.x -1, potentialCollisionSprite.y -1)) {
+                                    // Update each sprite to reference the other
+                                    sprite.collisionSprites.add(potentialCollisionSprite);
+                                    potentialCollisionSprite.collisionSprites.add(sprite);
+                                    // Raise the sprite event for a collision on both sprites
+                                    sprite.onCollision(potentialCollisionSprite);                                
+                                    potentialCollisionSprite.onCollision(sprite);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Draw each image
             for (SpriteModel sprite : this.sprites) {
                 if (sprite.imageFile == null) {
                     //System.out.println("SWTApplication: addAnimation: painting canvas: skipping sprite with no image file!");
                     continue;
                 }
                 
-                // TODO - Support image scaling with:
+                Image spriteImage = spriteImages.get(sprite.name);
+                //int width = spriteImage.getBounds().width;
+                //int height = spriteImage.getBounds().height;
+                
                 /*
-                    Image scaledImage = new Image(display, newWidth, newHeight);
-                    GC gc = new GC(scaledImage);
-                    gc.setAntialias(SWT.ON); // For smoother scaling
-                    gc.setInterpolation(SWT.HIGH); // For better quality
-
-                    // Draw the original image onto the new, scaled image
-                    gc.drawImage(originalImage, 0, 0, originalImage.getBounds().width, originalImage.getBounds().height,
-                                 0, 0, newWidth, newHeight);
+                if (sprite.glowColor != null) {
+                    Color glowColor = new Color(this.display, sprite.glowColor.red, sprite.glowColor.green, sprite.glowColor.blue);
+                    int shadowOffset = 5; // How far the glow extends
+                    int glowAlpha = 150; // Transparency of the glow (0 to 255)
+                    gc.setAlpha(glowAlpha);
+                    gc.setForeground(glowColor);
+                    gc.setBackground(glowColor);
+                    gc.fillRoundRectangle(
+                        sprite.x - 1 - (shadowOffset / 2), 
+                        sprite.y - 1 - (shadowOffset / 2), 
+                        width + shadowOffset, 
+                        height + shadowOffset, 
+                        10, 10
+                    );
+                    gc.setAlpha(255); // Reset alpha to fully opaque
+                }
                 */
                 
-                //System.out.println("SWTApplication: addAnimation: painting canvas: drawing " + sprite.imageFile + " at " + sprite.x + "," + sprite.y);
-                // Coordinates (1,1) for a sprite equate to the upper left-hand corner for the background image
-                gc.drawImage(spriteImages.get(sprite.imageFile), sprite.x - 1, sprite.y - 1);
+                gc.drawImage(spriteImage, sprite.x - 1, sprite.y - 1);
             }
         });
         final EventListener timerListener = new EventListener() {
             @Override
             public void onEvent(String eventName, Object eventValue) {
-                System.out.println("SWTApplication: addAnimation: onEvent: viewName=" + viewName + ", redrawing canvas");
+                //System.out.println("SWTApplication: addAnimation: onEvent: viewName=" + viewName + ", redrawing canvas");
                 SWTApplication.this.sprites = listener.onAnimate();
                 if (!canvas.isDisposed()) {
                     canvas.redraw();
                 }
                 if ((!canvas.isDisposed()) && (SWTApplication.this.sprites != null)) {
-                    System.out.println("SWTApplication: addAnimation: onEvent: viewName=" + viewName + ", sprites so resetting timer, sprites=" + SWTApplication.this.sprites.size());
+                    //System.out.println("SWTApplication: addAnimation: onEvent: viewName=" + viewName + ", sprites so resetting timer, sprites=" + SWTApplication.this.sprites.size());
                     SWTApplication.this.setTimer(name, animationDelay, this);
                 }
             }
         };
         this.setTimer(name, animationDelay, timerListener);
+    }
+    
+    public static boolean isColliding(ImageData node1, int x1, int y1, ImageData node2, int x2, int y2) {
+        // Check for bounding box overlap in the scene coordinates
+        Rectangle bounds1 = new Rectangle(x1, y1, node1.width, node1.height);
+        Rectangle bounds2 = new Rectangle(x2, y2, node2.width, node2.height);
+
+        if (!bounds1.intersects(bounds2)) {
+            return false; // No overlap at all
+        }
+
+        // TODO - For performance, use a collision mask
+        //return mask.intersects(otherMask, this.getX(), this.getY(), other.getX(), other.getY());
+
+        // Calculate the specific region of overlap
+        Rectangle overlap = bounds1.intersection(bounds2);
+
+        // Iterate through every pixel in the overlap region
+        for (int i = 0; i < overlap.width; i++) {
+            for (int j = 0; j < overlap.height; j++) {
+                int overlapX = overlap.x + i;
+                int overlapY = overlap.y + j;
+
+                // Get the alpha (transparency) value for the corresponding pixel in each image data
+                // We must translate the screen coordinates back to local image coordinates
+                
+                // Note: ImageData.getAlpha(x, y) requires local coordinates (0 to width/height)
+                int alphaA = node1.getAlpha(overlapX - x1, overlapY - y1);
+                int alphaB = node2.getAlpha(overlapX - x2, overlapY - y2);
+
+                // Check if both pixels are opaque (alpha > 0)
+                if (alphaA > 0 && alphaB > 0) {
+                    // Collision found! Stop searching and return true
+                    return true;
+                }
+            }
+        }
+
+        // No overlapping opaque pixels were found
+        return false;
     }
     
     @Override

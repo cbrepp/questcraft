@@ -1802,7 +1802,7 @@ public class JavaFXApplication extends ApplicationController {
             }
         }
 
-        // Check for collisions
+        // Glow sprites
         for (SpriteModel sprite : spriteImageViewMap.keySet()) {
             if (sprite.glowColor == null) {
                 continue;

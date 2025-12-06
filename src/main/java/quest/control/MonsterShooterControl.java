@@ -480,20 +480,26 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
         System.out.println("MonsterShooterControl: onEvent: eventName=" + eventName + ", eventValue=" + eventValue);
         
         if (eventName.equals(CONTINUE_BUTTON_NAME)) {
+            System.out.println("MonsterShooterControl: onEvent: Continuing on from animation");
             this.animationComplete = true;
             this.quest.appController.clearControl(this.quest.name, CONTINUE_BUTTON_NAME);
             this.quest.display(); // Refresh the pages
         } else {
             if (eventValue.equals(" Move Left")) {
+                System.out.println("MonsterShooterControl: onEvent: Move left");
                 this.quest.variables.put("animation-left", "true");
             } else if (eventValue.equals(" Move Right")) {
+                System.out.println("MonsterShooterControl: onEvent: Move right");
                 this.quest.variables.put("animation-right", "true");
             } else if (eventValue.equals(" Launch")) {
+                System.out.println("MonsterShooterControl: onEvent: Launch");
                 this.quest.variables.put("animation-up", "true");
             } else if (eventValue.equals("P")) {
-                if (this.quest.variables.get("animation-paused").equals("true")) {
+                if ((this.quest.variables.containsKey("animation-paused")) && (this.quest.variables.get("animation-paused").equals("true"))) {
+                    System.out.println("MonsterShooterControl: onEvent: Unpausing");
                     this.quest.variables.put("animation-paused", "false");
                 } else {
+                    System.out.println("MonsterShooterControl: onEvent: Pausing");
                     this.quest.variables.put("animation-paused", "true");
                 }
                 this.quest.appController.playSound("/assets/sounds/pause.mp3", false);
