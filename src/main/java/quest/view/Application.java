@@ -1117,12 +1117,13 @@ public class Application extends app.ApplicationView {
         eyesOfChungPage.nextPageName = "Back To Elevator";
         eyesOfChungPage.story.contents.add("<subpage-display Scene Header>");
         eyesOfChungPage.story.contents.add("<color 0+0+0>");
-        eyesOfChungPage.story.contents.add("You did it!  You defeated Night Owl!");
+        eyesOfChungPage.story.contents.add("You did it!  You defeated Night Owl!!!  With great speed he flies back to his woods for safety.");
         eyesOfChungPage.story.contents.add("<br>");
         eyesOfChungPage.story.contents.add("You look around for Mylee and don't see her.  Perhaps she returned to the elevator?");
         eyesOfChungPage.story.contents.add("<br>");
-        eyesOfChungPage.story.contents.add("Wait... is the sky turning dark?  What's going on???");
+        eyesOfChungPage.story.contents.add("And then... Wait.  Is the sky turning dark?  What's going on???");
         eyesOfChungPage.story.contents.add("<br>");
+        eyesOfChungPage.story.contents.add("You run back into the elevator and right before the doors close you see... his eyes.");
         eyesOfChungPage.story.contents.add("<get-validated-input align=left action *Brace Yourself>");
         eyesOfChungPage.story.contents.add("</color>");
         eyesOfChungPage.story.contents.add("<second-page>");
@@ -1153,7 +1154,7 @@ public class Application extends app.ApplicationView {
         backToElevatorPage.nextPageName = "Give The Mylee Her Due";
         backToElevatorPage.story.contents.add("<subpage-display Scene Header><play-sound /assets/sounds/elevator-open.mp3 false>");
         backToElevatorPage.story.contents.add("<color 0+0+0>");
-        backToElevatorPage.story.contents.add("You run back to the elevator where you find a panic-stricken Mylee.");
+        backToElevatorPage.story.contents.add("Back in the elevator you find a panic-stricken Mylee.");
         backToElevatorPage.story.contents.add("<br>");
         backToElevatorPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Quick!  We need to get out of here!<quote>");
         backToElevatorPage.story.contents.add("<br>");

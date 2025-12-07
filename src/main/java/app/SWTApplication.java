@@ -85,7 +85,7 @@ public class SWTApplication extends ApplicationController {
     public KeyEvent lastProcessedKeyEvent;
     public ApplicationView lastSelectedView;
     public Font monospaceFont;
-    public HashMap<String, Map<String, Control>> namedControls;
+    public HashMap<String, Map<String, List<Control>>> namedControls;
     public ApplicationView parentView;
     public Shell shell;
     public List<SpriteModel> sprites;
@@ -615,11 +615,14 @@ public class SWTApplication extends ApplicationController {
     @Override
     public void clearControl(String viewName, String controlName) {
         System.out.println("SWTApplication: clearControl : viewName=" + viewName + ", controlName=" + controlName);
-        Control control = this.namedControls.get(viewName).get(controlName);
-        if (control != null) {
-            control.dispose();
-            this.namedControls.get(viewName).remove(controlName);
+        List<Control> controlList = this.namedControls.get(viewName).get(controlName);
+        if (controlList == null) {
+            return;
         }
+        for (Control control : controlList) {
+            control.dispose();
+        }
+        this.namedControls.get(viewName).remove(controlName);
     }
     
     @Override
@@ -1003,8 +1006,11 @@ public class SWTApplication extends ApplicationController {
     @Override
     public void updateFloatingText(String viewName, String name, String text) {
         System.out.println("SWTApplication: updateFloatingText: viewName=" + viewName + ", name=" + name + ", text=" + text);
-        Label label = (Label) this.namedControls.get(viewName).get(name);
-        label.setText(text);
+        List<Control> controlList = this.namedControls.get(viewName).get(name);
+        Label label = (Label) controlList.get(0);
+        if (label != null) {
+            label.setText(text);
+        }
     }
    
     @Override
@@ -1108,7 +1114,9 @@ public class SWTApplication extends ApplicationController {
         }
         
         if (name != null) {
-            this.namedControls.get(viewName).put(name, label);
+            List<Control> controlList = new ArrayList();
+            controlList.add(label);
+            this.namedControls.get(viewName).put(name, controlList);
         }
     }
     
@@ -1293,7 +1301,9 @@ public class SWTApplication extends ApplicationController {
             overlayColor.dispose(); // Dispose of the color
         });
         
-        this.namedControls.get(viewName).put(name, overlay);
+        List<Control> controlList = new ArrayList();
+        controlList.add(overlay);
+        this.namedControls.get(viewName).put(name, controlList);
     }
     
     // TODO - Pass in a list of app.Controls with button text and isEnabled
@@ -1303,6 +1313,8 @@ public class SWTApplication extends ApplicationController {
         
         StyledText textArea = this.tabStyledTextMap.get(viewName);
         Composite composite = this.tabCompositeMap.get(viewName);
+        
+        List<Control> controlList = new ArrayList();
 
         // Display a row of buttons with the possible input values
         int buttonHeight = 2 * this.buttonFontHeight;   // Calculate double height of text
@@ -1357,6 +1369,7 @@ public class SWTApplication extends ApplicationController {
         
         for (String value : values) {
             Button button = new Button(composite, SWT.PUSH);
+            controlList.add(button);
             if (value.charAt(0) == '!') {
                 // TODO - This is just a hack to support disabling buttons
                 value = value.substring(1, value.length());
@@ -1475,6 +1488,8 @@ public class SWTApplication extends ApplicationController {
                 });
             }
         }
+        
+        this.namedControls.get(viewName).put(name, controlList);
     }
     
     @Override
@@ -1495,12 +1510,17 @@ public class SWTApplication extends ApplicationController {
             if (sprite.imageFile == null) {
                 continue;
             }
-            if (spriteImages.containsKey(sprite.name)) {
+            if (spriteImages.containsKey(sprite.name + ":" + sprite.imageFile)) {
                 continue;
             }
             Image spriteImage = this.loadImage(sprite.imageFile);
-            int newWidth = (int) (spriteImage.getBounds().width * (sprite.imageScale * 2)); // Unfortunate fudge factor
-            int newHeight = (int) (spriteImage.getBounds().height * (sprite.imageScale * 2)); // Unfortunate fudge factor
+            //int newWidth = (int) (spriteImage.getBounds().width * (sprite.imageScale * 2)); // Unfortunate fudge factor
+            //int newHeight = (int) (spriteImage.getBounds().height * (sprite.imageScale * 2)); // Unfortunate fudge factor
+            int newHeight = (int) (backgroundImage.getBounds().height * sprite.imageScale);
+            System.out.println("SWTApplication: addAnimation: Dividing " + newHeight + " by " + spriteImage.getBounds().height);
+            double scaleRatio = ((double) newHeight) / ((double) spriteImage.getBounds().height);
+            int newWidth = (int) (scaleRatio * spriteImage.getBounds().width);
+            System.out.println("SWTApplication: addAnimation: Scaling " + sprite.name + " to " + newWidth + " by " + newHeight + " for ratio " + scaleRatio);
             Image scaledImage = new Image(this.display, newWidth, newHeight);
             GC scaledImageGC = new GC(scaledImage);
             scaledImageGC.setAntialias(SWT.ON);
@@ -1532,7 +1552,7 @@ public class SWTApplication extends ApplicationController {
             
             Image finalImage = new Image(this.display, canvasData);
             scaledImage.dispose();
-            spriteImages.put(sprite.name, finalImage);
+            spriteImages.put(sprite.name + ":" + sprite.imageFile, finalImage);
         }
         
         // TODO - Add onDispose display of when canvas is disposed, if from clearScreen()
@@ -1561,12 +1581,11 @@ public class SWTApplication extends ApplicationController {
             // Check for collisions
             for (SpriteModel sprite : this.sprites) {                
                 if (sprite.potentialCollisionNames != null) {
-                    Image scaledImage = spriteImages.get(sprite.name);
+                    Image scaledImage = spriteImages.get(sprite.name + ":" + sprite.imageFile);
                     for (String potentialCollisionName : sprite.potentialCollisionNames) {
                         for (SpriteModel potentialCollisionSprite : this.sprites) {
                             if ((potentialCollisionSprite.name != null) && (potentialCollisionSprite.name.equals(potentialCollisionName))) {
-                                //Image potentialCollisionImage = spriteImages.get(potentialCollisionSprite.imageFile);
-                                Image potentialCollisionScaledImage = spriteImages.get(potentialCollisionSprite.name);
+                                Image potentialCollisionScaledImage = spriteImages.get(potentialCollisionSprite.name + ":" + potentialCollisionSprite.imageFile);
                                 if (SWTApplication.isColliding(scaledImage.getImageData(), sprite.x - 1, sprite.y - 1, potentialCollisionScaledImage.getImageData(), potentialCollisionSprite.x -1, potentialCollisionSprite.y -1)) {
                                     // Update each sprite to reference the other
                                     sprite.collisionSprites.add(potentialCollisionSprite);
@@ -1588,11 +1607,10 @@ public class SWTApplication extends ApplicationController {
                     continue;
                 }
                 
-                Image spriteImage = spriteImages.get(sprite.name);
-                //int width = spriteImage.getBounds().width;
-                //int height = spriteImage.getBounds().height;
+                Image spriteImage = spriteImages.get(sprite.name + ":" + sprite.imageFile);
+                int width = spriteImage.getBounds().width;
+                int height = spriteImage.getBounds().height;
                 
-                /*
                 if (sprite.glowColor != null) {
                     Color glowColor = new Color(this.display, sprite.glowColor.red, sprite.glowColor.green, sprite.glowColor.blue);
                     int shadowOffset = 5; // How far the glow extends
@@ -1609,7 +1627,6 @@ public class SWTApplication extends ApplicationController {
                     );
                     gc.setAlpha(255); // Reset alpha to fully opaque
                 }
-                */
                 
                 gc.drawImage(spriteImage, sprite.x - 1, sprite.y - 1);
             }

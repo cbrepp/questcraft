@@ -106,14 +106,10 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
         
         Coordinates backgroundDimensions = this.dimensionsMap.get(BACKGROUND_NAME);
         
-        // TODO - Play hooting.mp3 each time the monster spawns new lightning bolts
-        // TODO - Play zap.wav each time a lightning bolt hits something
-        // TODO - Play impact.wav each time the monster is hit
-        
         String isPaused = this.quest.variables.get("animation-paused");
         if ((isPaused == null) || (!isPaused.toLowerCase().equals("true"))) {
             if (this.difficulty.equals(DIFFICULTY_MAGICAL)) {
-                // TODO - If Mylee has been tamed, randomly add her and she can launch her own attack
+                // TODO - If Mylee has been tamed by SHMEBULOCK, randomly add her and she can launch her own attack
             }
             
             // Handle each missile that collided with something
@@ -133,6 +129,7 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
                 if (!this.collisionTimerMap.containsKey(sprite)) {
                     // Start the expiration countdown
                     this.collisionTimerMap.put(sprite, COLLISION_EXPIRATION);
+                    this.quest.appController.playSound(this.monsterMissileSoundFileName, false);
                 } else {
                     // Decrement the expiration countdown
                     Double collisionExpiration = this.collisionTimerMap.get(sprite);
@@ -188,6 +185,7 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
             // Launch the player's missiles based on inpute
             if (this.quest.variables.get("animation-up").toLowerCase().equals("true")) {
                 // Move the missile from being attached to being launched
+                int missilesLaunchedCount = 0;
                 iterator = this.playerMissilesAttached.listIterator();
                 while (iterator.hasNext()) {
                     SpriteModel sprite = iterator.next();
@@ -195,10 +193,14 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
                         // Missiles stop moving once they have collided with something
                         continue;
                     }
+                    missilesLaunchedCount++;
                     this.playerMissilesLaunched.add(sprite);
                     iterator.remove();
                 }
                 this.quest.variables.put("animation-up", "false");
+                if (missilesLaunchedCount > 0) {
+                    this.quest.appController.playSound(this.missileSoundFileName, false);
+                }
             }
 
             // For each player missile that is launched, decrease its y coordinate
@@ -260,6 +262,7 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
                 } else {
                     System.out.println("MonsterShooterControl: onAnimate: DROPPING MISSILES!");
                     // Move the missile from being attached to being launched
+                    this.quest.appController.playSound(this.monsterSoundFileName, false);
                     iterator = this.monsterMissilesAttached.listIterator();
                     while (iterator.hasNext()) {
                         SpriteModel sprite = iterator.next();
@@ -411,15 +414,22 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
 
             // Handle collisions with the player
             if (!this.player.collisionSprites.isEmpty()) {
+                int monsterMissileHitCount = 0;
                 for (SpriteModel collidingSprite : this.player.collisionSprites) {
                     if (collidingSprite.name.equals(MONSTER_MISSILE_CHUNGUS_NAME)) {
                         this.quest.setPlayerHP(-3, false, "Night Owl", false);
+                        monsterMissileHitCount++;
                     } else if (collidingSprite.name.equals(MONSTER_MISSILE_NAME)) {
                         this.quest.setPlayerHP(-2, false, "Night Owl", false);
+                        monsterMissileHitCount++;
                     } else if (collidingSprite.name.equals(MONSTER_MISSILE_MINI_NAME)) {
                         this.quest.setPlayerHP(-1, false, "Night Owl", false);
+                        monsterMissileHitCount++;
                     }
+                }
+                if (monsterMissileHitCount > 0) {
                     this.quest.appController.updateFloatingText(Questcraft.QUEST, LABEL_PLAYER_HP, "HP: " + String.valueOf(this.quest.getPlayerHP()));
+                    this.quest.appController.playSound(this.monsterMissileSoundFileName, false);
                 }
                 this.player.collisionSprites.clear();
                 this.player.glowColor = null;
@@ -434,6 +444,8 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
                     this.quest.appController.updateFloatingText(Questcraft.QUEST, LABEL_PLAYER_MP, "BOSS HP: " + String.valueOf(this.monsterHP));
                 }
                 this.monster.collisionSprites.clear();
+                this.monster.glowColor = null;
+                this.quest.appController.playSound("/assets/sounds/impact.wav", false);
             }
         }
         
@@ -452,6 +464,7 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
             this.quest.variables.put("animation-paused", "true");
             this.quest.variables.put("animation-complete", "true");
             this.quest.appController.clearControl(this.quest.name, ANIMATION_CONTROLS_NAME);
+            this.quest.appController.playSound(this.monsterSoundFileName, false);
         }
         
         // Return all sprites
@@ -485,16 +498,19 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
             this.quest.appController.clearControl(this.quest.name, CONTINUE_BUTTON_NAME);
             this.quest.display(); // Refresh the pages
         } else {
-            if (eventValue.equals(" Move Left")) {
-                System.out.println("MonsterShooterControl: onEvent: Move left");
-                this.quest.variables.put("animation-left", "true");
-            } else if (eventValue.equals(" Move Right")) {
-                System.out.println("MonsterShooterControl: onEvent: Move right");
-                this.quest.variables.put("animation-right", "true");
-            } else if (eventValue.equals(" Launch")) {
-                System.out.println("MonsterShooterControl: onEvent: Launch");
-                this.quest.variables.put("animation-up", "true");
-            } else if (eventValue.equals("P")) {
+            if ((!this.quest.variables.containsKey("animation-paused")) || (!this.quest.variables.get("animation-paused").equals("true"))) {
+                if (eventValue.equals(" Move Left")) {
+                    System.out.println("MonsterShooterControl: onEvent: Move left");
+                    this.quest.variables.put("animation-left", "true");
+                } else if (eventValue.equals(" Move Right")) {
+                    System.out.println("MonsterShooterControl: onEvent: Move right");
+                    this.quest.variables.put("animation-right", "true");
+                } else if (eventValue.equals(" Launch")) {
+                    System.out.println("MonsterShooterControl: onEvent: Launch");
+                    this.quest.variables.put("animation-up", "true");
+                }
+            }
+            if (eventValue.equals("P")) {
                 if ((this.quest.variables.containsKey("animation-paused")) && (this.quest.variables.get("animation-paused").equals("true"))) {
                     System.out.println("MonsterShooterControl: onEvent: Unpausing");
                     this.quest.variables.put("animation-paused", "false");
@@ -503,8 +519,6 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
                     this.quest.variables.put("animation-paused", "true");
                 }
                 this.quest.appController.playSound("/assets/sounds/pause.mp3", false);
-            } else {
-                System.out.println("MonsterShooterControl: onEvent: Unsupported event value!");
             }
         }
     }
@@ -610,7 +624,14 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
         Coordinates monsterDimensions = this.dimensionsMap.get(MONSTER_NAME);
         int monsterCenterX = Math.floorDiv(monsterDimensions.x, 2);
         int monsterPositionX = centerX - monsterCenterX;
-        this.monster = new SpriteModel(this.quest.appController, MONSTER_NAME, monsterImageFileName, 0.2, monsterPositionX, 1, null, 0.0, null);
+        this.monster = new SpriteModel(this.quest.appController, MONSTER_NAME, monsterImageFileName, 0.2, monsterPositionX, 1, null, 0.0, null) {
+            @Override
+            public void onCollision(SpriteModel collidingSprite) {
+                if (collidingSprite.name.equals(PLAYER_MISSILE_CHUNGUS_NAME) || collidingSprite.name.equals(PLAYER_MISSILE_MINI_NAME)) {
+                    this.glowColor = new Color(255, 0, 0);
+                }
+            }
+        };
         this.monsterDirection = 1;
         this.monsterDestinationX = this.monster.x + (int) (Math.random() * (backgroundDimensions.x - this.monster.x));
         this.monsterHalfwayPoint = (Math.floorDiv(Math.abs(monsterPositionX - this.monsterDestinationX), 2) * this.monsterDirection) + monsterPositionX;

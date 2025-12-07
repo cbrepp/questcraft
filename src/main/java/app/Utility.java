@@ -116,7 +116,12 @@ public class Utility {
                     }
                     AudioInputStream audioInputStream = getAudioInputStream(fileName, inputStream);
                     Clip clip = getClip(fileName);
-                    clip.open(audioInputStream);
+                    try {
+                        clip.open(audioInputStream);
+                    } catch (Exception e) {
+                        System.err.println("Utility: playSound: " + e.toString());
+                        return;
+                    }
                     Thread backgroundThread = new Thread(() -> {
                         audioInputStreams.put(fileName, audioInputStream);
                         inputStreams.put(fileName, inputStream);
@@ -138,7 +143,7 @@ public class Utility {
                 }
                 default -> System.err.println("Utility: playSound: Unsupported file type: " + fileType);
             }
-        } catch (IOException | LineUnavailableException  e) {
+        } catch (Exception  e) {
             System.err.println("Utility: playSound: Error playing file: " + e.toString());
         }
     }
@@ -258,9 +263,13 @@ public class Utility {
                 iterator.remove();
             } catch(ConcurrentModificationException e) {
                 System.err.println("Utility: stopAllSounds: " + e.toString());
-            } finally { 
                 if (isLocked) {
-                    lock.unlock();
+                    try {
+                        lock.unlock();
+                    } catch (Exception e2) {
+                        System.err.println("Utility: stopAllSounds: " + e2.toString());
+                        return;
+                    }
                 }
             }
         }

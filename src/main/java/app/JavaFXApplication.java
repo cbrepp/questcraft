@@ -1986,7 +1986,7 @@ public class JavaFXApplication extends ApplicationController {
                     mediaPlayer.seek(javafx.util.Duration.ZERO);
                 });
             }
-        } catch (URISyntaxException e) {
+        } catch (Exception e) {
             System.err.println("JavaFXApplication: playSound: Error setting up MediaPlayer: " + e.getMessage());
         }
         
@@ -2031,7 +2031,7 @@ public class JavaFXApplication extends ApplicationController {
     
     @Override
     public void stopAllSounds() {
-        System.out.println("JavaFXApplication: stopAllSvounds");
+        System.out.println("JavaFXApplication: stopAllSounds");
         Iterator<Map.Entry<String, List<MediaPlayer>>> iterator = this.mediaPlayers.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<String, List<MediaPlayer>> entry = iterator.next();
