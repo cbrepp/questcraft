@@ -61,12 +61,15 @@ import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.util.Duration;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.event.EventHandler;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.Effect;
 import javafx.scene.image.PixelReader;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
@@ -94,6 +97,7 @@ public class JavaFXApplication extends ApplicationController {
     public String emptyBook;
     public int fontHeight = 0;
     public int fontWidth = 0;
+    public Map<Object, EventHandler<KeyEvent>> keyBindings = new HashMap();
     public ApplicationView lastSelectedView;
     public Font monospaceFont;
     public HashMap<String, Map<String, Object>> namedControls;
@@ -376,6 +380,13 @@ public class JavaFXApplication extends ApplicationController {
             //content.getChildren().removeIf(node -> node != editor);
             content.getChildren().clear();
         }
+        
+        // Remove all key bindings
+        this.primaryScene.getAccelerators().clear();
+        for (EventHandler<KeyEvent> eventHandler : this.keyBindings.values()) {
+            this.primaryScene.removeEventFilter(KeyEvent.KEY_PRESSED, eventHandler);
+        }
+        this.keyBindings.clear();
     }
     
     @Override
@@ -386,6 +397,12 @@ public class JavaFXApplication extends ApplicationController {
             Pane content = this.tabContentMap.get(viewName);
             content.getChildren().remove((Node) control);
             this.namedControls.get(viewName).remove(controlName);
+            
+            // If the control is a button with a key binding remove the event filter from the scene
+            if (this.keyBindings.containsKey(control)) {
+                this.primaryScene.removeEventFilter(KeyEvent.KEY_PRESSED, this.keyBindings.get(control));
+                this.keyBindings.remove(control);
+            }
         }
     }
     
@@ -1293,6 +1310,7 @@ public class JavaFXApplication extends ApplicationController {
         flowPane.setLayoutX(coordinates.x);
         flowPane.setLayoutY(coordinates.y);
         flowPane.setMaxSize(terminalCoordinates.x - coordinates.x, terminalCoordinates.y - coordinates.y);
+        System.out.println("JavaFXApplication: displayValidatedInputField: animation placed at " + coordinates.x + " , " + coordinates.y + ", width=" + flowPane.getMaxWidth() + ", height=" + flowPane.getMaxHeight());
         
         // Display a row of buttons with the possible input values
         int buttonHeight = 2 * this.buttonFontHeight;   // Calculate double height of text
@@ -1311,22 +1329,22 @@ public class JavaFXApplication extends ApplicationController {
                 value = value.substring(1, value.length());
                 glow = true;
             }
-            Integer keyBinding = null;
+            KeyCode keyBinding = null;
             String eventValue = value;
             if (value.toUpperCase().contains("&UP;")) {
-                //keyBinding = SWT.ARROW_UP;
+                keyBinding = KeyCode.UP;
                 eventValue = value.replaceFirst("(?i)" + "&UP;", "");
                 value = value.replaceFirst("(?i)" + "&UP;", "\u2B06");  // Case insensitive reg ex
             } else if (value.toUpperCase().contains("&DOWN;")) {
-                //keyBinding = SWT.ARROW_DOWN;
+                keyBinding = KeyCode.DOWN;
                 eventValue = value.replaceFirst("(?i)" + "&DOWN;", "");
                 value = value.replaceFirst("(?i)" + "&DOWN;", "\u2B07");  // Case insensitive reg ex
             } else if (value.toUpperCase().contains("&LEFT;")) {
-                //keyBinding = SWT.ARROW_LEFT;
+                keyBinding = KeyCode.LEFT;
                 eventValue = value.replaceFirst("(?i)" + "&LEFT;", "");
                 value = value.replaceFirst("(?i)" + "&LEFT;", "\u2190");  // Case insensitive reg ex
             } else if (value.toUpperCase().contains("&RIGHT;")) {
-                //keyBinding = SWT.ARROW_RIGHT;
+                keyBinding = KeyCode.RIGHT;
                 eventValue = value.replaceFirst("(?i)" + "&RIGHT;", "");
                 value = value.replaceFirst("(?i)" + "&RIGHT;", "\u27A1");  // Case insensitive reg ex
             }
@@ -1345,32 +1363,17 @@ public class JavaFXApplication extends ApplicationController {
                 listener.onEvent(name, finalValue);
             });
             
-            /*
             if (keyBinding != null) {
-                // A button can only trap key events when it has focus, so add a key listener to the shell that gets removed when the button is disposed
-                final int finalKeyBinding = (int)keyBinding;
-                final SWTApplication thisAppController = this;
-                final KeyListener textAreaKeyListener = new KeyAdapter() {
-                    @Override
-                    public void keyPressed(KeyEvent e) {
-                        if ((e.keyCode == finalKeyBinding) && (!button.isDisposed())) {
-                            if ((thisAppController.lastProcessedKeyEvent == null) || (thisAppController.lastProcessedKeyEvent.time != e.time) || (thisAppController.lastProcessedKeyEvent.keyCode != e.keyCode)) {
-                                e.doit = false; // e hasn't been checked yet and the refreshed page's event handling will process the event in an infinite loop
-                                if (!allowRepeatClicks) {
-                                    button.setEnabled(false);
-                                }
-                                thisAppController.lastProcessedKeyEvent = e; // e.doit isn't processed until this method returns so to further prevent an infinite loop guarantee the key event is new
-                                listener.onEvent(name, finalValue);
-                            }
-                        }
+                final KeyCode keyBindingLamda = keyBinding;
+                EventHandler<KeyEvent> arrowKeyHandler = event -> {
+                    if (event.getCode() == keyBindingLamda) {
+                        button.fire();
+                        event.consume(); // Stop TabPane from using it
                     }
                 };
-                textArea.addKeyListener(textAreaKeyListener);
-                button.addDisposeListener(e -> {
-                    textArea.removeKeyListener(textAreaKeyListener);
-                });
+                this.primaryScene.addEventFilter(KeyEvent.KEY_PRESSED, arrowKeyHandler);
+                this.keyBindings.put(button, arrowKeyHandler);
             }
-            */
             
             // TODO - newButton should be used to prevent code duplication
             if (glow) {
@@ -1510,8 +1513,8 @@ public class JavaFXApplication extends ApplicationController {
     public Coordinates convertToCoordinates(int row, int column) {
         System.out.println("JavaFXApplication: convertToCoordinates: row=" + row + ", column=" + column);
         
-        int x = (int) (column * this.fontWidth) - this.fontWidth;
-        int y = (int) (row * this.fontHeight) - this.fontHeight;
+        int x = (int) ((column - 1) * this.fontWidth) - this.fontWidth;
+        int y = (int) ((row - 1) * this.fontHeight) - this.fontHeight;
         Coordinates coordinates = new Coordinates(x, y);
         
         return coordinates;
