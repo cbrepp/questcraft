@@ -1862,5 +1862,14 @@ public class SWTApplication extends ApplicationController {
         
         return targetList;
     }
-    
+ 
+    @Override
+    public void pauseAllSounds() {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+
+    @Override
+    public void unpauseAllSounds() {
+        throw new UnsupportedOperationException("Not supported.");
+    }
 }

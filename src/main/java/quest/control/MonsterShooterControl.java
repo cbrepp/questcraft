@@ -514,11 +514,14 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
                 if ((this.quest.variables.containsKey("animation-paused")) && (this.quest.variables.get("animation-paused").equals("true"))) {
                     System.out.println("MonsterShooterControl: onEvent: Unpausing");
                     this.quest.variables.put("animation-paused", "false");
+                    this.quest.appController.unpauseAllSounds();
+                    this.quest.appController.playSound("/assets/sounds/pause.mp3", false);
                 } else {
                     System.out.println("MonsterShooterControl: onEvent: Pausing");
                     this.quest.variables.put("animation-paused", "true");
+                    this.quest.appController.pauseAllSounds();
+                    this.quest.appController.playSound("/assets/sounds/pause.mp3", false);
                 }
-                this.quest.appController.playSound("/assets/sounds/pause.mp3", false);
             }
         }
     }
@@ -678,11 +681,7 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
         List<String> valueList = new ArrayList<>(Arrays.asList("&left; Move Left+&up; Launch+&right; Move Right+P".split("\\+")));
         int buttonRow = this.quest.buttonRow;
         int endColumn;
-        if (this.quest.currentDisplayPage == Quest.RIGHT_PAGE) {
-            endColumn = this.quest.rightPageEndingColumn + 2;
-        } else {
-            endColumn = this.quest.leftPageEndingColumn + 2;
-        }
+        endColumn = this.column + this.quest.appController.getColumns(backgroundImageFileName) + 20;
         this.quest.appController.displayValidatedInputField(this.quest.name, ANIMATION_CONTROLS_NAME, valueList, buttonRow, this.column, endColumn, 0, this, true);
         
         return "";

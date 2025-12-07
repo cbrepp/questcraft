@@ -241,4 +241,14 @@ public class AWTApplication extends ApplicationController {
     public void stopAllSounds() {
         Utility.stopAllSounds();
     }
+    
+    @Override
+    public void pauseAllSounds() {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+
+    @Override
+    public void unpauseAllSounds() {
+        throw new UnsupportedOperationException("Not supported.");
+    }
 }

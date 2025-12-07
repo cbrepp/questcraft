@@ -6,7 +6,6 @@ import app.model.Coordinates;
 import app.model.SpriteModel;
 import java.io.File;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,6 +13,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import javafx.animation.KeyFrame;
 import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
@@ -73,6 +74,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer.Status;
 import javax.imageio.metadata.IIOMetadata;
 import org.w3c.dom.NamedNodeMap;
 
@@ -85,6 +87,7 @@ public class JavaFXApplication extends ApplicationController {
     public static List<String> TIMER_EVENTS = new ArrayList();
     
     public DelegateApplication app;
+    public final Lock audioLock = new ReentrantLock();
     public Font buttonFont;
     public int buttonFontHeight = 0;
     public int buttonFontWidth = 0;
@@ -205,6 +208,7 @@ public class JavaFXApplication extends ApplicationController {
         
         // Initialize the application's tab folder and set it as the application's primary scene
         this.tabFolder = new TabPane();
+        this.tabFolder.setPrefSize(dimensions.x, dimensions.y);
         this.tabFolder.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
             String selectedTabTitle = newTab.getText();
             System.out.println("JavaFXApplication: showPrimaryStage: Selected tab " + selectedTabTitle);
@@ -222,6 +226,7 @@ public class JavaFXApplication extends ApplicationController {
         scrollPane.setContent(this.tabFolder);
         scrollPane.setHbarPolicy(ScrollBarPolicy.AS_NEEDED);
         scrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
+
         //this.primaryScene = new Scene(this.tabFolder, dimensions.x, dimensions.y);
         this.primaryScene = new Scene(scrollPane, dimensions.x, dimensions.y);
         final String CSS = 
@@ -1279,7 +1284,7 @@ public class JavaFXApplication extends ApplicationController {
 
         Pane content = this.tabContentMap.get(viewName);
         Coordinates coordinates = this.convertToCoordinates(row, startColumn);
-        Coordinates terminalCoordinates = this.convertToCoordinates(row, endColumn);
+        Coordinates terminalCoordinates = this.convertToCoordinates(row + 2, endColumn);
         FlowPane flowPane = new FlowPane();
         flowPane.setHgap(10);
         flowPane.setVgap(10);
@@ -1967,9 +1972,12 @@ public class JavaFXApplication extends ApplicationController {
             return;
         }
 
+        this.audioLock.lock();
+        System.out.println("JavaFXApplication: playSound: Claimed lock");
+        
         try {
             Media media = new Media(resource.toURI().toString());        
-            MediaPlayer mediaPlayer = new MediaPlayer(media);
+            final MediaPlayer mediaPlayer = new MediaPlayer(media);
             if (this.mediaPlayers.containsKey(fileName)) {
                 List<MediaPlayer> list = this.mediaPlayers.get(fileName);
                 list.add(mediaPlayer);
@@ -1981,13 +1989,32 @@ public class JavaFXApplication extends ApplicationController {
                 System.out.println("JavaFXApplication: playSound: Added file to collection");
             }
             mediaPlayer.play();
-            if (isLoop) {
-                mediaPlayer.setOnEndOfMedia(() -> {
-                    mediaPlayer.seek(javafx.util.Duration.ZERO);
-                });
-            }
+            mediaPlayer.setOnEndOfMedia(() -> {
+                this.audioLock.lock();
+                System.out.println("JavaFXApplication: playSound: End of media: Claimed lock");
+                try {
+                    if (isLoop) {
+                        mediaPlayer.seek(javafx.util.Duration.ZERO);
+                    } else {
+                        List<MediaPlayer> playerList = this.mediaPlayers.get(fileName);
+                        if (playerList != null) {
+                            playerList.remove(mediaPlayer);
+                            if (playerList.isEmpty()) {
+                                this.mediaPlayers.remove(fileName);
+                            }
+                        }
+                        mediaPlayer.dispose();
+                    }
+                } catch (Exception e) {
+                    System.err.println("JavaFXApplication: playSound: End of media: Error: " + e.getMessage());
+                } finally {
+                    this.audioLock.unlock();
+                }
+            });
         } catch (Exception e) {
-            System.err.println("JavaFXApplication: playSound: Error setting up MediaPlayer: " + e.getMessage());
+            System.err.println("JavaFXApplication: playSound: Error: " + e.getMessage());
+        } finally {
+            this.audioLock.unlock();
         }
         
         // Fallback code for troublshooting whether missing codecs are to blame
@@ -2001,7 +2028,16 @@ public class JavaFXApplication extends ApplicationController {
     @Override
     public void stopSound(String fileName, Boolean removeAudioPlayer) {
         System.out.println("JavaFXApplication: stopSound: fileName=" + fileName + ", removeAudioPlayer=" + removeAudioPlayer);
-        if (this.mediaPlayers.containsKey(fileName)) {
+        
+        if (!this.mediaPlayers.containsKey(fileName)) {
+            System.out.println("JavaFXApplication: stopSound: Collection for file not found");
+            return;
+        }
+
+        this.audioLock.lock();
+        System.out.println("JavaFXApplication: stopSound: Claimed lock");
+        
+        try {
             List<MediaPlayer> list = this.mediaPlayers.get(fileName);
             for (MediaPlayer mediaPlayer : list) {
                 if (mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
@@ -2024,20 +2060,79 @@ public class JavaFXApplication extends ApplicationController {
 
                 }
             }
-        } else {
-            System.out.println("JavaFXApplication: stopSound: Collection for file not found");
+        } catch (Exception e) {
+            System.err.println("JavaFXApplication: stopSound: Error: " + e.getMessage());
+        } finally {
+            this.audioLock.unlock();
         }
     }
     
     @Override
     public void stopAllSounds() {
         System.out.println("JavaFXApplication: stopAllSounds");
-        Iterator<Map.Entry<String, List<MediaPlayer>>> iterator = this.mediaPlayers.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<String, List<MediaPlayer>> entry = iterator.next();
-            this.stopSound(entry.getKey(), false);
-            iterator.remove();
+        
+        this.audioLock.lock();
+        System.out.println("JavaFXApplication: stopAllSounds: Claimed lock");
+        
+        try {
+            Iterator<Map.Entry<String, List<MediaPlayer>>> iterator = this.mediaPlayers.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<String, List<MediaPlayer>> entry = iterator.next();
+                this.stopSound(entry.getKey(), false);
+                iterator.remove();
+            }
+        } catch (Exception e) {
+            System.err.println("JavaFXApplication: stopAllSounds: Error: " + e.getMessage());
+        } finally {
+            this.audioLock.unlock();
         }
     }
     
+    @Override
+    public void pauseAllSounds() {
+        System.out.println("JavaFXApplication: pauseAllSounds");
+        
+        this.audioLock.lock();
+        System.out.println("JavaFXApplication: pauseAllSounds: Claimed lock");
+        
+        try {
+            for (Map.Entry<String, List<MediaPlayer>> entry : this.mediaPlayers.entrySet()) {
+                List<MediaPlayer> mediaPlayers = entry.getValue();
+                for (MediaPlayer mediaPlayer : mediaPlayers) {
+                    if (mediaPlayer.getStatus() == Status.PLAYING) {
+                        System.out.println("JavaFXApplication: pauseAllSounds: Pausing " + entry.getKey());
+                        mediaPlayer.pause();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("JavaFXApplication: pauseAllSounds: Error: " + e.getMessage());
+        } finally {
+            this.audioLock.unlock();
+        }
+    }
+    
+    @Override
+    public void unpauseAllSounds() {
+        System.out.println("JavaFXApplication: unpauseAllSounds");
+        
+        this.audioLock.lock();
+        System.out.println("JavaFXApplication: unpauseAllSounds: Claimed lock");
+        
+        try {
+            for (Map.Entry<String, List<MediaPlayer>> entry : this.mediaPlayers.entrySet()) {
+                List<MediaPlayer> mediaPlayers = entry.getValue();
+                for (MediaPlayer mediaPlayer : mediaPlayers) {
+                    if (mediaPlayer.getStatus() == Status.PAUSED) {
+                        System.out.println("JavaFXApplication: unpauseAllSounds: Unpausing " + entry.getKey());
+                        mediaPlayer.play();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("JavaFXApplication: unpauseAllSounds: Error: " + e.getMessage());
+        } finally {
+            this.audioLock.unlock();
+        }
+    }
 }

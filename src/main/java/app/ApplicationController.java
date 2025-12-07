@@ -81,6 +81,8 @@ public abstract class ApplicationController {
     public abstract void playSound(String fileName, Boolean isLoop);
     public abstract void stopSound(String fileName, Boolean removeAudioPlayer);
     public abstract void stopAllSounds();
+    public abstract void pauseAllSounds();
+    public abstract void unpauseAllSounds();
     public abstract void updateFloatingText(String viewName, String name, String text);
     
     public static void main(String[] args) {
