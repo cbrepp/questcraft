@@ -48,7 +48,7 @@
           <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
           <transformers>
             <transformer>
-              <mainClass>app.JavaFXApplication</mainClass>
+              <mainClass>app.SWTApplication</mainClass>
             </transformer>
           </transformers>
           <filters>

@@ -99,6 +99,7 @@ public class JavaFXApplication extends ApplicationController {
     public int fontWidth = 0;
     public Map<Object, EventHandler<KeyEvent>> keyBindings = new HashMap();
     public ApplicationView lastSelectedView;
+    public HashMap<String, List<MediaPlayer>> mediaPlayers = new HashMap();
     public Font monospaceFont;
     public HashMap<String, Map<String, Object>> namedControls;
     public ApplicationView parentView;
@@ -112,7 +113,6 @@ public class JavaFXApplication extends ApplicationController {
     public int textColumns = 0;
     public int textRows = 0;
     public HashMap<String, ApplicationView> views;
-    public HashMap<String, List<MediaPlayer>> mediaPlayers = new HashMap();
     
     /**
      * The implementation of this method is a work-around to inheritance not being fully implemented in java
@@ -1988,7 +1988,7 @@ public class JavaFXApplication extends ApplicationController {
             } else {
                 List<MediaPlayer> list = new ArrayList();
                 list.add(mediaPlayer);
-                mediaPlayers.put(fileName, list);
+                this.mediaPlayers.put(fileName, list);
                 System.out.println("JavaFXApplication: playSound: Added file to collection");
             }
             mediaPlayer.play();
@@ -2049,18 +2049,12 @@ public class JavaFXApplication extends ApplicationController {
                 }
                 if (removeAudioPlayer) {
                     HashMap<String, List<MediaPlayer>> allMediaPlayers = this.mediaPlayers;
-                    mediaPlayer.statusProperty().addListener((ObservableValue<? extends MediaPlayer.Status> observable, MediaPlayer.Status oldValue, MediaPlayer.Status newValue) -> {
-                        if (newValue == MediaPlayer.Status.STOPPED) {
-                            System.out.println("JavaFXApplication: stopSound: Media has successfully stopped. Performing cleanup tasks now.");
-                            list.remove(mediaPlayer);
-                            if (list.isEmpty()) {
-                                allMediaPlayers.remove(fileName);
-                                mediaPlayer.dispose();
-                                System.out.println("JavaFXApplication: stopSound: Removed media player");
-                            }
-                        }
-                    });
-
+                    list.remove(mediaPlayer);
+                    if (list.isEmpty()) {
+                        allMediaPlayers.remove(fileName);
+                        mediaPlayer.dispose();
+                        System.out.println("JavaFXApplication: stopSound: Removed media player");
+                    }
                 }
             }
         } catch (Exception e) {
@@ -2078,12 +2072,16 @@ public class JavaFXApplication extends ApplicationController {
         System.out.println("JavaFXApplication: stopAllSounds: Claimed lock");
         
         try {
-            Iterator<Map.Entry<String, List<MediaPlayer>>> iterator = this.mediaPlayers.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Map.Entry<String, List<MediaPlayer>> entry = iterator.next();
-                this.stopSound(entry.getKey(), false);
-                iterator.remove();
+            for (String fileName : this.mediaPlayers.keySet()) {
+                for (MediaPlayer mediaPlayer : this.mediaPlayers.get(fileName)) {
+                    if (mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
+                        mediaPlayer.stop();
+                        mediaPlayer.dispose();
+                        System.out.println("JavaFXApplication: stopSound: Stopped media : " + fileName);
+                    }
+                }
             }
+            this.mediaPlayers.clear();
         } catch (Exception e) {
             System.err.println("JavaFXApplication: stopAllSounds: Error: " + e.getMessage());
         } finally {
