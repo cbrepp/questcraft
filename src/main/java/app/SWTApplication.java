@@ -1,10 +1,10 @@
 package app;
 
+import app.desktop.SoundController;
 import app.model.BaseModel;
 import app.model.Coordinates;
 import app.model.SpriteModel;
 import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -14,17 +14,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import javax.imageio.ImageIO;
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.DataLine;
-import javax.sound.sampled.LineEvent;
-import javax.sound.sampled.LineListener;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
@@ -85,7 +76,6 @@ public class SWTApplication extends ApplicationController {
     public static List<String> TIMER_EVENTS = new ArrayList();
     public static int direction = 1;
     
-    public final Lock audioLock = new ReentrantLock();
     public Display display;
     public String emptyBook;
     public int fontHeight = 0;
@@ -95,11 +85,11 @@ public class SWTApplication extends ApplicationController {
     public Font buttonFont;
     public KeyEvent lastProcessedKeyEvent;
     public ApplicationView lastSelectedView;
-    public HashMap<String, List<Clip>> mediaPlayers = new HashMap();
     public Font monospaceFont;
     public HashMap<String, Map<String, List<Control>>> namedControls;
     public ApplicationView parentView;
     public Shell shell;
+    public SoundController soundController = new SoundController();
     public List<SpriteModel> sprites;
     public CTabFolder tabFolder;
     public HashMap<String, Composite> tabCompositeMap;
@@ -276,7 +266,7 @@ public class SWTApplication extends ApplicationController {
             this.shell.dispose();
         }
         
-        Utility.stopAllSounds();
+        this.soundController.stopAllSounds();
     }
     
     @Override
@@ -1704,173 +1694,31 @@ public class SWTApplication extends ApplicationController {
     @Override
     public void playSound(String fileName, Boolean isLoop) {
         System.out.println("SWTApplication: playSound: fileName=" + fileName + ", isLoop=" + isLoop);
-
-        InputStream inputStream = SWTApplication.class.getResourceAsStream(fileName);
-        if (inputStream == null) {
-            System.err.println("SWTApplication: playSound: File not found!");
-            return;
-        }
-
-        this.audioLock.lock();
-        System.out.println("SWTApplication: playSound: Claimed lock");
-        
-        try {
-            InputStream bufferedIn = new BufferedInputStream(inputStream);
-            AudioInputStream audioStream = AudioSystem.getAudioInputStream(bufferedIn);
-            AudioFormat format = audioStream.getFormat();
-            DataLine.Info info = new DataLine.Info(Clip.class, format);
-            Clip clip = (Clip) AudioSystem.getLine(info);
-            clip.open(audioStream);
-            
-            if (this.mediaPlayers.containsKey(fileName)) {
-                List<Clip> list = this.mediaPlayers.get(fileName);
-                list.add(clip);
-                System.out.println("SWTApplication: playSound: Added new collection for file");
-            } else {
-                List<Clip> list = new ArrayList();
-                list.add(clip);
-                this.mediaPlayers.put(fileName, list);
-                System.out.println("SWTApplication: playSound: Added file to collection");
-            }
-            if (isLoop) {
-                clip.loop(Clip.LOOP_CONTINUOUSLY);
-            } else {
-                clip.start();
-
-                clip.addLineListener((LineEvent event) -> {
-                    try {
-                        if (event.getType() == LineEvent.Type.STOP) {
-                            SWTApplication.this.audioLock.lock();
-                            System.out.println("SWTApplication: playSound: End of media: Claimed lock");
-                            List<Clip> playerList = SWTApplication.this.mediaPlayers.get(fileName);
-                            if (playerList != null) {
-                                playerList.remove(clip);
-                                if (playerList.isEmpty()) {
-                                    SWTApplication.this.mediaPlayers.remove(fileName);
-                                }
-                            }
-                            clip.close();
-                        }
-                    } catch (Exception e) {
-                        System.err.println("SWTApplication: playSound: End of media: Error: " + e.getMessage());
-                    } finally {
-                        SWTApplication.this.audioLock.unlock();
-                    }
-                });
-            }
-        } catch (Exception e) {
-            System.err.println("SWTApplication: playSound: Error: " + e.getMessage());
-        } finally {
-            this.audioLock.unlock();
-        }
+        this.soundController.playSound(fileName, isLoop);
     }
     
     @Override
     public void stopSound(String fileName, Boolean removeAudioPlayer) {
         System.out.println("SWTApplication: stopSound: fileName=" + fileName + ", removeAudioPlayer=" + removeAudioPlayer);
-        
-        if (!this.mediaPlayers.containsKey(fileName)) {
-            System.out.println("SWTApplication: stopSound: Collection for file not found");
-            return;
-        }
-
-        this.audioLock.lock();
-        System.out.println("SWTApplication: stopSound: Claimed lock");
-        
-        try {
-            List<Clip> list = this.mediaPlayers.get(fileName);
-            for (Clip mediaPlayer : list) {
-                if (mediaPlayer.isRunning()) {
-                    mediaPlayer.stop();
-                    mediaPlayer.setFramePosition(0); // Please be kind, rewind
-                    System.out.println("SWTApplication: stopSound: Stopped media");
-                }
-                if (removeAudioPlayer) {
-                    HashMap<String, List<Clip>> allMediaPlayers = this.mediaPlayers;
-                    list.remove(mediaPlayer);
-                    if (list.isEmpty()) {
-                        allMediaPlayers.remove(fileName);
-                        mediaPlayer.close();
-                        System.out.println("SWTApplication: stopSound: Removed media player");
-                    }
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("SWTApplication: stopSound: Error: " + e.getMessage());
-        } finally {
-            this.audioLock.unlock();
-        }
+        this.soundController.stopSound(fileName, removeAudioPlayer);
     }
     
     @Override
     public void stopAllSounds() {
         System.out.println("SWTApplication: stopAllSounds");
-        
-        this.audioLock.lock();
-        System.out.println("SWTApplication: stopAllSounds: Claimed lock");
-        
-        try {
-            for (String fileName : this.mediaPlayers.keySet()) {
-                for (Clip mediaPlayer : this.mediaPlayers.get(fileName)) {
-                    if (mediaPlayer.isRunning()) {
-                        mediaPlayer.stop();
-                        mediaPlayer.close();
-                        System.out.println("SWTApplication: stopSound: Stopped media : " + fileName);
-                    }
-                }
-            }
-            this.mediaPlayers.clear();
-        } catch (Exception e) {
-            System.err.println("SWTApplication: stopAllSounds: Error: " + e.getMessage());
-        } finally {
-            this.audioLock.unlock();
-        }
+        this.soundController.stopAllSounds();
     }
     
     @Override
     public void pauseAllSounds() {
         System.out.println("SWTApplication: pauseAllSounds");
-        
-        this.audioLock.lock();
-        System.out.println("SWTApplication: pauseAllSounds: Claimed lock");
-        
-        try {
-            for (String fileName : this.mediaPlayers.keySet()) {
-                for (Clip mediaPlayer : this.mediaPlayers.get(fileName)) {
-                    if (mediaPlayer.isRunning()) {
-                        mediaPlayer.stop(); // Stopping without rewinding pauses
-                        System.out.println("SWTApplication: pauseAllSounds: Paused media : " + fileName);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("SWTApplication: pauseAllSounds: Error: " + e.getMessage());
-        } finally {
-            this.audioLock.unlock();
-        }
+        this.soundController.pauseAllSounds();
     }
 
     @Override
     public void unpauseAllSounds() {
         System.out.println("SWTApplication: unpauseAllSounds");
-        
-        this.audioLock.lock();
-        System.out.println("SWTApplication: unpauseAllSounds: Claimed lock");
-        
-        try {
-            for (String fileName : this.mediaPlayers.keySet()) {
-                for (Clip mediaPlayer : this.mediaPlayers.get(fileName)) {
-                    if (!mediaPlayer.isRunning()) {
-                        mediaPlayer.start();
-                        System.out.println("SWTApplication: unpauseAllSounds: Paused media : " + fileName);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("SWTApplication: unpauseAllSounds: Error: " + e.getMessage());
-        } finally {
-            this.audioLock.unlock();
-        }
+        this.soundController.unpauseAllSounds();
     }
     
     @Override

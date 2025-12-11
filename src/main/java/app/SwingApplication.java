@@ -1,5 +1,6 @@
 package app;
 
+import app.desktop.SoundController;
 import app.model.BaseModel;
 import app.model.Coordinates;
 import app.model.SpriteModel;
@@ -13,6 +14,8 @@ import java.util.Map;
  */
 public class SwingApplication extends ApplicationController {
     
+    public SoundController soundController = new SoundController();
+    
     /**
      * The implementation of this method is a work-around to inheritance not being fully implemented in java
      * for static methods.  While child classes can inherit a static method from a parent class, there is no
@@ -21,6 +24,7 @@ public class SwingApplication extends ApplicationController {
      */
     public static void main(String[] args) {
         if (args.length == 0) {
+            args = new String[1];
             args[0] = new Throwable().getStackTrace()[0].getClassName();
         }
         ApplicationController.main(args);
@@ -228,26 +232,31 @@ public class SwingApplication extends ApplicationController {
     
     @Override
     public void playSound(String fileName, Boolean isLoop) {
-        Utility.playSound(fileName, isLoop);
+        System.out.println("SWTApplication: playSound: fileName=" + fileName + ", isLoop=" + isLoop);
+        this.soundController.playSound(fileName, isLoop);
     }
     
     @Override
     public void stopSound(String fileName, Boolean removeAudioPlayer) {
-        Utility.stopSound(fileName, true);
+        System.out.println("SWTApplication: stopSound: fileName=" + fileName + ", removeAudioPlayer=" + removeAudioPlayer);
+        this.soundController.stopSound(fileName, removeAudioPlayer);
     }
     
     @Override
     public void stopAllSounds() {
-        Utility.stopAllSounds();
+        System.out.println("SWTApplication: stopAllSounds");
+        this.soundController.stopAllSounds();
     }
     
     @Override
     public void pauseAllSounds() {
-        throw new UnsupportedOperationException("Not supported.");
+        System.out.println("SWTApplication: pauseAllSounds");
+        this.soundController.pauseAllSounds();
     }
 
     @Override
     public void unpauseAllSounds() {
-        throw new UnsupportedOperationException("Not supported.");
+        System.out.println("SWTApplication: unpauseAllSounds");
+        this.soundController.unpauseAllSounds();
     }
 }
