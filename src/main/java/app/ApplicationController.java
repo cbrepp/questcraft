@@ -77,7 +77,7 @@ public abstract class ApplicationController {
     public abstract int getButtonColumns(String buttonText);
     public abstract int getButtonRows();
     public abstract void setBackgroundImage(String viewName, String imageFileName);
-    public abstract void addAnimation(String viewName, String name, int row, int startColumn, String backgroundImageFileName, List<SpriteModel> sprites, double animationDelay, AnimationView listener);
+    public abstract void addAnimation(String viewName, String name, int row, int startColumn, String backgroundImageFileName, List<String> imageFiles, double animationDelay, AnimationView listener);
     public abstract void playSound(String fileName, Boolean isLoop);
     public abstract void stopSound(String fileName, Boolean removeAudioPlayer);
     public abstract void stopAllSounds();

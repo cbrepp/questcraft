@@ -1498,7 +1498,7 @@ public class SWTApplication extends ApplicationController {
     }
     
     @Override
-    public void addAnimation(String viewName, String name, int row, int column, String backgroundImageFileName, List<SpriteModel> sprites, double animationDelay, AnimationView listener) {
+    public void addAnimation(String viewName, String name, int row, int column, String backgroundImageFileName, List<String> imageFiles, double animationDelay, AnimationView listener) {
         System.out.println("SWTApplication: addAnimation: viewName=" + viewName + ", name=" + name + ", row=" + row + ", column=" + column + ", backgroundImageFileName=" + backgroundImageFileName + ", sprite count=" + sprites.size() + ", animationDelay=" + animationDelay + ", listener=" + listener);
         
         Composite composite = this.tabCompositeMap.get(viewName);
@@ -1507,7 +1507,7 @@ public class SWTApplication extends ApplicationController {
         Point topLeft = this.convertToCoordinates(row - 2, column);
         Image backgroundImage = this.loadImage(backgroundImageFileName);
         Coordinates widthAndHeight = this.getDimensions(backgroundImageFileName);
-        this.sprites = sprites;
+        this.sprites = sprites; // TODO - Replace sprites with imageFiles
         
         // Build a map of scaled images
         Map<String, Image> spriteImages = new HashMap();

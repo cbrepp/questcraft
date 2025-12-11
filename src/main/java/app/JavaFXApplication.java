@@ -1680,20 +1680,17 @@ public class JavaFXApplication extends ApplicationController {
     }
     
     @Override
-    public void addAnimation(String viewName, String name, int row, int column, String backgroundImageFileName, List<SpriteModel> sprites, double animationDelay, AnimationView listener) {
-        System.out.println("JavaFXApplication: addAnimation: viewName=" + viewName + ", name=" + name + ", row=" + row + ", column=" + column + ", backgroundImageFileName=" + backgroundImageFileName + ", sprite count=" + sprites.size() + ", animationDelay=" + animationDelay + ", listener=" + listener);
+    public void addAnimation(String viewName, String name, int row, int column, String backgroundImageFileName, List<String> imageFiles, double animationDelay, AnimationView listener) {
+        System.out.println("JavaFXApplication: addAnimation: viewName=" + viewName + ", name=" + name + ", row=" + row + ", column=" + column + ", backgroundImageFileName=" + backgroundImageFileName + ", image file count=" + imageFiles.size() + ", animationDelay=" + animationDelay + ", listener=" + listener);
                 
         // Cache each sprite image
         Map<String, Image> spriteImages = new HashMap();
-        for (SpriteModel sprite : sprites) {
-            if (sprite.imageFile == null) {
+        for (String imageFile : imageFiles) {
+            if (spriteImages.containsKey(imageFile)) {
                 continue;
             }
-            if (spriteImages.containsKey(sprite.imageFile)) {
-                continue;
-            }
-            Image spriteImage = this.loadImage(sprite.imageFile);
-            spriteImages.put(sprite.imageFile, spriteImage);
+            Image spriteImage = this.loadImage(imageFile);
+            spriteImages.put(imageFile, spriteImage);
         }
         
         // Place the animation background

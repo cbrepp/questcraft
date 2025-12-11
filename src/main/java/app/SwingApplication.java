@@ -226,7 +226,7 @@ public class SwingApplication extends ApplicationController {
     }
     
     @Override
-    public void addAnimation(String viewName, String name, int row, int startColumn, String backgroundImageFileName, List<SpriteModel> sprites, double animationDelay, AnimationView listener) {
+    public void addAnimation(String viewName, String name, int row, int startColumn, String backgroundImageFileName, List<String> imageFiles, double animationDelay, AnimationView listener) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
