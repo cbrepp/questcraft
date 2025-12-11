@@ -483,8 +483,6 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
             sprites.add(sprite);
         }
         
-        // Return null to stop the animation
-        //System.out.println("MonsterShooterControl: onAnimate: Returning " + sprites.size() + " sprites");
         return sprites;
     }
     
@@ -681,7 +679,7 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
         List<String> valueList = new ArrayList<>(Arrays.asList("&left; Move Left+&up; Launch+&right; Move Right+P".split("\\+")));
         int buttonRow = this.quest.buttonRow;
         int endColumn;
-        endColumn = this.column + this.quest.appController.getColumns(backgroundImageFileName) + 20;
+        endColumn = this.column + this.quest.appController.getColumns(backgroundImageFileName) + 1;
         this.quest.appController.displayValidatedInputField(this.quest.name, ANIMATION_CONTROLS_NAME, valueList, buttonRow, this.column, endColumn, 0, this, true);
         
         return "";

@@ -1124,8 +1124,10 @@ public class SWTApplication extends ApplicationController {
     }
     
     @Override
-    public int displayImage(String viewName, String fileName, int row, int column) {
-        System.out.println("SWTApplication: displayImage: viewName=" + viewName + ", fileName=" + fileName + ", row=" + row + ", column=" + column);
+    public int displayImage(String viewName, String fileName, int row, int column, Boolean fillParent) {
+        System.out.println("SWTApplication: displayImage: viewName=" + viewName + ", fileName=" + fileName + ", row=" + row + ", column=" + column + ", fillParent=" + fillParent);
+        
+        // TODO - Implement fillParent
         
         StyledText textArea = this.tabStyledTextMap.get(viewName);
         Composite composite = this.tabCompositeMap.get(viewName);

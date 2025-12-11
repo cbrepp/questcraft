@@ -62,7 +62,7 @@ public abstract class ApplicationController {
     public abstract void displayLink(String viewName, String name, String linkText, int row, int column, int length, EventListener listener);
     public abstract void displayButton(String viewName, String name, String text, Integer row, Integer column, Integer endRow, Integer endColumn, Boolean isMonospace, String fontName, Boolean glow, EventListener listener);
     public abstract void displayOpenFileButton(String viewName, String name, String text, Integer row, Integer column, Integer endRow, Integer endColumn, Boolean isMonospace, String fontName, Boolean glow, EventListener listener);
-    public abstract int displayImage(String viewName, String fileName, int row, int column);
+    public abstract int displayImage(String viewName, String fileName, int row, int column, Boolean fillParent);
     public abstract void displayFloatingText(String viewName, String name, String text, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, app.Color fontColor, Integer fontSize, Integer fontStyle, String fontName);
     public abstract void displayInputField(String viewName, String name, String label, int length, int row, int column, String initValue, Boolean addButton, Boolean isMonospace, Boolean isUpperCase, Boolean isMultiUse, EventListener listener);
     public abstract void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, int alignment, EventListener listener, Boolean allowRepeatClicks);

@@ -39,6 +39,7 @@ public class ImageControl extends QuestControl {
             startingColumn = this.quest.leftPageStartingColumn;
             endingColumn = this.quest.leftPageEndingColumn;
         }
+        Boolean fillParent = false;
         if (alignment.toUpperCase().equals("CENTER")) {
             int halfColumns = ((endingColumn - startingColumn) / 2);
             int halfImageWidth = (this.quest.appController.getColumns(imageFile) / 2);
@@ -46,11 +47,14 @@ public class ImageControl extends QuestControl {
         } else if (alignment.toUpperCase().equals("RIGHT")) {
             int imageWidth = this.quest.appController.getColumns(imageFile);
             imageColumn = endingColumn - imageWidth + 1;
+        } else if (alignment.toUpperCase().equals("FILL")) {
+            fillParent = true;
+            imageColumn = 0;
         } else {
             imageColumn = startingColumn;
         }
         // TODO - Support right align
-        this.quest.appController.displayImage(Questcraft.QUEST, imageFile, row, imageColumn);
+        this.quest.appController.displayImage(Questcraft.QUEST, imageFile, row, imageColumn, fillParent);
     }
     
 }

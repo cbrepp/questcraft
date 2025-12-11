@@ -1139,7 +1139,7 @@ public class Application extends app.ApplicationView {
         Story showEyesSubpage = new Story();
         showEyesSubpage.contents.add("<timer-stop ominous>");
         showEyesSubpage.contents.add("<first-page>");
-        showEyesSubpage.contents.add("<image left /assets/images/cat-eyes.gif>");
+        showEyesSubpage.contents.add("<image fill /assets/images/cat-eyes.gif>");
         showEyesSubpage.contents.add("<timer-start 6 eyes>");
         eyesOfChungPage.subpages.put("TIMER ominous", showEyesSubpage);
 

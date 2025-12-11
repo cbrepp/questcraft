@@ -1108,22 +1108,33 @@ public class JavaFXApplication extends ApplicationController {
     }
     
     @Override
-    public int displayImage(String viewName, String fileName, int row, int column) {
-        System.out.println("JavaFXApplication: displayImage: viewName=" + viewName + ", fileName=" + fileName + ", row=" + row + ", column=" + column);
+    public int displayImage(String viewName, String fileName, int row, int column, Boolean fillParent) {
+        System.out.println("JavaFXApplication: displayImage: viewName=" + viewName + ", fileName=" + fileName + ", row=" + row + ", column=" + column + ", fillParent=" + fillParent);
         
         Pane content = this.tabContentMap.get(viewName);
 
-        final Image image = loadImage(fileName);
-        Coordinates dimensions = getDimensions(fileName);
-        
+        final Image image = loadImage(fileName);        
         ImageView imageView = new ImageView(image);
-        Coordinates coordinates = this.convertToCoordinates(row, column);
-        imageView.setLayoutX(coordinates.x + 1);
-        imageView.setLayoutY(coordinates.y + 1);
+        
+        int nextRow;
+        if (fillParent) {
+            imageView.setPreserveRatio(true);
+            imageView.setSmooth(true);
+            imageView.fitWidthProperty().bind(content.widthProperty());
+            imageView.fitHeightProperty().bind(content.heightProperty());
+            
+            nextRow = 0; // Advance the text cursor automatically
+        } else {
+            Coordinates dimensions = getDimensions(fileName);
+            Coordinates coordinates = this.convertToCoordinates(row, column);
+            imageView.setLayoutX(coordinates.x + 1);
+            imageView.setLayoutY(coordinates.y + 1);
+            
+            nextRow = row + this.getRows(dimensions.y); // Advance the text cursor automatically
+        }
+
         content.getChildren().add(imageView);
         
-        // Advance the text cursor automatically
-        int nextRow = row + this.getRows(dimensions.y);
         return nextRow;
     }
     
@@ -1309,7 +1320,7 @@ public class JavaFXApplication extends ApplicationController {
         content.getChildren().add(flowPane);
         flowPane.setLayoutX(coordinates.x);
         flowPane.setLayoutY(coordinates.y);
-        flowPane.setMaxSize(terminalCoordinates.x - coordinates.x, terminalCoordinates.y - coordinates.y);
+        flowPane.setPrefWidth(terminalCoordinates.x - coordinates.x);
         System.out.println("JavaFXApplication: displayValidatedInputField: animation placed at " + coordinates.x + " , " + coordinates.y + ", width=" + flowPane.getMaxWidth() + ", height=" + flowPane.getMaxHeight());
         
         // Display a row of buttons with the possible input values
@@ -1711,6 +1722,10 @@ public class JavaFXApplication extends ApplicationController {
         if (sprites == null) {
             System.out.println("JavaFXApplication: animate: No more sprite data, done");
             pause.stop();
+            if (animationBackground.getParent() != null) {
+                Pane content = this.tabContentMap.get(viewName);
+                content.getChildren().remove(animationBackground);
+            }
             return;
         }
 
