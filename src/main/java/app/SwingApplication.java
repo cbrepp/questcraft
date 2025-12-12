@@ -259,4 +259,14 @@ public class SwingApplication extends ApplicationController {
         System.out.println("SWTApplication: unpauseAllSounds");
         this.soundController.unpauseAllSounds();
     }
+    
+    @Override
+    public void sendToFront(String viewName, String name) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public void sendToBack(String viewName, String name) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
 }

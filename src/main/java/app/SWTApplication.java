@@ -1895,4 +1895,30 @@ public class SWTApplication extends ApplicationController {
         
         return targetList;
     }
+    
+    @Override
+    public void sendToFront(String viewName, String name) {
+        System.out.println("SWTApplication: sendToFront: viewName=" + viewName + ", name=" + name);
+        List<Control> controlList = this.namedControls.get(viewName).get(name);
+        if ((controlList == null) || (controlList.isEmpty())) {
+            System.out.println("SWTApplication: sendToFront: Control not found");
+            return;
+        }
+        for (Control control : controlList) {
+            control.moveAbove(null);
+        }
+    }
+    
+    @Override
+    public void sendToBack(String viewName, String name) {
+        System.out.println("SWTApplication: sendToBack: viewName=" + viewName + ", name=" + name);
+        List<Control> controlList = this.namedControls.get(viewName).get(name);
+        if ((controlList == null) || (controlList.isEmpty())) {
+            System.out.println("SWTApplication: sendToBack: Control not found");
+            return;
+        }
+        for (Control control : controlList) {
+            control.moveBelow(null);
+        }
+    }
 }

@@ -19,7 +19,6 @@ import javafx.animation.KeyFrame;
 import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
@@ -2152,5 +2151,27 @@ public class JavaFXApplication extends ApplicationController {
         } finally {
             this.audioLock.unlock();
         }
+    }
+    
+    @Override
+    public void sendToFront(String viewName, String name) {
+        System.out.println("JavaFXApplication: sendToFront: viewName=" + viewName + ", name=" + name);
+        Node control = (Node) this.namedControls.get(viewName).get(name);
+        if (control == null) {
+            System.out.println("JavaFXApplication: sendToBack: Control not found");
+            return;
+        }
+        control.toFront();
+    }
+    
+    @Override
+    public void sendToBack(String viewName, String name) {
+        System.out.println("JavaFXApplication: sendToBack: viewName=" + viewName + ", name=" + name);
+        Node control = (Node) this.namedControls.get(viewName).get(name);
+        if (control == null) {
+            System.out.println("JavaFXApplication: sendToBack: Control not found");
+            return;
+        }
+        control.toBack();
     }
 }

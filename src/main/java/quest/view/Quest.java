@@ -147,6 +147,8 @@ public class Quest extends app.ApplicationView {
         this.questControls.put(RemoveControl.NAME, new RemoveControl(this));
         this.questControls.put(SceneGotoControl.NAME, new SceneGotoControl(this));
         this.questControls.put(SceneControl.NAME, new SceneControl(this));
+        this.questControls.put(SendToBackControl.NAME, new SendToBackControl(this));
+        this.questControls.put(SendToFrontControl.NAME, new SendToFrontControl(this));
         this.questControls.put(SetCursorButtonRowControl.NAME, new SetCursorButtonRowControl(this));
         this.questControls.put(SetFocusOnFirstPageControl.NAME, new SetFocusOnFirstPageControl(this));
         this.questControls.put(SetFocusOnSecondPageControl.NAME, new SetFocusOnSecondPageControl(this));

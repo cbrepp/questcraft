@@ -84,6 +84,8 @@ public abstract class ApplicationController {
     public abstract void pauseAllSounds();
     public abstract void unpauseAllSounds();
     public abstract void updateFloatingText(String viewName, String name, String text);
+    public abstract void sendToFront(String viewName, String name);
+    public abstract void sendToBack(String viewName, String name);
     
     public static void main(String[] args) {
         System.out.println("ApplicationController: main: args=" + Arrays.toString(args));
