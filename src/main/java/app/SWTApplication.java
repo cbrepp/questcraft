@@ -1497,68 +1497,65 @@ public class SWTApplication extends ApplicationController {
         this.namedControls.get(viewName).put(name, controlList);
     }
     
+    public Image scaleImage(String imageFile, Double imageScale, Rectangle parentBounds) {
+        System.out.println("SWTApplication: scaleImage: imageFile=" + imageFile + ", imageScale=" + imageScale + ", parentBounds=" + parentBounds);
+        
+        Image originalImage = this.loadImage(imageFile);
+        Rectangle originalImageBounds = originalImage.getBounds();
+        int newHeight = (int) (parentBounds.height * imageScale);
+        double scaleRatio = ((double) newHeight) / ((double) originalImageBounds.height);
+        int newWidth = (int) (scaleRatio * originalImageBounds.width);
+        Image scaledImage = new Image(this.display, newWidth, newHeight);
+        GC scaledImageGC = new GC(scaledImage);
+        scaledImageGC.setAntialias(SWT.ON);
+        scaledImageGC.setInterpolation(SWT.HIGH);
+        scaledImageGC.drawImage(originalImage, 0, 0, originalImageBounds.width, originalImageBounds.height, 0, 0, newWidth, newHeight);
+        scaledImageGC.dispose();
+
+        // To preserve transparency, extract and file the alphaData array.
+        // For 32-bit data, every 4th byte (offset 3) is the alpha channel.
+        ImageData canvasData = scaledImage.getImageData();
+
+        // 4. Manually extract and *invert* the alphaData array
+        canvasData.alphaData = new byte[newWidth * newHeight];
+
+        for (int idx = 0; idx < (newWidth * newHeight); idx++) {
+            // Calculate the position of the alpha byte in the main data array (3rd offset)
+            int coord = (idx * 4) + 3; 
+
+            // Read the byte value. Bytes in Java are signed (-128 to 127), 
+            // so we mask with & 0xFF to treat them as unsigned integers (0 to 255) for logic.
+            int alphaValue = canvasData.data[coord] & 0xFF;
+
+            // INVERT THE VALUE: 0 becomes 255, 255 becomes 0
+            int invertedAlpha = 255 - alphaValue;
+
+            // Cast back to a signed byte for storage in alphaData
+            canvasData.alphaData[idx] = (byte) invertedAlpha;
+        }
+
+        Image finalImage = new Image(this.display, canvasData);
+        originalImage.dispose();
+        scaledImage.dispose();
+        
+        return finalImage;
+    }
+    
     @Override
     public void addAnimation(String viewName, String name, int row, int column, String backgroundImageFileName, List<String> imageFiles, double animationDelay, AnimationView listener) {
-        System.out.println("SWTApplication: addAnimation: viewName=" + viewName + ", name=" + name + ", row=" + row + ", column=" + column + ", backgroundImageFileName=" + backgroundImageFileName + ", sprite count=" + sprites.size() + ", animationDelay=" + animationDelay + ", listener=" + listener);
+        System.out.println("SWTApplication: addAnimation: viewName=" + viewName + ", name=" + name + ", row=" + row + ", column=" + column + ", backgroundImageFileName=" + backgroundImageFileName + ", sprite count=" + imageFiles.size() + ", animationDelay=" + animationDelay + ", listener=" + listener);
         
         Composite composite = this.tabCompositeMap.get(viewName);
         StyledText textArea = this.tabStyledTextMap.get(viewName);
         
         Point topLeft = this.convertToCoordinates(row - 2, column);
         Image backgroundImage = this.loadImage(backgroundImageFileName);
+        Rectangle backgroundImageBounds = backgroundImage.getBounds();
         Coordinates widthAndHeight = this.getDimensions(backgroundImageFileName);
-        this.sprites = sprites; // TODO - Replace sprites with imageFiles
+        this.sprites = new ArrayList();
         
-        // Build a map of scaled images
-        Map<String, Image> spriteImages = new HashMap();
-        for (SpriteModel sprite : sprites) {
-            if (sprite.imageFile == null) {
-                continue;
-            }
-            if (spriteImages.containsKey(sprite.name + ":" + sprite.imageFile)) {
-                continue;
-            }
-            Image spriteImage = this.loadImage(sprite.imageFile);
-            //int newWidth = (int) (spriteImage.getBounds().width * (sprite.imageScale * 2)); // Unfortunate fudge factor
-            //int newHeight = (int) (spriteImage.getBounds().height * (sprite.imageScale * 2)); // Unfortunate fudge factor
-            int newHeight = (int) (backgroundImage.getBounds().height * sprite.imageScale);
-            System.out.println("SWTApplication: addAnimation: Dividing " + newHeight + " by " + spriteImage.getBounds().height);
-            double scaleRatio = ((double) newHeight) / ((double) spriteImage.getBounds().height);
-            int newWidth = (int) (scaleRatio * spriteImage.getBounds().width);
-            System.out.println("SWTApplication: addAnimation: Scaling " + sprite.name + " to " + newWidth + " by " + newHeight + " for ratio " + scaleRatio);
-            Image scaledImage = new Image(this.display, newWidth, newHeight);
-            GC scaledImageGC = new GC(scaledImage);
-            scaledImageGC.setAntialias(SWT.ON);
-            scaledImageGC.setInterpolation(SWT.HIGH);
-            scaledImageGC.drawImage(spriteImage, 0, 0, spriteImage.getBounds().width, spriteImage.getBounds().height, 0, 0, newWidth, newHeight);
-            scaledImageGC.dispose();
-            
-            // To preserve transparency, extract and file the alphaData array.
-            // For 32-bit data, every 4th byte (offset 3) is the alpha channel.
-            ImageData canvasData = scaledImage.getImageData();
-            
-            // 4. Manually extract and *invert* the alphaData array
-            canvasData.alphaData = new byte[newWidth * newHeight];
-
-            for (int idx = 0; idx < (newWidth * newHeight); idx++) {
-                // Calculate the position of the alpha byte in the main data array (3rd offset)
-                int coord = (idx * 4) + 3; 
-
-                // Read the byte value. Bytes in Java are signed (-128 to 127), 
-                // so we mask with & 0xFF to treat them as unsigned integers (0 to 255) for logic.
-                int alphaValue = canvasData.data[coord] & 0xFF;
-
-                // INVERT THE VALUE: 0 becomes 255, 255 becomes 0
-                int invertedAlpha = 255 - alphaValue;
-
-                // Cast back to a signed byte for storage in alphaData
-                canvasData.alphaData[idx] = (byte) invertedAlpha;
-            }
-            
-            Image finalImage = new Image(this.display, canvasData);
-            scaledImage.dispose();
-            spriteImages.put(sprite.name + ":" + sprite.imageFile, finalImage);
-        }
+        // Initialize a map of scaled images (filename -> scale, image)
+        Map<String, Map<Double, Image>> spriteImages = new HashMap();
         
         // TODO - Add onDispose display of when canvas is disposed, if from clearScreen()
         Canvas canvas = new Canvas(composite, SWT.DOUBLE_BUFFERED); // Use double buffering for smoother animation
@@ -1579,18 +1576,28 @@ public class SWTApplication extends ApplicationController {
             
             // Animation ends when a null collection is returned
             if (this.sprites == null) {
-                //System.out.println("SWTApplication: addAnimation: painting canvas: no sprites!");
+                //System.out.println("SWTApplication: addAnimation: Painting canvas: No more sprites!");
                 return;
             }
             
+            // Add to spriteImages map any new image file and image scale combinations
+            for (SpriteModel sprite : this.sprites) {
+                if (spriteImages.get(sprite.imageFile) == null) {
+                    spriteImages.put(sprite.imageFile, new HashMap());
+                }
+                if (spriteImages.get(sprite.imageFile).get(sprite.imageScale) == null) {
+                    spriteImages.get(sprite.imageFile).put(sprite.imageScale, this.scaleImage(sprite.imageFile, sprite.imageScale, backgroundImageBounds));
+                }
+            }
+            
             // Check for collisions
-            for (SpriteModel sprite : this.sprites) {                
+            for (SpriteModel sprite : this.sprites) {
                 if (sprite.potentialCollisionNames != null) {
-                    Image scaledImage = spriteImages.get(sprite.name + ":" + sprite.imageFile);
+                    Image scaledImage = spriteImages.get(sprite.imageFile).get(sprite.imageScale);
                     for (String potentialCollisionName : sprite.potentialCollisionNames) {
                         for (SpriteModel potentialCollisionSprite : this.sprites) {
                             if ((potentialCollisionSprite.name != null) && (potentialCollisionSprite.name.equals(potentialCollisionName))) {
-                                Image potentialCollisionScaledImage = spriteImages.get(potentialCollisionSprite.name + ":" + potentialCollisionSprite.imageFile);
+                                Image potentialCollisionScaledImage = spriteImages.get(potentialCollisionSprite.imageFile).get(potentialCollisionSprite.imageScale);
                                 if (SWTApplication.isColliding(scaledImage.getImageData(), sprite.x - 1, sprite.y - 1, potentialCollisionScaledImage.getImageData(), potentialCollisionSprite.x -1, potentialCollisionSprite.y -1)) {
                                     // Update each sprite to reference the other
                                     sprite.collisionSprites.add(potentialCollisionSprite);
@@ -1612,7 +1619,7 @@ public class SWTApplication extends ApplicationController {
                     continue;
                 }
                 
-                Image spriteImage = spriteImages.get(sprite.name + ":" + sprite.imageFile);
+                Image spriteImage = spriteImages.get(sprite.imageFile).get(sprite.imageScale);
                 int width = spriteImage.getBounds().width;
                 int height = spriteImage.getBounds().height;
                 
@@ -1641,12 +1648,18 @@ public class SWTApplication extends ApplicationController {
             public void onEvent(String eventName, Object eventValue) {
                 //System.out.println("SWTApplication: addAnimation: onEvent: viewName=" + viewName + ", redrawing canvas");
                 SWTApplication.this.sprites = listener.onAnimate();
-                if (!canvas.isDisposed()) {
-                    canvas.redraw();
-                }
-                if ((!canvas.isDisposed()) && (SWTApplication.this.sprites != null)) {
-                    //System.out.println("SWTApplication: addAnimation: onEvent: viewName=" + viewName + ", sprites so resetting timer, sprites=" + SWTApplication.this.sprites.size());
-                    SWTApplication.this.setTimer(name, animationDelay, this);
+                if (SWTApplication.this.sprites == null) {
+                    System.out.println("SWTApplication: addAnimation: Handling timer: No more sprites!");
+                    backgroundImage.dispose();
+                    canvas.dispose();
+                } else {
+                    if (!canvas.isDisposed()) {
+                        canvas.redraw();
+                    }
+                    if ((!canvas.isDisposed()) && (SWTApplication.this.sprites != null)) {
+                        //System.out.println("SWTApplication: addAnimation: onEvent: viewName=" + viewName + ", sprites so resetting timer, sprites=" + SWTApplication.this.sprites.size());
+                        SWTApplication.this.setTimer(name, animationDelay, this);
+                    }
                 }
             }
         };
