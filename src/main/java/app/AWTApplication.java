@@ -146,7 +146,7 @@ public class AWTApplication extends ApplicationController {
     }
     
     @Override
-    public int displayImage(String viewName, String fileName, int row, int column, Boolean fillParent) {
+    public int displayImage(String viewName, String name, String fileName, int row, int column, Boolean fillParent) {
         throw new UnsupportedOperationException("Not supported.");
     }
     

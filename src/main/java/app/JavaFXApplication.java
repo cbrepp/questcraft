@@ -230,6 +230,8 @@ public class JavaFXApplication extends ApplicationController {
         scrollPane.setContent(this.tabFolder);
         scrollPane.setHbarPolicy(ScrollBarPolicy.AS_NEEDED);
         scrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
+        scrollPane.setPrefViewportWidth(dimensions.x);
+        scrollPane.setPrefViewportHeight(dimensions.y);
 
         //this.primaryScene = new Scene(this.tabFolder, dimensions.x, dimensions.y);
         this.primaryScene = new Scene(scrollPane, dimensions.x, dimensions.y);
@@ -651,7 +653,7 @@ public class JavaFXApplication extends ApplicationController {
     public void displayText(String viewName, String text, Integer row, Integer column, app.Color color, int style) {
         System.out.println("JavaFXApplication: displayText: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", color=" + color + ", style=" + style);
         
-        this.displayFloatingText(viewName, null, text, row, column, null, null, color, 12, style, "RobotoMono-Medium"); // Previously, "Consolas"
+        this.displayFloatingText(viewName, null, text, row, column, null, null, color, 14, style, "RobotoMono-Medium"); // Previously, "Consolas"
         
         /*
         
@@ -1108,8 +1110,8 @@ public class JavaFXApplication extends ApplicationController {
     }
     
     @Override
-    public int displayImage(String viewName, String fileName, int row, int column, Boolean fillParent) {
-        System.out.println("JavaFXApplication: displayImage: viewName=" + viewName + ", fileName=" + fileName + ", row=" + row + ", column=" + column + ", fillParent=" + fillParent);
+    public int displayImage(String viewName, String name, String fileName, int row, int column, Boolean fillParent) {
+        System.out.println("JavaFXApplication: displayImage: viewName=" + viewName + ", name=" + name + ", fileName=" + fileName + ", row=" + row + ", column=" + column + ", fillParent=" + fillParent);
         
         Pane content = this.tabContentMap.get(viewName);
 
@@ -1118,10 +1120,13 @@ public class JavaFXApplication extends ApplicationController {
         
         int nextRow;
         if (fillParent) {
+            //StackPane parentPane = new StackPane(content);
             imageView.setPreserveRatio(true);
             imageView.setSmooth(true);
             imageView.fitWidthProperty().bind(content.widthProperty());
             imageView.fitHeightProperty().bind(content.heightProperty());
+            content.getChildren().add(imageView);
+            this.namedControls.get(viewName).put(name, imageView);
             
             nextRow = 0; // Advance the text cursor automatically
         } else {
@@ -1129,11 +1134,11 @@ public class JavaFXApplication extends ApplicationController {
             Coordinates coordinates = this.convertToCoordinates(row, column);
             imageView.setLayoutX(coordinates.x + 1);
             imageView.setLayoutY(coordinates.y + 1);
+            content.getChildren().add(imageView);
+            this.namedControls.get(viewName).put(name, imageView);
             
             nextRow = row + this.getRows(dimensions.y); // Advance the text cursor automatically
         }
-
-        content.getChildren().add(imageView);
         
         return nextRow;
     }

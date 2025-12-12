@@ -19,16 +19,17 @@ public class ImageControl extends QuestControl {
     @Override
     public String onExecute(String tag) {
         System.out.println("ImageControl: onExecute: tag=" + tag);
-        String alignment = getTagToken(tag, 1, false);
-        String imageFiles = getTagToken(tag, 2, true);
+        String name = getTagToken(tag, 1, false);
+        String alignment = getTagToken(tag, 2, false);
+        String imageFiles = getTagToken(tag, 3, true);
         String[] imageFileTokens = imageFiles.split("\\+");
         for (String imageFile : imageFileTokens) {
-            this.displayImage(imageFile, alignment);
+            this.displayImage(name, imageFile, alignment);
         }
         return "";
     }
     
-    public void displayImage(String imageFile, String alignment) {
+    public void displayImage(String name, String imageFile, String alignment) {
         int row = this.quest.titleRow + 1 + this.quest.textRow;
         int imageColumn;
         int startingColumn, endingColumn;
@@ -54,7 +55,7 @@ public class ImageControl extends QuestControl {
             imageColumn = startingColumn;
         }
         // TODO - Support right align
-        this.quest.appController.displayImage(Questcraft.QUEST, imageFile, row, imageColumn, fillParent);
+        this.quest.appController.displayImage(Questcraft.QUEST, name, imageFile, row, imageColumn, fillParent);
     }
     
 }

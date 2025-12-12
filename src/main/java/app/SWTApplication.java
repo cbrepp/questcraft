@@ -1124,8 +1124,8 @@ public class SWTApplication extends ApplicationController {
     }
     
     @Override
-    public int displayImage(String viewName, String fileName, int row, int column, Boolean fillParent) {
-        System.out.println("SWTApplication: displayImage: viewName=" + viewName + ", fileName=" + fileName + ", row=" + row + ", column=" + column + ", fillParent=" + fillParent);
+    public int displayImage(String viewName, String name, String fileName, int row, int column, Boolean fillParent) {
+        System.out.println("SWTApplication: displayImage: viewName=" + viewName + ", name=" + name + ", fileName=" + fileName + ", row=" + row + ", column=" + column + ", fillParent=" + fillParent);
         
         // TODO - Implement fillParent
         
