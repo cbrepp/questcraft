@@ -523,7 +523,7 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
                     this.quest.variables.put("animation-up", "true");
                 }
             }
-            if (eventValue.equals("P")) {
+            if (eventValue.equals("Pause")) {
                 if ((this.quest.variables.containsKey("animation-paused")) && (this.quest.variables.get("animation-paused").equals("true"))) {
                     System.out.println("MonsterShooterControl: onEvent: Unpausing");
                     this.quest.variables.put("animation-paused", "false");
@@ -676,7 +676,7 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
         this.quest.appController.addAnimation(Questcraft.QUEST, name, row + 3, this.column, backgroundImageFileName, imageFiles, ANIMATION_DELAY, this);
         
         // Display the buttons used to control the animation
-        List<String> valueList = new ArrayList<>(Arrays.asList("&left; Move Left+&up; Launch+&right; Move Right+P".split("\\+")));
+        List<String> valueList = new ArrayList<>(Arrays.asList("&left; Move Left+&up; Launch+&right; Move Right+Pause".split("\\+")));
         int buttonRow = this.quest.buttonRow;
         int endColumn;
         endColumn = this.column + this.quest.appController.getColumns(backgroundImageFileName) + 1;
