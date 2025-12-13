@@ -63,6 +63,7 @@ import javafx.embed.swing.SwingFXUtils;
 import javafx.event.EventHandler;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
+import javafx.scene.effect.BlendMode;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.Effect;
@@ -339,8 +340,8 @@ public class JavaFXApplication extends ApplicationController {
     }
     
     @Override
-    public void displayOverlay(String viewName, String name, app.Color color, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, Integer transparency) {
-        System.out.println("JavaFXApplication: displayOverlay: viewName=" + viewName + ", name=" + name + ", color=" + color + ", startRow=" + startRow + ", startColumn=" + startColumn + ", endRow=" + endRow + ", endColumn=" + endColumn + ", transparency=" + transparency);
+    public void displayOverlay(String viewName, String name, app.Color color, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, Integer transparency, Boolean invert) {
+        System.out.println("JavaFXApplication: displayOverlay: viewName=" + viewName + ", name=" + name + ", color=" + color + ", startRow=" + startRow + ", startColumn=" + startColumn + ", endRow=" + endRow + ", endColumn=" + endColumn + ", transparency=" + transparency + ", invert=" + invert);
         
         Pane content = this.tabContentMap.get(viewName);
         
@@ -360,9 +361,14 @@ public class JavaFXApplication extends ApplicationController {
             overlay = new Rectangle(topLeftCoordinates.x, topLeftCoordinates.y, width, height);
         }
         
-        double opacityPercent = (1.0 - ((double)transparency / 255.0)); // Transparency is 0-255
-        System.out.println("JavaFXApplication: displayOverlay: Converted opacity percent to " + opacityPercent);
-        overlay.setFill(new Color((color.red + 1) / 255, (color.green + 1) / 255, (color.blue + 1) / 255, opacityPercent));
+        if (invert) {
+            overlay.setFill(Color.BLACK); // Using black gives the strongest inversion effect
+            overlay.setBlendMode(BlendMode.DIFFERENCE);
+        } else {
+            double opacityPercent = (1.0 - ((double)transparency / 255.0)); // Transparency is 0-255
+            System.out.println("JavaFXApplication: displayOverlay: Converted opacity percent to " + opacityPercent);
+            overlay.setFill(new Color((color.red + 1) / 255, (color.green + 1) / 255, (color.blue + 1) / 255, opacityPercent));
+        }
         content.getChildren().add(overlay);
         this.namedControls.get(viewName).put(name, overlay);
     }
@@ -1083,6 +1089,8 @@ public class JavaFXApplication extends ApplicationController {
             button.setOnMouseEntered(e -> button.setStyle(hoverStyle));
             button.setOnMouseExited(e -> button.setStyle(defaultStyle));
         }
+        
+        this.namedControls.get(viewName).put(name, button);
         
         return button;
     }

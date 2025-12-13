@@ -18,7 +18,7 @@ public class TimerStartControl extends QuestControl {
     @Override
     public String onExecute(String tag) {
         System.out.println("TimerStartControl: onExecute: tag=" + tag);
-        int seconds = Integer.parseInt(getTagToken(tag, 1, false));
+        double seconds = (double) Double.parseDouble(getTagToken(tag, 1, false));
         String timerName = getTagToken(tag, 2, true);
 
         String eventName = Quest.TIMER_EVENT_PREFIX + ":" + timerName;

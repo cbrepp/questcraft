@@ -56,7 +56,7 @@ public class AWTApplication extends ApplicationController {
     }
     
     @Override
-    public void displayOverlay(String viewName, String name, app.Color color, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, Integer transparency) {
+    public void displayOverlay(String viewName, String name, app.Color color, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, Integer transparency, Boolean invert) {
         throw new UnsupportedOperationException("Not supported.");
     }
     

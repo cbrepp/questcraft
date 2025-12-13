@@ -88,9 +88,6 @@ Upcoming changes.
 * Mystery Room: Shmebulock must collect all cosmic wonders to imbue the new ring of taming with magic.
 * Dragon's Den: Shmebulock's Cosmic Terror is no longer usable... for some reason the button never becomes available after the dragon attacks
 * Reimplement Mylee's Elevator
-  * Need a way to dispose of the animation's canvas once the animation is complete
-  * Night Owl doesn't die, he just flies away, defeated.
-  * Ends with full screen mode of ominous music and seeing the outline of a giant black cat watching.  Mylee intervenes and talks to Chung.
   * As a reward for beating Night Owl, Mylee teaches the "warp to" spell for being able to warp to a chapter once the player learns the chapter's name
   * Mylee's payment is Gold
 

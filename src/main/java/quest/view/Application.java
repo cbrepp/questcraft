@@ -1115,8 +1115,10 @@ public class Application extends app.ApplicationView {
         Page eyesOfChungPage = new Page();
         eyesOfChungPage.hideNextButton = true;
         eyesOfChungPage.nextPageName = "Back To Elevator";
-        eyesOfChungPage.story.contents.add("<subpage-display Scene Header>");
-        eyesOfChungPage.story.contents.add("<color 0+0+0>");
+        eyesOfChungPage.story.contents.add("<second-page>");
+        eyesOfChungPage.story.contents.add("<image wilderness3 left /assets/images/wilderness3.jpg>");
+        eyesOfChungPage.story.contents.add("<first-page><subpage-display Scene Header>");
+        eyesOfChungPage.story.contents.add("<color 0+0+0><remove lights-out><overlay lights-out 0+0+0 false><send-to-front VARIABLE:action>");
         eyesOfChungPage.story.contents.add("You did it!  You defeated Night Owl!!!  With great speed he flies back to his woods for safety.");
         eyesOfChungPage.story.contents.add("<br>");
         eyesOfChungPage.story.contents.add("You look around for Mylee and don't see her.  Perhaps she returned to the elevator?");
@@ -1126,14 +1128,12 @@ public class Application extends app.ApplicationView {
         eyesOfChungPage.story.contents.add("You run back into the elevator and right before the doors close you see... his eyes.");
         eyesOfChungPage.story.contents.add("<get-validated-input align=left action *Brace Yourself>");
         eyesOfChungPage.story.contents.add("</color>");
-        eyesOfChungPage.story.contents.add("<second-page>");
-        eyesOfChungPage.story.contents.add("<image wilderness3 left /assets/images/wilderness3.jpg>");
         myleesElevator.pages.put("The Eyes Of Chung", eyesOfChungPage);
                 
         Story eyesOfChungSubpage = new Story();
         eyesOfChungSubpage.contents.add("<play-sound /assets/sounds/ominous.wav false>");
         eyesOfChungSubpage.contents.add("<timer-start 6 ominous>");
-        eyesOfChungSubpage.contents.add("<overlay eyes 0+0+0>");
+        eyesOfChungSubpage.contents.add("<overlay eyes 0+0+0 false>");
         eyesOfChungPage.subpages.put("INPUT action=Brace Yourself", eyesOfChungSubpage);
         
         Story showEyesSubpage = new Story();
@@ -1157,7 +1157,9 @@ public class Application extends app.ApplicationView {
         
         Page backToElevatorPage = new Page();
         backToElevatorPage.nextPageName = "Give The Mylee Her Due";
-        backToElevatorPage.story.contents.add("<subpage-display Scene Header><play-sound /assets/sounds/elevator-open.mp3 false>");
+        backToElevatorPage.story.contents.add("<second-page>");
+        backToElevatorPage.story.contents.add("<image mylee left /assets/images/mylee.jpg>");
+        backToElevatorPage.story.contents.add("<first-page><subpage-display Scene Header><play-sound /assets/sounds/elevator-open.mp3 false><timer-stop lights-off><timer-stop lights-on><remove lights-out><overlay lights-out 0+0+0 false><send-to-front next-page><send-to-front VARIABLE:action><timer-start 0.5 lights-on>");
         backToElevatorPage.story.contents.add("<color 0+0+0>");
         backToElevatorPage.story.contents.add("Back in the elevator you find a panic-stricken Mylee.");
         backToElevatorPage.story.contents.add("<br>");
@@ -1165,20 +1167,39 @@ public class Application extends app.ApplicationView {
         backToElevatorPage.story.contents.add("<br>");
         backToElevatorPage.story.contents.add("<player-symbol> YOU: <quote>Why?  Is Big Chung coming after us?<quote>");
         backToElevatorPage.story.contents.add("<br>");
-        backToElevatorPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>No, but in order to distract him I lectured him on his weight.  And because I told him that he needs to go on a <i>light diet</i>, he's now busy devouring all light in the seven kingdoms!<quote>");
+        backToElevatorPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>No, but in order to distract him while you battled Night Owl I... may have lectured him on his weight.  And because I told him that he needs to go on a <i>light diet</i>, he's now busy devouring all light in the seven kingdoms!<quote>");
+        backToElevatorPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: he's now busy devouring all light in the seven kingdoms!<quote>");
         backToElevatorPage.story.contents.add("<br>");
-        backToElevatorPage.story.contents.add("<player-symbol> YOU: <quote>He's... eating <i>light</i>?<quote>");
+        backToElevatorPage.story.contents.add("<player-symbol> YOU: <quote>So because he took you literally he now... eating <i>light</i>?<quote>");
         backToElevatorPage.story.contents.add("<br>");
         backToElevatorPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Yes!  And at an alarming speed!<quote>");
         backToElevatorPage.story.contents.add("<br>");
+        backToElevatorPage.story.contents.add("<player-symbol> YOU: <quote>What does that even mean?<quote>");
+        backToElevatorPage.story.contents.add("<br>");
+        backToElevatorPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>It means that my solar-powered elevator that we're both in is about to run out of energy!!!<quote>");
+        backToElevatorPage.story.contents.add("<br>");
         backToElevatorPage.story.contents.add("</color>");
-        backToElevatorPage.story.contents.add("<second-page>");
-        backToElevatorPage.story.contents.add("<image mylee left /assets/images/mylee.jpg>");
         myleesElevator.pages.put("Back To Elevator", backToElevatorPage);
+        
+        Story lightsOnSubpage = new Story();
+        lightsOnSubpage.contents.add("<remove lights-out>");
+        lightsOnSubpage.contents.add("<timer-stop lights-on>");
+        lightsOnSubpage.contents.add("<timer-start 0.5 lights-out>");
+        myleesElevator.subpages.put("TIMER lights-on", lightsOnSubpage);
+        
+        Story lightsOutSubpage = new Story();
+        lightsOutSubpage.contents.add("<overlay lights-out 0+0+0 false>");
+        lightsOutSubpage.contents.add("<send-to-front next-page>");
+        lightsOutSubpage.contents.add("<send-to-front VARIABLE:action>");
+        lightsOutSubpage.contents.add("<timer-stop lights-out>");
+        lightsOutSubpage.contents.add("<timer-start 0.5 lights-on>");
+        myleesElevator.subpages.put("TIMER lights-out", lightsOutSubpage);
         
         Page giveMyleeHerDuePage = new Page();
         giveMyleeHerDuePage.hideNextButton = true;
-        giveMyleeHerDuePage.story.contents.add("<subpage-display Scene Header>");
+        giveMyleeHerDuePage.story.contents.add("<second-page>");
+        giveMyleeHerDuePage.story.contents.add("<image mylee left /assets/images/mylee.jpg>");
+        giveMyleeHerDuePage.story.contents.add("<first-page><subpage-display Scene Header><timer-stop lights-off><timer-stop lights-on><remove lights-out><overlay lights-out 0+0+0 false><send-to-front next-page><timer-start 0.5 lights-on>");
         giveMyleeHerDuePage.story.contents.add("<color 0+0+0>");
         giveMyleeHerDuePage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Umm... aren't you forgetting to give me something?<quote>");
         giveMyleeHerDuePage.story.contents.add("<br>");
@@ -1188,42 +1209,40 @@ public class Application extends app.ApplicationView {
         giveMyleeHerDuePage.story.contents.add("<br>");
         giveMyleeHerDuePage.story.contents.add("<get-validated-input align=left action *Give Mylee Gold>");
         giveMyleeHerDuePage.story.contents.add("</color>");
-        giveMyleeHerDuePage.story.contents.add("<second-page>");
-        giveMyleeHerDuePage.story.contents.add("<image mylee left /assets/images/mylee.jpg>");
         myleesElevator.pages.put("Give The Mylee Her Due", giveMyleeHerDuePage);
         
         Story giveMyleeHerDueSubpage = new Story();
-        eyesOfChungSubpage.contents.add("TODO - Remove Gold from inventory");
-        eyesOfChungSubpage.contents.add("<play-sound /assets/sounds/elevator-open.mp3 false>");
-        eyesOfChungSubpage.contents.add("TODO - Play elevator music");
-        eyesOfChungSubpage.contents.add("TODO - Turn to Elevator Goes Up");
+        giveMyleeHerDueSubpage.contents.add("<inventory-remove Gold>");
+        giveMyleeHerDueSubpage.contents.add("<goto-page Elevator Goes Up>");
         giveMyleeHerDuePage.subpages.put("INPUT action=Give Mylee Gold", giveMyleeHerDueSubpage);
         
         Page elevatorGoesUpPage = new Page();
         elevatorGoesUpPage.nextPageName = "Get Me Some White Meat Chicken!";
-        elevatorGoesUpPage.story.contents.add("<subpage-display Scene Header>");
+        elevatorGoesUpPage.story.contents.add("<second-page>");
+        elevatorGoesUpPage.story.contents.add("<image mylee left /assets/images/mylee.jpg>");
+        elevatorGoesUpPage.story.contents.add("<first-page><subpage-display Scene Header><play-sound /assets/sounds/elevator.wav true><timer-stop lights-off><timer-stop lights-on><remove lights-out><overlay lights-out 0+0+0 false><send-to-front next-page><timer-start 0.5 lights-on>");
         elevatorGoesUpPage.story.contents.add("<color 0+0+0>");
-        elevatorGoesUpPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Thank you!  Keep your human hands in feet inside the elevator at all times.  We're going up to the second kingdom!<quote>");
+        elevatorGoesUpPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Thank you!  Keep your human hands and feet inside the elevator at all times.  We're going up to the Second Kingdom!<quote>");
         elevatorGoesUpPage.story.contents.add("<br>");
-        elevatorGoesUpPage.story.contents.add("<player-symbol> YOU: <quote>The second kingdom?  Is that where <variable twin> is?<quote>");
+        elevatorGoesUpPage.story.contents.add("<player-symbol> YOU: <quote>The Second Kingdom?  Is that where <variable twin> is?<quote>");
         elevatorGoesUpPage.story.contents.add("<br>");
         elevatorGoesUpPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Maybe.  We're going to have to check them all.<quote>");
         elevatorGoesUpPage.story.contents.add("<br>");
-        elevatorGoesUpPage.story.contents.add("<player-symbol> YOU: <quote>What's the second kingdom like?<quote>");
+        elevatorGoesUpPage.story.contents.add("<player-symbol> YOU: <quote>What's the Second Kingdom like?<quote>");
         elevatorGoesUpPage.story.contents.add("<br>");
         elevatorGoesUpPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Oh you know.  It's a bit more modern.  Cars.  Spaceships.  And the whole place is run by chickens.<quote>");
         elevatorGoesUpPage.story.contents.add("<br>");
-        elevatorGoesUpPage.story.contents.add("<player-symbol> YOU: <quote>Chickens?<quote>");
+        elevatorGoesUpPage.story.contents.add("<player-symbol> YOU: <quote>Chickens???<quote>");
         elevatorGoesUpPage.story.contents.add("<br>");
         elevatorGoesUpPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Oh yes... tasty, tasty chickens!<quote>");
         elevatorGoesUpPage.story.contents.add("</color>");
-        elevatorGoesUpPage.story.contents.add("<second-page>");
-        elevatorGoesUpPage.story.contents.add("<image mylee left /assets/images/mylee.jpg>");
         myleesElevator.pages.put("Elevator Goes Up", elevatorGoesUpPage);
         
         Page getMeWhiteMeatChickenPage = new Page();
-        getMeWhiteMeatChickenPage.nextPageName = "";
-        getMeWhiteMeatChickenPage.story.contents.add("<subpage-display Scene Header><play-sound /assets/sounds/elevator-open.mp3 false>");
+        getMeWhiteMeatChickenPage.hideNextButton = true;
+        getMeWhiteMeatChickenPage.story.contents.add("<second-page>");
+        getMeWhiteMeatChickenPage.story.contents.add("<image mylee left /assets/images/mylee.jpg>");
+        getMeWhiteMeatChickenPage.story.contents.add("<first-page><subpage-display Scene Header><stop-sound><play-sound /assets/sounds/elevator-open.mp3 false><timer-stop lights-off><timer-stop lights-on><remove lights-out><overlay lights-out 0+0+0 false><send-to-front next-page><timer-start 0.5 lights-on>");
         getMeWhiteMeatChickenPage.story.contents.add("<color 0+0+0>");
         getMeWhiteMeatChickenPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>And... we're here!  Get out!<quote>");
         getMeWhiteMeatChickenPage.story.contents.add("<br>");
@@ -1233,22 +1252,35 @@ public class Application extends app.ApplicationView {
         getMeWhiteMeatChickenPage.story.contents.add("<br>");
         getMeWhiteMeatChickenPage.story.contents.add("<player-symbol> YOU: <quote>Anything I need to know first?<quote>");
         getMeWhiteMeatChickenPage.story.contents.add("<br>");
-        getMeWhiteMeatChickenPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Of course!  This elevator is solar-powered.  Thanks to the lack light, it's about to die and go plummeting back down the elevator shaft!<quote>");
+        getMeWhiteMeatChickenPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Of course!  First, thanks to the lack light, this elevator is about to die and go plummeting back down the elevator shaft!<quote>");
         getMeWhiteMeatChickenPage.story.contents.add("<br>");
-        getMeWhiteMeatChickenPage.story.contents.add("<player-symbol> YOU: <quote>Oh no!<quote>");
+        getMeWhiteMeatChickenPage.story.contents.add("<player-symbol> YOU: <quote>Oh no!!!<quote>");
         getMeWhiteMeatChickenPage.story.contents.add("<br>");
-        getMeWhiteMeatChickenPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>But don't worry, you can find me again if you get help from a certain, fluffy friend.  And I expect that you'll get me some white meat chicken!!!<quote>");
+        getMeWhiteMeatChickenPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>But don't worry, you can find me again if you get help from a certain, fluffy friend.  And if you want my continued help... get me some white meat chicken!!!<quote>");
         getMeWhiteMeatChickenPage.story.contents.add("<br>");
         getMeWhiteMeatChickenPage.story.contents.add("<get-validated-input align=left action *Leave Elevator>");
         getMeWhiteMeatChickenPage.story.contents.add("</color>");
-        getMeWhiteMeatChickenPage.story.contents.add("<second-page>");
-        getMeWhiteMeatChickenPage.story.contents.add("<image mylee left /assets/images/mylee.jpg>");
         myleesElevator.pages.put("Get Me Some White Meat Chicken!", getMeWhiteMeatChickenPage);
         
         Story exitElevatorSubpage = new Story();
-        exitElevatorSubpage.contents.add("TODO - Change to page that describes the elevator falling back down the shaft, then takes the player to chapter 2");
-        exitElevatorSubpage.contents.add("<goto-act Chapter 2>");
-        mainPage.subpages.put("INPUT action=Leave Elevator", exitElevatorSubpage);
+        exitElevatorSubpage.contents.add("<play-sound /assets/sounds/falling.mp3 false>");
+        exitElevatorSubpage.contents.add("<timer-start 2 crash>");
+        exitElevatorSubpage.contents.add("You step out of the elevator and watch in horror as it goes crashing back down!  You certainly hope that Mylee's okay.");
+        getMeWhiteMeatChickenPage.subpages.put("INPUT action=Leave Elevator", exitElevatorSubpage);
+        
+        Story crashSubpage = new Story();
+        crashSubpage.contents.add("<timer-stop crash>");
+        crashSubpage.contents.add("<play-sound /assets/sounds/crash.wav false>");
+        crashSubpage.contents.add("<br><br>");
+        crashSubpage.contents.add("<get-validated-input align=left action *Continue>");
+        getMeWhiteMeatChickenPage.subpages.put("TIMER crash", crashSubpage);
+        
+        Story onToAct2 = new Story();
+        onToAct2.contents.add("<stop-sound>");
+        onToAct2.contents.add("<timer-stop lights-off><timer-stop lights-on><remove lights-out>");
+        onToAct2.contents.add("<timer-stop crash>");
+        onToAct2.contents.add("<goto-act Chapter 2>");
+        getMeWhiteMeatChickenPage.subpages.put("INPUT action=Continue", onToAct2);
         
         Scene wilderness2 = new Scene();
         wilderness2.color = new Color(0, 100, 0);
@@ -2572,18 +2604,34 @@ public class Application extends app.ApplicationView {
         chapterScene = new Scene();
         chapterScene.firstPageName = "1";
         chapterScene.hidePageHeaders = true;
-        chapterScene.nextSceneName = "MYLEE'S ELEVATOR";
-        chapterScene.soundFileName = "";
+        chapterScene.nextSceneName = "WHY DID THE CHICKEN CROSS THE ROAD?";
+        chapterScene.soundFileName = "/assets/sounds/suspense3.wav";
         chapter2.scenes.put("Chapter", chapterScene);
         
         page1 = new Page();
-        page1.story.contents.add("<image wayne-chung-dark center /assets/images/wayne-chung-dark.jpg>");
+        page1.story.contents.add("<overlay dark-mode 0+0+0 true><image wayne-chung-dark center /assets/images/wayne-chung-dark.jpg>");
         page1.story.contents.add("<second-page>");
         page1.story.contents.add("<u>CHAPTER 2</u>");
         page1.story.contents.add("<br>");
         page1.story.contents.add("A Darkness over the Land");
         page1.story.contents.add("<set-player-direction SOUTH>");
+        page1.story.contents.add("<observed-scene-add WHY DID THE CHICKEN CROSS THE ROAD?>");
         chapterScene.pages.put("1", page1);
+        
+        Scene road = new Scene();
+        road.color = new Color(0, 0, 0);    // Black
+        road.firstPageName = "main";
+        road.soundFileName = "/assets/sounds/suspense3.wav";
+        road.symbol = "\uD83D\uDEE3";
+        road.x = 2;
+        road.y = 0;
+        chapter2.scenes.put("WHY DID THE CHICKEN CROSS THE ROAD?", road);
+ 
+        mainPage = new Page();
+        mainPage.story.contents.add("<overlay dark-mode 0+0+0 true><subpage-display Scene Header>");
+        mainPage.story.contents.add("<color 0+0+0>");
+        mainPage.story.contents.add("TODO");
+        road.pages.put("main", mainPage);
         
         book.highScores = new ArrayList<>();
         book.highScores.add(new HighScore(300, "GRT", LocalDate.of(2024, Month.MARCH, 9)));

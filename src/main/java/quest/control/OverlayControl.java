@@ -22,6 +22,7 @@ public class OverlayControl extends QuestControl {
         
         String controlName = getTagToken(tag, 1, false);
         String colorValue = getTagToken(tag, 2, false);
+        Boolean invert = Boolean.valueOf(getTagToken(tag, 3, false).toLowerCase());   // Default is false
         String[] colorParts = colorValue.split("\\+");
         int red = Integer.parseInt(colorParts[0]);
         int green = Integer.parseInt(colorParts[1]);
@@ -53,7 +54,7 @@ public class OverlayControl extends QuestControl {
         }
         */
                 
-        this.quest.appController.displayOverlay(this.quest.name, controlName, color, null, null, null, null, null);
+        this.quest.appController.displayOverlay(this.quest.name, controlName, color, null, null, null, null, null, false);
         return "";
     }
     

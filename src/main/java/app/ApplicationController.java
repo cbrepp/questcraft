@@ -51,7 +51,7 @@ public abstract class ApplicationController {
     public abstract void open(ApplicationView splashView, ApplicationView mainView);
     public abstract void displayView(ApplicationView view);
     public abstract void displayView(String viewName);
-    public abstract void displayOverlay(String viewName, String name, app.Color color, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, Integer transparency);
+    public abstract void displayOverlay(String viewName, String name, app.Color color, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, Integer transparency, Boolean invert);
     public abstract void clearScreen(String name);
     public abstract void clearControl(String viewName, String controlName);
     public abstract void displayMessageBox(String title, String text, int level);

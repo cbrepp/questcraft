@@ -122,6 +122,7 @@ public class Quest extends app.ApplicationView {
         this.questControls.put(InventoryAddControl.NAME, new InventoryAddControl(this));
         this.questControls.put(InventoryControl.NAME, new InventoryControl(this));
         this.questControls.put(InventoryHasControl.NAME, new InventoryHasControl(this));
+        this.questControls.put(InventoryRemoveControl.NAME, new InventoryRemoveControl(this));
         this.questControls.put(ItalicsTextControl.NAME, new ItalicsTextControl(this));
         this.questControls.put(ItalicsTextOffControl.NAME, new ItalicsTextOffControl(this));
         this.questControls.put(LinkControl.NAME, new LinkControl(this));
@@ -295,7 +296,7 @@ public class Quest extends app.ApplicationView {
         
         // Loading screen
         if (this.book.animationFileName != null) {
-            this.appController.displayOverlay(this.name, LOADING_OVERLAY, new Color(0, 0, 0), null, null, null, null, null);
+            this.appController.displayOverlay(this.name, LOADING_OVERLAY, new Color(0, 0, 0), null, null, null, null, null, false);
             int halfColumns = (appController.getTextColumns() / 2);
             int halfGifWidth = (appController.getColumns(this.book.animationFileName) / 2);
             int gifColumn = halfColumns - halfGifWidth;
@@ -329,6 +330,31 @@ public class Quest extends app.ApplicationView {
             this.startAct(this.book.firstActName);
             this.display();
         }
+    }
+    
+    public void removeInventoryItem(String inventoryItemName) {
+        System.out.println("removeInventoryItem: inventoryItemName=" + inventoryItemName);
+        
+        if (!this.inventory.containsKey(inventoryItemName)) {
+            System.out.println("removeInventoryItem: Item wasn't in inventory");
+            return;
+        }
+        
+        InventoryItem item = this.inventory.get(inventoryItemName);
+        item.quantity--;
+        System.out.println("removeInventoryItem: Item decreased by 1: " + item.quantity);
+        
+        if (item.quantity == 0) {
+            this.inventory.remove(inventoryItemName);
+        }
+
+        // Play the item's sound if applicable
+        if (item.soundFileName != null) {
+            System.out.println("removeInventoryItem: Playing inventory item's sound: " + item.soundFileName);
+            this.appController.playSound(item.soundFileName, false);
+        }
+        
+        this.publishEvent(NEW_INVENTORY_ITEM, inventoryItemName);
     }
     
     public void addInventoryItem(String inventoryItemName) {
@@ -749,13 +775,13 @@ public class Quest extends app.ApplicationView {
                 this.appController.playSound("/assets/sounds/hit-harder.mp3", false);
             }
             if (displayOverlay) {
-                this.appController.displayOverlay(this.name, overlayName, new Color(255, 0, 0), null, null, null, null, null);
+                this.appController.displayOverlay(this.name, overlayName, new Color(255, 0, 0), null, null, null, null, null, false);
                 appController.setTimer(overlayName, 0.5, this);
             }
         } else if (delta > 0) {
             //this.appController.playSound("/assets/sounds/TODO", false);
             if (displayOverlay) {
-                this.appController.displayOverlay(this.name, overlayName, new Color(0, 255, 0), null, null, null, null, null);
+                this.appController.displayOverlay(this.name, overlayName, new Color(0, 255, 0), null, null, null, null, null, false);
                 appController.setTimer(overlayName, 0.5, this);
             }
         }        
@@ -782,11 +808,11 @@ public class Quest extends app.ApplicationView {
         
         if (delta < 0) {
             this.appController.playSound("/assets/sounds/spell-cast.wav", false);
-            this.appController.displayOverlay(this.name, overlayName, new Color(128, 0, 128), null, null, null, null, null);
+            this.appController.displayOverlay(this.name, overlayName, new Color(128, 0, 128), null, null, null, null, null, false);
             appController.setTimer(overlayName, 0.5, this);
         } else if (delta > 0) {
             this.appController.playSound("/assets/sounds/mp-up.wav", false);
-            this.appController.displayOverlay(this.name, overlayName, new Color(128, 0, 128), null, null, null, null, null);
+            this.appController.displayOverlay(this.name, overlayName, new Color(128, 0, 128), null, null, null, null, null, false);
             appController.setTimer(overlayName, 0.5, this);
         }        
     }
@@ -845,13 +871,13 @@ public class Quest extends app.ApplicationView {
             Scene previousScene = act.scenes.get(this.currentScene);
             previousSoundFileName = previousScene.soundFileName;
         }
-        if ((previousSoundFileName != null) && (!scene.soundFileName.equals(previousSoundFileName))) {
+        if ((previousSoundFileName != null) && (!previousSoundFileName.equals("")) && (!scene.soundFileName.equals(previousSoundFileName))) {
             System.out.println("Quest: startScene: Stopping sound file " + previousSoundFileName);
             this.appController.stopAllSounds();
         }
         
         // Start a new sound file if needed
-        if ((!isFirstAct) && (scene.soundFileName != null) && (!scene.soundFileName.equals(previousSoundFileName))) {
+        if ((!isFirstAct) && (scene.soundFileName != null) && (!scene.soundFileName.equals("")) && (!scene.soundFileName.equals(previousSoundFileName))) {
             System.out.println("Quest: startScene: Playing sound file " + scene.soundFileName);
             this.appController.playSound(scene.soundFileName, true);
         }

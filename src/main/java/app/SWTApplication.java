@@ -891,7 +891,7 @@ public class SWTApplication extends ApplicationController {
     }
     
     public Button newButton(String viewName, String name, String text, Integer row, Integer column, Integer endRow, Integer endColumn, Boolean isMonospace, String fontName, Boolean glow, EventListener listener) {
-        System.out.println("SWTApplication: newButton: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", endRow=" + endRow + ", endColumn=" + endColumn + ", isMonospace=" + isMonospace + ", fontName=" + fontName + ", glow=" + glow);
+        System.out.println("SWTApplication: newButton: viewName=" + viewName + ", name=" + name + ", text=" + text + ", row=" + row + ", column=" + column + ", endRow=" + endRow + ", endColumn=" + endColumn + ", isMonospace=" + isMonospace + ", fontName=" + fontName + ", glow=" + glow);
         
         StyledText textArea = this.tabStyledTextMap.get(viewName);
         Composite composite = this.tabCompositeMap.get(viewName);
@@ -971,6 +971,12 @@ public class SWTApplication extends ApplicationController {
                     }
                 }
             });
+        }
+        
+        if (name != null) {
+            List<Control> controlList = new ArrayList();
+            controlList.add(button);
+            this.namedControls.get(viewName).put(name, controlList);
         }
         
         return button;
@@ -1263,8 +1269,10 @@ public class SWTApplication extends ApplicationController {
     }
     
     @Override
-    public void displayOverlay(String viewName, String name, app.Color color, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, Integer transparency) {
+    public void displayOverlay(String viewName, String name, app.Color color, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, Integer transparency, Boolean invert) {
         System.out.println("SWTApplication: displayOverlay: viewName=" + viewName + ", name=" + name + ", color=" + color + ", startRow=" + startRow + ", startColumn=" + startColumn + ", endRow=" + endRow + ", endColumn=" + endColumn + ", transparency=" + transparency);
+        
+        // TODO - Implement invert
         
         if (this.namedControls.get(viewName).containsKey(name)) {
             System.out.println("SWTApplication: displayOverlay: View already contains a control with this name:" + this.namedControls.get(viewName).get(name));
