@@ -642,7 +642,7 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
         this.monsterDestinationX = this.monster.x + (int) (Math.random() * (backgroundDimensions.x - this.monster.x));
         this.monsterHalfwayPoint = (Math.floorDiv(Math.abs(monsterPositionX - this.monsterDestinationX), 2) * this.monsterDirection) + monsterPositionX;
         this.monsterHalfwayReached = false;
-        this.monsterHP = 0;
+        this.monsterHP = 100;
         Coordinates playerDimensions = this.dimensionsMap.get(PLAYER_NAME);
         int halfPlayerX = Math.floorDiv(playerDimensions.x, 2);
         this.player = new SpriteModel(this.quest.appController, PLAYER_NAME, playerFacingRightImageFileName, 0.2, centerX - halfPlayerX, backgroundDimensions.y - playerDimensions.y, null, 0.0, null) {

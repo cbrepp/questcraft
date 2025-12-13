@@ -445,6 +445,17 @@ public class Application extends app.ApplicationView {
         nightOwlSubpage.contents.add("<goto-scene condition=\"variable difficulty!=\" MYLEE'S ELEVATOR>");
         book.subpages.put("NIGHT OWL", nightOwlSubpage);
         
+        // Once the player has selected a difficulty level, allow them to skip straight to Chapter 2
+        Story act2Subpage = new Story();
+        act2Subpage.isSpell = true;
+        act2Subpage.contents.add("<variable-set condition=\"variable difficulty!=\" is-Gianni-tamed true>");
+        act2Subpage.contents.add("<variable-set condition=\"variable difficulty!=\" is-dragon-defeated true>");
+        act2Subpage.contents.add("<variable-set condition=\"variable difficulty!=\" is-night-owl-defeated true>");
+        act2Subpage.contents.add("<subpage-display condition=\"variable difficulty!=\" Chapter 1 Equipment>");
+        act2Subpage.contents.add("<inventory-remove condition=\"inventory-has Gold=true\" true Gold>");
+        act2Subpage.contents.add("<goto-act condition=\"variable difficulty!=\" Chapter 2>");
+        book.subpages.put("A DARKNESS OVER THE LAND", act2Subpage);
+        
         Story chapter1EquipmentSubpage = new Story();
         chapter1EquipmentSubpage.contents.add("<inventory-add condition=\"inventory-has Gold!=true\" true Gold>");
         chapter1EquipmentSubpage.contents.add("<inventory-add condition=\"inventory-has Ring of Taming!=true\" true Ring of Taming>");
@@ -2601,6 +2612,8 @@ public class Application extends app.ApplicationView {
         chapter2.firstSceneName = "Chapter";
         book.acts.put("Chapter 2", chapter2);
         
+        // TODO - Add Mylee's elevator with an image of an empty elevator shaft
+        
         chapterScene = new Scene();
         chapterScene.firstPageName = "1";
         chapterScene.hidePageHeaders = true;
@@ -2609,13 +2622,14 @@ public class Application extends app.ApplicationView {
         chapter2.scenes.put("Chapter", chapterScene);
         
         page1 = new Page();
-        page1.story.contents.add("<overlay dark-mode 0+0+0 true><image wayne-chung-dark center /assets/images/wayne-chung-dark.jpg>");
+        page1.story.contents.add("<image wayne-chung-dark center /assets/images/wayne-chung-dark.jpg>");
         page1.story.contents.add("<second-page>");
         page1.story.contents.add("<u>CHAPTER 2</u>");
         page1.story.contents.add("<br>");
         page1.story.contents.add("A Darkness over the Land");
         page1.story.contents.add("<set-player-direction SOUTH>");
         page1.story.contents.add("<observed-scene-add WHY DID THE CHICKEN CROSS THE ROAD?>");
+        page1.story.contents.add("<overlay dark-mode 0+0+0 false><send-to-front next-page>");
         chapterScene.pages.put("1", page1);
         
         Scene road = new Scene();
@@ -2623,15 +2637,21 @@ public class Application extends app.ApplicationView {
         road.firstPageName = "main";
         road.soundFileName = "/assets/sounds/suspense3.wav";
         road.symbol = "\uD83D\uDEE3";
-        road.x = 2;
+        road.x = 1;
         road.y = 0;
         chapter2.scenes.put("WHY DID THE CHICKEN CROSS THE ROAD?", road);
  
         mainPage = new Page();
-        mainPage.story.contents.add("<overlay dark-mode 0+0+0 true><subpage-display Scene Header>");
+        mainPage.story.contents.add("<subpage-display Scene Header>");
         mainPage.story.contents.add("<color 0+0+0>");
         mainPage.story.contents.add("TODO");
+        mainPage.story.contents.add("<overlay dark-mode 0+0+0 false><send-to-front next-page>");
         road.pages.put("main", mainPage);
+        
+        // TODO - Review vector images of car profiles (ie, https://pixabay.com/vectors/automobile-car-gs-1300464/).
+        // Add a cropped image of a chicken over the car to make it look like the chicken is driving (ie, https://pixabay.com/vectors/chicken-poultry-hen-barn-farm-40898/).
+        // Could make the first minigame a frogger animation with 4 cars the player has to hop on and sync up the timing with the suspense music.
+        // Each stretch would then be followed up with another with cars that are going faster
         
         book.highScores = new ArrayList<>();
         book.highScores.add(new HighScore(300, "GRT", LocalDate.of(2024, Month.MARCH, 9)));

@@ -104,16 +104,16 @@ Upcoming changes.
 * 3) Implement Racing Game
   * Needs both car and gas, game drops ski trip (snow sled).  Player saves some gas.
 * 4) Implement Chicken Tanks
-  * Needs military rank, drops laser cannon
+  * Needs laser cannon, drops ping pong
 * 5) Implement Gorrilas
   * Two games, first is a moving target for shooting monkeys in trees.  Each successful hit causes the monkey to drop a banana.  Second is the classic gorrilas game.  Each launch requires a banana to be used.
-  * Needs bananas, drops military rank
+  * Needs nothing, drops military rank
 * 6) Implement Ski Free
   * Needs snow sled
   * After beating ski free, player ignites the remaining gas and burns a bright light into Night Owl's Woods to prevent from being attacked.
   * Chicken invaders game ensues
 * 7) Implement Asteroids
-  * Needs laser cannon, drops ping pong
+  * Needs military rank, drops laser cannon
 * 8) Pac-man
   * Needs key (the level is a castle), drops gas (farts)
 * 9) Implement Pong/Breakout

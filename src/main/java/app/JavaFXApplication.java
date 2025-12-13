@@ -63,8 +63,10 @@ import javafx.embed.swing.SwingFXUtils;
 import javafx.event.EventHandler;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
+import javafx.scene.effect.Blend;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.effect.ColorAdjust;
+import javafx.scene.effect.ColorInput;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.Effect;
 import javafx.scene.image.PixelReader;
@@ -360,13 +362,16 @@ public class JavaFXApplication extends ApplicationController {
             int height = bottomRightCoordinates.y - topLeftCoordinates.y;
             overlay = new Rectangle(topLeftCoordinates.x, topLeftCoordinates.y, width, height);
         }
+
+        double opacityPercent = (1.0 - ((double)transparency / 255.0)); // Transparency is 0-255
+        System.out.println("JavaFXApplication: displayOverlay: Converted opacity percent to " + opacityPercent);
         
         if (invert) {
+            // TODO - This just doesn't work
             overlay.setFill(Color.BLACK); // Using black gives the strongest inversion effect
+            overlay.setOpacity(1.0);
             overlay.setBlendMode(BlendMode.DIFFERENCE);
         } else {
-            double opacityPercent = (1.0 - ((double)transparency / 255.0)); // Transparency is 0-255
-            System.out.println("JavaFXApplication: displayOverlay: Converted opacity percent to " + opacityPercent);
             overlay.setFill(new Color((color.red + 1) / 255, (color.green + 1) / 255, (color.blue + 1) / 255, opacityPercent));
         }
         content.getChildren().add(overlay);
@@ -1382,6 +1387,7 @@ public class JavaFXApplication extends ApplicationController {
             button.setOnAction(e -> {
                 if (!allowRepeatClicks) {
                     button.setDisable(true);
+                    button.setStyle(null);
                 }
                 listener.onEvent(name, finalValue);
             });
