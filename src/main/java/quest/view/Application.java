@@ -2629,24 +2629,168 @@ public class Application extends app.ApplicationView {
         page1.story.contents.add("A Darkness over the Land");
         page1.story.contents.add("<set-player-direction SOUTH>");
         page1.story.contents.add("<observed-scene-add WHY DID THE CHICKEN CROSS THE ROAD?>");
-        page1.story.contents.add("<overlay dark-mode 0+0+0 false><send-to-front next-page>");
+        page1.story.contents.add("<overlay dark-mode 0+0+0 false><send-to-front next-page><play-sound /assets/sounds/suspense3.wav true>");
         chapterScene.pages.put("1", page1);
+        
+        Scene elevator = new Scene();
+        elevator.color = new Color(0, 0, 0);    // Black
+        elevator.firstPageName = "main";
+        elevator.soundFileName = "";    // TODO - Need way to specify that the current audio file needs to keep playing
+        elevator.symbol = "\uD83D\uDED7";
+        elevator.x = 2;
+        elevator.y = 0;
+        chapter2.scenes.put("MYLEE'S ELEVATOR", elevator);
+ 
+        mainPage = new Page();
+        mainPage.story.contents.add("<subpage-display Scene Header>");
+        mainPage.story.contents.add("<color 0+0+0>");
+        mainPage.story.contents.add("TODO");
+        mainPage.story.contents.add("<overlay dark-mode 0+0+0 false><send-to-front next-page><subpage-display Navigation Footer>");
+        elevator.pages.put("main", mainPage);
+        
+        Scene grass = new Scene();
+        grass.color = new Color(0, 0, 0);    // Black
+        grass.firstPageName = "main";
+        grass.soundFileName = "";    // TODO - Need way to specify that the current audio file needs to keep playing
+        grass.symbol = "\uD83C\uDFD5";
+        grass.x = 1;
+        grass.y = 1;
+        chapter2.scenes.put("SNAKES IN THE GRASS", grass);
+ 
+        mainPage = new Page();
+        mainPage.story.contents.add("<subpage-display Scene Header>");
+        mainPage.story.contents.add("<color 0+0+0>");
+        mainPage.story.contents.add("TODO");
+        mainPage.story.contents.add("<overlay dark-mode 0+0+0 false><send-to-front next-page><subpage-display Navigation Footer>");
+        grass.pages.put("main", mainPage);
         
         Scene road = new Scene();
         road.color = new Color(0, 0, 0);    // Black
         road.firstPageName = "main";
-        road.soundFileName = "/assets/sounds/suspense3.wav";
+        road.soundFileName = "";    // TODO - Need way to specify that the current audio file needs to keep playing
         road.symbol = "\uD83D\uDEE3";
-        road.x = 1;
-        road.y = 0;
+        road.x = 2;
+        road.y = 1;
         chapter2.scenes.put("WHY DID THE CHICKEN CROSS THE ROAD?", road);
  
         mainPage = new Page();
         mainPage.story.contents.add("<subpage-display Scene Header>");
         mainPage.story.contents.add("<color 0+0+0>");
         mainPage.story.contents.add("TODO");
-        mainPage.story.contents.add("<overlay dark-mode 0+0+0 false><send-to-front next-page>");
+        mainPage.story.contents.add("<overlay dark-mode 0+0+0 false><send-to-front next-page><subpage-display Navigation Footer>");
         road.pages.put("main", mainPage);
+        
+        Scene speedway = new Scene();
+        speedway.color = new Color(0, 0, 0);    // Black
+        speedway.firstPageName = "main";
+        speedway.soundFileName = "";    // TODO - Need way to specify that the current audio file needs to keep playing
+        speedway.symbol = "\uD83C\uDFCE";
+        speedway.x = 3;
+        speedway.y = 1;
+        chapter2.scenes.put("SPEEDWAY", speedway);
+ 
+        mainPage = new Page();
+        mainPage.story.contents.add("<subpage-display Scene Header>");
+        mainPage.story.contents.add("<color 0+0+0>");
+        mainPage.story.contents.add("TODO");
+        mainPage.story.contents.add("<overlay dark-mode 0+0+0 false><send-to-front next-page><subpage-display Navigation Footer>");
+        speedway.pages.put("main", mainPage);
+        
+        Scene battleground = new Scene();
+        battleground.color = new Color(0, 0, 0);    // Black
+        battleground.firstPageName = "main";
+        battleground.soundFileName = "";    // TODO - Need way to specify that the current audio file needs to keep playing
+        battleground.symbol = "\uD83C\uDF96";
+        battleground.x = 1;
+        battleground.y = 2;
+        chapter2.scenes.put("BATTLEGROUND", battleground);
+ 
+        mainPage = new Page();
+        mainPage.story.contents.add("<subpage-display Scene Header>");
+        mainPage.story.contents.add("<color 0+0+0>");
+        mainPage.story.contents.add("TODO");
+        mainPage.story.contents.add("<overlay dark-mode 0+0+0 false><send-to-front next-page><subpage-display Navigation Footer>");
+        battleground.pages.put("main", mainPage);
+        
+        Scene forest = new Scene();
+        forest.color = new Color(0, 0, 0);    // Black
+        forest.firstPageName = "main";
+        forest.soundFileName = "";    // TODO - Need way to specify that the current audio file needs to keep playing
+        forest.symbol = "\uD83C\uDF32";
+        forest.x = 2;
+        forest.y = 2;
+        chapter2.scenes.put("FOREST", forest);
+ 
+        mainPage = new Page();
+        mainPage.story.contents.add("<subpage-display Scene Header>");
+        mainPage.story.contents.add("<color 0+0+0>");
+        mainPage.story.contents.add("TODO");
+        mainPage.story.contents.add("<overlay dark-mode 0+0+0 false><send-to-front next-page><subpage-display Navigation Footer>");
+        forest.pages.put("main", mainPage);
+        
+        Scene mountain = new Scene();
+        mountain.color = new Color(0, 0, 0);    // Black
+        mountain.firstPageName = "main";
+        mountain.soundFileName = "";    // TODO - Need way to specify that the current audio file needs to keep playing
+        mountain.symbol = "\uD83C\uDFD4";
+        mountain.x = 3;
+        mountain.y = 2;
+        chapter2.scenes.put("MOUNT FLUFF", mountain);
+ 
+        mainPage = new Page();
+        mainPage.story.contents.add("<subpage-display Scene Header>");
+        mainPage.story.contents.add("<color 0+0+0>");
+        mainPage.story.contents.add("TODO");
+        mainPage.story.contents.add("<overlay dark-mode 0+0+0 false><send-to-front next-page><subpage-display Navigation Footer>");
+        mountain.pages.put("main", mainPage);
+        
+        Scene space = new Scene();
+        space.color = new Color(0, 0, 0);    // Black
+        space.firstPageName = "main";
+        space.soundFileName = "";    // TODO - Need way to specify that the current audio file needs to keep playing
+        space.symbol = "\uD83C\uDF0C";
+        space.x = 1;
+        space.y = 3;
+        chapter2.scenes.put("SPACE BASE", space);
+ 
+        mainPage = new Page();
+        mainPage.story.contents.add("<subpage-display Scene Header>");
+        mainPage.story.contents.add("<color 0+0+0>");
+        mainPage.story.contents.add("TODO");
+        mainPage.story.contents.add("<overlay dark-mode 0+0+0 false><send-to-front next-page><subpage-display Navigation Footer>");
+        space.pages.put("main", mainPage);
+        
+        Scene fortress = new Scene();
+        fortress.color = new Color(0, 0, 0);    // Black
+        fortress.firstPageName = "main";
+        fortress.soundFileName = "\uD83C\uDDEF";    // TODO - Need way to specify that the current audio file needs to keep playing
+        fortress.symbol = "";
+        fortress.x = 2;
+        fortress.y = 3;
+        chapter2.scenes.put("FORTRESS", fortress);
+ 
+        mainPage = new Page();
+        mainPage.story.contents.add("<subpage-display Scene Header>");
+        mainPage.story.contents.add("<color 0+0+0>");
+        mainPage.story.contents.add("TODO");
+        mainPage.story.contents.add("<overlay dark-mode 0+0+0 false><send-to-front next-page><subpage-display Navigation Footer>");
+        fortress.pages.put("main", mainPage);
+        
+        Scene pickleball = new Scene();
+        pickleball.color = new Color(0, 0, 0);    // Black
+        pickleball.firstPageName = "main";
+        pickleball.soundFileName = "";    // TODO - Need way to specify that the current audio file needs to keep playing
+        pickleball.symbol = "\uD83C\uDFBE";
+        pickleball.x = 3;
+        pickleball.y = 3;
+        chapter2.scenes.put("PICKLEBALL COURT", pickleball);
+ 
+        mainPage = new Page();
+        mainPage.story.contents.add("<subpage-display Scene Header>");
+        mainPage.story.contents.add("<color 0+0+0>");
+        mainPage.story.contents.add("TODO");
+        mainPage.story.contents.add("<overlay dark-mode 0+0+0 false><send-to-front next-page><subpage-display Navigation Footer>");
+        pickleball.pages.put("main", mainPage);
         
         // TODO - Review vector images of car profiles (ie, https://pixabay.com/vectors/automobile-car-gs-1300464/).
         // Add a cropped image of a chicken over the car to make it look like the chicken is driving (ie, https://pixabay.com/vectors/chicken-poultry-hen-barn-farm-40898/).
