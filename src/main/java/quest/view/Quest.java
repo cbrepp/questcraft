@@ -309,7 +309,9 @@ public class Quest extends app.ApplicationView {
             appController.displayText(this.name, "Loading...", nextRow, loadingTextColumn, new Color(255, 255, 255));
             Act firstAct = book.acts.get(this.book.firstActName);
             Scene firstScene = firstAct.scenes.get(firstAct.firstSceneName);
-            this.appController.playSound(firstScene.soundFileName, true);
+            if (!firstScene.soundFileName.equals("")) {
+                this.appController.playSound(firstScene.soundFileName, true);
+            }
             appController.setTimer(LOADING_COMPLETE, 3, this);
         }
         
@@ -871,7 +873,7 @@ public class Quest extends app.ApplicationView {
             Scene previousScene = act.scenes.get(this.currentScene);
             previousSoundFileName = previousScene.soundFileName;
         }
-        if ((previousSoundFileName != null) && (!previousSoundFileName.equals("")) && (!scene.soundFileName.equals(previousSoundFileName))) {
+        if ((scene.stopOtherSounds == true) && (previousSoundFileName != null) && (!previousSoundFileName.equals("")) && (!scene.soundFileName.equals(previousSoundFileName))) {
             System.out.println("Quest: startScene: Stopping sound file " + previousSoundFileName);
             this.appController.stopAllSounds();
         }

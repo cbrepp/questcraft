@@ -107,7 +107,7 @@ public class Application extends app.ApplicationView {
             appController.displayFloatingText(this.name, null, "Now Playing...", 28, 42, 30, 88, infoTextColor, 18, FontStyle.BOLD, "Minecraft");
         }
         
-        appController.displayFloatingText(this.name, null, "Coming soon... JavaFX support!", 41, 102, 42, 128, null, 12, FontStyle.BOLD, "Minecraft");
+        appController.displayFloatingText(this.name, null, "Coming soon... Twin Quest Chapter 2", 41, 90, 42, 126, null, 12, FontStyle.BOLD, "Minecraft");
     }
     
     public Book deserializeBook(String fileName) {
@@ -474,6 +474,7 @@ public class Application extends app.ApplicationView {
         titlePage.firstPageName = "1";
         titlePage.hidePageHeaders = true;
         titlePage.nextSceneName = "Player Selection";
+        titlePage.stopOtherSounds = true;
         titlePage.soundFileName = "/assets/sounds/epic.mp3";
         opening.scenes.put("Title Page", titlePage);
         Page page1 = new Page();
@@ -510,6 +511,7 @@ public class Application extends app.ApplicationView {
         Scene playerSelection = new Scene();
         playerSelection.firstPageName = "1";
         playerSelection.hidePageHeaders = true;
+        playerSelection.stopOtherSounds = true;
         playerSelection.soundFileName = "/assets/sounds/epic.mp3";
         opening.scenes.put("Player Selection", playerSelection);
         page1 = new Page();
@@ -583,6 +585,7 @@ public class Application extends app.ApplicationView {
         Scene difficultySelection = new Scene();
         difficultySelection.firstPageName = "1";
         difficultySelection.hidePageHeaders = true;
+        difficultySelection.stopOtherSounds = true;
         difficultySelection.soundFileName = "/assets/sounds/epic.mp3";
         opening.scenes.put("Difficulty Selection", difficultySelection);
         page1 = new Page();
@@ -621,6 +624,7 @@ public class Application extends app.ApplicationView {
         Scene introScene = new Scene();
         introScene.firstPageName = "1a";
         introScene.hidePageHeaders = false;
+        introScene.stopOtherSounds = true;
         introScene.soundFileName = "/assets/sounds/suspense.mp3";
         introduction.scenes.put("Introduction", introScene);
 
@@ -914,6 +918,7 @@ public class Application extends app.ApplicationView {
         chapterScene.firstPageName = "1";
         chapterScene.hidePageHeaders = true;
         chapterScene.nextSceneName = "WILDERNESS 1";
+        chapterScene.stopOtherSounds = true;
         chapterScene.soundFileName = "/assets/sounds/elevator-open.mp3";
         chapter1.scenes.put("Chapter", chapterScene);
         
@@ -930,6 +935,7 @@ public class Application extends app.ApplicationView {
         Scene myleesElevator = new Scene();
         myleesElevator.color = new Color(192, 192, 192);    // Silver
         myleesElevator.firstPageName = "main";
+        myleesElevator.stopOtherSounds = true;
         myleesElevator.soundFileName = "/assets/sounds/elevator.wav";
         myleesElevator.symbol = "\uD83D\uDED7";
         myleesElevator.x = 2;
@@ -1296,6 +1302,7 @@ public class Application extends app.ApplicationView {
         Scene wilderness2 = new Scene();
         wilderness2.color = new Color(0, 100, 0);
         wilderness2.firstPageName = "main";
+        wilderness2.stopOtherSounds = true;
         wilderness2.soundFileName = "/assets/sounds/wilderness.mp3";
         wilderness2.symbol = "\uD83C\uDF33";
         wilderness2.x = 1;
@@ -1387,6 +1394,7 @@ public class Application extends app.ApplicationView {
         Scene wilderness1 = new Scene();
         wilderness1.color = new Color(79, 47, 79);
         wilderness1.firstPageName = "main";
+        wilderness1.stopOtherSounds = true;
         wilderness1.soundFileName = "/assets/sounds/wilderness.mp3";
         wilderness1.symbol = "\uD83E\uDEBB";
         wilderness1.x = 2;
@@ -1484,6 +1492,7 @@ public class Application extends app.ApplicationView {
         Scene toadstoolCircle = new Scene();
         toadstoolCircle.color = new Color(184, 115, 51);
         toadstoolCircle.firstPageName = "main";
+        toadstoolCircle.stopOtherSounds = true;
         toadstoolCircle.soundFileName = "/assets/sounds/ring-of-toadstools.wav";
         toadstoolCircle.symbol = "\uD83C\uDF44";
         toadstoolCircle.x = 3;
@@ -1697,6 +1706,7 @@ public class Application extends app.ApplicationView {
         Scene giannisDen = new Scene();
         giannisDen.color = new Color(0, 0, 0);
         giannisDen.firstPageName = "main";
+        giannisDen.stopOtherSounds = true;
         giannisDen.soundFileName = "/assets/sounds/giannis-den.wav";
         giannisDen.symbol = "\uD83D\uDC08\u200D\u2B1B";
         giannisDen.x = 1;
@@ -1819,6 +1829,7 @@ public class Application extends app.ApplicationView {
         Scene woods = new Scene();
         woods.color = new Color(85, 85, 85);
         woods.firstPageName = "main";
+        woods.stopOtherSounds = true;
         woods.soundFileName = "/assets/sounds/woods.mp3";
         //woods.symbol = "\uD83E\uDEBE";  // Branchless tree is new with Unicode v16.0 (2024) and is only supported in recent versions of Java
         woods.symbol = "\uD83E\uDD89";
@@ -1895,6 +1906,7 @@ public class Application extends app.ApplicationView {
         Scene mountFluff = new Scene();
         mountFluff.color = new Color(255, 255, 255);
         mountFluff.firstPageName = "main";
+        mountFluff.stopOtherSounds = true;
         mountFluff.soundFileName = "/assets/sounds/wind.mp3";
         mountFluff.symbol = "\uD83C\uDFD4";
         mountFluff.x = 3;
@@ -2122,6 +2134,7 @@ public class Application extends app.ApplicationView {
         Scene mysteryRoom = new Scene();
         mysteryRoom.color = new Color(184, 115, 51);
         mysteryRoom.firstPageName = "main";
+        mysteryRoom.stopOtherSounds = true;
         mysteryRoom.soundFileName = "";
         mysteryRoom.symbol = "\u2754";
         mysteryRoom.x = 1;
@@ -2288,6 +2301,7 @@ public class Application extends app.ApplicationView {
         Scene castle = new Scene();
         castle.color = new Color(171, 145, 68);
         castle.firstPageName = "main";
+        castle.stopOtherSounds = true;
         castle.soundFileName = "/assets/sounds/castle.mp3";
         castle.symbol = "\uD83C\uDFF0";
         castle.x = 2;
@@ -2332,6 +2346,7 @@ public class Application extends app.ApplicationView {
         Scene dragonsDen = new Scene();
         dragonsDen.color = new Color(139, 0, 0);
         dragonsDen.firstPageName = "main";
+        dragonsDen.stopOtherSounds = true;
         dragonsDen.soundFileName = "/assets/sounds/dragons-den.mp3";
         dragonsDen.symbol = "\uD83D\uDC09";
         dragonsDen.x = 3;
@@ -2617,7 +2632,7 @@ public class Application extends app.ApplicationView {
         chapterScene = new Scene();
         chapterScene.firstPageName = "1";
         chapterScene.hidePageHeaders = true;
-        chapterScene.nextSceneName = "WHY DID THE CHICKEN CROSS THE ROAD?";
+        chapterScene.nextSceneName = "HIGHWAY";
         chapterScene.soundFileName = "/assets/sounds/suspense3.wav";
         chapter2.scenes.put("Chapter", chapterScene);
         
@@ -2628,7 +2643,7 @@ public class Application extends app.ApplicationView {
         page1.story.contents.add("<br>");
         page1.story.contents.add("A Darkness over the Land");
         page1.story.contents.add("<set-player-direction SOUTH>");
-        page1.story.contents.add("<observed-scene-add WHY DID THE CHICKEN CROSS THE ROAD?>");
+        page1.story.contents.add("<observed-scene-add HIGHWAY>");
         page1.story.contents.add("<overlay dark-mode 0+0+0 false><send-to-front next-page><play-sound /assets/sounds/suspense3.wav true>");
         chapterScene.pages.put("1", page1);
         
@@ -2655,7 +2670,7 @@ public class Application extends app.ApplicationView {
         grass.symbol = "\uD83C\uDFD5";
         grass.x = 1;
         grass.y = 1;
-        chapter2.scenes.put("SNAKES IN THE GRASS", grass);
+        chapter2.scenes.put("ABANDONED CAMPGROUNDS", grass);
  
         mainPage = new Page();
         mainPage.story.contents.add("<subpage-display Scene Header>");
@@ -2671,7 +2686,7 @@ public class Application extends app.ApplicationView {
         road.symbol = "\uD83D\uDEE3";
         road.x = 2;
         road.y = 1;
-        chapter2.scenes.put("WHY DID THE CHICKEN CROSS THE ROAD?", road);
+        chapter2.scenes.put("HIGHWAY", road);
  
         mainPage = new Page();
         mainPage.story.contents.add("<subpage-display Scene Header>");
