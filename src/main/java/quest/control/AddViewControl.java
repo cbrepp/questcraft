@@ -29,14 +29,14 @@ public class AddViewControl extends QuestControl {
                     this.quest.map.quest = this.quest;
                     Integer inventoryIndex = this.quest.appController.getTabIndex(Questcraft.INVENTORY);
                     Integer mapIndex = inventoryIndex + 1;
-                    this.quest.appController.addView(this.quest.map, false, mapIndex);
+                    this.quest.appController.addView(this.quest.map, false, mapIndex, false);
             }
             case Quest.SPELL_BOOK -> {
                     this.quest.spellBook = new SpellBook(Quest.SPELL_BOOK);
                     this.quest.spellBook.quest = this.quest;
                     Integer mapIndex = this.quest.appController.getTabIndex(Quest.MAP);
                     Integer spellBookIndex = mapIndex + 1;
-                    this.quest.appController.addView(this.quest.spellBook, false, spellBookIndex);
+                    this.quest.appController.addView(this.quest.spellBook, false, spellBookIndex, false);
             }
             default -> System.err.println("AddViewControl: UNSUPPORTED VIEW!");
         }

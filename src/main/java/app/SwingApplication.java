@@ -101,7 +101,7 @@ public class SwingApplication extends ApplicationController {
     }
     
     @Override
-    public void addView(ApplicationView view, Boolean isParent, int index) {
+    public void addView(ApplicationView view, Boolean isParent, int index, Boolean isRefresh) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
@@ -267,6 +267,16 @@ public class SwingApplication extends ApplicationController {
     
     @Override
     public void sendToBack(String viewName, String name) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public void refreshView(String viewName) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public void setBackgroundColor(String viewName, app.Color color) {
         throw new UnsupportedOperationException("Not supported.");
     }
 }

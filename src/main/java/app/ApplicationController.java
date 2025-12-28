@@ -18,7 +18,6 @@ package app;
 
 import app.model.BaseModel;
 import app.model.Coordinates;
-import app.model.SpriteModel;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -45,7 +44,7 @@ public abstract class ApplicationController {
     public abstract void renameTab(String viewName, String newViewName);
     public abstract void removeTab(String viewName);
     public abstract void addView(ApplicationView view);
-    public abstract void addView(ApplicationView view, Boolean isParent, int index);
+    public abstract void addView(ApplicationView view, Boolean isParent, int index, Boolean isRefresh);
     public abstract Integer getTabIndex(String viewName);
     public abstract void close();
     public abstract void open(ApplicationView splashView, ApplicationView mainView);
@@ -86,6 +85,8 @@ public abstract class ApplicationController {
     public abstract void updateFloatingText(String viewName, String name, String text);
     public abstract void sendToFront(String viewName, String name);
     public abstract void sendToBack(String viewName, String name);
+    public abstract void refreshView(String viewName);
+    public abstract void setBackgroundColor(String viewName, app.Color color);
     
     public static void main(String[] args) {
         System.out.println("ApplicationController: main: args=" + Arrays.toString(args));

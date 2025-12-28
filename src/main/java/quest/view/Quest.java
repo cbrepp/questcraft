@@ -89,7 +89,7 @@ public class Quest extends app.ApplicationView {
         super(name);
         
         this.backgroundImage = "/assets/images/book.png";
-        this.backgroundColor = new Color(0, 0, 0);
+        this.backgroundColor = new Color(255, 255, 255);
         this.isGameOver = false;
         this.playerHP = 100;
         this.playerMP = 0;
@@ -103,6 +103,7 @@ public class Quest extends app.ApplicationView {
         this.questControls.put(ActGotoControl.NAME, new ActGotoControl(this));
         this.questControls.put(AddViewControl.NAME, new AddViewControl(this));
         this.questControls.put(AnimationInitControl.NAME, new AnimationInitControl(this));
+        this.questControls.put(BackgroundColorControl.NAME, new BackgroundColorControl(this));
         this.questControls.put(BoldTextControl.NAME, new BoldTextControl(this));
         this.questControls.put(BoldTextOffControl.NAME, new BoldTextOffControl(this));
         this.questControls.put(BookAuthorControl.NAME, new BookAuthorControl(this));

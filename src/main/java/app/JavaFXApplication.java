@@ -63,10 +63,8 @@ import javafx.embed.swing.SwingFXUtils;
 import javafx.event.EventHandler;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
-import javafx.scene.effect.Blend;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.effect.ColorAdjust;
-import javafx.scene.effect.ColorInput;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.Effect;
 import javafx.scene.image.PixelReader;
@@ -311,7 +309,7 @@ public class JavaFXApplication extends ApplicationController {
         if (index == null) {
             index = this.tabIndexMap.size();
         }
-        this.addView(view, isParent, index);
+        this.addView(view, isParent, index, false);
     }
     
     @Override
@@ -497,14 +495,16 @@ public class JavaFXApplication extends ApplicationController {
     }
     
     @Override
-    public void addView(ApplicationView view, Boolean isParent, int index) {
-        System.out.println("JavaFXApplication: addView: name=" + view.name + ", isParent=" + isParent + ", index=" + index);
+    public void addView(ApplicationView view, Boolean isParent, int index, Boolean isRefresh) {
+        System.out.println("JavaFXApplication: addView: name=" + view.name + ", isParent=" + isParent + ", index=" + index + ", isRefresh=" + isRefresh);
 
         StackPane content = new StackPane();
 
         if (isParent) {
             // Not supported at this time
-            view.onLoad(this);
+            if (!isRefresh) {
+                view.onLoad(this);
+            }
             return;
         }
         
@@ -537,8 +537,12 @@ public class JavaFXApplication extends ApplicationController {
                 new BackgroundSize(dimensions.x, dimensions.y, true, true, true, false) // Size of the image (100% width and height)
             );
             
-            // TODO - Check and handle for no background color
-            Color backgroundColor = Color.rgb(view.backgroundColor.red, view.backgroundColor.green, view.backgroundColor.blue);
+            Color backgroundColor;
+            if (view.backgroundColor != null) {
+                backgroundColor = Color.rgb(view.backgroundColor.red, view.backgroundColor.green, view.backgroundColor.blue);
+            } else {
+                backgroundColor = Color.BLACK;
+            }
             BackgroundFill backgroundFill = new BackgroundFill(
                 backgroundColor, // The color to use
                 CornerRadii.EMPTY, // No rounded corners
@@ -548,7 +552,6 @@ public class JavaFXApplication extends ApplicationController {
             background = new Background(Collections.singletonList(backgroundFill), Collections.singletonList(backgroundImage));
             content.setBackground(background);
             content.setPrefSize(dimensions.x, dimensions.y);
-            // TODO - How to specify background color for images with transparency?
         } else if (view.backgroundColor != null) {
             System.out.println("JavaFXApplication: addView: name=" + view.name + ", using background color " + view.backgroundColor);
             Color backgroundColor = Color.rgb(view.backgroundColor.red, view.backgroundColor.green, view.backgroundColor.blue);
@@ -624,7 +627,9 @@ public class JavaFXApplication extends ApplicationController {
         content.getChildren().add(overlayPane);
         this.tabContentMap.put(view.name, overlayPane);
         
-        view.onLoad(this);
+        if (!isRefresh) {
+            view.onLoad(this);
+        }
     }
     
     @Override
@@ -1161,6 +1166,31 @@ public class JavaFXApplication extends ApplicationController {
         Label label = (Label) this.namedControls.get(viewName).get(name);
         label.setText(text);
     }
+    
+    @Override
+    public void setBackgroundColor(String viewName, app.Color color) {
+        System.out.println("JavaFXApplication: setBackgroundColor: viewName=" + viewName + ", color=" + color);
+        
+        ApplicationView view = this.views.get(viewName);
+        
+        if (view == null) {
+            System.out.println("JavaFXApplication: setBackgroundColor: View does not exist, nothing to do");
+            return;
+        }
+        
+        view.backgroundColor = color;
+        this.refreshView(viewName);
+    }
+    
+    @Override
+    public void refreshView(String viewName) {
+        System.out.println("JavaFXApplication: refreshView: viewName=" + viewName);
+        
+        ApplicationView view = this.views.get(viewName);
+        int index = this.getTabIndex(viewName);
+        this.removeTab(viewName);
+        this.addView(view, false, index, true);
+    }
 
     @Override
     public void displayFloatingText(String viewName, String name, String text, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, app.Color fontColor, Integer fontSize, Integer fontStyle, String fontName) {
@@ -1248,7 +1278,9 @@ public class JavaFXApplication extends ApplicationController {
         
         label.setLayoutX(startCoordinates.x);
         label.setLayoutY(startCoordinates.y);
-        label.setPrefSize(endCoordinates.x - startCoordinates.x - 1, endCoordinates.y - startCoordinates.y - 1);
+        if ((endRow != null) && (endColumn != null)) {
+            label.setPrefSize(endCoordinates.x - startCoordinates.x - 1, endCoordinates.y - startCoordinates.y - 1);
+        }
         content.getChildren().add(label);
         
         if (name != null) {
@@ -1543,7 +1575,7 @@ public class JavaFXApplication extends ApplicationController {
         System.out.println("JavaFXApplication: convertToCoordinates: row=" + row + ", column=" + column);
         
         int x = (int) ((column - 1) * this.fontWidth) - this.fontWidth;
-        int y = (int) ((row - 1) * this.fontHeight) - this.fontHeight;
+        int y = (int) ((row) * this.fontHeight) - this.fontHeight;
         Coordinates coordinates = new Coordinates(x, y);
         
         return coordinates;

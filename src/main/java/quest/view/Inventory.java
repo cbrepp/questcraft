@@ -4,7 +4,6 @@ import app.ApplicationController;
 import app.Color;
 import app.EventListener;
 import app.Icon;
-import app.Utility;
 import app.model.BaseModel;
 import app.model.LabelModel;
 import app.model.LinkModel;
@@ -26,7 +25,7 @@ public class Inventory extends app.ApplicationView implements EventListener {
     public Inventory(String name) {
         super(name);
         this.addTextArea = false;   // The text area would interfere with this view's grid layout, so prevent it here
-        this.backgroundColor = new Color(0, 0, 0);
+        this.backgroundColor = new Color(255, 255, 255);
         this.emoji = "\uD83C\uDF71"; // "bento box" Unicode emoji
     }
     

@@ -418,12 +418,15 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
                 int monsterMissileHitCount = 0;
                 for (SpriteModel collidingSprite : this.player.collisionSprites) {
                     if (collidingSprite.name.equals(MONSTER_MISSILE_CHUNGUS_NAME)) {
+                        System.out.println("MonsterShooterControl: onAnimate: reducing HP for chungus missile");
                         this.quest.setPlayerHP(-3, false, "Night Owl", false);
                         monsterMissileHitCount++;
                     } else if (collidingSprite.name.equals(MONSTER_MISSILE_NAME)) {
+                        System.out.println("MonsterShooterControl: onAnimate: reducing HP for normal missile");
                         this.quest.setPlayerHP(-2, false, "Night Owl", false);
                         monsterMissileHitCount++;
                     } else if (collidingSprite.name.equals(MONSTER_MISSILE_MINI_NAME)) {
+                        System.out.println("MonsterShooterControl: onAnimate: reducing HP for mini missile");
                         this.quest.setPlayerHP(-1, false, "Night Owl", false);
                         monsterMissileHitCount++;
                     }
@@ -677,13 +680,13 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
         this.quest.appController.displayFloatingText(Questcraft.QUEST, LABEL_PLAYER_MP, "Monster HP: " + String.valueOf(this.monsterHP), row, this.column + 34, null, null, null, 12, null, "RobotoMono-Medium");
 
         // Initialize the animation
-        this.quest.appController.addAnimation(Questcraft.QUEST, name, row + 3, this.column, backgroundImageFileName, imageFiles, ANIMATION_DELAY, this);
+        this.quest.appController.addAnimation(Questcraft.QUEST, name, row + 2, this.column, backgroundImageFileName, imageFiles, ANIMATION_DELAY, this);
         
         // Display the buttons used to control the animation
         List<String> valueList = new ArrayList<>(Arrays.asList("&left; Move Left+&up; Launch+&right; Move Right+Pause".split("\\+")));
         int buttonRow = this.quest.buttonRow;
         int endColumn;
-        endColumn = this.column + this.quest.appController.getColumns(backgroundImageFileName) + 1;
+        endColumn = this.column + this.quest.appController.getColumns(backgroundImageFileName);
         this.quest.appController.displayValidatedInputField(this.quest.name, ANIMATION_CONTROLS_NAME, valueList, buttonRow, this.column, endColumn, 0, this, true);
         
         return "";

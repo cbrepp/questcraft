@@ -453,6 +453,12 @@ public class Application extends app.ApplicationView {
         act2Subpage.contents.add("<variable-set condition=\"variable difficulty!=\" is-night-owl-defeated true>");
         act2Subpage.contents.add("<subpage-display condition=\"variable difficulty!=\" Chapter 1 Equipment>");
         act2Subpage.contents.add("<inventory-remove condition=\"inventory-has Gold=true\" true Gold>");
+        act2Subpage.contents.add("<background-color 0+0+0 Quest>");
+        act2Subpage.contents.add("<background-color 0+0+0 Inventory>");
+        act2Subpage.contents.add("<background-color 0+0+0 Map>");
+        act2Subpage.contents.add("<background-color 0+0+0 Spell Book>");
+        act2Subpage.contents.add("<background-color 0+0+0 High Scores>");
+        act2Subpage.contents.add("<tab-select Quest>");
         act2Subpage.contents.add("<goto-act condition=\"variable difficulty!=\" Chapter 2>");
         book.subpages.put("A DARKNESS OVER THE LAND", act2Subpage);
         
@@ -1176,7 +1182,7 @@ public class Application extends app.ApplicationView {
         backToElevatorPage.nextPageName = "Give The Mylee Her Due";
         backToElevatorPage.story.contents.add("<second-page>");
         backToElevatorPage.story.contents.add("<image mylee left /assets/images/mylee.jpg>");
-        backToElevatorPage.story.contents.add("<first-page><subpage-display Scene Header><play-sound /assets/sounds/elevator-open.mp3 false><timer-stop lights-off><timer-stop lights-on><remove lights-out><overlay lights-out 0+0+0 false><send-to-front next-page><send-to-front VARIABLE:action><timer-start 0.5 lights-on>");
+        backToElevatorPage.story.contents.add("<first-page><subpage-display Scene Header><play-sound /assets/sounds/elevator-open.mp3 false><timer-stop lights-off><timer-stop lights-on><remove lights-out><overlay lights-out 0+0+0 false><send-to-front next-page><send-to-front VARIABLE:action><timer-start 1.0 lights-on>");
         backToElevatorPage.story.contents.add("<color 0+0+0>");
         backToElevatorPage.story.contents.add("Back in the elevator you find a panic-stricken Mylee.");
         backToElevatorPage.story.contents.add("<br>");
@@ -1201,22 +1207,22 @@ public class Application extends app.ApplicationView {
         Story lightsOnSubpage = new Story();
         lightsOnSubpage.contents.add("<remove lights-out>");
         lightsOnSubpage.contents.add("<timer-stop lights-on>");
-        lightsOnSubpage.contents.add("<timer-start 0.5 lights-out>");
-        myleesElevator.subpages.put("TIMER lights-on", lightsOnSubpage);
+        lightsOnSubpage.contents.add("<timer-start 1.0 lights-out>");
+        backToElevatorPage.subpages.put("TIMER lights-on", lightsOnSubpage);
         
         Story lightsOutSubpage = new Story();
         lightsOutSubpage.contents.add("<overlay lights-out 0+0+0 false>");
         lightsOutSubpage.contents.add("<send-to-front next-page>");
         lightsOutSubpage.contents.add("<send-to-front VARIABLE:action>");
         lightsOutSubpage.contents.add("<timer-stop lights-out>");
-        lightsOutSubpage.contents.add("<timer-start 0.5 lights-on>");
-        myleesElevator.subpages.put("TIMER lights-out", lightsOutSubpage);
+        lightsOutSubpage.contents.add("<timer-start 1.0 lights-on>");
+        backToElevatorPage.subpages.put("TIMER lights-out", lightsOutSubpage);
         
         Page giveMyleeHerDuePage = new Page();
         giveMyleeHerDuePage.hideNextButton = true;
         giveMyleeHerDuePage.story.contents.add("<second-page>");
         giveMyleeHerDuePage.story.contents.add("<image mylee left /assets/images/mylee.jpg>");
-        giveMyleeHerDuePage.story.contents.add("<first-page><subpage-display Scene Header><timer-stop lights-off><timer-stop lights-on><remove lights-out><overlay lights-out 0+0+0 false><send-to-front next-page><timer-start 0.5 lights-on>");
+        giveMyleeHerDuePage.story.contents.add("<first-page><subpage-display Scene Header><timer-stop lights-off><timer-stop lights-on><remove lights-out><overlay lights-out 0+0+0 false><send-to-front next-page><timer-start 0.75 lights-on>");
         giveMyleeHerDuePage.story.contents.add("<color 0+0+0>");
         giveMyleeHerDuePage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Umm... aren't you forgetting to give me something?<quote>");
         giveMyleeHerDuePage.story.contents.add("<br>");
@@ -1227,6 +1233,20 @@ public class Application extends app.ApplicationView {
         giveMyleeHerDuePage.story.contents.add("<get-validated-input align=left action *Give Mylee Gold>");
         giveMyleeHerDuePage.story.contents.add("</color>");
         myleesElevator.pages.put("Give The Mylee Her Due", giveMyleeHerDuePage);
+        
+        lightsOnSubpage = new Story();
+        lightsOnSubpage.contents.add("<remove lights-out>");
+        lightsOnSubpage.contents.add("<timer-stop lights-on>");
+        lightsOnSubpage.contents.add("<timer-start 0.75 lights-out>");
+        giveMyleeHerDuePage.subpages.put("TIMER lights-on", lightsOnSubpage);
+        
+        lightsOutSubpage = new Story();
+        lightsOutSubpage.contents.add("<overlay lights-out 0+0+0 false>");
+        lightsOutSubpage.contents.add("<send-to-front next-page>");
+        lightsOutSubpage.contents.add("<send-to-front VARIABLE:action>");
+        lightsOutSubpage.contents.add("<timer-stop lights-out>");
+        lightsOutSubpage.contents.add("<timer-start 0.75 lights-on>");
+        giveMyleeHerDuePage.subpages.put("TIMER lights-out", lightsOutSubpage);
         
         Story giveMyleeHerDueSubpage = new Story();
         giveMyleeHerDueSubpage.contents.add("<inventory-remove Gold>");
@@ -1255,11 +1275,25 @@ public class Application extends app.ApplicationView {
         elevatorGoesUpPage.story.contents.add("</color>");
         myleesElevator.pages.put("Elevator Goes Up", elevatorGoesUpPage);
         
+        lightsOnSubpage = new Story();
+        lightsOnSubpage.contents.add("<remove lights-out>");
+        lightsOnSubpage.contents.add("<timer-stop lights-on>");
+        lightsOnSubpage.contents.add("<timer-start 0.5 lights-out>");
+        elevatorGoesUpPage.subpages.put("TIMER lights-on", lightsOnSubpage);
+        
+        lightsOutSubpage = new Story();
+        lightsOutSubpage.contents.add("<overlay lights-out 0+0+0 false>");
+        lightsOutSubpage.contents.add("<send-to-front next-page>");
+        lightsOutSubpage.contents.add("<send-to-front VARIABLE:action>");
+        lightsOutSubpage.contents.add("<timer-stop lights-out>");
+        lightsOutSubpage.contents.add("<timer-start 0.5 lights-on>");
+        elevatorGoesUpPage.subpages.put("TIMER lights-out", lightsOutSubpage);
+        
         Page getMeWhiteMeatChickenPage = new Page();
         getMeWhiteMeatChickenPage.hideNextButton = true;
         getMeWhiteMeatChickenPage.story.contents.add("<second-page>");
         getMeWhiteMeatChickenPage.story.contents.add("<image mylee left /assets/images/mylee.jpg>");
-        getMeWhiteMeatChickenPage.story.contents.add("<first-page><subpage-display Scene Header><stop-sound><play-sound /assets/sounds/elevator-open.mp3 false><timer-stop lights-off><timer-stop lights-on><remove lights-out><overlay lights-out 0+0+0 false><send-to-front next-page><timer-start 0.5 lights-on>");
+        getMeWhiteMeatChickenPage.story.contents.add("<first-page><subpage-display Scene Header><stop-sound><play-sound /assets/sounds/elevator-open.mp3 false><timer-stop lights-off><timer-stop lights-on><remove lights-out><overlay lights-out 0+0+0 false><send-to-front next-page><timer-start 0.25 lights-on>");
         getMeWhiteMeatChickenPage.story.contents.add("<color 0+0+0>");
         getMeWhiteMeatChickenPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>And... we're here!  Get out!<quote>");
         getMeWhiteMeatChickenPage.story.contents.add("<br>");
@@ -1279,9 +1313,23 @@ public class Application extends app.ApplicationView {
         getMeWhiteMeatChickenPage.story.contents.add("</color>");
         myleesElevator.pages.put("Get Me Some White Meat Chicken!", getMeWhiteMeatChickenPage);
         
+        lightsOnSubpage = new Story();
+        lightsOnSubpage.contents.add("<remove condition=\"full-dark!=true\" lights-out>");
+        lightsOnSubpage.contents.add("<timer-stop lights-on>");
+        lightsOnSubpage.contents.add("<timer-start condition=\"full-dark!=true\" 0.25 lights-out>");
+        getMeWhiteMeatChickenPage.subpages.put("TIMER lights-on", lightsOnSubpage);
+        
+        lightsOutSubpage = new Story();
+        lightsOutSubpage.contents.add("<overlay lights-out 0+0+0 false>");
+        lightsOutSubpage.contents.add("<send-to-front next-page>");
+        lightsOutSubpage.contents.add("<send-to-front VARIABLE:action>");
+        lightsOutSubpage.contents.add("<timer-stop lights-out>");
+        lightsOutSubpage.contents.add("<timer-start condition=\"full-dark!=true\" 0.25 lights-on>");
+        getMeWhiteMeatChickenPage.subpages.put("TIMER lights-out", lightsOutSubpage);
+        
         Story exitElevatorSubpage = new Story();
         exitElevatorSubpage.contents.add("<play-sound /assets/sounds/falling.mp3 false>");
-        exitElevatorSubpage.contents.add("<timer-start 2 crash>");
+        exitElevatorSubpage.contents.add("<variable-set full-dark true><timer-stop lights-off><timer-stop lights-on><remove lights-out><overlay lights-out 0+0+0 false><timer-start 2 crash>");
         exitElevatorSubpage.contents.add("You step out of the elevator and watch in horror as it goes crashing back down!  You certainly hope that Mylee's okay.");
         getMeWhiteMeatChickenPage.subpages.put("INPUT action=Leave Elevator", exitElevatorSubpage);
         
@@ -1294,8 +1342,13 @@ public class Application extends app.ApplicationView {
         
         Story onToAct2 = new Story();
         onToAct2.contents.add("<stop-sound>");
-        onToAct2.contents.add("<timer-stop lights-off><timer-stop lights-on><remove lights-out>");
+        onToAct2.contents.add("<remove lights-out>");
         onToAct2.contents.add("<timer-stop crash>");
+        onToAct2.contents.add("<background-color 0+0+0 Quest>");
+        onToAct2.contents.add("<background-color 0+0+0 Inventory>");
+        onToAct2.contents.add("<background-color 0+0+0 Map>");
+        onToAct2.contents.add("<background-color 0+0+0 Spell Book>");
+        onToAct2.contents.add("<background-color 0+0+0 High Scores>");
         onToAct2.contents.add("<goto-act Chapter 2>");
         getMeWhiteMeatChickenPage.subpages.put("INPUT action=Continue", onToAct2);
         
@@ -2644,7 +2697,7 @@ public class Application extends app.ApplicationView {
         page1.story.contents.add("A Darkness over the Land");
         page1.story.contents.add("<set-player-direction SOUTH>");
         page1.story.contents.add("<observed-scene-add HIGHWAY>");
-        page1.story.contents.add("<overlay dark-mode 0+0+0 false><send-to-front next-page><play-sound /assets/sounds/suspense3.wav true>");
+        page1.story.contents.add("<play-sound /assets/sounds/suspense3.wav true>");
         chapterScene.pages.put("1", page1);
         
         Scene elevator = new Scene();
@@ -2660,7 +2713,7 @@ public class Application extends app.ApplicationView {
         mainPage.story.contents.add("<subpage-display Scene Header>");
         mainPage.story.contents.add("<color 0+0+0>");
         mainPage.story.contents.add("TODO");
-        mainPage.story.contents.add("<overlay dark-mode 0+0+0 false><send-to-front next-page><subpage-display Navigation Footer>");
+        mainPage.story.contents.add("<subpage-display Navigation Footer>");
         elevator.pages.put("main", mainPage);
         
         Scene grass = new Scene();
@@ -2676,7 +2729,7 @@ public class Application extends app.ApplicationView {
         mainPage.story.contents.add("<subpage-display Scene Header>");
         mainPage.story.contents.add("<color 0+0+0>");
         mainPage.story.contents.add("TODO");
-        mainPage.story.contents.add("<overlay dark-mode 0+0+0 false><send-to-front next-page><subpage-display Navigation Footer>");
+        mainPage.story.contents.add("<subpage-display Navigation Footer>");
         grass.pages.put("main", mainPage);
         
         Scene road = new Scene();
@@ -2692,7 +2745,7 @@ public class Application extends app.ApplicationView {
         mainPage.story.contents.add("<subpage-display Scene Header>");
         mainPage.story.contents.add("<color 0+0+0>");
         mainPage.story.contents.add("TODO");
-        mainPage.story.contents.add("<overlay dark-mode 0+0+0 false><send-to-front next-page><subpage-display Navigation Footer>");
+        mainPage.story.contents.add("<subpage-display Navigation Footer>");
         road.pages.put("main", mainPage);
         
         Scene speedway = new Scene();
@@ -2708,7 +2761,7 @@ public class Application extends app.ApplicationView {
         mainPage.story.contents.add("<subpage-display Scene Header>");
         mainPage.story.contents.add("<color 0+0+0>");
         mainPage.story.contents.add("TODO");
-        mainPage.story.contents.add("<overlay dark-mode 0+0+0 false><send-to-front next-page><subpage-display Navigation Footer>");
+        mainPage.story.contents.add("<subpage-display Navigation Footer>");
         speedway.pages.put("main", mainPage);
         
         Scene battleground = new Scene();
@@ -2724,7 +2777,7 @@ public class Application extends app.ApplicationView {
         mainPage.story.contents.add("<subpage-display Scene Header>");
         mainPage.story.contents.add("<color 0+0+0>");
         mainPage.story.contents.add("TODO");
-        mainPage.story.contents.add("<overlay dark-mode 0+0+0 false><send-to-front next-page><subpage-display Navigation Footer>");
+        mainPage.story.contents.add("<subpage-display Navigation Footer>");
         battleground.pages.put("main", mainPage);
         
         Scene forest = new Scene();
@@ -2740,7 +2793,7 @@ public class Application extends app.ApplicationView {
         mainPage.story.contents.add("<subpage-display Scene Header>");
         mainPage.story.contents.add("<color 0+0+0>");
         mainPage.story.contents.add("TODO");
-        mainPage.story.contents.add("<overlay dark-mode 0+0+0 false><send-to-front next-page><subpage-display Navigation Footer>");
+        mainPage.story.contents.add("<subpage-display Navigation Footer>");
         forest.pages.put("main", mainPage);
         
         Scene mountain = new Scene();
@@ -2756,7 +2809,7 @@ public class Application extends app.ApplicationView {
         mainPage.story.contents.add("<subpage-display Scene Header>");
         mainPage.story.contents.add("<color 0+0+0>");
         mainPage.story.contents.add("TODO");
-        mainPage.story.contents.add("<overlay dark-mode 0+0+0 false><send-to-front next-page><subpage-display Navigation Footer>");
+        mainPage.story.contents.add("<subpage-display Navigation Footer>");
         mountain.pages.put("main", mainPage);
         
         Scene space = new Scene();
@@ -2772,7 +2825,7 @@ public class Application extends app.ApplicationView {
         mainPage.story.contents.add("<subpage-display Scene Header>");
         mainPage.story.contents.add("<color 0+0+0>");
         mainPage.story.contents.add("TODO");
-        mainPage.story.contents.add("<overlay dark-mode 0+0+0 false><send-to-front next-page><subpage-display Navigation Footer>");
+        mainPage.story.contents.add("<subpage-display Navigation Footer>");
         space.pages.put("main", mainPage);
         
         Scene fortress = new Scene();
@@ -2788,7 +2841,7 @@ public class Application extends app.ApplicationView {
         mainPage.story.contents.add("<subpage-display Scene Header>");
         mainPage.story.contents.add("<color 0+0+0>");
         mainPage.story.contents.add("TODO");
-        mainPage.story.contents.add("<overlay dark-mode 0+0+0 false><send-to-front next-page><subpage-display Navigation Footer>");
+        mainPage.story.contents.add("<subpage-display Navigation Footer>");
         fortress.pages.put("main", mainPage);
         
         Scene pickleball = new Scene();
@@ -2804,7 +2857,7 @@ public class Application extends app.ApplicationView {
         mainPage.story.contents.add("<subpage-display Scene Header>");
         mainPage.story.contents.add("<color 0+0+0>");
         mainPage.story.contents.add("TODO");
-        mainPage.story.contents.add("<overlay dark-mode 0+0+0 false><send-to-front next-page><subpage-display Navigation Footer>");
+        mainPage.story.contents.add("<subpage-display Navigation Footer>");
         pickleball.pages.put("main", mainPage);
         
         // TODO - Review vector images of car profiles (ie, https://pixabay.com/vectors/automobile-car-gs-1300464/).

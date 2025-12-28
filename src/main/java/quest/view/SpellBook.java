@@ -17,7 +17,7 @@ public class SpellBook extends app.ApplicationView {
     
     public SpellBook(String name) {
         super(name);
-        this.backgroundColor = new Color(0, 0, 0);
+        this.backgroundColor = new Color(255, 255, 255);
         this.backgroundImage = "/assets/images/spell-book.jpg";
         this.emoji = EMOJI;
     }

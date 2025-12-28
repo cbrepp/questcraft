@@ -372,12 +372,12 @@ public class SWTApplication extends ApplicationController {
         if (index == null) {
             index = this.tabIndexMap.size();
         }
-        this.addView(view, isParent, index);
+        this.addView(view, isParent, index, false);
     }
     
     @Override
-    public void addView(ApplicationView view, Boolean isParent, int index) {
-        System.out.println("SWTApplication: addView: name=" + view.name + ", isParent=" + isParent + ", index=" + index);
+    public void addView(ApplicationView view, Boolean isParent, int index, Boolean isRefresh) {
+        System.out.println("SWTApplication: addView: name=" + view.name + ", isParent=" + isParent + ", index=" + index + ", isRefresh=" + isRefresh);
         
         Composite composite;
         if (isParent) {
@@ -472,7 +472,9 @@ public class SWTApplication extends ApplicationController {
         }
         System.out.println("SWTApplication: addView: backgroundColor=" + imageColor + ", backgroundImageFile=" + view.backgroundImage);
         
-        view.onLoad(this);
+        if (!isRefresh) {
+            view.onLoad(this);
+        }
     }
     
     public void cleanShell() {
@@ -1742,6 +1744,17 @@ public class SWTApplication extends ApplicationController {
     public void unpauseAllSounds() {
         System.out.println("SWTApplication: unpauseAllSounds");
         this.soundController.unpauseAllSounds();
+    }
+    
+    @Override
+    public void refreshView(String viewName) {
+        System.out.println("SWTApplication: refreshView: viewName=" + viewName);
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public void setBackgroundColor(String viewName, app.Color color) {
+        throw new UnsupportedOperationException("Not supported.");
     }
     
     @Override
