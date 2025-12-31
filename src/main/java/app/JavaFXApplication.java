@@ -15,6 +15,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import com.gluonhq.emoji.EmojiData;
+import com.gluonhq.emoji.Emoji;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.text.BreakIterator;
+import java.util.Optional;
 import javafx.animation.KeyFrame;
 import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
@@ -61,6 +71,8 @@ import javafx.stage.Screen;
 import javafx.util.Duration;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.EventHandler;
+import javafx.geometry.Rectangle2D;
+import javafx.scene.CacheHint;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.effect.BlendMode;
@@ -78,6 +90,7 @@ import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer.Status;
+import javafx.scene.text.TextFlow;
 import javax.imageio.metadata.IIOMetadata;
 import org.w3c.dom.NamedNodeMap;
 
@@ -87,6 +100,9 @@ import org.w3c.dom.NamedNodeMap;
  */
 public class JavaFXApplication extends ApplicationController {
     
+    private static final String EMOJI_SHEET = "/assets/images/sheet_google_64.png";
+    private static final String EMOJI_SHEET_JSON = "/assets/json/emoji.json";
+    private static final Double EMOJI_SHEET_SIZE = 64.0;
     public static List<String> TIMER_EVENTS = new ArrayList();
     
     public DelegateApplication app;
@@ -94,6 +110,9 @@ public class JavaFXApplication extends ApplicationController {
     public Font buttonFont;
     public int buttonFontHeight = 0;
     public int buttonFontWidth = 0;
+    public Map<String, ImageView> emojis;
+    public Map<String, JsonObject> emojiMap;
+    public Image emojiSheet;
     public String emptyBook;
     public int fontHeight = 0;
     public int fontWidth = 0;
@@ -511,11 +530,15 @@ public class JavaFXApplication extends ApplicationController {
         // Create a new tab
         String tabName;
         if (view.emoji != null) {
-            tabName = view.emoji + " " + view.name;
+            //tabName = view.emoji + " " + view.name;
+            tabName = view.name;
         } else {
             tabName = view.name;
         }
         Tab tab = new Tab(tabName);
+        if (view.emoji != null) {
+            tab.setGraphic(this.stringToEmoji(view.emoji, 14));
+        }
         tab.setClosable(false);
         this.tabFolder.getTabs().add(index, tab);
         tab.setContent(content);
@@ -633,7 +656,7 @@ public class JavaFXApplication extends ApplicationController {
     }
     
     @Override
-    public void displayMessageBox(String title, String text, int level) {
+    public void displayMessageBox(String title, String text, int level, String graphic) {
         System.out.println("JavaFXApplication: displayMessageBox: title=" + title + ", text=" + text + ", level=" + level);
         
         AlertType type = switch (level) {
@@ -645,8 +668,13 @@ public class JavaFXApplication extends ApplicationController {
         Platform.runLater(() -> {
             Alert alert = new Alert(type);
             alert.initOwner(this.app.primaryStage);
-            alert.setTitle(title);
-            alert.setHeaderText(null);
+            alert.setTitle(this.parentView.name);
+            TextFlow header = this.stringToTextFlow(title, "RobotoMono-Medium", new app.Color(0, 0, 0), 14, FontStyle.BOLD);
+            if (graphic != null) {
+                ImageView graphicImage = this.stringToEmoji(graphic, (int) Math.round(EMOJI_SHEET_SIZE));
+                alert.setGraphic(graphicImage);
+            }
+            alert.getDialogPane().setHeader(header);
             alert.setContentText(text);
             alert.show();
         });
@@ -817,7 +845,7 @@ public class JavaFXApplication extends ApplicationController {
                 currentColumn = 1;
             }
             String backgroundColor = "transparent";
-            Color fontColor = Color.rgb(0, 0, 0);
+            app.Color fontColor = new app.Color(0, 0, 0);
             Boolean addBorder = false;
             if (!controls.isEmpty()) {
                 app.Color genericBackgroundColor = controls.getFirst().backgroundColor;
@@ -827,7 +855,7 @@ public class JavaFXApplication extends ApplicationController {
                     double luminance = (0.299 * genericBackgroundColor.red) + (0.587 * genericBackgroundColor.green) + (0.114 * genericBackgroundColor.blue);
                     System.out.println("JavaFXApplication: displayGrid: luminance for " + genericBackgroundColor + " is " + luminance);
                     if (luminance < 128) {
-                        fontColor = Color.rgb(255, 255, 255);
+                        fontColor = new app.Color(255, 255, 255);
                     }
                 }
             }
@@ -883,7 +911,9 @@ public class JavaFXApplication extends ApplicationController {
                 if (abstractControl.getClass().equals(app.model.LinkModel.class)) {
                     String linkText = abstractControl.text.replace("<a>", "");
                     linkText = linkText.replace("</a>", "");
-                    Hyperlink hyperlink = new Hyperlink(linkText);
+                    //Hyperlink hyperlink = new Hyperlink(linkText);
+                    Hyperlink hyperlink = new Hyperlink();
+                    hyperlink.setGraphic(this.stringToTextFlow(linkText, "RobotoMono-Medium", fontColor, 14, FontStyle.BOLD));
                     Font currentFont = hyperlink.getFont();
                     hyperlink.setFont(Font.font(currentFont.getFamily(), FontWeight.BOLD, currentFont.getSize()));
                     hyperlink.setDisable(!abstractControl.isEnabled);
@@ -908,13 +938,15 @@ public class JavaFXApplication extends ApplicationController {
                     control = button;
                     System.out.println("JavaFXApplication: displayGrid: Added button " + abstractControl.text + " for " + cellName);
                 } else if (abstractControl.getClass().equals(app.model.LabelModel.class)) {
-                    Label label = new Label(abstractControl.text);
-                    Font currentFont = label.getFont();
-                    label.setFont(Font.font(currentFont.getFamily(), FontWeight.BOLD, currentFont.getSize()));
-                    label.setTextFill(fontColor);
-                    label.setWrapText(true);
-                    label.setAlignment(Pos.CENTER);
+                    TextFlow label = this.stringToTextFlow(abstractControl.text, "RobotoMono-Medium", fontColor, 14, FontStyle.BOLD);
                     label.setTextAlignment(TextAlignment.CENTER);
+                    //Label label = new Label(abstractControl.text);
+                    //Font currentFont = label.getFont();
+                    //label.setFont(Font.font(currentFont.getFamily(), FontWeight.BOLD, currentFont.getSize()));
+                    //label.setTextFill(fontColor);
+                    //label.setWrapText(true);
+                    //label.setAlignment(Pos.CENTER);
+                    //label.setTextAlignment(TextAlignment.CENTER);
                     verticalContainer.getChildren().add(label);
                     control = label;
                     System.out.println("JavaFXApplication: displayGrid: Added label " + abstractControl.text + " for " + cellName);
@@ -1191,9 +1223,236 @@ public class JavaFXApplication extends ApplicationController {
         this.removeTab(viewName);
         this.addView(view, false, index, true);
     }
+    
+    public static Text stringToText(String string, String fontName, app.Color fontColor, Integer fontSize, Integer fontStyle) {
+        //System.out.println("JavaFXApplication: stringToText: string=" + string + ", fontName=" + fontName + ", fontColor=" + fontColor + ", fontSize=" + fontSize + ", fontStyle=" + fontStyle);
+        
+        Text text = new Text(string);
+        
+        // Configure the font
+        if (fontStyle == null) {
+            fontStyle = FontStyle.NORMAL;
+        }
+        
+        FontPosture fxStyle = null;
+        FontWeight fxWeight = FontWeight.NORMAL;
+        switch (fontStyle) {
+            case FontStyle.NORMAL -> fxWeight = FontWeight.NORMAL;
+            case FontStyle.BOLD -> fxWeight = FontWeight.BOLD;
+            case FontStyle.ITALIC -> fxStyle = FontPosture.ITALIC;
+            case FontStyle.UNDERLINE_DOUBLE -> {
+                // TODO - Not supported, needs styling
+                fxWeight = FontWeight.NORMAL;
+                text.setUnderline(true);
+            }
+            case FontStyle.UNDERLINE_ERROR -> {
+                // TODO - Not supported, needs styling
+                fxWeight = FontWeight.NORMAL;
+                text.setUnderline(true);
+            }
+            case FontStyle.UNDERLINE_LINK -> {
+                // TODO - Not supported, needs styling
+                fxWeight = FontWeight.NORMAL;
+                text.setUnderline(true);
+            }
+            case FontStyle.UNDERLINE_SINGLE -> {
+                fxWeight = FontWeight.NORMAL;
+                text.setUnderline(true);
+            }
+            case FontStyle.UNDERLINE_SQUIGGLE -> {
+                // TODO - Not supported, needs styling
+                fxWeight = FontWeight.NORMAL;
+                text.setUnderline(true);
+            }
+            default -> {
+                System.err.println("JavaFXApplication: stringToText: Unsupported font style!");
+                fxWeight = FontWeight.NORMAL;
+            }
+        }
+        
+        // Configure the text font
+        if (fontName == null) {
+            fontName = Font.getDefault().getName();
+        }
+        
+        // Adjust for DPI
+        double newFontSize = adjustFontSizeForDPI(fontSize);
+        Font font;
+        if (fxStyle != null) {
+            // TODO - For some reason this doesn't use Italics
+            font = Font.font(fontName, fxStyle, newFontSize);
+        } else {
+            font = Font.font(fontName, fxWeight, newFontSize);
+        }
+        text.setFont(font);
+        if (fontColor != null) {
+            text.setFill(Color.rgb(fontColor.red, fontColor.green, fontColor.blue));
+        }
+        
+        return text;
+    }
+    
+    @Override
+    public void loadEmojiData() {
+        System.out.println("JavaFXApplication: loadEmojiData");
+        
+        if (this.emojiSheet == null) {
+            System.out.println("JavaFXApplication: loadEmojiData: Loading emoji sheet");
+            this.emojiSheet = this.loadImage(EMOJI_SHEET);
+        }
 
+        if (this.emojiMap == null) {
+            System.out.println("JavaFXApplication: loadEmojiData: Loading emoji map");
+            
+            this.emojiMap = new HashMap();
+
+            // Build a map of every emoji according to its unified value
+            try (InputStream inputStream = JavaFXApplication.class.getResourceAsStream(EMOJI_SHEET_JSON)) {
+                if (inputStream == null) {
+                    System.err.println("JavaFXApplication: loadEmojiData: Failed to find emoji sheet json! " + EMOJI_SHEET_JSON);
+                } else {
+                    int count = 0;
+                    String json = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+                    JsonArray emojiList = JsonParser.parseString(json).getAsJsonArray();
+                    for (JsonElement element : emojiList) {
+                        JsonObject emojiObj = element.getAsJsonObject();
+                        String unified = emojiObj.get("unified").getAsString();
+                        this.emojiMap.put(unified, emojiObj);
+                        count++;
+                    }
+                    System.out.println("JavaFXApplication: loadEmojiData: Mapped " + count + " emoji objects");
+                }
+            } catch (IOException e) {
+                System.err.println("JavaFXApplication: loadEmojiData: Failed to read emoji sheet json! " + e.toString());
+            }
+        }
+    }
+    
+    public ImageView stringToEmoji(String string, Integer fontSize) {        
+        // Verify this string is a valid Unicode emoji
+        Optional<Emoji> emojiOpt = EmojiData.emojiFromUnicodeString(string);
+        if (!emojiOpt.isPresent()) {
+            return null;
+        }
+
+        Emoji emoji = emojiOpt.get();
+        String emojiUnified = emoji.getUnified();
+
+        // Use lazy loading for the sprite sheet in case it's never needed
+        if (this.emojiSheet == null) {
+            this.loadEmojiData();
+        }
+
+        if (this.emojis == null) {
+            this.emojis = new HashMap();
+        }
+
+        if (!this.emojiMap.containsKey(emojiUnified)) {
+            System.out.println("JavaFXApplication: stringToEmoji: Emoji does not exist in the emoji json! string=" + string + ", unified=" + emojiUnified);
+            return null;
+        }
+
+        JsonObject emojiObj = this.emojiMap.get(emojiUnified);
+        //if (!this.emojis.containsKey(emojiUnified)) {
+        ImageView emojiView = new ImageView(this.emojiSheet);
+        double sheetX = Double.parseDouble(emojiObj.get("sheet_x").getAsString());
+        double sheetY = Double.parseDouble(emojiObj.get("sheet_y").getAsString());
+        // Every emoji image in the sheet has a 1 pixel transparent border around it, so the 64px sheet is made up of 66px squares
+        double x = (sheetX * (EMOJI_SHEET_SIZE + 2)) + 1;
+        double y = (sheetY * (EMOJI_SHEET_SIZE + 2)) + 1;
+        emojiView.setViewport(new Rectangle2D(x, y, EMOJI_SHEET_SIZE, EMOJI_SHEET_SIZE));
+        emojiView.setSmooth(true); // Enables better scaling algorithm
+        emojiView.setCache(true);  // Can help with performance in a long TextFlow
+        emojiView.setCacheHint(CacheHint.QUALITY); 
+        emojiView.setFitHeight(fontSize);
+        emojiView.setPreserveRatio(true);
+            //emojis.put(emojiUnified, emojiView);
+        //}
+
+        //emojiView = emojis.get(emojiUnified);
+
+        return emojiView;
+    }
+    
+    public TextFlow stringToTextFlow(String string, String fontName, app.Color fontColor, Integer fontSize, Integer fontStyle) {
+        if ((string == null) || (string.isEmpty())) {
+            return null;
+        }
+        
+        TextFlow textFlow = new TextFlow();
+        
+        // Use BreakIterator to correctly identify character boundaries (including emojis)
+        BreakIterator boundary = BreakIterator.getCharacterInstance();
+        boundary.setText(string);
+
+        int start = boundary.first();
+        for (int end = boundary.next(); end != BreakIterator.DONE; start = end, end = boundary.next()) {
+            String segment = string.substring(start, end);
+            
+            // Check if this segment is a valid Unicode emoji
+            Optional<Emoji> emojiOpt = EmojiData.emojiFromUnicodeString(segment);
+            if (emojiOpt.isPresent()) {
+                ImageView emojiView = this.stringToEmoji(segment, fontSize);
+                textFlow.getChildren().add(emojiView);
+            } else {
+                // Normal text - Use a Text node
+                Text textNode = stringToText(segment, fontName, fontColor, fontSize, fontStyle);
+                textFlow.getChildren().add(textNode);
+            }
+        }
+
+        return textFlow;
+    }
+    
     @Override
     public void displayFloatingText(String viewName, String name, String text, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, app.Color fontColor, Integer fontSize, Integer fontStyle, String fontName) {
+        System.out.println("JavaFXApplication: displayFloatingText: viewName=" + viewName + ", name=" + name + ", text=" + text + ", startRow=" + startRow + ", startColumn=" + startColumn + ", endRow=" + endRow + ", endColumn=" + endColumn + ", fontColor=" + fontColor + ", fontSize=" + fontSize + ", fontName=" + fontName);
+        
+        // TODO - Instead of start/end row and column, provide a percentage that indicates position according to the parent
+        
+        Pane content = this.tabContentMap.get(viewName);
+
+        TextFlow textFlow = stringToTextFlow(text, fontName, fontColor, fontSize, fontStyle);
+        textFlow.setStyle("-fx-background-color: transparent;");
+        
+        if (endColumn != null) {
+            int x1 = (int) ((startColumn - 1) * this.fontWidth) - this.fontWidth;
+            int x2 = (int) ((endColumn - 1) * this.fontWidth) - this.fontWidth;
+            int width = x2 - x1;
+            textFlow.setPrefWidth(width);
+        }
+        
+        if (endRow != null) {
+            int y1 = (int) ((startRow - 1) * this.fontHeight) - this.fontHeight;
+            int y2 = (int) ((endRow - 1) * this.fontHeight) - this.fontHeight;
+            int height = y2 - y1;
+            textFlow.setPrefHeight(height);
+        }
+        
+        // TODO - Need a method param for alignment
+        if ((endRow != null) && (endColumn != null)) {
+            textFlow.setTextAlignment(TextAlignment.CENTER);
+        }
+                
+        // Position the node
+        Coordinates startCoordinates = this.convertToCoordinates(startRow, startColumn);
+        textFlow.setLayoutX(startCoordinates.x);
+        textFlow.setLayoutY(startCoordinates.y);
+        
+        // Add the node to the parent
+        content.getChildren().add(textFlow);
+        
+        if (name != null) {
+            this.namedControls.get(viewName).put(name, textFlow);
+        }
+        
+        // TODO - Return the final height
+        // textFlow.layout(); // Force a layout pass to ensure all bounds are updated
+        // double finalHeight = textFlow.getBoundsInLocal().getHeight();
+    }
+
+    //@Override
+    public void displayFloatingTextOld(String viewName, String name, String text, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, app.Color fontColor, Integer fontSize, Integer fontStyle, String fontName) {
         System.out.println("JavaFXApplication: displayFloatingText: viewName=" + viewName + ", name=" + name + ", text=" + text + ", startRow=" + startRow + ", startColumn=" + startColumn + ", endRow=" + endRow + ", endColumn=" + endColumn + ", fontColor=" + fontColor + ", fontSize=" + fontSize + ", fontName=" + fontName);
         
         Pane content = this.tabContentMap.get(viewName);
@@ -1479,6 +1738,12 @@ public class JavaFXApplication extends ApplicationController {
     @Override
     public int displayGif(String viewName, String fileName, int row, int column) {
         System.out.println("JavaFXApplication: displayGif: viewName=" + viewName + ", fileName=" + fileName + ", row=" + row + ", column=" + column);
+        
+        boolean isJPro = System.getProperty("jpro.version") != null;
+        if (!isJPro) {
+            System.out.println("JavaFXApplication: displayGif: Detected desktop app, reverting to regular gif support");
+            return this.displayGifOrig(viewName, fileName, row, column);
+        }
         
         Pane content = this.tabContentMap.get(viewName);
         

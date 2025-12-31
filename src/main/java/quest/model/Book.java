@@ -63,12 +63,14 @@ public class Book extends BookPart implements Serializable {
     public String firstActName;
     public List<HighScore> highScores;
     public Map<String, InventoryItem> inventory;
+    public Boolean preloadEmojisDuringAnimation;
     public String title;
     public LocalDate updateDate;
     public Map<String, String> variables;
     
     public Book() {
         this.acts = new HashMap();
+        this.preloadEmojisDuringAnimation = false;
         this.variables = new HashMap<>();
     }
     

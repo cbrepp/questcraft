@@ -477,8 +477,13 @@ public class SWTApplication extends ApplicationController {
         }
     }
     
+    @Override
+    public void loadEmojiData() {
+        System.out.println("SWTApplication: loadEmojiData: Deferring emoji handling to OS");
+    }
+    
     public void cleanShell() {
-        System.out.println("SWTApplication: cleanShell");            
+        System.out.println("SWTApplication: cleanShell");
         Control[] controls = this.shell.getChildren();
         for (Control control : controls) {
             System.out.println("SWTApplication: cleanShell: Disposing " + control);
@@ -631,7 +636,7 @@ public class SWTApplication extends ApplicationController {
     }
     
     @Override
-    public void displayMessageBox(String title, String text, int level) {
+    public void displayMessageBox(String title, String text, int level, String graphic) {
         int SWTIcon;
         SWTIcon = switch (level) {
             case Icon.INFORMATION -> SWT.ICON_INFORMATION;

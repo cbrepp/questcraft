@@ -48,7 +48,7 @@ public class Inventory extends app.ApplicationView implements EventListener {
             this.appController.renameTab(this.name, "\uD83D\uDD25 " + this.emoji + " " + this.name);    // Add "fire" Unicode emoji... "NEW button" Unicode emoji is \uD83C\uDD95 but a dull gray
         } else {
             InventoryItem item = this.quest.book.inventory.get(eventName);
-            String title = item.unicodeSurrogatePair + " " + eventName;
+            String title = eventName + " " + item.unicodeSurrogatePair;
             if (item.soundFileName != null) {
                 this.appController.playSound(item.soundFileName, Boolean.FALSE);
             }
@@ -56,7 +56,7 @@ public class Inventory extends app.ApplicationView implements EventListener {
                 System.out.println("Inventory: onEvent: Executing story");
                 this.quest.displayPage(item.onSelect.contents, true);
             } else {
-                this.quest.appController.displayMessageBox(title, item.description, Icon.INFORMATION);
+                this.quest.appController.displayMessageBox(title, item.description, Icon.INFORMATION, item.unicodeSurrogatePair);
             }
         }
     }
@@ -94,7 +94,7 @@ public class Inventory extends app.ApplicationView implements EventListener {
         Map<String, ArrayList<BaseModel>> gridCells = new LinkedHashMap<>();
         for (String key : this.quest.book.inventory.keySet()) {
             InventoryItem bookItem = this.quest.book.inventory.get(key);
-            String linkText = bookItem.unicodeSurrogatePair + " " + key;
+            String linkText =  key + " " + bookItem.unicodeSurrogatePair;
             String labelText = null;
             Color backgroundColor = null;
             InventoryItem questItem = this.quest.inventory.get(key);

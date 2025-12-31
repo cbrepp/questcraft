@@ -91,6 +91,11 @@ public class AWTApplication extends ApplicationController {
     }
     
     @Override
+    public void loadEmojiData() {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
     public void selectTab(String viewName) {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -106,7 +111,7 @@ public class AWTApplication extends ApplicationController {
     }
     
     @Override
-    public void displayMessageBox(String title, String text, int level) {
+    public void displayMessageBox(String title, String text, int level, String graphic) {
         throw new UnsupportedOperationException("Not supported.");
     }
     

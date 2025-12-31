@@ -53,7 +53,7 @@ public abstract class ApplicationController {
     public abstract void displayOverlay(String viewName, String name, app.Color color, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, Integer transparency, Boolean invert);
     public abstract void clearScreen(String name);
     public abstract void clearControl(String viewName, String controlName);
-    public abstract void displayMessageBox(String title, String text, int level);
+    public abstract void displayMessageBox(String title, String text, int level, String graphic);
     public abstract void displayText(String viewName, String text, Integer row, Integer column);
     public abstract void displayText(String viewName, String text, Integer row, Integer column, Color color);
     public abstract void displayText(String viewName, String text, Integer row, Integer column, Color color, int style);
@@ -87,6 +87,7 @@ public abstract class ApplicationController {
     public abstract void sendToBack(String viewName, String name);
     public abstract void refreshView(String viewName);
     public abstract void setBackgroundColor(String viewName, app.Color color);
+    public abstract void loadEmojiData();
     
     public static void main(String[] args) {
         System.out.println("ApplicationController: main: args=" + Arrays.toString(args));

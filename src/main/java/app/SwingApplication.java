@@ -106,7 +106,12 @@ public class SwingApplication extends ApplicationController {
     }
     
     @Override
-    public void displayMessageBox(String title, String text, int level) {
+    public void loadEmojiData() {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public void displayMessageBox(String title, String text, int level, String graphic) {
         throw new UnsupportedOperationException("Not supported.");
     }
     

@@ -314,6 +314,9 @@ public class Quest extends app.ApplicationView {
                 this.appController.playSound(firstScene.soundFileName, true);
             }
             appController.setTimer(LOADING_COMPLETE, 3, this);
+            if (this.book.preloadEmojisDuringAnimation) {
+                this.appController.loadEmojiData();
+            }
         }
         
         // Calculate book margins

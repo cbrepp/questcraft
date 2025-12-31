@@ -53,9 +53,9 @@ public class Application extends app.ApplicationView {
                 this.display();
                 this.publishEvent("book", bookFile);
             } case "create" -> {
-                this.appController.displayMessageBox("Coming soon!", "Creating a new quest is not available at this time.", app.Icon.INFORMATION);
+                this.appController.displayMessageBox("Coming soon!", "Creating a new quest is not available at this time.", app.Icon.INFORMATION, null);
             } case "options" -> {
-                this.appController.displayMessageBox("Coming soon!", "Application options are not available at this time.", app.Icon.INFORMATION);
+                this.appController.displayMessageBox("Coming soon!", "Application options are not available at this time.", app.Icon.INFORMATION, null);
             } case "quit" -> {
                 this.appController.close();
             } default -> System.err.println("Application: onEvent: Unsupported event");
@@ -349,6 +349,7 @@ public class Application extends app.ApplicationView {
         
         Book book = new Book();
         book.animationFileName = "/assets/images/dragon.gif";
+        book.preloadEmojisDuringAnimation = true;
         book.author = "R. W. Chung";
         book.firstActName = "Opening";
         book.title = "BIG CHUNG, Destroyer of Worlds";
