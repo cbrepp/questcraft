@@ -19,7 +19,7 @@ public class SpellBook extends app.ApplicationView {
         super(name);
         this.backgroundColor = new Color(255, 255, 255);
         this.backgroundImage = "/assets/images/spell-book.jpg";
-        this.emoji = EMOJI;
+        this.emojis.add(EMOJI);
     }
     
     @Override

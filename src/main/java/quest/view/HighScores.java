@@ -18,7 +18,7 @@ public class HighScores extends app.ApplicationView {
     public HighScores(String name) {
         super(name);
         this.backgroundColor = new Color(255, 255, 255);
-        this.emoji = "\uD83C\uDFC6"; // "trophy" Unicode emoji
+        this.emojis.add("\uD83C\uDFC6"); // "trophy" Unicode emoji
     }
     
     @Override

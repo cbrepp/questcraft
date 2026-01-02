@@ -16,7 +16,7 @@ public class CraftingTable extends ApplicationView {
         this.backgroundColor = new Color(255, 255, 255);
         this.backgroundImage = "/assets/images/designer.jpg";
         //this.addTextArea = false;
-        this.emoji = "\uD83E\uDE9A"; // "carpentry saw" Unicode emoji
+        this.emojis.add("\uD83E\uDE9A"); // "carpentry saw" Unicode emoji
     }
     
     @Override

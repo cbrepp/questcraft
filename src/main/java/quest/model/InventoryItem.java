@@ -1,6 +1,7 @@
 package quest.model;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  *
@@ -14,15 +15,15 @@ public class InventoryItem implements Serializable {
     public Story onSelect;
     public int quantity;
     public String soundFileName;
-    public String unicodeSurrogatePair;
+    public List<String> emojis; // List of Unicode surrogate pairs
     public int xp;
     
-    public InventoryItem(String description, String soundFileName, String unicodeSurrogatePair) {
+    public InventoryItem(String description, String soundFileName, List<String> emojis) {
         this.description = description;
         this.isNew = false;
         this.quantity = 0;
         this.soundFileName = soundFileName;
-        this.unicodeSurrogatePair = unicodeSurrogatePair;
+        this.emojis = emojis;
         this.xp = 0;
     }
 

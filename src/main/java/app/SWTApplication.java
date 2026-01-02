@@ -312,10 +312,20 @@ public class SWTApplication extends ApplicationController {
     }
     
     @Override
-    public void renameTab(String viewName, String newViewName) {
-        System.out.println("SWTApplication: renameView: viewName=" + viewName + ", newViewName=" + newViewName);
-        CTabItem tabItem = this.tabItemMap.get(viewName);
-        tabItem.setText(newViewName);
+    public void refreshTabLabel(String viewName) {
+        System.out.println("SWTApplication: refreshTabLabel: viewName=" + viewName);
+        
+        ApplicationView view = this.views.get(viewName);
+        if (view == null) {
+            System.out.println("SWTApplication: refreshTabLabel: View does not exist");
+            return;
+        }
+        CTabItem tab = this.tabItemMap.get(viewName);
+        if (tab == null) {
+            System.out.println("SWTApplication: refreshTabLabel: Tab does not exist for view");
+            return;
+        }
+        setTabLabel(tab, view);
     }
     
     @Override
@@ -375,6 +385,16 @@ public class SWTApplication extends ApplicationController {
         this.addView(view, isParent, index, false);
     }
     
+    public static void setTabLabel(CTabItem tab, ApplicationView view) {
+        System.out.println("SWTApplication: setTabLabel: tab=" + tab + ", view=" + view);
+        if (view.emojis.isEmpty()) {
+            tab.setText(view.name);
+        } else {
+            String emojiString = String.join(" ", view.emojis);
+            tab.setText(emojiString + " " + view.name);
+        }
+    }
+    
     @Override
     public void addView(ApplicationView view, Boolean isParent, int index, Boolean isRefresh) {
         System.out.println("SWTApplication: addView: name=" + view.name + ", isParent=" + isParent + ", index=" + index + ", isRefresh=" + isRefresh);
@@ -385,13 +405,9 @@ public class SWTApplication extends ApplicationController {
         } else {
             // Create a new tab with a composite
             CTabItem tab = new CTabItem(this.tabFolder, SWT.NONE, index);
+            setTabLabel(tab, view);
             this.tabItemMap.put(view.name, tab);
             this.tabItemViewMap.put(tab, view);
-            if (view.emoji == null) {
-                tab.setText(view.name);
-            } else {
-                tab.setText(view.emoji + " " + view.name);
-            }
             composite = new Composite(this.tabFolder, SWT.NONE);
             if (view.backgroundColor != null) {
                 composite.setBackground(new Color(this.display, view.backgroundColor.red, view.backgroundColor.green, view.backgroundColor.blue));
@@ -636,7 +652,8 @@ public class SWTApplication extends ApplicationController {
     }
     
     @Override
-    public void displayMessageBox(String title, String text, int level, String graphic) {
+    public void displayMessageBox(String title, String text, int level, List<String> emojis) {
+        // TODO - Add support for emojis
         int SWTIcon;
         SWTIcon = switch (level) {
             case Icon.INFORMATION -> SWT.ICON_INFORMATION;
@@ -1017,16 +1034,6 @@ public class SWTApplication extends ApplicationController {
                 }
             }
         });
-    }
-    
-    @Override
-    public void updateFloatingText(String viewName, String name, String text) {
-        System.out.println("SWTApplication: updateFloatingText: viewName=" + viewName + ", name=" + name + ", text=" + text);
-        List<Control> controlList = this.namedControls.get(viewName).get(name);
-        Label label = (Label) controlList.get(0);
-        if (label != null) {
-            label.setText(text);
-        }
     }
    
     @Override

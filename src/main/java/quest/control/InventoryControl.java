@@ -3,7 +3,6 @@ package quest.control;
 
 import app.EventListener;
 import app.Icon;
-import app.Utility;
 import java.util.HashSet;
 import java.util.Set;
 import quest.model.InventoryItem;
@@ -57,20 +56,22 @@ public class InventoryControl extends QuestControl implements EventListener {
         int totalLength = 0;
         for (String key : keySet) {
             System.out.println("InventoryControl: onExecute: realRow=" + realRow + ", realColumn=" + realColumn + ", key=" + key);
-            InventoryItem item = this.quest.inventory.get(key);
+            InventoryItem questItem = this.quest.inventory.get(key);
+            InventoryItem bookItem = this.quest.book.inventory.get(key);
+            String emojis = String.join(" ", bookItem.emojis);
             String linkText;
             int linkTextLength;
             if (inventoryItemName.equals("")) {
-                linkText = "<a>" + item.unicodeSurrogatePair + "</a>" + "x" + item.quantity + " ";
-                linkTextLength = 2 + 1 + String.valueOf(item.quantity).length() + 1; // Add emoticon plus "x" plus digits in quantity plus a space
+                linkText = "<a>" + emojis + "</a>" + "x" + questItem.quantity + " ";
+                linkTextLength = 2 + 1 + String.valueOf(questItem.quantity).length() + 1; // Add emoticon plus "x" plus digits in quantity plus a space
             } else {
                 if (this.quest.inventory.containsKey(inventoryItemName)) {
                     // In possession, so add a link
-                    linkText = item.unicodeSurrogatePair + " <a>" + inventoryItemName + "</a>";
+                    linkText = emojis + " <a>" + inventoryItemName + "</a>";
                 } else {
                     // NOT in possession, so no link, just the emoji and name
-                    item = this.quest.book.inventory.get(key);
-                    linkText = item.unicodeSurrogatePair + " " + inventoryItemName;
+                    emojis = String.join(" ", bookItem.emojis);
+                    linkText = emojis + " " + inventoryItemName;
                 }
                 linkTextLength = 2 + 1 + inventoryItemName.length(); // Add emoticon plus space plus name length
             }
@@ -102,8 +103,8 @@ public class InventoryControl extends QuestControl implements EventListener {
         
         if (item.onSelect == null) {
             // Default to displaying a message box that describes the item
-            String title = eventName + " " + item.unicodeSurrogatePair;
-            this.quest.appController.displayMessageBox(title, item.description, Icon.INFORMATION, item.unicodeSurrogatePair);
+            String title = eventName;
+            this.quest.appController.displayMessageBox(title, item.description, Icon.INFORMATION, item.emojis);
         } else {
             Story itemStory = item.onSelect;
             System.out.println("InventoryControl: onEvent: Executing story");

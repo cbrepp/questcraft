@@ -172,7 +172,7 @@ public class Quest extends app.ApplicationView {
         this.questControls.put(VariableAddControl.NAME, new VariableAddControl(this));
         this.textColor = new Color(0, 0, 0);
         this.textStyle = FontStyle.NORMAL;
-        this.emoji = "\uD83D\uDCD6"; // "open book" Unicode emoji
+        this.emojis.add("\uD83D\uDCD6"); // "open book" Unicode emoji
     }
     
     @Override

@@ -41,7 +41,7 @@ public abstract class ApplicationController {
     public abstract void setDelegate(Object delegate);
     public abstract void addDesigner(String viewName);
     public abstract void selectTab(String viewName);
-    public abstract void renameTab(String viewName, String newViewName);
+    public abstract void refreshTabLabel(String viewName);
     public abstract void removeTab(String viewName);
     public abstract void addView(ApplicationView view);
     public abstract void addView(ApplicationView view, Boolean isParent, int index, Boolean isRefresh);
@@ -53,7 +53,7 @@ public abstract class ApplicationController {
     public abstract void displayOverlay(String viewName, String name, app.Color color, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, Integer transparency, Boolean invert);
     public abstract void clearScreen(String name);
     public abstract void clearControl(String viewName, String controlName);
-    public abstract void displayMessageBox(String title, String text, int level, String graphic);
+    public abstract void displayMessageBox(String title, String text, int level, List<String> emojis);
     public abstract void displayText(String viewName, String text, Integer row, Integer column);
     public abstract void displayText(String viewName, String text, Integer row, Integer column, Color color);
     public abstract void displayText(String viewName, String text, Integer row, Integer column, Color color, int style);
@@ -82,7 +82,6 @@ public abstract class ApplicationController {
     public abstract void stopAllSounds();
     public abstract void pauseAllSounds();
     public abstract void unpauseAllSounds();
-    public abstract void updateFloatingText(String viewName, String name, String text);
     public abstract void sendToFront(String viewName, String name);
     public abstract void sendToBack(String viewName, String name);
     public abstract void refreshView(String viewName);

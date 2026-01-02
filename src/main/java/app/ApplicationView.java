@@ -14,7 +14,7 @@ public class ApplicationView implements EventListener {
     public Color backgroundColor;
     public String backgroundImage;
     public String className;
-    public String emoji;
+    public List<String> emojis;
     public String iconFileName;
     public Boolean isSplash;
     public String name;
@@ -24,6 +24,7 @@ public class ApplicationView implements EventListener {
     
     public ApplicationView(String name) {
         this.addTextArea = true;
+        this.emojis = new ArrayList();
         this.eventListenerMap = new LinkedHashMap<>();
         this.isSplash = false;
         this.name = name;

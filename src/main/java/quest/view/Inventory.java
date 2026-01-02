@@ -18,6 +18,9 @@ import quest.model.InventoryItem;
  */
 public class Inventory extends app.ApplicationView implements EventListener {
 
+    public final static String EMOJI = "\uD83C\uDF71";  // "bento box" Unicode emoji
+    public final static String NEW_EMOJI = "\uD83D\uDD25"; // "fire" Unicode emoji... "NEW button" Unicode emoji is \uD83C\uDD95 but a dull gray
+    
     public Boolean lastRenderContainedNewItems;
     public Quest quest;
     public ApplicationController appController;
@@ -26,7 +29,7 @@ public class Inventory extends app.ApplicationView implements EventListener {
         super(name);
         this.addTextArea = false;   // The text area would interfere with this view's grid layout, so prevent it here
         this.backgroundColor = new Color(255, 255, 255);
-        this.emoji = "\uD83C\uDF71"; // "bento box" Unicode emoji
+        this.emojis.add(EMOJI);
     }
     
     @Override
@@ -45,10 +48,13 @@ public class Inventory extends app.ApplicationView implements EventListener {
         if (eventName.equals(Quest.NEW_INVENTORY_ITEM)) {
             this.appController.clearScreen(this.name);
             this.render();
-            this.appController.renameTab(this.name, "\uD83D\uDD25 " + this.emoji + " " + this.name);    // Add "fire" Unicode emoji... "NEW button" Unicode emoji is \uD83C\uDD95 but a dull gray
+            if (!this.emojis.contains(NEW_EMOJI)) {
+                this.emojis.addFirst(NEW_EMOJI);
+                this.appController.refreshTabLabel(this.name);
+            }
         } else {
             InventoryItem item = this.quest.book.inventory.get(eventName);
-            String title = eventName + " " + item.unicodeSurrogatePair;
+            String title = eventName;
             if (item.soundFileName != null) {
                 this.appController.playSound(item.soundFileName, Boolean.FALSE);
             }
@@ -56,7 +62,7 @@ public class Inventory extends app.ApplicationView implements EventListener {
                 System.out.println("Inventory: onEvent: Executing story");
                 this.quest.displayPage(item.onSelect.contents, true);
             } else {
-                this.quest.appController.displayMessageBox(title, item.description, Icon.INFORMATION, item.unicodeSurrogatePair);
+                this.quest.appController.displayMessageBox(title, item.description, Icon.INFORMATION, item.emojis);
             }
         }
     }
@@ -65,7 +71,8 @@ public class Inventory extends app.ApplicationView implements EventListener {
     public void onSelected(ApplicationController appController) {
         System.out.println("Inventory: onSelected");
         
-        appController.renameTab(this.name, this.emoji + " " + this.name);    // Remove "fire" Unicode emoji
+        this.emojis.removeIf(emoji -> emoji.equals(NEW_EMOJI));
+        appController.refreshTabLabel(this.name);    // Remove emoji that indicates a new item has been added
 
         for (String key : this.quest.inventory.keySet()) {
             InventoryItem questItem = this.quest.inventory.get(key);
@@ -93,13 +100,14 @@ public class Inventory extends app.ApplicationView implements EventListener {
         this.lastRenderContainedNewItems = false;
         Map<String, ArrayList<BaseModel>> gridCells = new LinkedHashMap<>();
         for (String key : this.quest.book.inventory.keySet()) {
+            ArrayList<BaseModel> controlList = new ArrayList();
             InventoryItem bookItem = this.quest.book.inventory.get(key);
-            String linkText =  key + " " + bookItem.unicodeSurrogatePair;
+            String linkText =  key;
             String labelText = null;
             Color backgroundColor = null;
             InventoryItem questItem = this.quest.inventory.get(key);
             if (questItem != null) {
-                System.out.println("v Item in quest inventory: " + key + ", is new?=" + questItem.isNew);
+                System.out.println("Inventory: render: Item in quest inventory: " + key + ", is new?=" + questItem.isNew);
                 linkText = "<a>" + linkText + "</a>";
                 labelText = "x" + questItem.quantity;
                 if (questItem.isNew) {
@@ -111,8 +119,12 @@ public class Inventory extends app.ApplicationView implements EventListener {
                 System.out.println("Inventory: render: Item NOT in quest inventory: " + key);
                 backgroundColor = new Color(169, 169, 169); // Dark Gray
             }
-            ArrayList<BaseModel> controlList = new ArrayList();
-            LinkModel linkControl = new LinkModel(linkText, backgroundColor);
+            String itemEmojis = String.join(" ", bookItem.emojis);
+            LabelModel emojiControl = new LabelModel(itemEmojis, backgroundColor);
+            emojiControl.backgroundColor = backgroundColor;
+            emojiControl.pixelSize = 64.0;
+            controlList.add(emojiControl);
+            LinkModel linkControl = new LinkModel(linkText, backgroundColor, questItem != null);
             controlList.add(linkControl);
             if (labelText != null) {
                 LabelModel labelControl = new LabelModel(labelText, backgroundColor);

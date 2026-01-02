@@ -14,6 +14,7 @@ import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import quest.model.Act;
 import quest.model.Book;
@@ -37,7 +38,7 @@ public class Application extends app.ApplicationView {
         super(name);
         this.backgroundColor = new Color(255, 255, 255);
         this.backgroundImage = "/assets/images/app.jpg";
-        this.emoji = "\uD83D\uDCDA"; // "books" Unicode emoji
+        this.emojis.add("\uD83D\uDCDA"); // "books" Unicode emoji
     }
     
     @Override
@@ -358,44 +359,44 @@ public class Application extends app.ApplicationView {
 
         
         // Inventory items are added in alphabetical order
-        InventoryItem item = new InventoryItem("Inscribed on a scroll in arcane symbols, this spell unlocks powerful magic that you can cast with your Spell Book.", "/assets/sounds/magic.wav", "\uD83D\uDCDC");
+        InventoryItem item = new InventoryItem("Inscribed on a scroll in arcane symbols, this spell unlocks powerful magic that you can cast with your Spell Book.", "/assets/sounds/magic.wav", new ArrayList<>(List.of("\uD83D\uDCDC")));
         item.quantity = 1;
         book.inventory.put("Ancient Spell", item);
-        item = new InventoryItem("The delicious yellow fruit.  Collect as many as you can!", "/assets/sounds/monkey.wav", "\uD83C\uDF4C");
+        item = new InventoryItem("The delicious yellow fruit.  Collect as many as you can!", "/assets/sounds/monkey.wav", new ArrayList<>(List.of("\uD83C\uDF4C")));
         item.quantity = 100;
         book.inventory.put("Banana", item);
-        item = new InventoryItem("A cute little fuzzy bunny.  Be sure to keep it safe from predators!", "/assets/sounds/spring.wav", "\uD83D\uDC07");
+        item = new InventoryItem("A cute little fuzzy bunny.  Be sure to keep it safe from predators!", "/assets/sounds/spring.wav", new ArrayList<>(List.of("\uD83D\uDC07")));
         item.quantity = 100;
         item.xp = 1;
         book.inventory.put("Bunny", item);
-        item = new InventoryItem("A small catapult capable of launching an endless supply of cats into the air.", "/assets/sounds/catapult.wav", "\uD83D\uDC08");
+        item = new InventoryItem("A small, portable launcher with an endless supply of cats.", "/assets/sounds/catapult.wav", new ArrayList<>(List.of("\uD83D\uDC08", "\uD83D\uDCE4")));
         item.xp = 10;
         book.inventory.put("Cat-apult", item);
-        item = new InventoryItem("A foreboding monolith of enormous size.  Its existence predates that of our species.  Perhaps even the world.  What terrible powers does it hold?", "/assets/sounds/cosmic-wonder-1.wav", "\uD83C\uDF0C");
-        item.xp = 10;
-        book.inventory.put("Cosmic Wonder #1", item);
-        item = new InventoryItem("A small, magic portal capable of launching an endless supply of woodland faeries into the air.", "/assets/sounds/faery-zing.wav", "\uD83E\uDDDA");
-        item.xp = 10;
-        book.inventory.put("Faery Launcher", item);
-        item = new InventoryItem("Stinky methane gas.  Don't let any of this leak out of its tank!  Gross!!!", "/assets/sounds/fart.wav", "\uD83D\uDCA8");
-        book.inventory.put("Gas", item);
-        item = new InventoryItem("Stinky methane gas.  Don't let any of this leak out of its tank!  Gross!!!", "/assets/sounds/fart.wav", "\uD83D\uDCA8");
-        book.inventory.put("Gas", item);
-        item = new InventoryItem("Shiny gold!", "/assets/sounds/gold.wav", "\uD83D\uDCB0");
-        item.xp = 10;
-        book.inventory.put("Gold", item);
-        item = new InventoryItem("A cute little fuzzy bunny... made of gold!  It unlocks some powerful magic.", "/assets/sounds/spring.wav", "\uD83D\uDC07");
+        item = new InventoryItem("He's the Big Chungus of the bunny world!", "/assets/sounds/spring.wav", new ArrayList<>(List.of("\uD83D\uDC30")));
         item.quantity = 100;
         item.xp = 10;
-        book.inventory.put("Golden Bunny", item);
-        item = new InventoryItem("A royal-looking key.  But what does it unlock?", "/assets/sounds/key.wav", "\uD83D\uDD11");
+        book.inventory.put("Chungus Bunny", item);
+        item = new InventoryItem("A foreboding monolith of enormous size.  Its existence predates that of our species.  Perhaps even the world.  What terrible powers does it hold?", "/assets/sounds/cosmic-wonder-1.wav", new ArrayList<>(List.of("\uD83C\uDF0C")));
+        item.xp = 10;
+        book.inventory.put("Cosmic Wonder #1", item);
+        item = new InventoryItem("A small, portable launcher with an endless supply of woodland faeries.", "/assets/sounds/faery-zing.wav", new ArrayList<>(List.of("\uD83E\uDDDA", "\uD83D\uDCE4")));
+        item.xp = 10;
+        book.inventory.put("Faery Launcher", item);
+        item = new InventoryItem("Stinky methane gas.  Don't let any of this leak out of its tank!  Gross!!!", "/assets/sounds/fart.wav", new ArrayList<>(List.of("\uD83D\uDCA8")));
+        book.inventory.put("Gas", item);
+        item = new InventoryItem("Stinky methane gas.  Don't let any of this leak out of its tank!  Gross!!!", "/assets/sounds/fart.wav", new ArrayList<>(List.of("\uD83D\uDCA8")));
+        book.inventory.put("Gas", item);
+        item = new InventoryItem("Shiny gold!", "/assets/sounds/gold.wav", new ArrayList<>(List.of("\uD83D\uDCB0")));
+        item.xp = 10;
+        book.inventory.put("Gold", item);
+        item = new InventoryItem("A royal-looking key.  But what does it unlock?", "/assets/sounds/key.wav", new ArrayList<>(List.of("\uD83D\uDD11")));
         book.inventory.put("Golden Key", item);
-        item = new InventoryItem("An impressive mid-range weapon.  Great for slaying flying monsters!", "/assets/sounds/arrow.mp3", "\uD83C\uDFF9");
+        item = new InventoryItem("An impressive mid-range weapon.  Great for slaying flying monsters!", "/assets/sounds/arrow.mp3", new ArrayList<>(List.of("\uD83C\uDFF9")));
         item.xp = 10;
         book.inventory.put("Greyson's Great Bow", item);
-        item = new InventoryItem("This is a serious weapon!  The high-intensity laser beam can destory large objects with a single blast.", "/assets/sounds/laser.wav", "\uD83C\uDFEE");
+        item = new InventoryItem("This is a serious weapon!  The high-intensity laser beam can destory large objects with a single blast.", "/assets/sounds/laser.wav", new ArrayList<>(List.of("\uD83C\uDFEE")));
         book.inventory.put("Laser Cannon", item);
-        item = new InventoryItem("A magical fold-out piece of paper showing each of the locations in the current level.", "/assets/sounds/paper.wav", SceneMap.EMOJI);
+        item = new InventoryItem("A magical fold-out piece of paper showing each of the locations in the current level.", "/assets/sounds/paper.wav", new ArrayList<>(List.of(SceneMap.EMOJI)));
         Story onAdd = new Story();
         onAdd.contents.add("<add-view Map>");
         item.onAdd = onAdd;
@@ -404,18 +405,18 @@ public class Application extends app.ApplicationView {
         item.onSelect = onSelect;
         item.xp = 0;
         book.inventory.put("Map", item);
-        item = new InventoryItem("Wear this medal proudly.  It marks the honor, courage, and valour of those who have earned the right to wear it", "/assets/sounds/achievement.wav", "\uD83C\uDF96");
+        item = new InventoryItem("Wear this medal proudly.  It marks the honor, courage, and valour of those who have earned the right to wear it", "/assets/sounds/achievement.wav", new ArrayList<>(List.of("\uD83C\uDF96\uFE0F")));
         book.inventory.put("Military Rank", item);
-        item = new InventoryItem("Anyone up for a game?  The classic back-and-forth paddle game complete with 2 paddles and a ball.", "/assets/sounds/ping-pong.wav", "\uD83C\uDFD3");
+        item = new InventoryItem("Anyone up for a game?  The classic back-and-forth paddle game complete with 2 paddles and a ball.", "/assets/sounds/ping-pong.wav", new ArrayList<>(List.of("\uD83C\uDFD3")));
         book.inventory.put("Ping Pong Set", item);
-        item = new InventoryItem("A fine-tuned machine, this speedster can go from 0 to 60 in just one second!  A wonderful car for any racing competition.  But this car is unique in that it is fueled by methane which is hard to find in abundance.", "/assets/sounds/race-car.wav", "\uD83C\uDFCE");
+        item = new InventoryItem("A fine-tuned machine, this speedster can go from 0 to 60 in just one second!  A wonderful car for any racing competition.  But this car is unique in that it is fueled by methane which is hard to find in abundance.", "/assets/sounds/race-car.wav", new ArrayList<>(List.of("\uD83C\uDFCE\uFE0F")));
         book.inventory.put("Race Car", item);
-        item = new InventoryItem("A magical ring forged by woodland gnomes for taming creatures.  But beware!  It does not work on large creatures.", "/assets/sounds/ring-of-taming.wav", "\uD83D\uDC8D");
+        item = new InventoryItem("A magical ring forged by woodland gnomes for taming creatures.  But beware!  It does not work on large creatures.", "/assets/sounds/ring-of-taming.wav", new ArrayList<>(List.of("\uD83D\uDC8D")));
         item.xp = 10;
         book.inventory.put("Ring of Taming", item);
-        item = new InventoryItem("A brand new high-altitude sled!  Perfect for an all-expenses paid vacation at Mount Fluff.", "/assets/sounds/skis.wav", "\uD83C\uDFBF");
-        book.inventory.put("Snow Sled", item);
-        item = new InventoryItem("A powerful book!  Spells scribed onto its pages become manifest in the world.", "/assets/sounds/spell-cast.wav", SpellBook.EMOJI);
+        item = new InventoryItem("A brand new high-altitude snowboard!  Perfect for an all-expenses paid vacation at Mount Fluff.", "/assets/sounds/snowboard.wav", new ArrayList<>(List.of("\uD83C\uDFBF")));
+        book.inventory.put("Snowboard", item);
+        item = new InventoryItem("A powerful book!  Spells scribed onto its pages become manifest in the world.", "/assets/sounds/spell-cast.wav", new ArrayList<>(List.of(SpellBook.EMOJI)));
         onAdd = new Story();
         onAdd.contents.add("<add-view Spell Book>");
         item.onAdd = onAdd;
@@ -424,10 +425,10 @@ public class Application extends app.ApplicationView {
         item.onSelect = onSelect;
         item.xp = 0;
         book.inventory.put("Spell Book", item);
-        item = new InventoryItem("The fabeled UNO reverse card.  Used to return damage back into the face of he who dealt it.", "/assets/sounds/reverse.wav", "\uD83C\uDFB4");
+        item = new InventoryItem("The fabeled UNO reverse card.  Used to return damage back into the face of he who dealt it.", "/assets/sounds/reverse.wav", new ArrayList<>(List.of("\uD83D\uDD04")));
         item.xp = 10;
         book.inventory.put("UNO Reverse", item);
-        item = new InventoryItem("A magnificent blade.  Great for slaying dragons!", "/assets/sounds/sword.wav", "\uD83D\uDDE1");
+        item = new InventoryItem("A magnificent blade.  Great for slaying dragons!", "/assets/sounds/sword.wav", new ArrayList<>(List.of("\uD83D\uDDE1\uFE0F")));
         item.xp = 10;
         book.inventory.put("Zara's Sword", item);
 

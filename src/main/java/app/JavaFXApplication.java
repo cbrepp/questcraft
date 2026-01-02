@@ -15,16 +15,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import com.gluonhq.emoji.EmojiData;
-import com.gluonhq.emoji.Emoji;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.text.BreakIterator;
-import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javafx.animation.KeyFrame;
 import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
@@ -100,6 +99,8 @@ import org.w3c.dom.NamedNodeMap;
  */
 public class JavaFXApplication extends ApplicationController {
     
+    private static final int DEFAULT_BUTTON_FONT_SIZE = 10;
+    private static final int DEFAULT_FONT_SIZE = 12;
     private static final String EMOJI_SHEET = "/assets/images/sheet_google_64.png";
     private static final String EMOJI_SHEET_JSON = "/assets/json/emoji.json";
     private static final Double EMOJI_SHEET_SIZE = 64.0;
@@ -110,7 +111,6 @@ public class JavaFXApplication extends ApplicationController {
     public Font buttonFont;
     public int buttonFontHeight = 0;
     public int buttonFontWidth = 0;
-    public Map<String, ImageView> emojis;
     public Map<String, JsonObject> emojiMap;
     public Image emojiSheet;
     public String emptyBook;
@@ -231,7 +231,7 @@ public class JavaFXApplication extends ApplicationController {
         
         // Initialize the application's tab folder and set it as the application's primary scene
         this.tabFolder = new TabPane();
-        this.tabFolder.setPrefSize(dimensions.x, dimensions.y);
+        //this.tabFolder.setPrefSize(dimensions.x, dimensions.y);
         this.tabFolder.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
             String selectedTabTitle = newTab.getText();
             System.out.println("JavaFXApplication: showPrimaryStage: Selected tab " + selectedTabTitle);
@@ -245,14 +245,10 @@ public class JavaFXApplication extends ApplicationController {
                 }
             }
         });
-        ScrollPane scrollPane = new ScrollPane();
-        scrollPane.setContent(this.tabFolder);
-        scrollPane.setHbarPolicy(ScrollBarPolicy.AS_NEEDED);
-        scrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
-        scrollPane.setPrefViewportWidth(dimensions.x);
-        scrollPane.setPrefViewportHeight(dimensions.y);
+        //this.tabFolder.setMinSize(800, 600);
 
         //this.primaryScene = new Scene(this.tabFolder, dimensions.x, dimensions.y);
+        /*
         this.primaryScene = new Scene(scrollPane, dimensions.x, dimensions.y);
         final String CSS = 
             ".html-editor .tool-bar { " +
@@ -265,6 +261,9 @@ public class JavaFXApplication extends ApplicationController {
             "    visibility: hidden; " +
             "}";
         this.primaryScene.getStylesheets().add("data:text/css," + CSS);
+        */
+        //this.primaryScene = new Scene(this.tabFolder, 800, 600);
+        this.primaryScene = new Scene(this.tabFolder);
         this.app.primaryStage.setScene(primaryScene);
 
         // Share important state with the other instance methods
@@ -279,8 +278,8 @@ public class JavaFXApplication extends ApplicationController {
         this.namedControls = new HashMap();
             
         // Init a font for all text areas and buttons to use
-        this.monospaceFont = Font.font("Consolas", FontWeight.NORMAL, adjustFontSizeForDPI(12));
-        this.buttonFont = Font.font("Consolas", FontWeight.NORMAL, adjustFontSizeForDPI(10));
+        this.monospaceFont = Font.font("Consolas", FontWeight.NORMAL, adjustFontSizeForDPI(DEFAULT_FONT_SIZE));
+        this.buttonFont = Font.font("Consolas", FontWeight.NORMAL, adjustFontSizeForDPI(DEFAULT_BUTTON_FONT_SIZE));
         
         // Calculate the height and width of the fonts
         Text textNode = new Text("W");
@@ -456,10 +455,19 @@ public class JavaFXApplication extends ApplicationController {
     }
     
     @Override
-    public void renameTab(String viewName, String newViewName) {
-        System.out.println("JavaFXApplication: renameTab: viewName=" + viewName + ", newViewName=" + newViewName);
+    public void refreshTabLabel(String viewName) {
+        System.out.println("JavaFXApplication: refreshTabLabel: viewName=" + viewName);
+        ApplicationView view = this.views.get(viewName);
+        if (view == null) {
+            System.out.println("JavaFXApplication: refreshTabLabel: View not found");
+            return;
+        }
         Tab tab = this.tabItemMap.get(viewName);
-        tab.setText(newViewName);
+        if (tab == null) {
+            System.out.println("JavaFXApplication: refreshTabLabel: Tab not found for view");
+            return;
+        }
+        this.setTabLabel(tab, view);
     }
     
     @Override
@@ -513,11 +521,31 @@ public class JavaFXApplication extends ApplicationController {
         this.addView(view, false);
     }
     
+    public void setTabLabel(Tab tab, ApplicationView view) {
+        System.out.println("JavaFXApplication: setTabLabel: tab=" + tab + ", view=" + view);
+        tab.setText(view.name);
+        if (!view.emojis.isEmpty()) {
+            String emojiString = String.join(" ", view.emojis);
+            TextFlow emojis = stringToTextFlow(emojiString, null, null, DEFAULT_FONT_SIZE, null);
+            tab.setGraphic(emojis);
+        }
+    }
+    
     @Override
     public void addView(ApplicationView view, Boolean isParent, int index, Boolean isRefresh) {
         System.out.println("JavaFXApplication: addView: name=" + view.name + ", isParent=" + isParent + ", index=" + index + ", isRefresh=" + isRefresh);
 
-        StackPane content = new StackPane();
+        Pane content = new Pane();
+        content.setMinSize(256, 320);   // WCAG 2.2
+        content.setPrefSize(800, 600);
+        ScrollPane scrollPane = new ScrollPane(content);
+        //scrollPane.setContent(this.tabFolder);
+        scrollPane.setHbarPolicy(ScrollBarPolicy.AS_NEEDED);
+        scrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
+        //scrollPane.setPrefViewportWidth(dimensions.x);
+        //scrollPane.setPrefViewportHeight(dimensions.y);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setFitToHeight(true);
 
         if (isParent) {
             // Not supported at this time
@@ -528,20 +556,11 @@ public class JavaFXApplication extends ApplicationController {
         }
         
         // Create a new tab
-        String tabName;
-        if (view.emoji != null) {
-            //tabName = view.emoji + " " + view.name;
-            tabName = view.name;
-        } else {
-            tabName = view.name;
-        }
-        Tab tab = new Tab(tabName);
-        if (view.emoji != null) {
-            tab.setGraphic(this.stringToEmoji(view.emoji, 14));
-        }
+        Tab tab = new Tab();
+        this.setTabLabel(tab, view);
         tab.setClosable(false);
         this.tabFolder.getTabs().add(index, tab);
-        tab.setContent(content);
+        tab.setContent(scrollPane);
         this.tabItemMap.put(view.name, tab);
         this.tabItemViewMap.put(tab, view);
         
@@ -551,13 +570,14 @@ public class JavaFXApplication extends ApplicationController {
             System.out.println("JavaFXApplication: addView: name=" + view.name + ", using background image " + view.backgroundImage);
             Image image = loadImage(view.backgroundImage);
             Coordinates dimensions = this.getDimensions(view.backgroundImage);
+            content.setMinSize(dimensions.x, dimensions.y);
+            content.setPrefSize(dimensions.x, dimensions.y);
             BackgroundImage backgroundImage = new BackgroundImage(
                 image,
                 BackgroundRepeat.NO_REPEAT, // Repeat in X direction
                 BackgroundRepeat.NO_REPEAT, // Repeat in Y direction
                 BackgroundPosition.DEFAULT,   // Position of the image
-                // TODO - Other examples use 1.0
-                new BackgroundSize(dimensions.x, dimensions.y, true, true, true, false) // Size of the image (100% width and height)
+                new BackgroundSize(1.0, 1.0, true, true, false, false)
             );
             
             Color backgroundColor;
@@ -607,48 +627,10 @@ public class JavaFXApplication extends ApplicationController {
             this.namedControls.put(view.name, new HashMap());
         }
         
-        /*
-        if (view.addTextArea) {
-            // Add a text area to the composite
-            this.tabEditorTextMap.put(view.name, this.emptyBook);
-            HTMLEditor htmlEditor = new HTMLEditor();
-            this.tabEditorMap.put(view.name, htmlEditor);
-            htmlEditor.setBackground(background);
-            // Without contentEditable=\"true\" in the body the editor is read-only by default
-            //String transparentContentCss = "<style>"
-            //                             + "body { background-color: transparent !important; }"
-            //                             + "</style>";
-            String initialHTML;
-            if (view.backgroundImage == null) {
-                initialHTML = "<body style='background-color: transparent;'>"
-                                        + this.emptyBook
-                                        + "</body>";
-
-                //htmlEditor.setStyle("-fx-background-color: rgba(0, 0, 0, 0);"); // Transparent black
-            } else {
-                String imagePath = getClass().getResource(view.backgroundImage).toExternalForm();
-                Coordinates backgroundImageDimensions = this.getDimensions(view.backgroundImage);
-                initialHTML = String.format(
-                    "<body style='background-image: url(\"%s\"); background-size: %dpx %dpx; background-repeat: no-repeat;'>Type on top of the image...</body>",
-                    imagePath,
-                    backgroundImageDimensions.x,
-                    backgroundImageDimensions.y
-                );
-                htmlEditor.setPrefSize(backgroundImageDimensions.x, backgroundImageDimensions.y);
-                System.out.println("TEST: backgroundImageDimensions.x=" + backgroundImageDimensions.x + ", backgroundImageDimensions.y=" + backgroundImageDimensions.y);
-            }
-            htmlEditor.setHtmlText(initialHTML);
-            
-            //htmlEditor.lookup(".web-view").setStyle("-fx-background-color: transparent;");
-            content.getChildren().add(htmlEditor);
-            //htmlEditor.setPrefHeight(250);
-        }
-        */
-        
         // Add overlay pane AFTER HTMLEditor as StackPane displays its contents back-to-front
-        Pane overlayPane = new Pane();
-        content.getChildren().add(overlayPane);
-        this.tabContentMap.put(view.name, overlayPane);
+        //Pane overlayPane = new Pane();
+        //content.getChildren().add(overlayPane);
+        this.tabContentMap.put(view.name, content);
         
         if (!isRefresh) {
             view.onLoad(this);
@@ -656,8 +638,8 @@ public class JavaFXApplication extends ApplicationController {
     }
     
     @Override
-    public void displayMessageBox(String title, String text, int level, String graphic) {
-        System.out.println("JavaFXApplication: displayMessageBox: title=" + title + ", text=" + text + ", level=" + level);
+    public void displayMessageBox(String title, String text, int level, List<String> emojis) {
+        System.out.println("JavaFXApplication: displayMessageBox: title=" + title + ", text=" + text + ", level=" + level + ", graphic=" + emojis);
         
         AlertType type = switch (level) {
             case Icon.INFORMATION -> AlertType.INFORMATION;
@@ -669,9 +651,10 @@ public class JavaFXApplication extends ApplicationController {
             Alert alert = new Alert(type);
             alert.initOwner(this.app.primaryStage);
             alert.setTitle(this.parentView.name);
-            TextFlow header = this.stringToTextFlow(title, "RobotoMono-Medium", new app.Color(0, 0, 0), 14, FontStyle.BOLD);
-            if (graphic != null) {
-                ImageView graphicImage = this.stringToEmoji(graphic, (int) Math.round(EMOJI_SHEET_SIZE));
+            TextFlow header = this.stringToTextFlow(title, "RobotoMono-Medium", new app.Color(0, 0, 0), DEFAULT_FONT_SIZE, FontStyle.BOLD);
+            if ((emojis != null) && (!emojis.isEmpty())) {
+                String emojiString = String.join(" ", emojis);
+                ImageView graphicImage = this.stringToEmoji(emojiString, (int) Math.round(EMOJI_SHEET_SIZE));
                 alert.setGraphic(graphicImage);
             }
             alert.getDialogPane().setHeader(header);
@@ -696,7 +679,7 @@ public class JavaFXApplication extends ApplicationController {
     public void displayText(String viewName, String text, Integer row, Integer column, app.Color color, int style) {
         System.out.println("JavaFXApplication: displayText: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", color=" + color + ", style=" + style);
         
-        this.displayFloatingText(viewName, null, text, row, column, null, null, color, 14, style, "RobotoMono-Medium"); // Previously, "Consolas"
+        this.displayFloatingText(viewName, null, text, row, column, null, null, color, DEFAULT_FONT_SIZE, style, "RobotoMono-Medium"); // Previously, "Consolas"
         
         /*
         
@@ -760,7 +743,7 @@ public class JavaFXApplication extends ApplicationController {
         GridPane content = new GridPane();
         tab.setContent(content);
         if (showBorders) {
-            String borderColor = "#000000"; // Black
+            String borderColor = "transparent";
             content.setStyle("-fx-background-color: " + borderColor + ";");
         }
         content.setPadding(new Insets(10));
@@ -777,7 +760,6 @@ public class JavaFXApplication extends ApplicationController {
                 BackgroundRepeat.NO_REPEAT, // Repeat in X direction
                 BackgroundRepeat.NO_REPEAT, // Repeat in Y direction
                 BackgroundPosition.DEFAULT,   // Position of the image
-                // TODO - Other examples use 1.0
                 new BackgroundSize(dimensions.x, dimensions.y, true, true, true, false) // Size of the image (100% width and height)
             );
             
@@ -870,39 +852,6 @@ public class JavaFXApplication extends ApplicationController {
             verticalContainer.setAlignment(Pos.CENTER);
             verticalContainer.setPadding(new Insets(20)); // Add padding around the edges
             cell.getChildren().add(verticalContainer);
-
-            //cellComposite.setBackgroundMode(SWT.INHERIT_DEFAULT);
-            // TODO - Using the first control's background color is a little cludgy
-            //Color backgroundColor = null;
-            /*
-            int rgbSum = 0;
-            if (!controls.isEmpty()) {
-                System.out.println("JavaFXApplication: displayGrid: Cell count: " + controls.size());
-                app.Color genericBackgroundColor = controls.getFirst().backgroundColor;
-                if (genericBackgroundColor != null) {
-                    backgroundColor = new Color(this.display, genericBackgroundColor.red, genericBackgroundColor.green, genericBackgroundColor.blue);
-                    rgbSum = genericBackgroundColor.red + genericBackgroundColor.green + genericBackgroundColor.blue;
-                }
-            } else {
-                System.out.println("JavaFXApplication: displayGrid: Empty cell");
-            }
-            
-            cellComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true)); // Fill the cell
-            cellComposite.setLayout(new GridLayout());
-            Color foregroundColor = null;
-            if (backgroundColor != null) {
-                cellComposite.setBackground(backgroundColor);
-                if (rgbSum > 382) {
-                    // 255 * 3 = 765 as a maximum value for white.  Use black as the font color if on the lighter half of the color scale.
-                    foregroundColor = new Color(this.display, 0, 0, 0);
-                } else {
-                    foregroundColor = new Color(this.display, 255, 255, 255);
-                }
-            } else {
-                // SWT.COLOR_TRANSPARENT isn't available until SWT 4.5
-                cellComposite.setBackground(this.display.getSystemColor(SWT.COLOR_TRANSPARENT)); // Set label background to transparent
-            }
-            */
             
             // Add zero to many controls to the grid cell
             for (BaseModel abstractControl : controls) {
@@ -911,9 +860,14 @@ public class JavaFXApplication extends ApplicationController {
                 if (abstractControl.getClass().equals(app.model.LinkModel.class)) {
                     String linkText = abstractControl.text.replace("<a>", "");
                     linkText = linkText.replace("</a>", "");
-                    //Hyperlink hyperlink = new Hyperlink(linkText);
                     Hyperlink hyperlink = new Hyperlink();
-                    hyperlink.setGraphic(this.stringToTextFlow(linkText, "RobotoMono-Medium", fontColor, 14, FontStyle.BOLD));
+                    Integer fontStyle;
+                    if (abstractControl.isEnabled) {
+                        fontStyle = FontStyle.UNDERLINE_LINK;
+                    } else {
+                        fontStyle = FontStyle.BOLD;
+                    }
+                    hyperlink.setGraphic(this.stringToTextFlow(linkText, "RobotoMono-Medium", fontColor, (int) Math.round(abstractControl.pixelSize), fontStyle));
                     Font currentFont = hyperlink.getFont();
                     hyperlink.setFont(Font.font(currentFont.getFamily(), FontWeight.BOLD, currentFont.getSize()));
                     hyperlink.setDisable(!abstractControl.isEnabled);
@@ -938,15 +892,8 @@ public class JavaFXApplication extends ApplicationController {
                     control = button;
                     System.out.println("JavaFXApplication: displayGrid: Added button " + abstractControl.text + " for " + cellName);
                 } else if (abstractControl.getClass().equals(app.model.LabelModel.class)) {
-                    TextFlow label = this.stringToTextFlow(abstractControl.text, "RobotoMono-Medium", fontColor, 14, FontStyle.BOLD);
+                    TextFlow label = this.stringToTextFlow(abstractControl.text, "RobotoMono-Medium", fontColor, (int) Math.round(abstractControl.pixelSize), FontStyle.BOLD);
                     label.setTextAlignment(TextAlignment.CENTER);
-                    //Label label = new Label(abstractControl.text);
-                    //Font currentFont = label.getFont();
-                    //label.setFont(Font.font(currentFont.getFamily(), FontWeight.BOLD, currentFont.getSize()));
-                    //label.setTextFill(fontColor);
-                    //label.setWrapText(true);
-                    //label.setAlignment(Pos.CENTER);
-                    //label.setTextAlignment(TextAlignment.CENTER);
                     verticalContainer.getChildren().add(label);
                     control = label;
                     System.out.println("JavaFXApplication: displayGrid: Added label " + abstractControl.text + " for " + cellName);
@@ -1068,8 +1015,9 @@ public class JavaFXApplication extends ApplicationController {
         
         Button button = new Button(text);
         Coordinates coordinates = this.convertToCoordinates(row, column);
-        button.setLayoutX(coordinates.x);
-        button.setLayoutY(coordinates.y);
+        this.positionNode(content, button, coordinates);
+        //button.setLayoutX(coordinates.x);
+        //button.setLayoutY(coordinates.y);
         content.getChildren().add(button);
         
         int fontWidth;
@@ -1084,7 +1032,7 @@ public class JavaFXApplication extends ApplicationController {
                 fontHeight = this.buttonFontHeight;
             }
         } else {
-            Font font = Font.font(fontName, FontWeight.NORMAL, 12);
+            Font font = Font.font(fontName, FontWeight.NORMAL, DEFAULT_BUTTON_FONT_SIZE);
             Text textNode = new Text("W");
             textNode.setFont(font);
             Bounds bounds = textNode.getLayoutBounds();
@@ -1167,6 +1115,8 @@ public class JavaFXApplication extends ApplicationController {
         final Image image = loadImage(fileName);        
         ImageView imageView = new ImageView(image);
         
+        // TODO - To scale images, need something like this:
+                
         int nextRow;
         if (fillParent) {
             //StackPane parentPane = new StackPane(content);
@@ -1179,10 +1129,38 @@ public class JavaFXApplication extends ApplicationController {
             
             nextRow = 0; // Advance the text cursor automatically
         } else {
-            Coordinates dimensions = getDimensions(fileName);
+            /*
+            // Position the node relative to the parent content
+            Double paneWidth = content.getPrefWidth();
+            Double paneHeight = content.getPrefHeight();
             Coordinates coordinates = this.convertToCoordinates(row, column);
-            imageView.setLayoutX(coordinates.x + 1);
-            imageView.setLayoutY(coordinates.y + 1);
+            Double relativePositionX = (coordinates.x + 1) / paneWidth;
+            Double relativePositionY = (coordinates.y + 1) / paneHeight;
+            imageView.layoutXProperty().bind(content.widthProperty().multiply(relativePositionX));
+            imageView.layoutYProperty().bind(content.heightProperty().multiply(relativePositionY));
+            //imageView.setLayoutX(coordinates.x + 1);
+            //imageView.setLayoutY(coordinates.y + 1);
+            
+            // Size the node relative to the size of the parent content
+            Coordinates dimensions = getDimensions(fileName);
+            Double relativeWidth = dimensions.x / paneWidth;
+            Double relativeHeight = dimensions.y / paneHeight;
+            imageView.fitWidthProperty().bind(content.widthProperty().multiply(relativeWidth));
+            imageView.fitHeightProperty().bind(content.heightProperty().multiply(relativeHeight));
+            //imageView.setPreserveRatio(true);
+            imageView.setSmooth(true);
+            */
+            
+            Coordinates coordinates = this.convertToCoordinates(row, column);
+            this.positionNode(content, imageView, coordinates);
+            
+            Coordinates dimensions = getDimensions(fileName);
+            Double relativeWidth = dimensions.x / content.getPrefWidth();
+            Double relativeHeight = dimensions.y / content.getPrefHeight();
+            imageView.fitWidthProperty().bind(content.widthProperty().multiply(relativeWidth));
+            imageView.fitHeightProperty().bind(content.heightProperty().multiply(relativeHeight));
+            imageView.setSmooth(true);
+            
             content.getChildren().add(imageView);
             this.namedControls.get(viewName).put(name, imageView);
             
@@ -1192,11 +1170,15 @@ public class JavaFXApplication extends ApplicationController {
         return nextRow;
     }
     
-    @Override
-    public void updateFloatingText(String viewName, String name, String text) {
-        System.out.println("JavaFXApplication: updateFloatingText: viewName=" + viewName + ", name=" + name + ", text=" + text);
-        Label label = (Label) this.namedControls.get(viewName).get(name);
-        label.setText(text);
+    public void positionNode(Pane parent, Node childNode, Coordinates prefCoordinates) {
+        // Position the node relative to the parent content
+        Double paneWidth = parent.getPrefWidth();
+        Double paneHeight = parent.getPrefHeight();
+        Double relativePositionX = (prefCoordinates.x + 1) / paneWidth;
+        Double relativePositionY = (prefCoordinates.y + 1) / paneHeight;
+        childNode.layoutXProperty().bind(parent.widthProperty().multiply(relativePositionX));
+        childNode.layoutYProperty().bind(parent.heightProperty().multiply(relativePositionY));
+        System.out.println("JavaFXApplication: positionNode: parent=" + parent + ", childNode=" + childNode + ", prefCoordinates=" + prefCoordinates + ", paneWidth=" + paneWidth + ", paneHeight=" + paneHeight + ", relativePositionX=" + relativePositionX + ", relativePositionY=" + relativePositionY);
     }
     
     @Override
@@ -1252,8 +1234,9 @@ public class JavaFXApplication extends ApplicationController {
             }
             case FontStyle.UNDERLINE_LINK -> {
                 // TODO - Not supported, needs styling
-                fxWeight = FontWeight.NORMAL;
+                fxWeight = FontWeight.BOLD;
                 text.setUnderline(true);
+                fontColor = new app.Color(0, 0, 238);   // Default blue used by modern browsers
             }
             case FontStyle.UNDERLINE_SINGLE -> {
                 fxWeight = FontWeight.NORMAL;
@@ -1328,32 +1311,39 @@ public class JavaFXApplication extends ApplicationController {
         }
     }
     
+    public static Boolean isEmoji(String string) {
+        // Check if the cluster contains a character intended to be an emoji
+        boolean isVisualEmoji = string.codePoints()
+            .anyMatch(cp -> Character.isEmojiPresentation(cp) || 
+                            Character.isEmojiModifier(cp) ||
+                            cp == 0xFE0F); // VS-16: Forces emoji presentation
+        return isVisualEmoji;
+    }
+    
+    public static String getEmojiUnifiedValue(String emoji) {
+        String unifiedValue = emoji.codePoints()
+            .mapToObj(cp -> String.format("%04X", cp))
+            .collect(Collectors.joining("-"));
+        return unifiedValue;
+    }
+    
     public ImageView stringToEmoji(String string, Integer fontSize) {        
-        // Verify this string is a valid Unicode emoji
-        Optional<Emoji> emojiOpt = EmojiData.emojiFromUnicodeString(string);
-        if (!emojiOpt.isPresent()) {
+        if (!isEmoji(string)) {
             return null;
         }
-
-        Emoji emoji = emojiOpt.get();
-        String emojiUnified = emoji.getUnified();
 
         // Use lazy loading for the sprite sheet in case it's never needed
         if (this.emojiSheet == null) {
             this.loadEmojiData();
         }
 
-        if (this.emojis == null) {
-            this.emojis = new HashMap();
-        }
-
+        String emojiUnified = getEmojiUnifiedValue(string);
         if (!this.emojiMap.containsKey(emojiUnified)) {
             System.out.println("JavaFXApplication: stringToEmoji: Emoji does not exist in the emoji json! string=" + string + ", unified=" + emojiUnified);
             return null;
         }
 
         JsonObject emojiObj = this.emojiMap.get(emojiUnified);
-        //if (!this.emojis.containsKey(emojiUnified)) {
         ImageView emojiView = new ImageView(this.emojiSheet);
         double sheetX = Double.parseDouble(emojiObj.get("sheet_x").getAsString());
         double sheetY = Double.parseDouble(emojiObj.get("sheet_y").getAsString());
@@ -1366,10 +1356,6 @@ public class JavaFXApplication extends ApplicationController {
         emojiView.setCacheHint(CacheHint.QUALITY); 
         emojiView.setFitHeight(fontSize);
         emojiView.setPreserveRatio(true);
-            //emojis.put(emojiUnified, emojiView);
-        //}
-
-        //emojiView = emojis.get(emojiUnified);
 
         return emojiView;
     }
@@ -1381,27 +1367,29 @@ public class JavaFXApplication extends ApplicationController {
         
         TextFlow textFlow = new TextFlow();
         
-        // Use BreakIterator to correctly identify character boundaries (including emojis)
-        BreakIterator boundary = BreakIterator.getCharacterInstance();
-        boundary.setText(string);
-
-        int start = boundary.first();
-        for (int end = boundary.next(); end != BreakIterator.DONE; start = end, end = boundary.next()) {
-            String segment = string.substring(start, end);
-            
-            // Check if this segment is a valid Unicode emoji
-            Optional<Emoji> emojiOpt = EmojiData.emojiFromUnicodeString(segment);
-            if (emojiOpt.isPresent()) {
-                ImageView emojiView = this.stringToEmoji(segment, fontSize);
+        // \X matches a "Unicode extended grapheme cluster" (the full emoji)
+        Matcher matcher = Pattern.compile("\\X").matcher(string);
+        while (matcher.find()) {
+            String cluster = matcher.group();
+            // Check if the cluster contains a character intended to be an emoji
+            boolean isEmoji = isEmoji(cluster);
+            if (isEmoji) {
+                // Emoji - Add an ImageView
+                System.out.println("JavaFXApplication: addStringSegmentToTextFlow: Handling emoji: " + cluster);
+                ImageView emojiView = this.stringToEmoji(cluster, fontSize);
                 textFlow.getChildren().add(emojiView);
             } else {
-                // Normal text - Use a Text node
-                Text textNode = stringToText(segment, fontName, fontColor, fontSize, fontStyle);
+                // Normal text - Add a Text node
+                Text textNode = stringToText(cluster, fontName, fontColor, fontSize, fontStyle);
                 textFlow.getChildren().add(textNode);
             }
         }
 
         return textFlow;
+    }
+    
+    public void addStringSegmentToTextFlow(TextFlow textFlow, String segment, Boolean isEmoji, String fontName, app.Color fontColor, Integer fontSize, Integer fontStyle) {
+
     }
     
     @Override
@@ -1436,8 +1424,9 @@ public class JavaFXApplication extends ApplicationController {
                 
         // Position the node
         Coordinates startCoordinates = this.convertToCoordinates(startRow, startColumn);
-        textFlow.setLayoutX(startCoordinates.x);
-        textFlow.setLayoutY(startCoordinates.y);
+        this.positionNode(content, textFlow, startCoordinates);
+        //textFlow.setLayoutX(startCoordinates.x);
+        //textFlow.setLayoutY(startCoordinates.y);
         
         // Add the node to the parent
         content.getChildren().add(textFlow);
@@ -1529,10 +1518,10 @@ public class JavaFXApplication extends ApplicationController {
         Coordinates endCoordinates;
         if ((endRow != null) && (endColumn != null)) {
             endCoordinates = this.convertToCoordinates(endRow, endColumn);
-        } else if (newFontSize <= 12) {
+        } else if (newFontSize <= DEFAULT_FONT_SIZE) {
             endCoordinates = this.convertToCoordinates(startRow + 1, startColumn + text.length());
         } else {
-            endCoordinates = this.convertToCoordinates(startRow + 4, (int) (startColumn + (text.length() * (newFontSize / 12) * 1.5) + 1));
+            endCoordinates = this.convertToCoordinates(startRow + 4, (int) (startColumn + (text.length() * (newFontSize / DEFAULT_FONT_SIZE) * 1.5) + 1));
         }
         
         label.setLayoutX(startCoordinates.x);
@@ -1583,10 +1572,10 @@ public class JavaFXApplication extends ApplicationController {
         }
         field.setFont(font);
         
-        Coordinates startCoordinates = this.convertToCoordinates(row, column);        
-        field.setLayoutX(startCoordinates.x);
-        field.setLayoutY(startCoordinates.y);
-        // TODO - setPrefSize?
+        Coordinates startCoordinates = this.convertToCoordinates(row, column);
+        this.positionNode(content, field, startCoordinates);
+        //field.setLayoutX(startCoordinates.x);
+        //field.setLayoutY(startCoordinates.y);
         
         if ((initValue != null) && (!initValue.equals(""))) {
             field.setText(initValue);
@@ -1626,8 +1615,9 @@ public class JavaFXApplication extends ApplicationController {
         flowPane.setVgap(10);
         flowPane.setPadding(new Insets(10));
         content.getChildren().add(flowPane);
-        flowPane.setLayoutX(coordinates.x);
-        flowPane.setLayoutY(coordinates.y);
+        this.positionNode(content, flowPane, coordinates);
+        //flowPane.setLayoutX(coordinates.x);
+        //flowPane.setLayoutY(coordinates.y);
         flowPane.setPrefWidth(terminalCoordinates.x - coordinates.x);
         System.out.println("JavaFXApplication: displayValidatedInputField: animation placed at " + coordinates.x + " , " + coordinates.y + ", width=" + flowPane.getMaxWidth() + ", height=" + flowPane.getMaxHeight());
         
@@ -1723,8 +1713,9 @@ public class JavaFXApplication extends ApplicationController {
         
         // Position the image
         Coordinates coordinates = this.convertToCoordinates(row, column);
-        gifView.setLayoutX(coordinates.x);
-        gifView.setLayoutY(coordinates.y);
+        this.positionNode(content, gifView, coordinates);
+        //gifView.setLayoutX(coordinates.x);
+        //gifView.setLayoutY(coordinates.y);
         
         // Add the image
         content.getChildren().add(gifView);
@@ -1749,8 +1740,9 @@ public class JavaFXApplication extends ApplicationController {
         
         ImageView imageView = new ImageView();
         Coordinates coordinates = this.convertToCoordinates(row, column);
-        imageView.setLayoutX(coordinates.x);
-        imageView.setLayoutY(coordinates.y);
+        this.positionNode(content, imageView, coordinates);
+        //imageView.setLayoutX(coordinates.x);
+        //imageView.setLayoutY(coordinates.y);
         
         List<Image> frames = new ArrayList<>();
         List<Duration> frameDelays = new ArrayList<>();
@@ -1839,7 +1831,7 @@ public class JavaFXApplication extends ApplicationController {
     public Coordinates convertToCoordinates(int row, int column) {
         System.out.println("JavaFXApplication: convertToCoordinates: row=" + row + ", column=" + column);
         
-        int x = (int) ((column - 1) * this.fontWidth) - this.fontWidth;
+        int x = (int) ((column) * this.fontWidth) - this.fontWidth;
         int y = (int) ((row) * this.fontHeight) - this.fontHeight;
         Coordinates coordinates = new Coordinates(x, y);
         

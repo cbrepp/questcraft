@@ -85,6 +85,7 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
     public List<SpriteModel> playerMissilesLaunched;
     public int playerMovedLeftCount;
     public int playerMovedRightCount;
+    public int row;
     
     public MonsterShooterControl(Quest quest) {
         super(quest);
@@ -432,7 +433,8 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
                     }
                 }
                 if (monsterMissileHitCount > 0) {
-                    this.quest.appController.updateFloatingText(Questcraft.QUEST, LABEL_PLAYER_HP, "HP: " + String.valueOf(this.quest.getPlayerHP()));
+                    this.quest.appController.clearControl(Questcraft.QUEST, LABEL_PLAYER_HP);
+                    this.quest.appController.displayFloatingText(Questcraft.QUEST, LABEL_PLAYER_HP, "HP: " + String.valueOf(this.quest.getPlayerHP()), this.row, this.column, null, null, null, 12, null, "RobotoMono-Medium");
                     this.quest.appController.playSound(this.monsterMissileSoundFileName, false);
                 }
                 this.player.collisionSprites.clear();
@@ -445,7 +447,8 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
                     } else if (collidingSprite.name.equals(PLAYER_MISSILE_MINI_NAME)) {
                         this.monsterHP -= 1;
                     }
-                    this.quest.appController.updateFloatingText(Questcraft.QUEST, LABEL_PLAYER_MP, "BOSS HP: " + String.valueOf(this.monsterHP));
+                    this.quest.appController.clearControl(Questcraft.QUEST, LABEL_MONSTER_HP);
+                    this.quest.appController.displayFloatingText(Questcraft.QUEST, LABEL_MONSTER_HP, "Monster HP: " + String.valueOf(this.monsterHP), this.row, this.column + 34, null, null, null, 12, null, "RobotoMono-Medium");
                 }
                 this.monster.collisionSprites.clear();
                 this.monster.glowColor = null;
@@ -595,7 +598,7 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
         this.dimensionsMap.put(MONSTER_MISSILE_NAME, this.getScaledDimensions(this.monsterMissileLeftImageFileName, backgroundDimensions.y, 0.15));
         this.dimensionsMap.put(MONSTER_MISSILE_CHUNGUS_NAME, this.getScaledDimensions(this.monsterMissileLeftImageFileName, backgroundDimensions.y, 0.2));
         
-        int row = this.quest.titleRow + 1 + this.quest.textRow;
+        this.row = this.quest.titleRow + 1 + this.quest.textRow;
         int startingColumn, endingColumn;
         if (this.quest.currentDisplayPage == Quest.RIGHT_PAGE) {
             startingColumn = this.quest.rightPageStartingColumn;
@@ -675,12 +678,12 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
         this.quest.variables.put("animation-up", "false");
         
         // Add floating text above the animation to indicate the player and monster's stats
-        this.quest.appController.displayFloatingText(Questcraft.QUEST, LABEL_PLAYER_HP, "HP: " + String.valueOf(this.quest.getPlayerHP()), row, this.column, null, null, null, 12, null, "RobotoMono-Medium");
-        this.quest.appController.displayFloatingText(Questcraft.QUEST, LABEL_PLAYER_MP, "MP: " + String.valueOf(this.quest.getPlayerMP()), row, this.column + 17, null, null, null, 12, null, "RobotoMono-Medium");
-        this.quest.appController.displayFloatingText(Questcraft.QUEST, LABEL_PLAYER_MP, "Monster HP: " + String.valueOf(this.monsterHP), row, this.column + 34, null, null, null, 12, null, "RobotoMono-Medium");
+        this.quest.appController.displayFloatingText(Questcraft.QUEST, LABEL_PLAYER_HP, "HP: " + String.valueOf(this.quest.getPlayerHP()), this.row, this.column, null, null, null, 12, null, "RobotoMono-Medium");
+        this.quest.appController.displayFloatingText(Questcraft.QUEST, LABEL_PLAYER_MP, "MP: " + String.valueOf(this.quest.getPlayerMP()), this.row, this.column + 17, null, null, null, 12, null, "RobotoMono-Medium");
+        this.quest.appController.displayFloatingText(Questcraft.QUEST, LABEL_MONSTER_HP, "Monster HP: " + String.valueOf(this.monsterHP), this.row, this.column + 34, null, null, null, 12, null, "RobotoMono-Medium");
 
         // Initialize the animation
-        this.quest.appController.addAnimation(Questcraft.QUEST, name, row + 2, this.column, backgroundImageFileName, imageFiles, ANIMATION_DELAY, this);
+        this.quest.appController.addAnimation(Questcraft.QUEST, name, this.row + 2, this.column, backgroundImageFileName, imageFiles, ANIMATION_DELAY, this);
         
         // Display the buttons used to control the animation
         List<String> valueList = new ArrayList<>(Arrays.asList("&left; Move Left+&up; Launch+&right; Move Right+Pause".split("\\+")));

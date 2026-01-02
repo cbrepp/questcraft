@@ -10,6 +10,7 @@ public class BaseModel {
     
     public Color backgroundColor;
     public Boolean isEnabled = true;
+    public Double pixelSize = 14.0;
     public String text;
     
     public BaseModel() {}

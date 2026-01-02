@@ -3,7 +3,6 @@ package app;
 import app.desktop.SoundController;
 import app.model.BaseModel;
 import app.model.Coordinates;
-import app.model.SpriteModel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -101,7 +100,7 @@ public class AWTApplication extends ApplicationController {
     }
     
     @Override
-    public void renameTab(String viewName, String newViewName) {
+    public void refreshTabLabel(String viewName) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
@@ -111,7 +110,7 @@ public class AWTApplication extends ApplicationController {
     }
     
     @Override
-    public void displayMessageBox(String title, String text, int level, String graphic) {
+    public void displayMessageBox(String title, String text, int level, List<String> emojis) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
@@ -152,11 +151,6 @@ public class AWTApplication extends ApplicationController {
     
     @Override
     public int displayImage(String viewName, String name, String fileName, int row, int column, Boolean fillParent) {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-    
-    @Override
-    public void updateFloatingText(String viewName, String name, String text) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
