@@ -1230,7 +1230,12 @@ public class JavaFXApplication extends ApplicationController {
                 // TODO - Not supported, needs styling
                 fxWeight = FontWeight.BOLD;
                 text.setUnderline(true);
-                fontColor = new app.Color(0, 0, 238);   // Default blue used by modern browsers
+                app.Color offsetColor = fontColor.getOffset();
+                if (offsetColor.equals(app.Color.BLACK)) {
+                    fontColor = app.Color.HYPERLINK_LIGHT_BLUE;
+                } else {
+                    fontColor = app.Color.HYPERLINK_BLUE;
+                }
             }
             case FontStyle.UNDERLINE_SINGLE -> {
                 fxWeight = FontWeight.NORMAL;
