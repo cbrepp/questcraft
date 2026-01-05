@@ -1,4 +1,4 @@
-package app.model;
+package app.control;
 
 import app.*;
 import java.util.ArrayList;
@@ -8,9 +8,9 @@ import java.util.List;
  *
  * @author repp
  */
-public class SpriteModel extends BaseModel {
+public class SpriteControl extends BaseControl {
     
-    public List<SpriteModel> collisionSprites;
+    public List<SpriteControl> collisionSprites;
     public Color glowColor;
     public String imageFile;
     public Double imageScale;
@@ -20,18 +20,14 @@ public class SpriteModel extends BaseModel {
     public Integer x;
     public Integer y;
     
-    public SpriteModel() {}
+    public SpriteControl() {}
 
-    public SpriteModel(String text, Color backgroundColor) {
-        super(text, backgroundColor);
+    public SpriteControl(String name, Layout layout) {
+        this.name = name;
+        this.layout = layout;
     }
     
-    public SpriteModel(String text, Color backgroundColor, Boolean isEnabled) {
-        this(text, backgroundColor);
-        this.isEnabled = isEnabled;
-    }
-    
-    public SpriteModel(ApplicationController controller, String name, String imageFile, Double imageScale, Integer x, Integer y, List<String> potentialCollisionNames, Double viewPortBuffer, Color glowColor) {
+    public SpriteControl(ApplicationController controller, String name, String imageFile, Double imageScale, Integer x, Integer y, List<String> potentialCollisionNames, Double viewPortBuffer, Color glowColor) {
         this.collisionSprites = new ArrayList();
         this.imageFile = imageFile;
         this.imageScale = imageScale;
@@ -43,5 +39,5 @@ public class SpriteModel extends BaseModel {
         this.glowColor = glowColor;
     }
     
-    public void onCollision(SpriteModel collidingSprite) {}
+    public void onCollision(SpriteControl collidingSprite) {}
 }

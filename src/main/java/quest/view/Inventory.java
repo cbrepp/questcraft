@@ -1,15 +1,16 @@
 package quest.view;
 
+import app.Alignment;
 import app.ApplicationController;
 import app.Color;
 import app.EventListener;
 import app.Icon;
-import app.model.BaseModel;
-import app.model.LabelModel;
-import app.model.LinkModel;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import app.Layout;
+import app.control.GridControl;
+import app.control.Group;
+import app.control.LabelControl;
+import app.control.LinkControl;
+import app.control.VerticalGroup;
 import quest.model.InventoryItem;
 
 /**
@@ -28,7 +29,7 @@ public class Inventory extends app.ApplicationView implements EventListener {
     public Inventory(String name) {
         super(name);
         this.addTextArea = false;   // The text area would interfere with this view's grid layout, so prevent it here
-        this.backgroundColor = new Color(255, 255, 255);
+        this.backgroundColor = Color.WHITE;
         this.emojis.add(EMOJI);
     }
     
@@ -97,44 +98,63 @@ public class Inventory extends app.ApplicationView implements EventListener {
     
     public void render() {
         System.out.println("Inventory: render");
+        
         this.lastRenderContainedNewItems = false;
-        Map<String, ArrayList<BaseModel>> gridCells = new LinkedHashMap<>();
+        
+        // As a special spell, the user can "ACTIVATE INVENTORY" to enable the links for inventory items they don't yet have.
+        // TODO - The spell doesn't re-render the Inventory view
+        Boolean activateInventory = false;
+        if (this.quest.variables.containsKey("activate-inventory")) {
+            activateInventory = Boolean.valueOf(this.quest.variables.get("activate-inventory").toLowerCase());
+        }
+        
+        GridControl gridControl = new GridControl(this.name, new Layout(Alignment.CENTER, Alignment.CENTER));
+        gridControl.borderPadding = 5;
+        gridControl.cornerRadii = 10; // Rounded corners
+        gridControl.columns = 0;
+        gridControl.listener = this;
+        gridControl.padding = 5;
+        gridControl.showBorders = true;
         for (String key : this.quest.book.inventory.keySet()) {
-            ArrayList<BaseModel> controlList = new ArrayList();
+            Group itemGroup = new VerticalGroup(key, new Layout(Alignment.CENTER, Alignment.CENTER));
+            Layout itemGroupLayout = new Layout(Alignment.CENTER, Alignment.CENTER);
+            
             InventoryItem bookItem = this.quest.book.inventory.get(key);
-            String linkText =  key;
-            String labelText = null;
-            Color backgroundColor = null;
+
+            LabelControl emojiControl = new LabelControl(key + " emojis", itemGroupLayout);
+            emojiControl.text = String.join(" ", bookItem.emojis);
+            emojiControl.pixelSize = ApplicationController.EMOJI_SHEET_SIZE;
+            itemGroup.list.add(emojiControl);
+
+            LinkControl linkControl = new LinkControl(key + " name link", itemGroupLayout);
+            linkControl.text = key;
+            itemGroup.list.add(linkControl);
+
             InventoryItem questItem = this.quest.inventory.get(key);
             if (questItem != null) {
                 System.out.println("Inventory: render: Item in quest inventory: " + key + ", is new?=" + questItem.isNew);
-                linkText = "<a>" + linkText + "</a>";
-                labelText = "x" + questItem.quantity;
+
                 if (questItem.isNew) {
-                    backgroundColor = new Color(255, 222, 33); // Yellow
-                } else  {
-                    backgroundColor = new Color(255, 255, 255); // White
+                    // Show new items in the quest inventory as yellow, then show as transparent for subsequent inventory views
+                    itemGroup.backgroundColor = Color.YELLOW;
                 }
+
+                linkControl.isEnabled = true;
+
+                LabelControl countControl = new LabelControl(key + " count", itemGroupLayout);
+                countControl.text = "x" + questItem.quantity;
+                itemGroup.list.add(countControl);
             } else {
                 System.out.println("Inventory: render: Item NOT in quest inventory: " + key);
-                backgroundColor = new Color(169, 169, 169); // Dark Gray
+                itemGroup.backgroundColor = Color.DARK_GRAY;
+                linkControl.isEnabled = activateInventory;
             }
-            String itemEmojis = String.join(" ", bookItem.emojis);
-            LabelModel emojiControl = new LabelModel(itemEmojis, backgroundColor);
-            emojiControl.backgroundColor = backgroundColor;
-            emojiControl.pixelSize = 64.0;
-            controlList.add(emojiControl);
-            LinkModel linkControl = new LinkModel(linkText, backgroundColor, questItem != null);
-            controlList.add(linkControl);
-            if (labelText != null) {
-                LabelModel labelControl = new LabelModel(labelText, backgroundColor);
-                controlList.add(labelControl);
-            }
-            System.out.println("Inventory: onLoad: Adding " + key);
-            gridCells.put(key, controlList);
+            
+            System.out.println("Inventory: render: Adding " + key);
+            gridControl.cells.add(itemGroup);
         }
         
-        appController.displayGrid(this.name, gridCells, 0, true, this);   // Pass zero for columns to allow them to be calculated
+        appController.displayGrid(this.name, gridControl);
     }
 
 }

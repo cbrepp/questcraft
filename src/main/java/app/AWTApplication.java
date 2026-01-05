@@ -1,11 +1,8 @@
 package app;
 
 import app.desktop.SoundController;
-import app.model.BaseModel;
-import app.model.Coordinates;
-import java.util.ArrayList;
+import app.control.GridControl;
 import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -130,7 +127,7 @@ public class AWTApplication extends ApplicationController {
     }
     
     @Override
-    public void displayGrid(String viewName, Map<String, ArrayList<BaseModel>> linkTexts, int columns, Boolean showBorders, EventListener listener) {
+    public void displayGrid(String viewName, GridControl control) {
         throw new UnsupportedOperationException("Not supported.");
     }
             
@@ -165,7 +162,7 @@ public class AWTApplication extends ApplicationController {
     }
     
     @Override
-    public void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, int alignment, EventListener listener, Boolean allowRepeatClicks) {
+    public void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, Alignment alignment, EventListener listener, Boolean allowRepeatClicks) {
         throw new UnsupportedOperationException("Not supported.");
     }
     

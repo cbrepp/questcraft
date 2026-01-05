@@ -1,9 +1,10 @@
 package app;
 
-import app.model.BaseModel;
+import app.control.BaseControl;
+import app.control.GridControl;
+import app.control.Group;
 import app.javafx.DelegateApplication;
-import app.model.Coordinates;
-import app.model.SpriteModel;
+import app.control.SpriteControl;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
@@ -81,9 +82,14 @@ import javafx.scene.effect.Effect;
 import javafx.scene.image.PixelReader;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.Border;
+import javafx.scene.layout.BorderStroke;
+import javafx.scene.layout.BorderStrokeStyle;
+import javafx.scene.layout.BorderWidths;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
@@ -101,12 +107,9 @@ public class JavaFXApplication extends ApplicationController {
     
     private static final int DEFAULT_BUTTON_FONT_SIZE = 10;
     private static final int DEFAULT_FONT_SIZE = 12;
-    private static final String EMOJI_SHEET = "/assets/images/sheet_google_64.png";
-    private static final String EMOJI_SHEET_JSON = "/assets/json/emoji.json";
-    private static final Double EMOJI_SHEET_SIZE = 64.0;
     public static List<String> TIMER_EVENTS = new ArrayList();
     
-    public DelegateApplication app;
+    public DelegateApplication delegateApp;
     public final Lock audioLock = new ReentrantLock();
     public Font buttonFont;
     public int buttonFontHeight = 0;
@@ -122,6 +125,7 @@ public class JavaFXApplication extends ApplicationController {
     public Font monospaceFont;
     public HashMap<String, Map<String, Object>> namedControls;
     public ApplicationView parentView;
+    public Coordinates primaryDimensions;
     public Scene primaryScene;
     public ApplicationView splashView;
     public HashMap<String, Pane> tabContentMap;
@@ -163,7 +167,7 @@ public class JavaFXApplication extends ApplicationController {
     public void setDelegate(Object delegate) {
         System.out.println("JavaFXApplication: setDelegate");
         
-        this.app = (DelegateApplication)delegate;
+        this.delegateApp = (DelegateApplication)delegate;
         
         if (this.splashView != null) {
             this.displayStage(splashView);
@@ -218,15 +222,15 @@ public class JavaFXApplication extends ApplicationController {
         System.out.println("JavaFXApplication: showPrimaryStage: view=" + this.parentView.name);
         
         // Set the application title
-        this.app.primaryStage.setTitle(this.parentView.name);
+        this.delegateApp.primaryStage.setTitle(this.parentView.name);
 
         // Size the application dimensions        
-        Coordinates dimensions = getDimensions(this.parentView.backgroundImage);
+        this.primaryDimensions = getDimensions(this.parentView.backgroundImage);
         
         // Set the application icon
         if (this.parentView.iconFileName != null) {
             Image iconImage = loadImage(this.parentView.iconFileName);
-            this.app.primaryStage.getIcons().add(iconImage);
+            this.delegateApp.primaryStage.getIcons().add(iconImage);
         }
         
         // Initialize the application's tab folder and set it as the application's primary scene
@@ -264,7 +268,7 @@ public class JavaFXApplication extends ApplicationController {
         */
         //this.primaryScene = new Scene(this.tabFolder, 800, 600);
         this.primaryScene = new Scene(this.tabFolder);
-        this.app.primaryStage.setScene(primaryScene);
+        this.delegateApp.primaryStage.setScene(primaryScene);
 
         // Share important state with the other instance methods
         this.tabContentMap = new HashMap<>();
@@ -294,8 +298,8 @@ public class JavaFXApplication extends ApplicationController {
         this.buttonFontHeight = (int) buttonBounds.getHeight();
 
         // Calculate the textual height and width of a possible text area
-        this.textColumns = ((int) dimensions.x / this.fontWidth) + 1;
-        this.textRows = ((int) dimensions.y / this.fontHeight) + 1;
+        this.textColumns = ((int) this.primaryDimensions.x / this.fontWidth) + 1;
+        this.textRows = ((int) this.primaryDimensions.y / this.fontHeight) + 1;
         StringBuilder sb = new StringBuilder();
         for (int j = 0; j < this.textRows; j++) {
             for (int i = 0; i < this.textColumns; i++) {
@@ -309,7 +313,7 @@ public class JavaFXApplication extends ApplicationController {
         
         this.parentView.onDisplay(this);
         
-        this.app.primaryStage.show();
+        this.delegateApp.primaryStage.show();
         
         // TODO - Stop all sounds
     }
@@ -536,8 +540,9 @@ public class JavaFXApplication extends ApplicationController {
         System.out.println("JavaFXApplication: addView: name=" + view.name + ", isParent=" + isParent + ", index=" + index + ", isRefresh=" + isRefresh);
 
         Pane content = new Pane();
-        content.setMinSize(256, 320);   // WCAG 2.2
-        content.setPrefSize(800, 600);
+        content.setMinSize(this.primaryDimensions.x, this.primaryDimensions.y);
+        content.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        //content.setPrefSize(this.primaryDimensions.x, this.primaryDimensions.y);
         ScrollPane scrollPane = new ScrollPane(content);
         //scrollPane.setContent(this.tabFolder);
         scrollPane.setHbarPolicy(ScrollBarPolicy.AS_NEEDED);
@@ -649,7 +654,7 @@ public class JavaFXApplication extends ApplicationController {
         };
         Platform.runLater(() -> {
             Alert alert = new Alert(type);
-            alert.initOwner(this.app.primaryStage);
+            alert.initOwner(this.delegateApp.primaryStage);
             alert.setTitle(this.parentView.name);
             TextFlow header = this.stringToTextFlow(title, "RobotoMono-Medium", new app.Color(0, 0, 0), DEFAULT_FONT_SIZE, FontStyle.BOLD);
             if ((emojis != null) && (!emojis.isEmpty())) {
@@ -736,130 +741,145 @@ public class JavaFXApplication extends ApplicationController {
     }
     
     @Override
-    public void displayGrid(String viewName, Map<String, ArrayList<BaseModel>> gridCells, int columns, Boolean showBorders, EventListener listener) {
-        System.out.println("JavaFXApplication: displayGrid: viewName=" + viewName + ", cells=" + gridCells.size());
+    public void displayGrid(String viewName, GridControl control) {
+        System.out.println("JavaFXApplication: displayGrid: viewName=" + viewName + ", control=" + control);
         
-        Tab tab = this.tabItemMap.get(viewName);
-        GridPane content = new GridPane();
-        tab.setContent(content);
-        if (showBorders) {
-            String borderColor = "transparent";
-            content.setStyle("-fx-background-color: " + borderColor + ";");
-        }
-        content.setPadding(new Insets(10));
-        content.setHgap(5);
-        content.setVgap(5);
-        Background background;
         ApplicationView view = this.views.get(viewName);
-        if (view.backgroundImage != null) {
-            System.out.println("JavaFXApplication: displayGrid: name=" + view.name + ", using background image " + view.backgroundImage);
-            Image image = loadImage(view.backgroundImage);
-            Coordinates dimensions = this.getDimensions(view.backgroundImage);
-            BackgroundImage backgroundImage = new BackgroundImage(
-                image,
-                BackgroundRepeat.NO_REPEAT, // Repeat in X direction
-                BackgroundRepeat.NO_REPEAT, // Repeat in Y direction
-                BackgroundPosition.DEFAULT,   // Position of the image
-                new BackgroundSize(dimensions.x, dimensions.y, true, true, true, false) // Size of the image (100% width and height)
-            );
-            
-            // TODO - Check and handle for no background color
-            Color backgroundColor = Color.rgb(view.backgroundColor.red, view.backgroundColor.green, view.backgroundColor.blue);
-            BackgroundFill backgroundFill = new BackgroundFill(
-                backgroundColor, // The color to use
-                CornerRadii.EMPTY, // No rounded corners
-                Insets.EMPTY // No padding
-            );
-            
-            background = new Background(Collections.singletonList(backgroundFill), Collections.singletonList(backgroundImage));
-            content.setBackground(background);
-            content.setPrefSize(dimensions.x, dimensions.y);
-            // TODO - How to specify background color for images with transparency?
-        } else if (view.backgroundColor != null) {
-            System.out.println("JavaFXApplication: displayGrid: name=" + view.name + ", using background color " + view.backgroundColor);
+        app.Color genericOffsetColor = view.backgroundColor.getOffset();
+        Color offsetColor = Color.rgb(genericOffsetColor.red, genericOffsetColor.green, genericOffsetColor.blue);
+        Pane tabContent = this.tabContentMap.get(viewName);
+        
+        GridPane gridContent = new GridPane();
+        gridContent.setPrefSize(this.primaryDimensions.x, this.primaryDimensions.y);
+        gridContent.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        int cellCount = control.cells.size();
+
+        // Configure the background (transparent or a fill color)
+        if (control.backgroundColor == null) {
+            System.out.println("JavaFXApplication: displayGrid: Configuring background to be transparent");
+            gridContent.setBackground(Background.EMPTY); // Transparent
+        } else {
+            System.out.println("JavaFXApplication: displayGrid: Fill color " + control.backgroundColor);
             Color backgroundColor = Color.rgb(view.backgroundColor.red, view.backgroundColor.green, view.backgroundColor.blue);
             BackgroundFill backgroundFill = new BackgroundFill(backgroundColor, CornerRadii.EMPTY, Insets.EMPTY);
-            background = new Background(backgroundFill);
-            content.setBackground(background);
+            Background background = new Background(backgroundFill);
+            gridContent.setBackground(background);
         }
-                    
+
+        // Configure borders
+        BorderStroke stroke = null;
+        if (control.showBorders) {
+            System.out.println("JavaFXApplication: displayGrid: Adding borders: width=" + control.borderWidth + ", offsetColor=" + offsetColor + ", corner radii=" + control.cornerRadii);
+            CornerRadii cornerRadii;
+            if (control.cornerRadii == 0) {
+                cornerRadii = CornerRadii.EMPTY;
+            } else {
+                cornerRadii = new CornerRadii(control.cornerRadii);
+            }
+            gridContent.setBorder(new Border(new BorderStroke(offsetColor, BorderStrokeStyle.SOLID, cornerRadii, new BorderWidths(control.borderWidth))));
+            
+            stroke = new BorderStroke(offsetColor, BorderStrokeStyle.SOLID, cornerRadii, new BorderWidths(1));
+        }
+        
+        // Configure outer cell padding
+        if (control.borderPadding > 0) {
+            gridContent.setHgap(control.borderPadding);
+            gridContent.setVgap(control.borderPadding);
+        }
+        
+        // Configure inner cell padding
+        Insets cellPadding = null;
+        if (control.padding > 0) {
+            cellPadding = new Insets(control.padding);
+        }
+        
+        // Configure dimensions
+        int columns = control.columns;
         if (columns == 0) {
-            double squareRoot = Math.sqrt(gridCells.size());
+            double squareRoot = Math.sqrt(cellCount);
             columns = (int) Math.ceil(squareRoot);
         }
         int rows = 0;
         if (columns != 0) {
-            double rowsDiv = ((double) gridCells.size() / (double) columns);  // Make sure values are double so remainder causes rows count to round up
+            double rowsDiv = ((double) cellCount / (double) columns);  // Make sure values are double so remainder causes rows count to round up
             rows = (int) Math.ceil(rowsDiv);
         }
         
-        // Allow rows to expand as much as they can
+        // Configure rows to expand as much as they can
         int rowHeight = (int) Math.floor(100 / rows);
-        for (int rowI = 1; rowI <= rows; rowI++) {
+        for (int i = 0; i < rows; i++) {
             RowConstraints row = new RowConstraints();
             row.setPercentHeight(rowHeight);
-            content.getRowConstraints().add(row);
+            row.setVgrow(Priority.ALWAYS);
+            gridContent.getRowConstraints().add(row);
         }
         
         // Allow columns to expand as much as they can
         int columnWidth = (int) Math.floor(100 / columns);
-        for (int colI = 1; colI <= columns; colI++) {
+        for (int i = 0; i < columns; i++) {
             ColumnConstraints column = new ColumnConstraints();
             column.setPercentWidth(columnWidth);
-            content.getColumnConstraints().add(column);
+            column.setHgrow(Priority.ALWAYS);
+            gridContent.getColumnConstraints().add(column);
         }
 
-        System.out.println("JavaFXApplication: displayGrid: columns=" + columns + ", rows=" + rows + ", cells=" + gridCells.size());
+        System.out.println("JavaFXApplication: displayGrid: cells=" + cellCount + ", columns=" + columns + ", rows=" + rows);
         
-        //GridLayout gridLayout = new GridLayout(columns, true); // 3 columns, equal width
-        //composite.setLayout(gridLayout);
         int currentRow = 1;
-        int currentColumn = 0;
-        
-        for (String cellName : gridCells.keySet()) {
-            ArrayList<BaseModel> controls = gridCells.get(cellName);
+        int currentColumn = 0;        
+        for (Group cellGroup : control.cells) {
+            System.out.println("JavaFXApplication: displayGrid: Adding cell " + cellGroup.name);
             
             StackPane cell = new StackPane();
-            //cell.setStyle("-fx-background-color: transparent;");
+            GridPane.setHgrow(cell, Priority.ALWAYS);
+            GridPane.setVgrow(cell, Priority.ALWAYS);
+            cell.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE); // Set node to expand to fill the cell (optional)
+            
+            if (cellGroup.backgroundColor == null) {
+                cell.setBackground(Background.EMPTY); // Transparent
+            } else {
+                BackgroundFill cellFill = new BackgroundFill(Color.rgb(cellGroup.backgroundColor.red, cellGroup.backgroundColor.green, cellGroup.backgroundColor.blue), CornerRadii.EMPTY, Insets.EMPTY);
+                Background background = new Background(cellFill);
+                cell.setBackground(background);
+            }
+            
+            if (control.showBorders) {
+                cell.setBorder(new Border(stroke));
+            }
+            
+            if (control.padding > 0) {
+                cell.setPadding(cellPadding);
+            }
+
             currentColumn++;
             if (currentColumn > columns) {
                 currentRow++;
                 currentColumn = 1;
             }
-            String backgroundColor = "transparent";
-            app.Color fontColor = new app.Color(0, 0, 0);
-            Boolean addBorder = false;
-            if (!controls.isEmpty()) {
-                app.Color genericBackgroundColor = controls.getFirst().backgroundColor;
-                if (genericBackgroundColor != null) {
-                    backgroundColor = String.format("#%02X%02X%02X", genericBackgroundColor.red, genericBackgroundColor.green, genericBackgroundColor.blue);
-                    addBorder = true;
-                    double luminance = (0.299 * genericBackgroundColor.red) + (0.587 * genericBackgroundColor.green) + (0.114 * genericBackgroundColor.blue);
-                    System.out.println("JavaFXApplication: displayGrid: luminance for " + genericBackgroundColor + " is " + luminance);
-                    if (luminance < 128) {
-                        fontColor = new app.Color(255, 255, 255);
-                    }
-                }
+            
+            Pane box;
+            if (cellGroup.getClass().equals(app.control.VerticalGroup.class)) {
+                VBox vbox = new VBox(cellGroup.borderWidth);
+                vbox.setAlignment(Pos.CENTER);
+                //vbox.setPadding(10); // Add padding around the edges
+                box = vbox;
+            } else if (cellGroup.getClass().equals(app.control.HorizontalGroup.class)) {
+                HBox hbox = new HBox(cellGroup.borderWidth);
+                hbox.setAlignment(Pos.CENTER);
+                //hbox.setPadding(10); // Add padding around the edges
+                box = hbox;
+            } else {
+                System.err.println("JavaFXApplication: displayGrid: Unsupported group: class=" + cellGroup.getClass());
+                return;
             }
-            content.add(this.createBorderedCellContent(cell, backgroundColor, addBorder), currentColumn - 1, currentRow - 1);
-            
-            // Ensure the cell content grows horizontally and vertically (Priority.ALWAYS)
-            GridPane.setHgrow(cell, Priority.ALWAYS);
-            GridPane.setVgrow(cell, Priority.ALWAYS);
-            cell.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE); 
-            
-            VBox verticalContainer = new VBox(10); // 10px spacing between children
-            verticalContainer.setAlignment(Pos.CENTER);
-            verticalContainer.setPadding(new Insets(20)); // Add padding around the edges
-            cell.getChildren().add(verticalContainer);
+            box.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+            cell.getChildren().add(box);
             
             // Add zero to many controls to the grid cell
-            for (BaseModel abstractControl : controls) {
+            for (BaseControl abstractControl : cellGroup.list) {
                 System.out.println("JavaFXApplication: displayGrid: Adding control " + abstractControl.getClass().getName());
-                Node control = null;
-                if (abstractControl.getClass().equals(app.model.LinkModel.class)) {
-                    String linkText = abstractControl.text.replace("<a>", "");
-                    linkText = linkText.replace("</a>", "");
+                
+                if (abstractControl.getClass().equals(app.control.LinkControl.class)) {
                     Hyperlink hyperlink = new Hyperlink();
                     Integer fontStyle;
                     if (abstractControl.isEnabled) {
@@ -867,79 +887,53 @@ public class JavaFXApplication extends ApplicationController {
                     } else {
                         fontStyle = FontStyle.BOLD;
                     }
-                    hyperlink.setGraphic(this.stringToTextFlow(linkText, "RobotoMono-Medium", fontColor, (int) Math.round(abstractControl.pixelSize), fontStyle));
+                    hyperlink.setGraphic(this.stringToTextFlow(abstractControl.text, "RobotoMono-Medium", genericOffsetColor, (int) Math.round(abstractControl.pixelSize), fontStyle));
                     Font currentFont = hyperlink.getFont();
                     hyperlink.setFont(Font.font(currentFont.getFamily(), FontWeight.BOLD, currentFont.getSize()));
                     hyperlink.setDisable(!abstractControl.isEnabled);
-                    if (listener != null) {
+                    if (control.listener != null) {
                         hyperlink.setOnAction(e -> {
-                            System.out.println("JavaFXApplication: displayGrid: Link clicked: name=" + cellName);
-                            listener.onEvent(cellName, null);
+                            System.out.println("JavaFXApplication: displayGrid: Link clicked: name=" + cellGroup.name);
+                            control.listener.onEvent(cellGroup.name, null);
                         });
                     }
-                    verticalContainer.getChildren().add(hyperlink);
-                    control = hyperlink;
-                    System.out.println("JavaFXApplication: displayGrid: Added link " + abstractControl.text + " for " + cellName);
-                } else if (abstractControl.getClass().equals(app.model.ButtonModel.class)) {
+                    hyperlink.setBackground(Background.EMPTY); // Transparent
+                    
+                    box.getChildren().add(hyperlink);
+                    System.out.println("JavaFXApplication: displayGrid: Added link " + abstractControl.text + " for " + cellGroup.name);
+                } else if (abstractControl.getClass().equals(app.control.ButtonControl.class)) {
                     Button button = new Button(abstractControl.text);
                     button.setFont(this.buttonFont);
-                    if (listener != null) {
-                        System.out.println("JavaFXApplication: displayGrid: Button clicked: name=" + cellName);
-                        button.setOnAction(e -> listener.onEvent(cellName, null));
+                    if (control.listener != null) {
+                        System.out.println("JavaFXApplication: displayGrid: Button clicked: name=" + cellGroup.name);
+                        button.setOnAction(e -> control.listener.onEvent(cellGroup.name, null));
                     }
                     button.setDisable(!abstractControl.isEnabled);
-                    verticalContainer.getChildren().add(button);
-                    control = button;
-                    System.out.println("JavaFXApplication: displayGrid: Added button " + abstractControl.text + " for " + cellName);
-                } else if (abstractControl.getClass().equals(app.model.LabelModel.class)) {
-                    TextFlow label = this.stringToTextFlow(abstractControl.text, "RobotoMono-Medium", fontColor, (int) Math.round(abstractControl.pixelSize), FontStyle.BOLD);
+                    button.setBackground(Background.EMPTY); // Transparent
+                    
+                    box.getChildren().add(button);
+                    System.out.println("JavaFXApplication: displayGrid: Added button " + abstractControl.text + " for " + cellGroup.name);
+                } else if (abstractControl.getClass().equals(app.control.LabelControl.class)) {
+                    TextFlow label = this.stringToTextFlow(abstractControl.text, "RobotoMono-Medium", genericOffsetColor, (int) Math.round(abstractControl.pixelSize), FontStyle.BOLD);
                     label.setTextAlignment(TextAlignment.CENTER);
-                    verticalContainer.getChildren().add(label);
-                    control = label;
-                    System.out.println("JavaFXApplication: displayGrid: Added label " + abstractControl.text + " for " + cellName);
-                } else if (abstractControl.getClass().equals(app.model.ImageModel.class)) {
+                    box.getChildren().add(label);
+                    
+                    label.setBackground(Background.EMPTY); // Transparent
+                    System.out.println("JavaFXApplication: displayGrid: Added label " + abstractControl.text + " for " + cellGroup.name);
+                } else if (abstractControl.getClass().equals(app.control.ImageControl.class)) {
                     final Image image = loadImage(abstractControl.text);
                     ImageView imageView = new ImageView(image);
-                    verticalContainer.getChildren().add(imageView);
-                    control = imageView;
-                    System.out.println("JavaFXApplication: displayGrid: Added image " + abstractControl.text + " for " + cellName);
-                }
-                
-                if (control != null) {
-                    control.setStyle("-fx-background-color: transparent;");
-                    System.out.println("JavaFXApplication: displayGrid: Added " + abstractControl.getClass().getName() + " control " + abstractControl.text + " for " + cellName);
+                    
+                    box.getChildren().add(imageView);
+                    System.out.println("JavaFXApplication: displayGrid: Added image " + abstractControl.text + " for " + cellGroup.name);
                 }
             }
-        }
-    }
-    
-    public StackPane createBorderedCellContent(Node content, String bgColor, Boolean addBorder) {
-        System.out.println("JavaFXApplication: createBorderedCellContent: bgColor=" + bgColor + ", addBorder=" + addBorder);
-        
-        StackPane cellWrapper = new StackPane(content);
-        
-        // --- Apply Borders and Background using Java Style Strings ---
-        String borderStyle = "-fx-border-color: black; -fx-border-width: 1px;";
-        String backgroundStyle = "-fx-background-color: " + bgColor + ";";
-        if (addBorder) {
-            cellWrapper.setStyle(borderStyle + backgroundStyle);
-        } else {
-            cellWrapper.setStyle(backgroundStyle);
+            
+            gridContent.add(cell, currentColumn - 1, currentRow - 1);
         }
         
-        // Ensure the content inside the stackpane is centered (StackPane default)
-        if (content instanceof Label label) {
-            label.setAlignment(Pos.CENTER);
-        }
-
-        // Ensure the wrapper expands to fill the grid cell space
-        cellWrapper.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        
-        // Set growth priorities so the GridPane expands this wrapper
-        GridPane.setHgrow(cellWrapper, Priority.ALWAYS);
-        GridPane.setVgrow(cellWrapper, Priority.ALWAYS);
-        
-        return cellWrapper;
+        // TODO - Apply grid control's layout
+        tabContent.getChildren().add(gridContent);
     }
       
     @Override
@@ -1094,7 +1088,7 @@ public class JavaFXApplication extends ApplicationController {
         fileChooser.setInitialDirectory(new File("/home/repp/Documents/quests/"));
         
         button.setOnAction(event -> {
-            File selectedFile = fileChooser.showOpenDialog(this.app.primaryStage);
+            File selectedFile = fileChooser.showOpenDialog(this.delegateApp.primaryStage);
             
             if (selectedFile != null) {
                 String selectedFilePath = selectedFile.getAbsolutePath();
@@ -1601,7 +1595,7 @@ public class JavaFXApplication extends ApplicationController {
     }
     
     @Override
-    public void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, int alignment, EventListener listener, Boolean allowRepeatClicks) {
+    public void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, Alignment alignment, EventListener listener, Boolean allowRepeatClicks) {
         System.out.println("JavaFXApplication: displayValidatedInputField: viewName=" + viewName + ", name=" + name + ", row=" + row + ", startColumn=" + startColumn + ", endColumn=" + endColumn + ", alignment=" + alignment + ", listener=" + listener + ", allowRepeatClicks=" + allowRepeatClicks);
         
         // TODO - param "alignment" is not supported
@@ -2020,7 +2014,7 @@ public class JavaFXApplication extends ApplicationController {
     
     public void animate(String viewName, Coordinates topLeft, PauseTransition pause, AnimationView listener, Coordinates animationDimensions, Pane animationBackground, ImageView backgroundImageView, Map<String, Image> spriteImages) {
         // Retrieve updated sprites
-        List<SpriteModel> sprites = listener.onAnimate();
+        List<SpriteControl> sprites = listener.onAnimate();
         
         // Clean up the animation 
         if (sprites == null) {
@@ -2061,8 +2055,8 @@ public class JavaFXApplication extends ApplicationController {
         
         // Build a list of sprite image views
         List<ImageView> spriteImageViews = new ArrayList();
-        Map<SpriteModel, ImageView> spriteImageViewMap = new HashMap();
-        for (SpriteModel sprite : sprites) {
+        Map<SpriteControl, ImageView> spriteImageViewMap = new HashMap();
+        for (SpriteControl sprite : sprites) {
             Image spriteImage = spriteImages.get(sprite.imageFile);
             ImageView spriteView = new ImageView(spriteImage);
             spriteView.setLayoutX(sprite.x);
@@ -2100,13 +2094,13 @@ public class JavaFXApplication extends ApplicationController {
         colorAdjust.setBrightness(0.1); 
         
         // Check for collisions
-        for (SpriteModel sprite : spriteImageViewMap.keySet()) {
+        for (SpriteControl sprite : spriteImageViewMap.keySet()) {
             if (sprite.potentialCollisionNames != null) {
                 ImageView imageView = spriteImageViewMap.get(sprite);
                 //System.out.println("JavaFXApplication: animate: level 4 : " + sprite.name);
                 for (String potentialCollisionName : sprite.potentialCollisionNames) {
                     //System.out.println("JavaFXApplication: animate: level 3 : " + potentialCollisionName);
-                    for (SpriteModel potentialCollisionSprite : spriteImageViewMap.keySet()) {
+                    for (SpriteControl potentialCollisionSprite : spriteImageViewMap.keySet()) {
                         //System.out.println("JavaFXApplication: animate: level 2 : " + potentialCollisionSprite.name);
                         if ((potentialCollisionSprite.name != null) && (potentialCollisionSprite.name.equals(potentialCollisionName))) {
                             //System.out.println("JavaFXApplication: animate: level 1 : " + sprite.name + " vs " + potentialCollisionSprite.name);
@@ -2130,7 +2124,7 @@ public class JavaFXApplication extends ApplicationController {
         }
 
         // Glow sprites
-        for (SpriteModel sprite : spriteImageViewMap.keySet()) {
+        for (SpriteControl sprite : spriteImageViewMap.keySet()) {
             if (sprite.glowColor == null) {
                 continue;
             }
@@ -2198,7 +2192,7 @@ public class JavaFXApplication extends ApplicationController {
         pause.playFromStart();
     }
     
-    public void glowSprite(SpriteModel sprite, ImageView spriteView, Effect currentEffect) {
+    public void glowSprite(SpriteControl sprite, ImageView spriteView, Effect currentEffect) {
         if (sprite.glowColor == null) {
             return;
         }

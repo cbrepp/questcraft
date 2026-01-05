@@ -1,9 +1,9 @@
 package app;
 
 import app.desktop.SoundController;
-import app.model.BaseModel;
-import app.model.Coordinates;
-import app.model.SpriteModel;
+import app.control.BaseControl;
+import app.control.GridControl;
+import app.control.SpriteControl;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -90,7 +90,7 @@ public class SWTApplication extends ApplicationController {
     public ApplicationView parentView;
     public Shell shell;
     public SoundController soundController = new SoundController();
-    public List<SpriteModel> sprites;
+    public List<SpriteControl> sprites;
     public CTabFolder tabFolder;
     public HashMap<String, Composite> tabCompositeMap;
     public HashMap<String, Integer> tabIndexMap;
@@ -782,8 +782,10 @@ public class SWTApplication extends ApplicationController {
     }
     
     @Override
-    public void displayGrid(String viewName, Map<String, ArrayList<BaseModel>> gridCells, int columns, Boolean showBorders, EventListener listener) {
-        System.out.println("SWTApplication: displayGrid: viewName=" + viewName + ", cells=" + gridCells.size());
+    public void displayGrid(String viewName, GridControl control) {
+        System.out.println("SWTApplication: displayGrid: viewName=" + viewName + ", control=" + control);
+        
+        /*
         
         StyledText textArea = this.tabStyledTextMap.get(viewName);
         Composite composite = this.tabCompositeMap.get(viewName);
@@ -808,7 +810,7 @@ public class SWTApplication extends ApplicationController {
         composite.setLayout(gridLayout);
         
         for (String cellName : gridCells.keySet()) {
-            ArrayList<BaseModel> controls = gridCells.get(cellName);
+            ArrayList<BaseControl> controls = gridCells.get(cellName);
             
             int gridItemStyle;
             if (showBorders) {
@@ -850,13 +852,19 @@ public class SWTApplication extends ApplicationController {
             }
             
             // Add zero to many controls to the grid cell
-            for (BaseModel abstractControl : controls) {
+            for (BaseControl abstractControl : controls) {
                 System.out.println("SWTApplication: displayGrid: Adding control " + abstractControl.getClass().getName());
                 Control control = null;
-                if (abstractControl.getClass().equals(app.model.LinkModel.class)) {
+                if (abstractControl.getClass().equals(app.control.LinkControl.class)) {
                     Link link = new Link(cellComposite, SWT.NONE);
-                    link.setText(abstractControl.text);
-                    link.setEnabled(abstractControl.isEnabled);
+                    String linkText = abstractControl.text;
+                    if (abstractControl.isEnabled) {
+                        linkText = "<a>" + linkText + "</a>";
+                        link.setEnabled(true);
+                    } else {
+                        link.setEnabled(false);
+                    }
+                    link.setText(linkText);
                     if (listener != null) {
                         link.addSelectionListener(new SelectionAdapter() {
                             @Override
@@ -868,7 +876,7 @@ public class SWTApplication extends ApplicationController {
                     }
                     control = link;
                     System.out.println("SWTApplication: displayGrid: Added link " + abstractControl.text + " for " + cellName);
-                } else if (abstractControl.getClass().equals(app.model.ButtonModel.class)) {
+                } else if (abstractControl.getClass().equals(app.control.ButtonControl.class)) {
                     Button button = new Button(cellComposite, SWT.PUSH);
                     button.setFont(this.buttonFont);
                     button.setText(abstractControl.text);
@@ -884,12 +892,12 @@ public class SWTApplication extends ApplicationController {
                     }
                     control = button;
                     System.out.println("SWTApplication: displayGrid: Added button " + abstractControl.text + " for " + cellName);
-                } else if (abstractControl.getClass().equals(app.model.LabelModel.class)) {
+                } else if (abstractControl.getClass().equals(app.control.LabelControl.class)) {
                     Label label = new Label(cellComposite, SWT.NONE);
                     label.setText(abstractControl.text);
                     control = label;
                     System.out.println("SWTApplication: displayGrid: Added label " + abstractControl.text + " for " + cellName);
-                } else if (abstractControl.getClass().equals(app.model.ImageModel.class)) {
+                } else if (abstractControl.getClass().equals(app.control.ImageControl.class)) {
                     Label label = new Label(cellComposite, SWT.NONE);
                     final Image image = loadImage(abstractControl.text);
                     label.setImage(image);
@@ -912,6 +920,7 @@ public class SWTApplication extends ApplicationController {
         }
 
         composite.pack();
+        */
     }
     
     public Button newButton(String viewName, String name, String text, Integer row, Integer column, Integer endRow, Integer endColumn, Boolean isMonospace, String fontName, Boolean glow, EventListener listener) {
@@ -1335,7 +1344,7 @@ public class SWTApplication extends ApplicationController {
     
     // TODO - Pass in a list of app.Controls with button text and isEnabled
     @Override
-    public void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, int alignment, EventListener listener, Boolean allowRepeatClicks) {
+    public void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, Alignment alignment, EventListener listener, Boolean allowRepeatClicks) {
         System.out.println("SWTApplication: displayValidatedInputField: viewName=" + viewName + ", name=" + name + ", row=" + row + ", startColumn=" + startColumn + ", endColumn=" + endColumn + ", alignment=" + alignment + ", listener=" + listener + ", allowRepeatClicks=" + allowRepeatClicks);
         
         StyledText textArea = this.tabStyledTextMap.get(viewName);
@@ -1603,7 +1612,7 @@ public class SWTApplication extends ApplicationController {
             }
             
             // Add to spriteImages map any new image file and image scale combinations
-            for (SpriteModel sprite : this.sprites) {
+            for (SpriteControl sprite : this.sprites) {
                 if (spriteImages.get(sprite.imageFile) == null) {
                     spriteImages.put(sprite.imageFile, new HashMap());
                 }
@@ -1613,11 +1622,11 @@ public class SWTApplication extends ApplicationController {
             }
             
             // Check for collisions
-            for (SpriteModel sprite : this.sprites) {
+            for (SpriteControl sprite : this.sprites) {
                 if (sprite.potentialCollisionNames != null) {
                     Image scaledImage = spriteImages.get(sprite.imageFile).get(sprite.imageScale);
                     for (String potentialCollisionName : sprite.potentialCollisionNames) {
-                        for (SpriteModel potentialCollisionSprite : this.sprites) {
+                        for (SpriteControl potentialCollisionSprite : this.sprites) {
                             if ((potentialCollisionSprite.name != null) && (potentialCollisionSprite.name.equals(potentialCollisionName))) {
                                 Image potentialCollisionScaledImage = spriteImages.get(potentialCollisionSprite.imageFile).get(potentialCollisionSprite.imageScale);
                                 if (SWTApplication.isColliding(scaledImage.getImageData(), sprite.x - 1, sprite.y - 1, potentialCollisionScaledImage.getImageData(), potentialCollisionSprite.x -1, potentialCollisionSprite.y -1)) {
@@ -1635,7 +1644,7 @@ public class SWTApplication extends ApplicationController {
             }
             
             // Draw each image
-            for (SpriteModel sprite : this.sprites) {
+            for (SpriteControl sprite : this.sprites) {
                 if (sprite.imageFile == null) {
                     //System.out.println("SWTApplication: addAnimation: painting canvas: skipping sprite with no image file!");
                     continue;

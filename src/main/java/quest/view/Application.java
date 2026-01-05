@@ -437,6 +437,11 @@ public class Application extends app.ApplicationView {
         flipBookSubpage.contents.add("<flip-book>");
         book.subpages.put("FLIP BOOK", flipBookSubpage);
         
+        Story activateInventorySubpage = new Story();
+        activateInventorySubpage.isSpell = true;
+        activateInventorySubpage.contents.add("<variable-set activate-inventory true>");
+        book.subpages.put("ACTIVATE INVENTORY", activateInventorySubpage);
+        
         // Once the player has selected a difficulty level, allow them to skip straight to the first Night Owl miniboss game
         Story nightOwlSubpage = new Story();
         nightOwlSubpage.isSpell = true;

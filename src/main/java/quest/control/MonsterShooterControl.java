@@ -1,11 +1,12 @@
 
 package quest.control;
 
+import app.Alignment;
 import app.AnimationView;
 import app.Color;
 import app.EventListener;
-import app.model.Coordinates;
-import app.model.SpriteModel;
+import app.Coordinates;
+import app.control.SpriteControl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -50,16 +51,16 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
     public String name;
     public Boolean animationComplete;
     public Double animationCompleteDelay;
-    public Map<SpriteModel, Double> collisionTimerMap;
+    public Map<SpriteControl, Double> collisionTimerMap;
     public int column;
     public String difficulty;
     public Map<String, Coordinates> dimensionsMap;
     public Boolean isMonsterVisible;
-    public SpriteModel lastPlayerLeftMissile;
+    public SpriteControl lastPlayerLeftMissile;
     public String missileLeftImageFileName;
     public String missileRightImageFileName;
     public String missileSoundFileName;
-    public SpriteModel monster;
+    public SpriteControl monster;
     public int monsterDestinationX;
     public int monsterDirection;
     public int monsterHalfwayPoint;
@@ -69,20 +70,20 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
     public int monsterHP;
     public String monsterMissileLeftImageFileName;
     public String monsterMissileRightImageFileName;
-    public List<SpriteModel> monsterMissilesAttached;
-    public List<SpriteModel> monsterMissilesLaunched;
+    public List<SpriteControl> monsterMissilesAttached;
+    public List<SpriteControl> monsterMissilesLaunched;
     public Boolean monsterMissilesSpawned;
     public String monsterMissileSoundFileName;
     public String monsterSoundFileName;
     public int monsterSpeed;
     public int monsterSpeedDirection;
-    public SpriteModel player;
+    public SpriteControl player;
     public String playerFacingLeftImageFileName;
     public String playerFacingRightImageFileName;
     public Double playerMissileSpawnTimer;
     public Double playerMissileChungusSpawnTimer;
-    public List<SpriteModel> playerMissilesAttached;
-    public List<SpriteModel> playerMissilesLaunched;
+    public List<SpriteControl> playerMissilesAttached;
+    public List<SpriteControl> playerMissilesLaunched;
     public int playerMovedLeftCount;
     public int playerMovedRightCount;
     public int row;
@@ -99,12 +100,12 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
     }
     
     @Override
-    public List<SpriteModel> onAnimate() {
+    public List<SpriteControl> onAnimate() {
         if (this.animationComplete) {
             return null;
         }
         
-        List<SpriteModel> sprites = new ArrayList();
+        List<SpriteControl> sprites = new ArrayList();
         
         Coordinates backgroundDimensions = this.dimensionsMap.get(BACKGROUND_NAME);
         
@@ -115,12 +116,12 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
             }
             
             // Handle each missile that collided with something
-            List<SpriteModel> missileList = new ArrayList<>(this.playerMissilesAttached.size() + this.playerMissilesLaunched.size() + this.monsterMissilesAttached.size() + this.monsterMissilesLaunched.size());
+            List<SpriteControl> missileList = new ArrayList<>(this.playerMissilesAttached.size() + this.playerMissilesLaunched.size() + this.monsterMissilesAttached.size() + this.monsterMissilesLaunched.size());
             missileList.addAll(this.playerMissilesAttached);
             missileList.addAll(this.playerMissilesLaunched);
             missileList.addAll(this.monsterMissilesAttached);
             missileList.addAll(this.monsterMissilesLaunched);
-            for (SpriteModel sprite : missileList) {
+            for (SpriteControl sprite : missileList) {
                 if ((!this.collisionTimerMap.containsKey(sprite)) && ((sprite.collisionSprites == null) || (sprite.collisionSprites.isEmpty()))) {
                     continue;
                 }
@@ -159,9 +160,9 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
             }
 
             // For each monster missile that is launched, increase its y coordinate unless it has collided with something
-            ListIterator<SpriteModel> iterator = this.monsterMissilesLaunched.listIterator();
+            ListIterator<SpriteControl> iterator = this.monsterMissilesLaunched.listIterator();
             while (iterator.hasNext()) {                
-                SpriteModel sprite = iterator.next();
+                SpriteControl sprite = iterator.next();
                 
                 if (this.collisionTimerMap.containsKey(sprite)) {
                     // Missiles stop falling once they have collided with something
@@ -190,7 +191,7 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
                 int missilesLaunchedCount = 0;
                 iterator = this.playerMissilesAttached.listIterator();
                 while (iterator.hasNext()) {
-                    SpriteModel sprite = iterator.next();
+                    SpriteControl sprite = iterator.next();
                     if (this.collisionTimerMap.containsKey(sprite)) {
                         // Missiles stop moving once they have collided with something
                         continue;
@@ -208,7 +209,7 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
             // For each player missile that is launched, decrease its y coordinate
             iterator = this.playerMissilesLaunched.listIterator();
             while (iterator.hasNext()) {
-                SpriteModel sprite = iterator.next();
+                SpriteControl sprite = iterator.next();
                 
                 if (this.collisionTimerMap.containsKey(sprite)) {
                     // Missiles stop rising once they have collided with something
@@ -246,7 +247,7 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
             // Move each attached monster missile
             iterator = this.monsterMissilesAttached.listIterator();
             while (iterator.hasNext()) {
-                SpriteModel sprite = iterator.next();
+                SpriteControl sprite = iterator.next();
                 if (this.collisionTimerMap.containsKey(sprite)) {
                     // Missiles stop moving once they have collided with something
                     continue;
@@ -267,7 +268,7 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
                     this.quest.appController.playSound(this.monsterSoundFileName, false);
                     iterator = this.monsterMissilesAttached.listIterator();
                     while (iterator.hasNext()) {
-                        SpriteModel sprite = iterator.next();
+                        SpriteControl sprite = iterator.next();
                         if (this.collisionTimerMap.containsKey(sprite)) {
                             // Missiles stop moving once they have collided with something
                             continue;
@@ -291,23 +292,23 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
                 Coordinates monsterMissileLeftMiniDimensions = this.dimensionsMap.get(MONSTER_MISSILE_MINI_NAME);
                 // Right edge of the left-side missiles is staggered at 25%, 50%, and 100% of the distance from the x-axis center of the monster
                 if ((this.difficulty.equals(DIFFICULTY_HARD)) || (this.difficulty.equals(DIFFICULTY_MAGICAL))) {
-                    this.monsterMissilesAttached.add(new SpriteModel(this.quest.appController, MONSTER_MISSILE_CHUNGUS_NAME, this.monsterMissileLeftImageFileName, 0.2, this.monster.x - monsterMissileLeftChungusDimensions.x, 1, monsterMissilePotentialCollisions, 0.1, null));
+                    this.monsterMissilesAttached.add(new SpriteControl(this.quest.appController, MONSTER_MISSILE_CHUNGUS_NAME, this.monsterMissileLeftImageFileName, 0.2, this.monster.x - monsterMissileLeftChungusDimensions.x, 1, monsterMissilePotentialCollisions, 0.1, null));
                 }
                 if ((this.difficulty.equals(DIFFICULTY_NORMAL)) || (this.difficulty.equals(DIFFICULTY_HARD)) || (this.difficulty.equals(DIFFICULTY_MAGICAL))) {
-                    this.monsterMissilesAttached.add(new SpriteModel(this.quest.appController, MONSTER_MISSILE_NAME, this.monsterMissileLeftImageFileName, 0.15, this.monster.x + (int) (0.5 * monsterDimensions.x * 0.5) -  monsterMissileLeftDimensions.x, 1, monsterMissilePotentialCollisions, 0.1, null));
+                    this.monsterMissilesAttached.add(new SpriteControl(this.quest.appController, MONSTER_MISSILE_NAME, this.monsterMissileLeftImageFileName, 0.15, this.monster.x + (int) (0.5 * monsterDimensions.x * 0.5) -  monsterMissileLeftDimensions.x, 1, monsterMissilePotentialCollisions, 0.1, null));
                 }
                 if ((this.difficulty.equals(DIFFICULTY_EASY)) || (this.difficulty.equals(DIFFICULTY_NORMAL)) || (this.difficulty.equals(DIFFICULTY_HARD)) || (this.difficulty.equals(DIFFICULTY_MAGICAL))) {
-                    this.monsterMissilesAttached.add(new SpriteModel(this.quest.appController, MONSTER_MISSILE_MINI_NAME, this.monsterMissileLeftImageFileName, 0.1, this.monster.x + (int) (0.75 * monsterDimensions.x * 0.5) -  monsterMissileLeftMiniDimensions.x, 1, monsterMissilePotentialCollisions, 0.1, null));
+                    this.monsterMissilesAttached.add(new SpriteControl(this.quest.appController, MONSTER_MISSILE_MINI_NAME, this.monsterMissileLeftImageFileName, 0.1, this.monster.x + (int) (0.75 * monsterDimensions.x * 0.5) -  monsterMissileLeftMiniDimensions.x, 1, monsterMissilePotentialCollisions, 0.1, null));
                 }
                 // Left edge of the right-side missiles is staggered at 25%, 50%, and 100% of the distance from the x-axis center of the monster
                 if ((this.difficulty.equals(DIFFICULTY_EASY)) || (this.difficulty.equals(DIFFICULTY_NORMAL)) || (this.difficulty.equals(DIFFICULTY_HARD)) || (this.difficulty.equals(DIFFICULTY_MAGICAL))) {
-                    this.monsterMissilesAttached.add(new SpriteModel(this.quest.appController, MONSTER_MISSILE_MINI_NAME, this.monsterMissileRightImageFileName, 0.1, this.monster.x + monsterDimensions.x - (int) (0.75 * monsterDimensions.x * 0.5), 1, monsterMissilePotentialCollisions, 0.1, null));
+                    this.monsterMissilesAttached.add(new SpriteControl(this.quest.appController, MONSTER_MISSILE_MINI_NAME, this.monsterMissileRightImageFileName, 0.1, this.monster.x + monsterDimensions.x - (int) (0.75 * monsterDimensions.x * 0.5), 1, monsterMissilePotentialCollisions, 0.1, null));
                 }
                 if ((this.difficulty.equals(DIFFICULTY_NORMAL)) || (this.difficulty.equals(DIFFICULTY_HARD)) || (this.difficulty.equals(DIFFICULTY_MAGICAL))) {
-                    this.monsterMissilesAttached.add(new SpriteModel(this.quest.appController, MONSTER_MISSILE_NAME, this.monsterMissileRightImageFileName, 0.15, this.monster.x + monsterDimensions.x - (int) (0.5 * monsterDimensions.x * 0.5), 1, monsterMissilePotentialCollisions, 0.1, null));
+                    this.monsterMissilesAttached.add(new SpriteControl(this.quest.appController, MONSTER_MISSILE_NAME, this.monsterMissileRightImageFileName, 0.15, this.monster.x + monsterDimensions.x - (int) (0.5 * monsterDimensions.x * 0.5), 1, monsterMissilePotentialCollisions, 0.1, null));
                 }
                 if ((this.difficulty.equals(DIFFICULTY_HARD)) || (this.difficulty.equals(DIFFICULTY_MAGICAL))) {
-                    this.monsterMissilesAttached.add(new SpriteModel(this.quest.appController, MONSTER_MISSILE_CHUNGUS_NAME, this.monsterMissileRightImageFileName, 0.2, this.monster.x + monsterDimensions.x, 1, monsterMissilePotentialCollisions, 0.1, null));
+                    this.monsterMissilesAttached.add(new SpriteControl(this.quest.appController, MONSTER_MISSILE_CHUNGUS_NAME, this.monsterMissileRightImageFileName, 0.2, this.monster.x + monsterDimensions.x, 1, monsterMissilePotentialCollisions, 0.1, null));
                 }
                 this.monsterMissilesSpawned = true;
             }
@@ -361,7 +362,7 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
             // Move each attached player missile
             if (origPlayerX != player.x) {
                 int playerDeltaX = player.x - origPlayerX;
-                for (SpriteModel sprite : this.playerMissilesAttached) {
+                for (SpriteControl sprite : this.playerMissilesAttached) {
                     if (this.collisionTimerMap.containsKey(sprite)) {
                         // Missiles stop moving once they have collided with something
                         continue;
@@ -389,12 +390,12 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
                         if ((this.playerMissilesAttached.isEmpty()) || (this.lastPlayerLeftMissile == null) || (!this.playerMissilesAttached.get(0).equals(this.lastPlayerLeftMissile))) {
                             // Spawn the missile on the left
                             Coordinates playerMissileLeftChungusDimensions = this.dimensionsMap.get(PLAYER_MISSILE_CHUNGUS_NAME);
-                            SpriteModel leftMissile = new SpriteModel(this.quest.appController, PLAYER_MISSILE_CHUNGUS_NAME, this.missileLeftImageFileName, 0.2, this.player.x - playerMissileLeftChungusDimensions.x, this.player.y, playerMissilePotentialCollisions, 0.1, COLOR_RED);
+                            SpriteControl leftMissile = new SpriteControl(this.quest.appController, PLAYER_MISSILE_CHUNGUS_NAME, this.missileLeftImageFileName, 0.2, this.player.x - playerMissileLeftChungusDimensions.x, this.player.y, playerMissilePotentialCollisions, 0.1, COLOR_RED);
                             this.playerMissilesAttached.add(leftMissile);
                             this.lastPlayerLeftMissile = leftMissile;
                         } else {
                             // Spawn the missile on the right
-                            this.playerMissilesAttached.add(new SpriteModel(this.quest.appController, PLAYER_MISSILE_CHUNGUS_NAME, this.missileRightImageFileName, 0.2, this.player.x + playerDimensions.x, this.player.y, playerMissilePotentialCollisions, 0.1, COLOR_RED));
+                            this.playerMissilesAttached.add(new SpriteControl(this.quest.appController, PLAYER_MISSILE_CHUNGUS_NAME, this.missileRightImageFileName, 0.2, this.player.x + playerDimensions.x, this.player.y, playerMissilePotentialCollisions, 0.1, COLOR_RED));
                         }
                         this.playerMissileChungusSpawnTimer = PLAYER_MISSILE_CHUNGUS_SPAWN_DELAY;
                     } else {
@@ -402,12 +403,12 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
                         if ((this.playerMissilesAttached.isEmpty()) || (this.lastPlayerLeftMissile == null) || (!this.playerMissilesAttached.get(0).equals(this.lastPlayerLeftMissile))) {
                             // Spawn the missile on the left
                             Coordinates playerMissileLeftMiniDimensions = this.dimensionsMap.get(PLAYER_MISSILE_MINI_NAME);
-                            SpriteModel leftMissile = new SpriteModel(this.quest.appController, PLAYER_MISSILE_MINI_NAME, this.missileLeftImageFileName, 0.1, this.player.x - playerMissileLeftMiniDimensions.x, this.player.y, playerMissilePotentialCollisions, 0.1, COLOR_RED);
+                            SpriteControl leftMissile = new SpriteControl(this.quest.appController, PLAYER_MISSILE_MINI_NAME, this.missileLeftImageFileName, 0.1, this.player.x - playerMissileLeftMiniDimensions.x, this.player.y, playerMissilePotentialCollisions, 0.1, COLOR_RED);
                             this.playerMissilesAttached.add(leftMissile);
                             this.lastPlayerLeftMissile = leftMissile;
                         } else {
                             // Spawn the missile on the right
-                            this.playerMissilesAttached.add(new SpriteModel(this.quest.appController, PLAYER_MISSILE_MINI_NAME, this.missileRightImageFileName, 0.1, this.player.x + playerDimensions.x, this.player.y, playerMissilePotentialCollisions, 0.1, COLOR_RED));
+                            this.playerMissilesAttached.add(new SpriteControl(this.quest.appController, PLAYER_MISSILE_MINI_NAME, this.missileRightImageFileName, 0.1, this.player.x + playerDimensions.x, this.player.y, playerMissilePotentialCollisions, 0.1, COLOR_RED));
                         }
                     }
                 }
@@ -417,7 +418,7 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
             // Handle collisions with the player
             if (!this.player.collisionSprites.isEmpty()) {
                 int monsterMissileHitCount = 0;
-                for (SpriteModel collidingSprite : this.player.collisionSprites) {
+                for (SpriteControl collidingSprite : this.player.collisionSprites) {
                     if (collidingSprite.name.equals(MONSTER_MISSILE_CHUNGUS_NAME)) {
                         System.out.println("MonsterShooterControl: onAnimate: reducing HP for chungus missile");
                         this.quest.setPlayerHP(-3, false, "Night Owl", false);
@@ -441,7 +442,7 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
                 this.player.glowColor = null;
             }
             if (!this.monster.collisionSprites.isEmpty()) {
-                for (SpriteModel collidingSprite : this.monster.collisionSprites) {
+                for (SpriteControl collidingSprite : this.monster.collisionSprites) {
                     if (collidingSprite.name.equals(PLAYER_MISSILE_CHUNGUS_NAME)) {
                         this.monsterHP -= 3;
                     } else if (collidingSprite.name.equals(PLAYER_MISSILE_MINI_NAME)) {
@@ -495,16 +496,16 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
         if (this.monsterHP > 0) {
             sprites.add(this.monster);
         }
-        for (SpriteModel sprite : this.playerMissilesAttached) {
+        for (SpriteControl sprite : this.playerMissilesAttached) {
             sprites.add(sprite);
         }
-        for (SpriteModel sprite : this.playerMissilesLaunched) {
+        for (SpriteControl sprite : this.playerMissilesLaunched) {
             sprites.add(sprite);
         }
-        for (SpriteModel sprite : this.monsterMissilesAttached) {
+        for (SpriteControl sprite : this.monsterMissilesAttached) {
             sprites.add(sprite);
         }
-        for (SpriteModel sprite : this.monsterMissilesLaunched) {
+        for (SpriteControl sprite : this.monsterMissilesLaunched) {
             sprites.add(sprite);
         }
         
@@ -636,9 +637,9 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
         Coordinates monsterDimensions = this.dimensionsMap.get(MONSTER_NAME);
         int monsterCenterX = Math.floorDiv(monsterDimensions.x, 2);
         int monsterPositionX = centerX - monsterCenterX;
-        this.monster = new SpriteModel(this.quest.appController, MONSTER_NAME, monsterFacingLeftImageFileName, 0.2, monsterPositionX, 1, null, 0.0, null) {
+        this.monster = new SpriteControl(this.quest.appController, MONSTER_NAME, monsterFacingLeftImageFileName, 0.2, monsterPositionX, 1, null, 0.0, null) {
             @Override
-            public void onCollision(SpriteModel collidingSprite) {
+            public void onCollision(SpriteControl collidingSprite) {
                 if (collidingSprite.name.equals(PLAYER_MISSILE_CHUNGUS_NAME) || collidingSprite.name.equals(PLAYER_MISSILE_MINI_NAME)) {
                     this.glowColor = new Color(255, 0, 0);
                 }
@@ -651,9 +652,9 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
         this.monsterHP = 100;
         Coordinates playerDimensions = this.dimensionsMap.get(PLAYER_NAME);
         int halfPlayerX = Math.floorDiv(playerDimensions.x, 2);
-        this.player = new SpriteModel(this.quest.appController, PLAYER_NAME, playerFacingRightImageFileName, 0.2, centerX - halfPlayerX, backgroundDimensions.y - playerDimensions.y, null, 0.0, null) {
+        this.player = new SpriteControl(this.quest.appController, PLAYER_NAME, playerFacingRightImageFileName, 0.2, centerX - halfPlayerX, backgroundDimensions.y - playerDimensions.y, null, 0.0, null) {
             @Override
-            public void onCollision(SpriteModel collidingSprite) {
+            public void onCollision(SpriteControl collidingSprite) {
                 if (collidingSprite.name.equals(MONSTER_MISSILE_CHUNGUS_NAME) || collidingSprite.name.equals(MONSTER_MISSILE_NAME) || collidingSprite.name.equals(MONSTER_MISSILE_MINI_NAME)) {
                     this.glowColor = new Color(255, 255, 0);
                 }
@@ -690,7 +691,7 @@ public class MonsterShooterControl extends QuestControl implements AnimationView
         int buttonRow = this.quest.buttonRow;
         int endColumn;
         endColumn = this.column + this.quest.appController.getColumns(backgroundImageFileName);
-        this.quest.appController.displayValidatedInputField(this.quest.name, ANIMATION_CONTROLS_NAME, valueList, buttonRow, this.column, endColumn, 0, this, true);
+        this.quest.appController.displayValidatedInputField(this.quest.name, ANIMATION_CONTROLS_NAME, valueList, buttonRow, this.column, endColumn, Alignment.LEFT, this, true);
         
         return "";
     }

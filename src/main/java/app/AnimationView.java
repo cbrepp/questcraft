@@ -1,6 +1,6 @@
 package app;
 
-import app.model.SpriteModel;
+import app.control.SpriteControl;
 import java.util.List;
 
 /**
@@ -9,6 +9,6 @@ import java.util.List;
  */
 public interface AnimationView {
     
-    public List<SpriteModel> onAnimate();
+    public List<SpriteControl> onAnimate();
     
 }

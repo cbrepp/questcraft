@@ -22,7 +22,7 @@ public class GetValidatedInputControl extends QuestControl {
     public String onExecute(String tag) {
         System.out.println("GetValidatedInputControl: onExecute: tag=" + tag);
         String variable = getTagToken(tag, 1, false);
-        int alignment = Alignment.LEFT;
+        Alignment alignment = Alignment.LEFT;
         String values = "";
         ArrayList<String> modifierList = new ArrayList<>(Arrays.asList(variable.toLowerCase().split("=")));
         if (modifierList.size() == 2) {

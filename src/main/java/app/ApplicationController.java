@@ -16,15 +16,12 @@ package app;
  * Figure out license references
  */
 
-import app.model.BaseModel;
-import app.model.Coordinates;
+import app.control.GridControl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -33,6 +30,9 @@ import java.util.Properties;
  */
 public abstract class ApplicationController {
 
+    public static final String EMOJI_SHEET = "/assets/images/sheet_google_64.png";
+    public static final String EMOJI_SHEET_JSON = "/assets/json/emoji.json";
+    public static final Double EMOJI_SHEET_SIZE = 64.0;
     public static final String NAME_PROPERTY = "NAME";
     public static final String PROPERTIES_FILE = "assets/app.properties";
     public static String NAME;
@@ -57,14 +57,14 @@ public abstract class ApplicationController {
     public abstract void displayText(String viewName, String text, Integer row, Integer column);
     public abstract void displayText(String viewName, String text, Integer row, Integer column, Color color);
     public abstract void displayText(String viewName, String text, Integer row, Integer column, Color color, int style);
-    public abstract void displayGrid(String viewName, Map<String, ArrayList<BaseModel>> linkTexts, int columns, Boolean showBorders, EventListener listener);
+    public abstract void displayGrid(String viewName, GridControl control);
     public abstract void displayLink(String viewName, String name, String linkText, int row, int column, int length, EventListener listener);
     public abstract void displayButton(String viewName, String name, String text, Integer row, Integer column, Integer endRow, Integer endColumn, Boolean isMonospace, String fontName, Boolean glow, EventListener listener);
     public abstract void displayOpenFileButton(String viewName, String name, String text, Integer row, Integer column, Integer endRow, Integer endColumn, Boolean isMonospace, String fontName, Boolean glow, EventListener listener);
     public abstract int displayImage(String viewName, String name, String fileName, int row, int column, Boolean fillParent);
     public abstract void displayFloatingText(String viewName, String name, String text, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, app.Color fontColor, Integer fontSize, Integer fontStyle, String fontName);
     public abstract void displayInputField(String viewName, String name, String label, int length, int row, int column, String initValue, Boolean addButton, Boolean isMonospace, Boolean isUpperCase, Boolean isMultiUse, EventListener listener);
-    public abstract void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, int alignment, EventListener listener, Boolean allowRepeatClicks);
+    public abstract void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, Alignment alignment, EventListener listener, Boolean allowRepeatClicks);
     public abstract int displayGif(String viewName, String fileName, int row, int column);
     public abstract void setTimer(String name, double seconds, EventListener listener);
     public abstract void removeTimer(String name);

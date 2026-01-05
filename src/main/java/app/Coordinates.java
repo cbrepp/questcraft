@@ -1,4 +1,4 @@
-package app.model;
+package app;
 
 /**
  *
@@ -6,10 +6,10 @@ package app.model;
  */
 public class Coordinates {
     
-    public Integer x;
-    public Integer y;
+    public int x;
+    public int y;
     
-    public Coordinates(Integer x, Integer y) {
+    public Coordinates(int x, int y) {
         this.x = x;
         this.y = y;
     }
