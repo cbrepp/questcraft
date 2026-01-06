@@ -5,12 +5,9 @@ import app.ApplicationController;
 import app.Color;
 import app.EventListener;
 import app.Layout;
-import app.control.BaseControl;
 import app.control.GridControl;
 import app.control.Group;
 import app.control.LabelControl;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import app.control.ImageControl;
 import app.control.LinkControl;
 import app.control.VerticalGroup;
@@ -119,9 +116,6 @@ public class SceneMap extends app.ApplicationView implements EventListener {
                         ImageControl imageControl = new ImageControl(COMPASS + " image", new Layout(Alignment.CENTER, Alignment.CENTER));
                         imageControl.text = "/assets/images/compass-small.png";
                         itemGroup.list.add(imageControl);
-                        LinkControl linkControl = new LinkControl(COMPASS + " link", new Layout(Alignment.CENTER, Alignment.CENTER));
-                        linkControl.text = "Return to Quest";
-                        itemGroup.list.add(linkControl);
                         gridControl.cells.add(itemGroup);
                     } else {
                         emptyCellCount++;   // TODO - This is ugly

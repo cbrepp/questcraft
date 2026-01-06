@@ -1,8 +1,12 @@
 package app;
 
 import app.control.BaseControl;
+import app.control.ButtonControl;
 import app.control.GridControl;
 import app.control.Group;
+import app.control.ImageControl;
+import app.control.LabelControl;
+import app.control.LinkControl;
 import app.javafx.DelegateApplication;
 import app.control.SpriteControl;
 import java.io.File;
@@ -73,6 +77,7 @@ import javafx.embed.swing.SwingFXUtils;
 import javafx.event.EventHandler;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.CacheHint;
+import javafx.scene.Parent;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.effect.BlendMode;
@@ -740,6 +745,85 @@ public class JavaFXApplication extends ApplicationController {
         */
     }
     
+    public void addControl(String viewName, String parentControlName, BaseControl childControl) {
+        System.out.println("JavaFXApplication: addControl: viewName=" + viewName + ", parentControlName=" + parentControlName + ", childControl=" + childControl);
+                
+        // TODO - Need to traverse nodes to get the real background color
+        ApplicationView view = this.views.get(viewName);
+        app.Color genericOffsetColor = view.backgroundColor.getOffset();
+        Object actualParentControl = (Object) this.namedControls.get(viewName).get(parentControlName);
+        Class<?> childControlClass = childControl.getClass();
+                
+        // TODO - Move each class to its own separate handler method
+        Node actualChildControl;
+        if (childControlClass.equals(app.control.LinkControl.class)) {
+            LinkControl genericHyperlink = (app.control.LinkControl) childControl;
+            Hyperlink hyperlink = new Hyperlink();
+            Integer fontStyle;
+            if (genericHyperlink.isEnabled) {
+                fontStyle = FontStyle.UNDERLINE_LINK;
+            } else {
+                fontStyle = FontStyle.BOLD;
+            }
+            hyperlink.setGraphic(this.stringToTextFlow(genericHyperlink.text, "RobotoMono-Medium", genericOffsetColor, (int) Math.round(genericHyperlink.pixelSize), fontStyle));
+            Font currentFont = hyperlink.getFont();
+            hyperlink.setFont(Font.font(currentFont.getFamily(), FontWeight.BOLD, currentFont.getSize()));
+            hyperlink.setDisable(!genericHyperlink.isEnabled);
+            if (genericHyperlink.eventListener != null) {
+                hyperlink.setOnAction(e -> {
+                    System.out.println("JavaFXApplication: addControl: Link clicked: name=" + genericHyperlink.name);
+                    genericHyperlink.eventListener.onEvent(genericHyperlink.eventName, null);
+                });
+            }
+            hyperlink.setBackground(Background.EMPTY); // Transparent
+            
+            actualChildControl = hyperlink;
+        } else if (childControlClass.equals(app.control.ButtonControl.class)) {
+            ButtonControl genericButton = (ButtonControl) childControl;
+            Button button = new Button(genericButton.text);
+            button.setFont(this.buttonFont);
+            if (genericButton.eventListener != null) {
+                System.out.println("JavaFXApplication: addControl: Button clicked: name=" + genericButton.name);
+                button.setOnAction(e -> genericButton.eventListener.onEvent(genericButton.eventName, null));
+            }
+            button.setDisable(!genericButton.isEnabled);
+            button.setBackground(Background.EMPTY); // Transparent
+
+            actualChildControl = button;
+        } else if (childControlClass.equals(app.control.LabelControl.class)) {
+            LabelControl genericLabel = (LabelControl) childControl;
+            TextFlow label = this.stringToTextFlow(genericLabel.text, "RobotoMono-Medium", genericOffsetColor, (int) Math.round(genericLabel.pixelSize), FontStyle.BOLD);
+            label.setTextAlignment(TextAlignment.CENTER);
+            label.setBackground(Background.EMPTY); // Transparent
+
+            actualChildControl = label;
+        } else if (childControlClass.equals(app.control.ImageControl.class)) {
+            ImageControl genericImage = (ImageControl) childControl;
+            final Image image = loadImage(genericImage.text);
+            ImageView imageView = new ImageView(image);
+
+            actualChildControl = imageView;
+        } else {
+            System.err.println("JavaFXApplication: addControl: Failed to add " + childControlClass.getSimpleName() + " " + childControl.name + " for " + parentControlName + "!  Class is not a supported child class.");
+            return;
+        }
+        
+        // TODO - This is ugly.  Parent nodes do not have a base type (Parent) with a public getChildren() method so each parent class needs to be handled.
+        Class<?> parentControlClass = actualParentControl.getClass();
+        if (parentControlClass.equals(HBox.class)) {
+            HBox box = (HBox) actualParentControl;
+            box.getChildren().add(actualChildControl); 
+        } else if (parentControlClass.equals(VBox.class)) {
+            VBox box = (VBox) actualParentControl;
+            box.getChildren().add(actualChildControl);            
+        } else {
+            System.err.println("JavaFXApplication: addControl: Failed to add " + childControlClass.getSimpleName() + " " + childControl.name + " for " + parentControlName + "!  " + parentControlClass.getSimpleName() + " is not a supported parent class.");
+            return;
+        }
+        
+        System.out.println("JavaFXApplication: addControl: Added " + childControlClass.getSimpleName() + " " + childControl.name + " for " + parentControlName);
+    }
+    
     @Override
     public void displayGrid(String viewName, GridControl control) {
         System.out.println("JavaFXApplication: displayGrid: viewName=" + viewName + ", control=" + control);
@@ -874,11 +958,15 @@ public class JavaFXApplication extends ApplicationController {
             }
             box.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
             cell.getChildren().add(box);
+            this.namedControls.get(viewName).put(cellGroup.name + " box", box);
             
             // Add zero to many controls to the grid cell
             for (BaseControl abstractControl : cellGroup.list) {
                 System.out.println("JavaFXApplication: displayGrid: Adding control " + abstractControl.getClass().getName());
                 
+                this.addControl(viewName, cellGroup.name, abstractControl);
+                
+                /*
                 if (abstractControl.getClass().equals(app.control.LinkControl.class)) {
                     Hyperlink hyperlink = new Hyperlink();
                     Integer fontStyle;
@@ -927,6 +1015,7 @@ public class JavaFXApplication extends ApplicationController {
                     box.getChildren().add(imageView);
                     System.out.println("JavaFXApplication: displayGrid: Added image " + abstractControl.text + " for " + cellGroup.name);
                 }
+                */
             }
             
             gridContent.add(cell, currentColumn - 1, currentRow - 1);

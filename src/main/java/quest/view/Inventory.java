@@ -128,6 +128,8 @@ public class Inventory extends app.ApplicationView implements EventListener {
 
             LinkControl linkControl = new LinkControl(key + " name link", itemGroupLayout);
             linkControl.text = key;
+            linkControl.eventListener = this;
+            linkControl.eventName = itemGroup.name;
             itemGroup.list.add(linkControl);
 
             InventoryItem questItem = this.quest.inventory.get(key);
