@@ -2,7 +2,12 @@
 package quest.control;
 
 import app.EventListener;
+import app.HorizontalAlignment;
 import app.Icon;
+import app.Layout;
+import app.RelativeCoordinates;
+import app.VerticalAlignment;
+import app.node.Link;
 import java.util.HashSet;
 import java.util.Set;
 import quest.model.InventoryItem;
@@ -59,15 +64,16 @@ public class InventoryControl extends QuestControl implements EventListener {
             InventoryItem questItem = this.quest.inventory.get(key);
             InventoryItem bookItem = this.quest.book.inventory.get(key);
             String emojis = String.join(" ", bookItem.emojis);
+            
             String linkText;
             int linkTextLength;
             if (inventoryItemName.equals("")) {
-                linkText = "<a>" + emojis + "</a>" + "x" + questItem.quantity + " ";
+                linkText = emojis + "x" + questItem.quantity + " ";
                 linkTextLength = 2 + 1 + String.valueOf(questItem.quantity).length() + 1; // Add emoticon plus "x" plus digits in quantity plus a space
             } else {
                 if (this.quest.inventory.containsKey(inventoryItemName)) {
                     // In possession, so add a link
-                    linkText = emojis + " <a>" + inventoryItemName + "</a>";
+                    linkText = emojis + inventoryItemName;
                 } else {
                     // NOT in possession, so no link, just the emoji and name
                     emojis = String.join(" ", bookItem.emojis);
@@ -80,7 +86,13 @@ public class InventoryControl extends QuestControl implements EventListener {
                 realRow++;
                 realColumn = startingColumn;
             }
-            this.quest.appController.displayLink(this.quest.name, key, linkText, realRow, realColumn, linkTextLength, this);
+            // TODO - Need to pass in relative coordinates
+            Link linkControl = new Link(key, new Layout(new RelativeCoordinates(0.25, 0.25), HorizontalAlignment.LEFT, VerticalAlignment.TOP));
+            linkControl.text = linkText;
+            linkControl.eventListener = this;
+            linkControl.eventName = key;
+            this.quest.appController.addNode(this.quest.name, linkControl, this.quest.name);
+            //this.quest.appController.displayLink(this.quest.name, key, linkText, realRow, realColumn, linkTextLength, this);
             realColumn = realColumn + linkTextLength;
             totalLength += linkTextLength;
         }

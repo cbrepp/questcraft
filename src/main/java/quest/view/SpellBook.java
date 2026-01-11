@@ -1,6 +1,6 @@
 package quest.view;
 
-import app.ApplicationController;
+import app.controller.BaseController;
 import app.Color;
 import quest.model.Story;
 
@@ -8,11 +8,11 @@ import quest.model.Story;
  *
  * @author repp
  */
-public class SpellBook extends app.ApplicationView {
+public class SpellBook extends app.view.BaseView {
     
     public static final String CAST_SPELL = "cast-spell";
     public static final String EMOJI = "\uD83D\uDCD9"; // "orange book" Unicode emoji
-    public ApplicationController appController;
+    public BaseController appController;
     public Quest quest;
     
     public SpellBook(String name) {
@@ -61,7 +61,7 @@ public class SpellBook extends app.ApplicationView {
     }
     
     @Override
-    public void onLoad(ApplicationController appController) {
+    public void onLoad(BaseController appController) {
         System.out.println("SpellBook: onLoad");
         
         this.appController = appController;

@@ -1,6 +1,11 @@
 
 package quest.control;
 
+import app.HorizontalAlignment;
+import app.Layout;
+import app.RelativeCoordinates;
+import app.VerticalAlignment;
+import app.node.Link;
 import quest.view.Quest;
 
 /**
@@ -31,7 +36,15 @@ public class LinkControl extends QuestControl {
         }
         
         int textLength = linkText.length();
-        this.quest.appController.displayLink(this.quest.name, Quest.LINK_EVENT_PREFIX + ":" + linkText, "<a>" + linkText + "</a>", row, column, textLength, this.quest);
+        
+        // TODO - Need to pass in relative coordinates
+        Link linkControl = new Link(linkText, new Layout(new RelativeCoordinates(0.25, 0.25), HorizontalAlignment.LEFT, VerticalAlignment.TOP));
+        linkControl.text = linkText;
+        linkControl.eventListener = this.quest;
+        linkControl.eventName = Quest.LINK_EVENT_PREFIX + ":" + linkText;
+        this.quest.appController.addNode(this.quest.name, linkControl, this.quest.name);
+        
+        //this.quest.appController.displayLink(this.quest.name, Quest.LINK_EVENT_PREFIX + ":" + linkText, "<a>" + linkText + "</a>", row, column, textLength, this.quest);
         this.quest.textColumn = 1;
         this.quest.textRow = this.quest.textRow + 1;
         

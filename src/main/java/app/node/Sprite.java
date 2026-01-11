@@ -1,5 +1,6 @@
-package app.control;
+package app.node;
 
+import app.controller.BaseController;
 import app.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,9 +9,9 @@ import java.util.List;
  *
  * @author repp
  */
-public class SpriteControl extends BaseControl {
+public class Sprite extends BaseNode {
     
-    public List<SpriteControl> collisionSprites;
+    public List<Sprite> collisionSprites;
     public Color glowColor;
     public String imageFile;
     public Double imageScale;
@@ -20,14 +21,16 @@ public class SpriteControl extends BaseControl {
     public Integer x;
     public Integer y;
     
-    public SpriteControl() {}
-
-    public SpriteControl(String name, Layout layout) {
-        this.name = name;
-        this.layout = layout;
+    public Sprite (String name) {
+        super(name);
     }
     
-    public SpriteControl(ApplicationController controller, String name, String imageFile, Double imageScale, Integer x, Integer y, List<String> potentialCollisionNames, Double viewPortBuffer, Color glowColor) {
+    public Sprite(String name, Layout layout) {
+        super(name, layout);
+    }
+    
+    /*
+    public Sprite(BaseController controller, String name, String imageFile, Double imageScale, Integer x, Integer y, List<String> potentialCollisionNames, Double viewPortBuffer, Color glowColor) {
         this.collisionSprites = new ArrayList();
         this.imageFile = imageFile;
         this.imageScale = imageScale;
@@ -38,6 +41,7 @@ public class SpriteControl extends BaseControl {
         this.viewPortBuffer = viewPortBuffer;
         this.glowColor = glowColor;
     }
+    */
     
-    public void onCollision(SpriteControl collidingSprite) {}
+    public void onCollision(Sprite collidingSprite) {}
 }

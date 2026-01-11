@@ -1,4 +1,4 @@
-package app.desktop;
+package app.controller.desktop;
 
 import java.io.BufferedInputStream;
 import java.io.InputStream;

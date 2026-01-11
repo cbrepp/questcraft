@@ -1,6 +1,6 @@
 package quest.view;
 
-import app.ApplicationController;
+import app.controller.BaseController;
 import app.Color;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -10,7 +10,7 @@ import quest.model.HighScore;
  *
  * @author repp
  */
-public class HighScores extends app.ApplicationView {
+public class HighScores extends app.view.BaseView {
 
     public List<HighScore> highScores;
     public Quest quest;
@@ -22,7 +22,7 @@ public class HighScores extends app.ApplicationView {
     }
     
     @Override
-    public void onLoad(ApplicationController appController) {
+    public void onLoad(BaseController appController) {
         System.out.println("HighScores: onLoad");
         
         int row = 3;

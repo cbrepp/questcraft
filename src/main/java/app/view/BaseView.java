@@ -1,5 +1,8 @@
-package app;
+package app.view;
 
+import app.Color;
+import app.EventListener;
+import app.controller.BaseController;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -8,7 +11,7 @@ import java.util.List;
  *
  * @author repp
  */
-public class ApplicationView implements EventListener {
+public class BaseView implements EventListener {
     
     public Boolean addTextArea;
     public Color backgroundColor;
@@ -20,9 +23,9 @@ public class ApplicationView implements EventListener {
     public String name;
     public int timeoutSeconds;
     public String version;
-    public LinkedHashMap<String, List<ApplicationView>> eventListenerMap;
+    public LinkedHashMap<String, List<BaseView>> eventListenerMap;
     
-    public ApplicationView(String name) {
+    public BaseView(String name) {
         this.addTextArea = true;
         this.emojis = new ArrayList();
         this.eventListenerMap = new LinkedHashMap<>();
@@ -31,9 +34,9 @@ public class ApplicationView implements EventListener {
         this.timeoutSeconds = 0;
     }
     
-    public void addListener(String eventName, ApplicationView listener) {
+    public void addListener(String eventName, BaseView listener) {
         System.out.println("ApplicationView: addListener: eventName=" + eventName + ", listener=" + listener);
-        List<ApplicationView> eventListeners = this.eventListenerMap.get(eventName);
+        List<BaseView> eventListeners = this.eventListenerMap.get(eventName);
         if (eventListeners == null) {
             eventListeners = new ArrayList<>();
             this.eventListenerMap.put(eventName, eventListeners);
@@ -41,7 +44,7 @@ public class ApplicationView implements EventListener {
         eventListeners.add(listener);
     }
     
-    public void onDisplay(ApplicationController appController) {
+    public void onDisplay(BaseController appController) {
         System.out.println("ApplicationView: onDisplay: Unimplemented");
     }
     
@@ -50,21 +53,21 @@ public class ApplicationView implements EventListener {
         System.out.println("ApplicationView: onEvent: Unimplemented: eventName=" + eventName + ", eventValue=" + eventValue);
     }
     
-    public void onLoad(ApplicationController appController) {
+    public void onLoad(BaseController appController) {
         System.out.println("ApplicationView: onLoad: Unimplemented");
     }
     
-    public void onSelected(ApplicationController appController) {
+    public void onSelected(BaseController appController) {
         System.out.println("ApplicationView: onSelected: Unimplemented for " + this.name);
     }
     
-    public void onUnselected(ApplicationController appController) {
+    public void onUnselected(BaseController appController) {
         System.out.println("ApplicationView: onUnselected: Unimplemented for " + this.name);
     }
     
     public void publishEvent(String eventName, Object eventValue) {
         System.out.println("ApplicationView: publishEvent: eventName=" + eventName + ", eventValue=" + eventValue);
-        List<ApplicationView> eventListeners = this.eventListenerMap.get(eventName);
+        List<BaseView> eventListeners = this.eventListenerMap.get(eventName);
         if (eventListeners == null) {
             System.out.println("ApplicationView: publishEvent: No listeners!");
             return;
@@ -77,9 +80,9 @@ public class ApplicationView implements EventListener {
         );
     }
     
-    public void removeListener(String eventName, ApplicationView listener) {
+    public void removeListener(String eventName, BaseView listener) {
         System.out.println("ApplicationView: removeListener: eventName=" + eventName + ", listener=" + listener);
-        List<ApplicationView> eventListeners = this.eventListenerMap.get(eventName);
+        List<BaseView> eventListeners = this.eventListenerMap.get(eventName);
         if (eventListeners == null) {
             return;
         }

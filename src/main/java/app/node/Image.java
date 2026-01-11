@@ -1,0 +1,21 @@
+package app.node;
+
+import app.*;
+
+/**
+ *
+ * @author repp
+ */
+public class Image extends BaseNode {
+    
+    public String file;
+    
+    public Image (String name) {
+        super(name);
+    }
+    
+    public Image(String name, Layout layout) {
+        super(name, layout);
+    }
+    
+}

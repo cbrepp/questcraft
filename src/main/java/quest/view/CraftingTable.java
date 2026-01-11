@@ -1,7 +1,7 @@
 package quest.view;
 
-import app.ApplicationController;
-import app.ApplicationView;
+import app.controller.BaseController;
+import app.view.BaseView;
 import app.Color;
 import app.FontStyle;
 
@@ -9,7 +9,7 @@ import app.FontStyle;
  *
  * @author repp
  */
-public class CraftingTable extends ApplicationView {
+public class CraftingTable extends BaseView {
 
     public CraftingTable(String name) {
         super(name);
@@ -20,7 +20,7 @@ public class CraftingTable extends ApplicationView {
     }
     
     @Override
-    public void onLoad(ApplicationController appController) {
+    public void onLoad(BaseController appController) {
         System.out.println("CraftingTable: display");
         
         // displayFloatingText(String viewName, String text, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, app.Color fontColor, Integer fontSize, Integer fontStyle, String fontName)

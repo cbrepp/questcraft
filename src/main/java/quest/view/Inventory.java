@@ -1,30 +1,31 @@
 package quest.view;
 
-import app.Alignment;
-import app.ApplicationController;
+import app.controller.BaseController;
 import app.Color;
 import app.EventListener;
+import app.HorizontalAlignment;
 import app.Icon;
 import app.Layout;
-import app.control.GridControl;
-import app.control.Group;
-import app.control.LabelControl;
-import app.control.LinkControl;
-import app.control.VerticalGroup;
+import app.VerticalAlignment;
+import app.node.Grid;
+import app.node.Group;
+import app.node.Label;
+import app.node.Link;
+import app.node.VerticalGroup;
 import quest.model.InventoryItem;
 
 /**
  *
  * @author repp
  */
-public class Inventory extends app.ApplicationView implements EventListener {
+public class Inventory extends app.view.BaseView implements EventListener {
 
     public final static String EMOJI = "\uD83C\uDF71";  // "bento box" Unicode emoji
     public final static String NEW_EMOJI = "\uD83D\uDD25"; // "fire" Unicode emoji... "NEW button" Unicode emoji is \uD83C\uDD95 but a dull gray
     
     public Boolean lastRenderContainedNewItems;
     public Quest quest;
-    public ApplicationController appController;
+    public BaseController appController;
     
     public Inventory(String name) {
         super(name);
@@ -34,7 +35,7 @@ public class Inventory extends app.ApplicationView implements EventListener {
     }
     
     @Override
-    public void onLoad(ApplicationController appController) {
+    public void onLoad(BaseController appController) {
         System.out.println("Inventory: onLoad");
         
         this.appController = appController;
@@ -69,7 +70,7 @@ public class Inventory extends app.ApplicationView implements EventListener {
     }
     
     @Override
-    public void onSelected(ApplicationController appController) {
+    public void onSelected(BaseController appController) {
         System.out.println("Inventory: onSelected");
         
         this.emojis.removeIf(emoji -> emoji.equals(NEW_EMOJI));
@@ -86,7 +87,7 @@ public class Inventory extends app.ApplicationView implements EventListener {
     }
     
     @Override
-    public void onUnselected(ApplicationController appController) {
+    public void onUnselected(BaseController appController) {
         System.out.println("Inventory: onUnselected");
         
         if (this.lastRenderContainedNewItems) {
@@ -108,7 +109,7 @@ public class Inventory extends app.ApplicationView implements EventListener {
             activateInventory = Boolean.valueOf(this.quest.variables.get("activate-inventory").toLowerCase());
         }
         
-        GridControl gridControl = new GridControl(this.name, new Layout(Alignment.CENTER, Alignment.CENTER));
+        Grid gridControl = new Grid(this.name, new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
         gridControl.borderPadding = 5;
         gridControl.cornerRadii = 10; // Rounded corners
         gridControl.columns = 0;
@@ -116,17 +117,17 @@ public class Inventory extends app.ApplicationView implements EventListener {
         gridControl.padding = 5;
         gridControl.showBorders = true;
         for (String key : this.quest.book.inventory.keySet()) {
-            Group itemGroup = new VerticalGroup(key, new Layout(Alignment.CENTER, Alignment.CENTER));
-            Layout itemGroupLayout = new Layout(Alignment.CENTER, Alignment.CENTER);
+            Group itemGroup = new VerticalGroup(key, new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
+            Layout itemGroupLayout = new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
             
             InventoryItem bookItem = this.quest.book.inventory.get(key);
 
-            LabelControl emojiControl = new LabelControl(key + " emojis", itemGroupLayout);
+            Label emojiControl = new Label(key + " emojis", itemGroupLayout);
             emojiControl.text = String.join(" ", bookItem.emojis);
-            emojiControl.pixelSize = ApplicationController.EMOJI_SHEET_SIZE;
+            emojiControl.pixelSize = BaseController.EMOJI_SHEET_SIZE;
             itemGroup.list.add(emojiControl);
 
-            LinkControl linkControl = new LinkControl(key + " name link", itemGroupLayout);
+            Link linkControl = new Link(key + " name link", itemGroupLayout);
             linkControl.text = key;
             linkControl.eventListener = this;
             linkControl.eventName = itemGroup.name;
@@ -143,7 +144,7 @@ public class Inventory extends app.ApplicationView implements EventListener {
 
                 linkControl.isEnabled = true;
 
-                LabelControl countControl = new LabelControl(key + " count", itemGroupLayout);
+                Label countControl = new Label(key + " count", itemGroupLayout);
                 countControl.text = "x" + questItem.quantity;
                 itemGroup.list.add(countControl);
             } else {

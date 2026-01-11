@@ -1,7 +1,9 @@
 
 package quest.control;
 
-import app.Alignment;
+import app.HorizontalAlignment;
+import app.VerticalAlignment;
+import app.Layout;
 import java.util.ArrayList;
 import java.util.Arrays;
 import quest.view.Quest;
@@ -22,7 +24,7 @@ public class GetValidatedInputControl extends QuestControl {
     public String onExecute(String tag) {
         System.out.println("GetValidatedInputControl: onExecute: tag=" + tag);
         String variable = getTagToken(tag, 1, false);
-        Alignment alignment = Alignment.LEFT;
+        HorizontalAlignment alignment = HorizontalAlignment.LEFT;
         String values = "";
         ArrayList<String> modifierList = new ArrayList<>(Arrays.asList(variable.toLowerCase().split("=")));
         if (modifierList.size() == 2) {
@@ -32,12 +34,12 @@ public class GetValidatedInputControl extends QuestControl {
                 variable = getTagToken(tag, 2, false);
                 values = getTagToken(tag, 3, true);
                 switch (alignmentName) {
-                    case "left" -> alignment = Alignment.LEFT;
-                    case "center" -> alignment = Alignment.CENTER;
-                    case "right" -> alignment = Alignment.RIGHT;
+                    case "left" -> alignment = HorizontalAlignment.LEFT;
+                    case "center" -> alignment = HorizontalAlignment.CENTER;
+                    case "right" -> alignment = HorizontalAlignment.RIGHT;
                     default -> {
                         System.err.println("GetValidatedInputControl: onExecute: Unsupported alignment!");
-                        alignment = Alignment.LEFT;
+                        alignment = HorizontalAlignment.LEFT;
                     }
                 }
             }
@@ -62,7 +64,7 @@ public class GetValidatedInputControl extends QuestControl {
             endColumn = this.quest.leftPageEndingColumn;
         }
         int realRow = this.quest.titleRow + 1 + this.quest.textRow;
-        this.quest.appController.displayValidatedInputField(this.quest.name, eventName, valueList, realRow, startColumn, endColumn, alignment, this.quest, allowMultipleClicks);
+        this.quest.appController.displayValidatedInputField(this.quest.name, eventName, valueList, realRow, startColumn, endColumn, new Layout(alignment, VerticalAlignment.CENTER), this.quest, allowMultipleClicks);
         this.quest.textRow = this.quest.textRow + 2;
         this.quest.textColumn = 1;
         return "";

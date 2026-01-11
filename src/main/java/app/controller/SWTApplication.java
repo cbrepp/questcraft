@@ -1,9 +1,17 @@
-package app;
+package app.controller;
 
-import app.desktop.SoundController;
-import app.control.BaseControl;
-import app.control.GridControl;
-import app.control.SpriteControl;
+import app.view.BaseView;
+import app.Coordinates;
+import app.EventListener;
+import app.FontStyle;
+import app.HorizontalAlignment;
+import app.Icon;
+import app.Layout;
+import app.controller.desktop.SoundController;
+import app.dialog.BaseDialog;
+import app.node.BaseNode;
+import app.node.Grid;
+import app.node.Sprite;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -67,8 +75,9 @@ import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import app.view.Animation;
 
-public class SWTApplication extends ApplicationController {
+public class SWTApplication extends BaseController {
 
     // Settings for Follow-The-Button glow effect for buttons
     public static int CURRENT_COLOR_INDEX = 0;
@@ -84,23 +93,23 @@ public class SWTApplication extends ApplicationController {
     public int buttonFontWidth = 0;
     public Font buttonFont;
     public KeyEvent lastProcessedKeyEvent;
-    public ApplicationView lastSelectedView;
+    public BaseView lastSelectedView;
     public Font monospaceFont;
     public HashMap<String, Map<String, List<Control>>> namedControls;
-    public ApplicationView parentView;
+    public BaseView parentView;
     public Shell shell;
     public SoundController soundController = new SoundController();
-    public List<SpriteControl> sprites;
+    public List<Sprite> sprites;
     public CTabFolder tabFolder;
     public HashMap<String, Composite> tabCompositeMap;
     public HashMap<String, Integer> tabIndexMap;
     public HashMap<String, CTabItem> tabItemMap;
-    public HashMap<CTabItem, ApplicationView> tabItemViewMap;
+    public HashMap<CTabItem, BaseView> tabItemViewMap;
     public HashMap<String, List<StyleRange>> tabStyleRangesMap;
     public HashMap<String, StyledText> tabStyledTextMap;
     public int textColumns = 0;
     public int textRows = 0;
-    public HashMap<String, ApplicationView> views;
+    public HashMap<String, BaseView> views;
     
     /**
      * The implementation of this method is a work-around to inheritance not being fully implemented in java
@@ -113,7 +122,7 @@ public class SWTApplication extends ApplicationController {
             args = new String[1];
             args[0] = new Throwable().getStackTrace()[0].getClassName();
         }
-        ApplicationController.main(args);
+        BaseController.main(args);
     }
     
     @Override
@@ -122,7 +131,7 @@ public class SWTApplication extends ApplicationController {
     }
 
     @Override
-    public void open(ApplicationView splashView, ApplicationView mainView) {
+    public void open(BaseView splashView, BaseView mainView) {
         if (splashView != null) {
             this.display = new Display();
             this.displayShell(splashView);
@@ -139,7 +148,7 @@ public class SWTApplication extends ApplicationController {
         this.display.dispose();
     }
     
-    public void displayShell(ApplicationView view) {
+    public void displayShell(BaseView view) {
         System.out.println("SWTApplication: displayShell: view=" + view.name);
 
         // Initialize the application window
@@ -178,10 +187,10 @@ public class SWTApplication extends ApplicationController {
                 String selectedTabTitle = thisController.tabFolder.getItem(selectedIndex).getText();
                 CTabItem item = tabFolder.getSelection();
                 System.out.println("SWTApplication: displayShell: Selected tab " + selectedTabTitle + ", map size = " + thisController.tabItemViewMap.size());
-                ApplicationView selectedView = thisController.tabItemViewMap.get(item);
+                BaseView selectedView = thisController.tabItemViewMap.get(item);
                 if (selectedView != null) {
                     selectedView.onSelected(thisController);
-                    ApplicationView lastSelectedView = thisController.lastSelectedView;
+                    BaseView lastSelectedView = thisController.lastSelectedView;
                     thisController.lastSelectedView = selectedView;
                     if ((lastSelectedView != null) && (!lastSelectedView.equals(selectedView))) {
                         lastSelectedView.onUnselected(thisController);
@@ -284,7 +293,7 @@ public class SWTApplication extends ApplicationController {
     }
 
     @Override
-    public void displayView(ApplicationView view) {
+    public void displayView(BaseView view) {
         System.out.println("SWTApplication: displayView: Displaying application view: " + view.name);
         
         int tabIndex = this.tabIndexMap.get(view.name);
@@ -298,6 +307,11 @@ public class SWTApplication extends ApplicationController {
     }
     
     @Override
+    public void addNode(String viewName, BaseNode node, String parentName) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
     public Integer getTabIndex(String viewName) {
         System.out.println("SWTApplication: getTabIndex: viewName=" + viewName);
         Integer index = this.tabIndexMap.get(viewName);
@@ -307,7 +321,7 @@ public class SWTApplication extends ApplicationController {
     @Override
     public void displayView(String viewName) {
         System.out.println("SWTApplication: displayTab: viewName=" + viewName);
-        ApplicationView view = this.views.get(viewName);
+        BaseView view = this.views.get(viewName);
         this.displayView(view);
     }
     
@@ -315,7 +329,7 @@ public class SWTApplication extends ApplicationController {
     public void refreshTabLabel(String viewName) {
         System.out.println("SWTApplication: refreshTabLabel: viewName=" + viewName);
         
-        ApplicationView view = this.views.get(viewName);
+        BaseView view = this.views.get(viewName);
         if (view == null) {
             System.out.println("SWTApplication: refreshTabLabel: View does not exist");
             return;
@@ -373,11 +387,11 @@ public class SWTApplication extends ApplicationController {
     }
     
     @Override
-    public void addView(ApplicationView view) {
+    public void addView(BaseView view) {
         this.addView(view, false);
     }
     
-    public void addView(ApplicationView view, Boolean isParent) {
+    public void addView(BaseView view, Boolean isParent) {
         Integer index = this.tabIndexMap.get(view.name);
         if (index == null) {
             index = this.tabIndexMap.size();
@@ -385,7 +399,7 @@ public class SWTApplication extends ApplicationController {
         this.addView(view, isParent, index, false);
     }
     
-    public static void setTabLabel(CTabItem tab, ApplicationView view) {
+    public static void setTabLabel(CTabItem tab, BaseView view) {
         System.out.println("SWTApplication: setTabLabel: tab=" + tab + ", view=" + view);
         if (view.emojis.isEmpty()) {
             tab.setText(view.name);
@@ -396,7 +410,7 @@ public class SWTApplication extends ApplicationController {
     }
     
     @Override
-    public void addView(ApplicationView view, Boolean isParent, int index, Boolean isRefresh) {
+    public void addView(BaseView view, Boolean isParent, int index, Boolean isRefresh) {
         System.out.println("SWTApplication: addView: name=" + view.name + ", isParent=" + isParent + ", index=" + index + ", isRefresh=" + isRefresh);
         
         Composite composite;
@@ -514,7 +528,7 @@ public class SWTApplication extends ApplicationController {
     public Coordinates getDimensions(String imageFileName) {
         System.out.println("SWTApplication: getDimensions: imageFileName=" + imageFileName);
         Coordinates dimensions = null;
-        try (InputStream inputStream = SWTApplication.class.getResourceAsStream(imageFileName)) {
+        try (InputStream inputStream = SWT.class.getResourceAsStream(imageFileName)) {
             if (inputStream == null) {
                 throw new IllegalArgumentException("Image not found at path: " + imageFileName);
             }
@@ -536,7 +550,7 @@ public class SWTApplication extends ApplicationController {
     }
     
     public Image loadImage(String fileName) {
-        InputStream imageStream = SWTApplication.class.getResourceAsStream(fileName);
+        InputStream imageStream = SWT.class.getResourceAsStream(fileName);
         if (imageStream == null) {
             System.err.println("SWTApplication: loadImage: Image not found in classpath: " + fileName);
             return null;
@@ -555,7 +569,6 @@ public class SWTApplication extends ApplicationController {
         return rows;
     }
     
-    @Override
     public void setBackgroundImage(String viewName, String imageFileName) {
         StyledText textArea = this.tabStyledTextMap.get(viewName);
         final Image backgroundImage = loadImage(imageFileName);
@@ -651,8 +664,9 @@ public class SWTApplication extends ApplicationController {
         this.namedControls.get(viewName).remove(controlName);
     }
     
+    /*
     @Override
-    public void displayMessageBox(String title, String text, int level, List<String> emojis) {
+    public void displayMessageBox(String title, String text, Icon level, List<String> emojis) {
         // TODO - Add support for emojis
         int SWTIcon;
         SWTIcon = switch (level) {
@@ -674,7 +688,9 @@ public class SWTApplication extends ApplicationController {
         messageBox.setMessage(text);
         messageBox.open();
     }
+    */
     
+    /*
     @Override
     public void displayText(String viewName, String text, Integer row, Integer column) {
         System.out.println("SWTApplication: displayText: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column);
@@ -753,7 +769,9 @@ public class SWTApplication extends ApplicationController {
         }
         textArea.redraw();
     }
+    */
     
+    /*
     @Override
     public void displayLink(String viewName, String name, String linkText, int row, int column, int length, EventListener listener) {
         System.out.println("SWTApplication: displayLink: viewName=" + viewName + ", name=" + name + ", linkText=" + linkText + ",row=" + row + ", column=" + column + ", length=" + length);
@@ -780,9 +798,10 @@ public class SWTApplication extends ApplicationController {
             }
         });
     }
+    */
     
     @Override
-    public void displayGrid(String viewName, GridControl control) {
+    public void displayGrid(String viewName, Grid control) {
         System.out.println("SWTApplication: displayGrid: viewName=" + viewName + ", control=" + control);
         
         /*
@@ -1015,6 +1034,7 @@ public class SWTApplication extends ApplicationController {
         return button;
     }
    
+    /*
     @Override
     public void displayButton(String viewName, String name, String text, Integer row, Integer column, Integer endRow, Integer endColumn, Boolean isMonospace, String fontName, Boolean glow, EventListener listener) {
         System.out.println("SWTApplication: displayButton: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", endRow=" + endRow + ", endColumn=" + endColumn + ", isMonospace=" + isMonospace + ", fontName=" + fontName + ", glow=" + glow);
@@ -1026,7 +1046,9 @@ public class SWTApplication extends ApplicationController {
             }
         });
     }
+    */
     
+    /*
     @Override
     public void displayOpenFileButton(String viewName, String name, String text, Integer row, Integer column, Integer endRow, Integer endColumn, Boolean isMonospace, String fontName, Boolean glow, EventListener listener) {
         System.out.println("SWTApplication: displayOpenFileButton: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", endRow=" + endRow + ", endColumn=" + endColumn + ", isMonospace=" + isMonospace + ", fontName=" + fontName + ", glow=" + glow);
@@ -1044,7 +1066,14 @@ public class SWTApplication extends ApplicationController {
             }
         });
     }
+    */
+    
+    @Override
+    public void newDialog(BaseDialog dialog) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
    
+    /*
     @Override
     public void displayFloatingText(String viewName, String name, String text, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, app.Color fontColor, Integer fontSize, Integer fontStyle, String fontName) {
         System.out.println("SWTApplication: displayFloatingText: viewName=" + viewName + ", name=" + name + ", fileName=" + text + ", startRow=" + startRow + ", startColumn=" + startColumn + ", endRow=" + endRow + ", endColumn=" + endColumn + ", fontColor=" + fontColor + ", fontSize=" + fontSize + ", fontName=" + fontName);
@@ -1151,7 +1180,9 @@ public class SWTApplication extends ApplicationController {
             this.namedControls.get(viewName).put(name, controlList);
         }
     }
+    */
     
+    /*
     @Override
     public int displayImage(String viewName, String name, String fileName, int row, int column, Boolean fillParent) {
         System.out.println("SWTApplication: displayImage: viewName=" + viewName + ", name=" + name + ", fileName=" + fileName + ", row=" + row + ", column=" + column + ", fillParent=" + fillParent);
@@ -1176,6 +1207,7 @@ public class SWTApplication extends ApplicationController {
         int nextRow = row + this.getRows(dimensions.y);
         return nextRow;
     }
+    */
     
     @Override
     public int displayGif(String viewName, String fileName, int row, int column) {
@@ -1186,7 +1218,7 @@ public class SWTApplication extends ApplicationController {
         
         Browser browser = new Browser(composite, SWT.NONE);
         
-        URL url = SWTApplication.class.getResource(fileName);        
+        URL url = SWT.class.getResource(fileName);        
         if (url != null) {
             System.out.println("SWTApplication: displayGif: Looking for file at " + url.toString());
             browser.setUrl(url.toString());
@@ -1233,6 +1265,7 @@ public class SWTApplication extends ApplicationController {
         }
     }
     
+    /*
     @Override
     public void displayInputField(String viewName, String name, String label, int length, int row, int column, String initValue, Boolean addButton, Boolean isMonospace, Boolean isUpperCase, Boolean isMultiUse, EventListener listener) {
         System.out.println("SWTApplication: displayInputField: viewName=" + viewName + ", text=" + label + ", row=" + row + ", column=" + column + ", initValue=" + initValue + ", addButton=" + addButton + ", isMonospace=" + isMonospace + ", isUpperCase=" + isUpperCase + ", isMultiUse=" + isMultiUse + ", listener=" + listener);
@@ -1290,6 +1323,7 @@ public class SWTApplication extends ApplicationController {
             });
         }
     }
+    */
     
     @Override
     public void displayOverlay(String viewName, String name, app.Color color, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, Integer transparency, Boolean invert) {
@@ -1344,8 +1378,8 @@ public class SWTApplication extends ApplicationController {
     
     // TODO - Pass in a list of app.Controls with button text and isEnabled
     @Override
-    public void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, Alignment alignment, EventListener listener, Boolean allowRepeatClicks) {
-        System.out.println("SWTApplication: displayValidatedInputField: viewName=" + viewName + ", name=" + name + ", row=" + row + ", startColumn=" + startColumn + ", endColumn=" + endColumn + ", alignment=" + alignment + ", listener=" + listener + ", allowRepeatClicks=" + allowRepeatClicks);
+    public void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, Layout layout, EventListener listener, Boolean allowRepeatClicks) {
+        System.out.println("SWTApplication: displayValidatedInputField: viewName=" + viewName + ", name=" + name + ", row=" + row + ", startColumn=" + startColumn + ", endColumn=" + endColumn + ", layout=" + layout + ", listener=" + listener + ", allowRepeatClicks=" + allowRepeatClicks);
         
         StyledText textArea = this.tabStyledTextMap.get(viewName);
         Composite composite = this.tabCompositeMap.get(viewName);
@@ -1358,11 +1392,11 @@ public class SWTApplication extends ApplicationController {
         Point terminalCoordinates = this.convertToCoordinates(row, endColumn);
         int buttonX;
         int buttonY;
-        switch (alignment) {
-            case Alignment.LEFT -> {
+        switch (layout.horizontalAlignment) {
+            case HorizontalAlignment.LEFT -> {
                 System.out.println("SWTApplication: displayValidatedInputField: Left alignment");
             }
-            case Alignment.CENTER -> {
+            case HorizontalAlignment.CENTER -> {
                 System.out.println("SWTApplication: displayValidatedInputField: Center alignment");
                 // Calculate the full width of the button row
                 int rowWidth = 0;
@@ -1379,7 +1413,7 @@ public class SWTApplication extends ApplicationController {
                 }
                 coordinates.x = (int) (terminalCoordinates.x - Math.floor(rowWidth / 2));
             }
-            case Alignment.RIGHT -> {
+            case HorizontalAlignment.RIGHT -> {
                 System.out.println("SWTApplication: displayValidatedInputField: Right alignment");
                 // Calculate the full width of the button row
                 int rowWidth = 0;
@@ -1573,7 +1607,7 @@ public class SWTApplication extends ApplicationController {
     }
     
     @Override
-    public void addAnimation(String viewName, String name, int row, int column, String backgroundImageFileName, List<String> imageFiles, double animationDelay, AnimationView listener) {
+    public void addAnimation(String viewName, String name, int row, int column, String backgroundImageFileName, List<String> imageFiles, double animationDelay, Animation listener) {
         System.out.println("SWTApplication: addAnimation: viewName=" + viewName + ", name=" + name + ", row=" + row + ", column=" + column + ", backgroundImageFileName=" + backgroundImageFileName + ", sprite count=" + imageFiles.size() + ", animationDelay=" + animationDelay + ", listener=" + listener);
         
         Composite composite = this.tabCompositeMap.get(viewName);
@@ -1612,7 +1646,7 @@ public class SWTApplication extends ApplicationController {
             }
             
             // Add to spriteImages map any new image file and image scale combinations
-            for (SpriteControl sprite : this.sprites) {
+            for (Sprite sprite : this.sprites) {
                 if (spriteImages.get(sprite.imageFile) == null) {
                     spriteImages.put(sprite.imageFile, new HashMap());
                 }
@@ -1622,11 +1656,11 @@ public class SWTApplication extends ApplicationController {
             }
             
             // Check for collisions
-            for (SpriteControl sprite : this.sprites) {
+            for (Sprite sprite : this.sprites) {
                 if (sprite.potentialCollisionNames != null) {
                     Image scaledImage = spriteImages.get(sprite.imageFile).get(sprite.imageScale);
                     for (String potentialCollisionName : sprite.potentialCollisionNames) {
-                        for (SpriteControl potentialCollisionSprite : this.sprites) {
+                        for (Sprite potentialCollisionSprite : this.sprites) {
                             if ((potentialCollisionSprite.name != null) && (potentialCollisionSprite.name.equals(potentialCollisionName))) {
                                 Image potentialCollisionScaledImage = spriteImages.get(potentialCollisionSprite.imageFile).get(potentialCollisionSprite.imageScale);
                                 if (SWTApplication.isColliding(scaledImage.getImageData(), sprite.x - 1, sprite.y - 1, potentialCollisionScaledImage.getImageData(), potentialCollisionSprite.x -1, potentialCollisionSprite.y -1)) {
@@ -1644,7 +1678,7 @@ public class SWTApplication extends ApplicationController {
             }
             
             // Draw each image
-            for (SpriteControl sprite : this.sprites) {
+            for (Sprite sprite : this.sprites) {
                 if (sprite.imageFile == null) {
                     //System.out.println("SWTApplication: addAnimation: painting canvas: skipping sprite with no image file!");
                     continue;
@@ -1770,11 +1804,6 @@ public class SWTApplication extends ApplicationController {
     @Override
     public void refreshView(String viewName) {
         System.out.println("SWTApplication: refreshView: viewName=" + viewName);
-        throw new UnsupportedOperationException("Not supported.");
-    }
-    
-    @Override
-    public void setBackgroundColor(String viewName, app.Color color) {
         throw new UnsupportedOperationException("Not supported.");
     }
     

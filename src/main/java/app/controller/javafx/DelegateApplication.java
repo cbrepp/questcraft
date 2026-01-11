@@ -1,6 +1,6 @@
-package app.javafx;
+package app.controller.javafx;
 
-import app.ApplicationController;
+import app.controller.BaseController;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
@@ -17,7 +17,7 @@ public class DelegateApplication extends Application {
         System.out.println("DelegateApplication: start");
         
         this.primaryStage = primaryStage;
-        ApplicationController.appController.setDelegate(this);
+        BaseController.appController.setDelegate(this);
     }
 
     public static void main(String[] args) {

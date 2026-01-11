@@ -1,6 +1,6 @@
 package quest.view;
 
-import app.ApplicationController;
+import app.controller.BaseController;
 import app.Color;
 import app.FontStyle;
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ import quest.model.InventoryItem;
 import quest.model.Scene;
 import quest.model.Story;
 
-public class Quest extends app.ApplicationView {
+public class Quest extends app.view.BaseView {
     
     public final static String DIRECTION_EAST = "EAST";
     public final static String DIRECTION_NORTH = "NORTH";
@@ -49,7 +49,7 @@ public class Quest extends app.ApplicationView {
     public final static String XP_CHANGE = "xp-change";
     public final static String XP_CHANGE_REFRESH = "xp-change-refresh";
     
-    public ApplicationController appController;
+    public BaseController appController;
     public Book book;
     public int buttonRow;
     public String currentAct;
@@ -103,7 +103,6 @@ public class Quest extends app.ApplicationView {
         this.questControls.put(ActGotoControl.NAME, new ActGotoControl(this));
         this.questControls.put(AddViewControl.NAME, new AddViewControl(this));
         this.questControls.put(AnimationInitControl.NAME, new AnimationInitControl(this));
-        this.questControls.put(BackgroundColorControl.NAME, new BackgroundColorControl(this));
         this.questControls.put(BoldTextControl.NAME, new BoldTextControl(this));
         this.questControls.put(BoldTextOffControl.NAME, new BoldTextOffControl(this));
         this.questControls.put(BookAuthorControl.NAME, new BookAuthorControl(this));
@@ -291,7 +290,7 @@ public class Quest extends app.ApplicationView {
     }
     
     @Override
-    public void onLoad(ApplicationController appController) {
+    public void onLoad(BaseController appController) {
         System.out.println("Quest: onLoad");
         this.appController = appController;
         
@@ -402,10 +401,6 @@ public class Quest extends app.ApplicationView {
         
         // Dispose all controls on the book's composite
         this.appController.clearScreen(this.name);
-        
-        // Display the book image
-        this.backgroundImage = "/assets/images/book.png";
-        this.appController.setBackgroundImage(this.name, this.backgroundImage);
         
         Act act = this.book.acts.get(this.currentAct);
         Scene scene = act.scenes.get(this.currentScene);

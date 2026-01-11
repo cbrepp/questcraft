@@ -1,6 +1,6 @@
 package quest.view;
 
-import app.ApplicationController;
+import app.controller.BaseController;
 import app.Color;
 import app.FontStyle;
 import java.io.FileInputStream;
@@ -28,9 +28,9 @@ import quest.model.Story;
  *
  * @author repp
  */
-public class Application extends app.ApplicationView {
+public class Application extends app.view.BaseView {
     
-    public ApplicationController appController;
+    public BaseController appController;
     public Book bookFile;
     public String flavorText;
     
@@ -64,7 +64,7 @@ public class Application extends app.ApplicationView {
     }
     
     @Override
-    public void onLoad(ApplicationController appController) {
+    public void onLoad(BaseController appController) {
         System.out.println("Application: onLoad");
         
         this.appController = appController;

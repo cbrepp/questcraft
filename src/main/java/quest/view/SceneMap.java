@@ -1,16 +1,16 @@
 package quest.view;
 
-import app.Alignment;
-import app.ApplicationController;
+import app.controller.BaseController;
 import app.Color;
 import app.EventListener;
+import app.HorizontalAlignment;
 import app.Layout;
-import app.control.GridControl;
-import app.control.Group;
-import app.control.LabelControl;
-import app.control.ImageControl;
-import app.control.LinkControl;
-import app.control.VerticalGroup;
+import app.VerticalAlignment;
+import app.node.Grid;
+import app.node.Group;
+import app.node.Label;
+import app.node.Image;
+import app.node.VerticalGroup;
 import java.util.List;
 import quest.model.Act;
 import quest.model.Scene;
@@ -19,12 +19,12 @@ import quest.model.Scene;
  *
  * @author repp
  */
-public class SceneMap extends app.ApplicationView implements EventListener {
+public class SceneMap extends app.view.BaseView implements EventListener {
 
     public final static String COMPASS = "COMPASS";
     public final static String EMOJI = "\uD83D\uDDFA\uFE0F";
     public Quest quest;
-    public ApplicationController appController;
+    public BaseController appController;
     
     public SceneMap(String name) {
         super(name);
@@ -47,7 +47,7 @@ public class SceneMap extends app.ApplicationView implements EventListener {
     }
     
     @Override
-    public void onLoad(ApplicationController appController) {
+    public void onLoad(BaseController appController) {
         System.out.println("SceneMap: onLoad");
         
         this.appController = appController;
@@ -100,7 +100,7 @@ public class SceneMap extends app.ApplicationView implements EventListener {
         }
         
         // Populate the grid cells using the sorted cells
-        GridControl gridControl = new GridControl(this.name, new Layout(Alignment.CENTER, Alignment.CENTER));
+        Grid gridControl = new Grid(this.name, new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
         gridControl.borderPadding = 0;
         gridControl.columns = mapWidth + 1;
         gridControl.listener = this;
@@ -112,21 +112,21 @@ public class SceneMap extends app.ApplicationView implements EventListener {
                 if (x == mapWidth) {
                     if (y == 0) {
                         // The last column is reserved for the compass
-                        Group itemGroup = new VerticalGroup(COMPASS, new Layout(Alignment.CENTER, Alignment.CENTER));
-                        ImageControl imageControl = new ImageControl(COMPASS + " image", new Layout(Alignment.CENTER, Alignment.CENTER));
-                        imageControl.text = "/assets/images/compass-small.png";
+                        Group itemGroup = new VerticalGroup(COMPASS, new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
+                        Image imageControl = new Image(COMPASS + " image", new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
+                        imageControl.file = "/assets/images/compass-small.png";
                         itemGroup.list.add(imageControl);
                         gridControl.cells.add(itemGroup);
                     } else {
                         emptyCellCount++;   // TODO - This is ugly
-                        Group itemGroup = new VerticalGroup("EMPTY SCENE " + emptyCellCount, new Layout(Alignment.CENTER, Alignment.CENTER));
+                        Group itemGroup = new VerticalGroup("EMPTY SCENE " + emptyCellCount, new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
                         gridControl.cells.add(itemGroup);
                     }
                     continue;
                 }
                 
                 String sceneName = sortedScenes[x][y];
-                Group itemGroup = new VerticalGroup(sceneName, new Layout(Alignment.CENTER, Alignment.CENTER));
+                Group itemGroup = new VerticalGroup(sceneName, new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
                 List<String> observedActScenes = this.quest.observedScenes.get(this.quest.currentAct);
                 if (sceneName == null) {
                     emptyCellCount++;   // TODO - This is ugly
@@ -135,13 +135,13 @@ public class SceneMap extends app.ApplicationView implements EventListener {
                 } else {
                     Scene scene = act.scenes.get(sceneName);
                     itemGroup.backgroundColor = scene.color;
-                    LabelControl labelControl;
+                    Label labelControl;
                     if ((observedActScenes.isEmpty()) || (!observedActScenes.contains(sceneName))) {
-                        labelControl = new LabelControl(sceneName + " label", new Layout(Alignment.CENTER, Alignment.CENTER));
+                        labelControl = new Label(sceneName + " label", new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
                         labelControl.text = "?";
                         System.out.println("SceneMap: render: Adding unobserved scene to " + x + ", " + y);
                     } else {
-                        labelControl = new LabelControl(sceneName + " label", new Layout(Alignment.CENTER, Alignment.CENTER));
+                        labelControl = new Label(sceneName + " label", new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
                         labelControl.text = sceneName;
                         System.out.println("SceneMap: render: Adding " + sceneName + " to " + x + ", " + y);
                     }
@@ -155,7 +155,7 @@ public class SceneMap extends app.ApplicationView implements EventListener {
                         case Quest.DIRECTION_SOUTH -> playerSymbol += " " + "\u2B07";
                         case Quest.DIRECTION_WEST -> playerSymbol += " " + "\u2B05";
                     }
-                    LabelControl labelControl = new LabelControl("player", new Layout(Alignment.CENTER, Alignment.CENTER));
+                    Label labelControl = new Label("player", new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
                     labelControl.text = playerSymbol;
                     itemGroup.list.add(labelControl);
                     System.out.println("SceneMap: render: Added " + playerSymbol + " to " + x + ", " + y);
@@ -163,7 +163,7 @@ public class SceneMap extends app.ApplicationView implements EventListener {
                 if (sceneName != null) {
                     Scene scene = act.scenes.get(sceneName);
                     if ((scene != null) && (scene.symbol != null) && (observedActScenes.contains(sceneName))) {
-                        LabelControl labelControl2 = new LabelControl(sceneName + " symbol", new Layout(Alignment.CENTER, Alignment.CENTER));
+                        Label labelControl2 = new Label(sceneName + " symbol", new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
                         labelControl2.text = scene.symbol;
                         itemGroup.list.add(labelControl2);
                         System.out.println("SceneMap: render: Added " + scene.symbol + " to " + x + ", " + y);

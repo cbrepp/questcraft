@@ -1,4 +1,4 @@
-package app;
+package app.controller;
 
 // JLayer - https://github.com/wkpark/JLayer/blob/master/LICENSE.txt
 
@@ -16,55 +16,72 @@ package app;
  * Figure out license references
  */
 
-import app.control.GridControl;
+import app.view.BaseView;
+import app.Color;
+import app.Coordinates;
+import app.EventListener;
+import app.Icon;
+import app.Layout;
+import app.Utility;
+import app.dialog.BaseDialog;
+import app.node.BaseNode;
+import app.node.Grid;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import app.view.Animation;
 
 /**
  *
  * @author repp
  */
-public abstract class ApplicationController {
+public abstract class BaseController {
 
+    public static final String DEFAULT_FONT = "RobotoMono-Medium";
+    public static final Double DEFAULT_PIXEL_SIZE = 14.0;
     public static final String EMOJI_SHEET = "/assets/images/sheet_google_64.png";
     public static final String EMOJI_SHEET_JSON = "/assets/json/emoji.json";
     public static final Double EMOJI_SHEET_SIZE = 64.0;
     public static final String NAME_PROPERTY = "NAME";
     public static final String PROPERTIES_FILE = "assets/app.properties";
     public static String NAME;
-    public static ApplicationController appController;
+    public static BaseController appController;
+    public static final Logger logger = Logger.getLogger(BaseController.class.getName());
     
     public abstract void setDelegate(Object delegate);
     public abstract void addDesigner(String viewName);
     public abstract void selectTab(String viewName);
     public abstract void refreshTabLabel(String viewName);
     public abstract void removeTab(String viewName);
-    public abstract void addView(ApplicationView view);
-    public abstract void addView(ApplicationView view, Boolean isParent, int index, Boolean isRefresh);
+    public abstract void addView(BaseView view);
+    public abstract void addView(BaseView view, Boolean isParent, int index, Boolean isRefresh);
     public abstract Integer getTabIndex(String viewName);
     public abstract void close();
-    public abstract void open(ApplicationView splashView, ApplicationView mainView);
-    public abstract void displayView(ApplicationView view);
+    public abstract void open(BaseView splashView, BaseView mainView);
+    public abstract void displayView(BaseView view);
     public abstract void displayView(String viewName);
     public abstract void displayOverlay(String viewName, String name, app.Color color, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, Integer transparency, Boolean invert);
     public abstract void clearScreen(String name);
     public abstract void clearControl(String viewName, String controlName);
-    public abstract void displayMessageBox(String title, String text, int level, List<String> emojis);
-    public abstract void displayText(String viewName, String text, Integer row, Integer column);
-    public abstract void displayText(String viewName, String text, Integer row, Integer column, Color color);
-    public abstract void displayText(String viewName, String text, Integer row, Integer column, Color color, int style);
-    public abstract void displayGrid(String viewName, GridControl control);
-    public abstract void displayLink(String viewName, String name, String linkText, int row, int column, int length, EventListener listener);
-    public abstract void displayButton(String viewName, String name, String text, Integer row, Integer column, Integer endRow, Integer endColumn, Boolean isMonospace, String fontName, Boolean glow, EventListener listener);
-    public abstract void displayOpenFileButton(String viewName, String name, String text, Integer row, Integer column, Integer endRow, Integer endColumn, Boolean isMonospace, String fontName, Boolean glow, EventListener listener);
-    public abstract int displayImage(String viewName, String name, String fileName, int row, int column, Boolean fillParent);
-    public abstract void displayFloatingText(String viewName, String name, String text, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, app.Color fontColor, Integer fontSize, Integer fontStyle, String fontName);
-    public abstract void displayInputField(String viewName, String name, String label, int length, int row, int column, String initValue, Boolean addButton, Boolean isMonospace, Boolean isUpperCase, Boolean isMultiUse, EventListener listener);
-    public abstract void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, Alignment alignment, EventListener listener, Boolean allowRepeatClicks);
+    //public abstract void displayMessageBox(String title, String text, Icon level, List<String> emojis);
+    //public abstract void displayText(String viewName, String text, Integer row, Integer column);
+    //public abstract void displayText(String viewName, String text, Integer row, Integer column, Color color);
+    //public abstract void displayText(String viewName, String text, Integer row, Integer column, Color color, int style);
+    public abstract void displayGrid(String viewName, Grid control);
+    public abstract void addNode(String viewName, BaseNode node, String parentName);
+    public abstract void newDialog(BaseDialog dialog);
+    //public abstract void displayLink(String viewName, String name, String linkText, int row, int column, int length, EventListener listener);
+    //public abstract void displayButton(String viewName, String name, String text, Integer row, Integer column, Integer endRow, Integer endColumn, Boolean isMonospace, String fontName, Boolean glow, EventListener listener);
+    //public abstract void displayOpenFileButton(String viewName, String name, String text, Integer row, Integer column, Integer endRow, Integer endColumn, Boolean isMonospace, String fontName, Boolean glow, EventListener listener);
+    //public abstract int displayImage(String viewName, String name, String fileName, int row, int column, Boolean fillParent);
+    //public abstract void displayFloatingText(String viewName, String name, String text, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, app.Color fontColor, Integer fontSize, Integer fontStyle, String fontName);
+    //public abstract void displayInputField(String viewName, String name, String label, int length, int row, int column, String initValue, Boolean addButton, Boolean isMonospace, Boolean isUpperCase, Boolean isMultiUse, EventListener listener);
+    public abstract void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, Layout layout, EventListener listener, Boolean allowRepeatClicks);
     public abstract int displayGif(String viewName, String fileName, int row, int column);
     public abstract void setTimer(String name, double seconds, EventListener listener);
     public abstract void removeTimer(String name);
@@ -75,8 +92,7 @@ public abstract class ApplicationController {
     public abstract int getRows(String fileName);
     public abstract int getButtonColumns(String buttonText);
     public abstract int getButtonRows();
-    public abstract void setBackgroundImage(String viewName, String imageFileName);
-    public abstract void addAnimation(String viewName, String name, int row, int startColumn, String backgroundImageFileName, List<String> imageFiles, double animationDelay, AnimationView listener);
+    public abstract void addAnimation(String viewName, String name, int row, int startColumn, String backgroundImageFileName, List<String> imageFiles, double animationDelay, Animation listener);
     public abstract void playSound(String fileName, Boolean isLoop);
     public abstract void stopSound(String fileName, Boolean removeAudioPlayer);
     public abstract void stopAllSounds();
@@ -85,29 +101,36 @@ public abstract class ApplicationController {
     public abstract void sendToFront(String viewName, String name);
     public abstract void sendToBack(String viewName, String name);
     public abstract void refreshView(String viewName);
-    public abstract void setBackgroundColor(String viewName, app.Color color);
     public abstract void loadEmojiData();
     
     public static void main(String[] args) {
-        System.out.println("ApplicationController: main: args=" + Arrays.toString(args));
+        // Configure the JUL logger:
+        //   %1$tF %1$tT: Date and time
+        //   %4$s: Log level (e.g., INFO)
+        //   %2$s: Class and method name
+        //   %5$s%n: The log message and a newline
+        System.setProperty("java.util.logging.SimpleFormatter.format", "%1$tT %4$s %2$s: %5$s%n");
+        
+        //logger.log(Level.INFO, "ApplicationController: main: args=" + Arrays.toString(args));
+        logger.log(Level.INFO, "Entered: args={0}", Arrays.toString(args));
         
         // Instance the application properties
         Properties props = loadProperties();
         if (props == null) {
-            System.err.println("ApplicationController: main: Unable to load the properties file");
+            logger.log(Level.SEVERE, "Unable to load the properties file");
             return;
         }
         
         // Instance the application controller
         String guiProperty = props.getProperty("app.gui");
-        ApplicationController.appController = resolveController(args, guiProperty);
-        if (ApplicationController.appController == null) {
-            System.err.println("ApplicationController: main: Unable to construct application controller");
+        BaseController.appController = resolveController(args, guiProperty);
+        if (BaseController.appController == null) {
+            logger.log(Level.SEVERE, "Unable to construct the application controller");
             return;
         }
         
         // Instance the application view
-        System.out.println("ApplicationController: Instancing application view for " + props.getProperty("app.class"));
+        logger.log(Level.INFO, "Instancing the application view for app class: {0}", props.getProperty("app.class"));
         String configAppClass = props.getProperty("app.class");
         String configAppVersion = props.getProperty("app.version");
         String configSplashClass = props.getProperty("app.splash");
@@ -116,23 +139,23 @@ public abstract class ApplicationController {
         String appName = getAppName(configAppClass, configAppVersion);
 
         // Initialize the splash view
-        ApplicationView splashView = null;
+        BaseView splashView = null;
         if (configSplashClass != null) {
-            System.out.println("ApplicationController: main: Intializing splash view");
-            splashView = (ApplicationView) Utility.instance(configSplashClass, appName);
+            logger.log(Level.INFO, "Intializing the splash view");
+            splashView = (BaseView) Utility.instance(configSplashClass, appName);
             clazz = splashView.getClass();
-            if (!ApplicationView.class.isAssignableFrom(clazz)) {
-                System.err.println("ApplicationController: main: " + clazz.getName() + " is not an application view");
+            if (!BaseView.class.isAssignableFrom(clazz)) {
+                logger.log(Level.SEVERE, "Splash view is not an application view: {0}", clazz.getName());
                 return;
             }
         }
 
         // Initialize the main application view
-        System.out.println("ApplicationController: main: Intializing main view");
-        ApplicationView appView = (ApplicationView) Utility.instance(configAppClass, appName);
+        logger.log(Level.INFO, "Intializing the main view");
+        BaseView appView = (BaseView) Utility.instance(configAppClass, appName);
         clazz = appView.getClass();
-        if (!ApplicationView.class.isAssignableFrom(clazz)) {
-            System.err.println("ApplicationController: main: " + clazz.getName() + " is not an application view");
+        if (!BaseView.class.isAssignableFrom(clazz)) {
+            logger.log(Level.SEVERE, "Main view is not an application view: {0}", clazz.getName());
             return;
         }
         appView.className = configAppClass;
@@ -140,17 +163,17 @@ public abstract class ApplicationController {
         appView.version = configAppVersion;
         
         // Display the application
-        System.out.println("ApplicationController: main: Displaying application");
-        ApplicationController.appController.open(splashView, appView);
+        logger.log(Level.INFO, "Displaying the application");
+        BaseController.appController.open(splashView, appView);
         
         // Dispose the application
-        System.out.println("ApplicationController: main: Closing");
-        ApplicationController.appController.close();
-        System.out.println("ApplicationController: main: System exit");
+        logger.log(Level.INFO, "Closing");
+        BaseController.appController.close();
+        logger.log(Level.INFO, "System exit");
     }
     
     public static String getAppName(String appClassName, String appVersion) {
-        System.out.println("ApplicationController: getAppName: appClassName=" + appClassName + ", appVersion=" + appVersion);
+        logger.log(Level.INFO, "Entered: appClassName={0}, appVersion={1}", new Object[]{appClassName, appVersion});
         
         String appName = "";
         
@@ -160,7 +183,7 @@ public abstract class ApplicationController {
             String className = appClass.getSimpleName();
             appName = className + " " + appVersion;
         } catch (ClassNotFoundException e) {
-            System.err.println("ApplicationController: getAppName: " + e.toString());
+            logger.log(Level.SEVERE, "A critical error occurred", e);
         }
 
         return appName;
@@ -170,38 +193,38 @@ public abstract class ApplicationController {
     // 1) Passed in argument
     // 2) Immediate class (if not generic)
     // 3) app.properties file
-    public static ApplicationController resolveController(String[] args, String guiProperty) {
-        System.out.println("ApplicationController: resolveController: args=" + Arrays.toString(args) + ", guiProperty=" + guiProperty);
+    public static BaseController resolveController(String[] args, String guiProperty) {
+        logger.log(Level.INFO, "Entered: args={0}, guiProperty={1}", new Object[]{Arrays.toString(args), guiProperty});
         
-        ApplicationController controller = null;
+        BaseController controller = null;
         
         // Evaluate the passed in GUI parameter
-        String gui = ApplicationController.getGUIFromArgs(args);
+        String gui = BaseController.getGUIFromArgs(args);
         
         // Evaluate the properties file
         if ((gui == null) || (gui.equals(""))) {
             gui = guiProperty;
             if ((gui != null) && (!gui.equals(""))) {
-                System.out.println("ApplicationController: resolveController: Using GUI provided by properties file");
+                logger.log(Level.INFO, "Using controller provided by properties file");
             }
         }
 
         // Resolve the controller class
         if ((gui != null) && (!gui.equals(""))) {
-            System.out.println("ApplicationController: resolveController: Instancing controller for " + gui);
+            logger.log(Level.INFO, "Instancing controller for controller: {0}", gui);
             Class<?> controllerClass = null;
             try {
                 controllerClass = Class.forName(gui);
             } catch (ClassNotFoundException e) {
-                System.err.println("ApplicationController: resolveController: " + e.toString());
+                logger.log(Level.SEVERE, "A critical error occurred", e);
             }
             if (controllerClass == null) {
-                System.err.println("ApplicationController: resolveController: Unsupported GUI: " + gui);
+                logger.log(Level.SEVERE, "Unsupported controller: {0}", gui);
             } else {
-                controller = (ApplicationController) Utility.instance(controllerClass.getName());
+                controller = (BaseController) Utility.instance(controllerClass.getName());
             }
         } else {
-            System.err.println("ApplicationController: resolveController: Could not resolve GUI");
+            logger.log(Level.SEVERE, "Could not resolve controller");
         }
         
         return controller;
@@ -209,18 +232,18 @@ public abstract class ApplicationController {
     
     // Load the properties file
     public static Properties loadProperties() {
-        System.out.println("ApplicationController: loadProperties");
+        logger.log(Level.INFO, "Entered");
         
         Properties props = new Properties();
 
-        try (InputStream input = ApplicationController.class.getClassLoader().getResourceAsStream(ApplicationController.PROPERTIES_FILE)) {
+        try (InputStream input = BaseController.class.getClassLoader().getResourceAsStream(BaseController.PROPERTIES_FILE)) {
             if (input == null) {
-                System.err.println("ApplicationController: loadProperties: Unable to find " + ApplicationController.PROPERTIES_FILE);
+                logger.log(Level.SEVERE, "Unable to find properties file: {0}", BaseController.PROPERTIES_FILE);
                 return null;
             }
             props.load(input);
         } catch (IOException e) {
-            System.err.println("ApplicationController: loadProperties: " + e.toString());
+            logger.log(Level.SEVERE, "A critical error occurred", e);
             return null;
         } 
         
@@ -228,18 +251,18 @@ public abstract class ApplicationController {
     }
     
     public static String getGUIFromArgs(String[] args) {
-        System.out.println("ApplicationController: getGUIFromArgs: args=" + Arrays.toString(args));
+        logger.log(Level.INFO, "Entered: args={0}", Arrays.toString(args));
         
         String gui = null;
         if (args.length > 0) {
             gui = args[0];
-            System.out.println("ApplicationController: getGUIFromArgs: Read argument: " + gui);
+            logger.log(Level.INFO, "Read argument: {0}", gui);
         }
         return gui;
     }
     
     public static String getGUIFromThisClass() {
-        System.out.println("ApplicationController: getGUIFromThisClass");
+        logger.log(Level.INFO, "Entered");
         
         String gui = null;
         
@@ -250,19 +273,18 @@ public abstract class ApplicationController {
             Class<?> thisClass = Class.forName(thisClassName);
             Field field;
             try {
-                field = thisClass.getField(ApplicationController.NAME_PROPERTY);
+                field = thisClass.getField(BaseController.NAME_PROPERTY);
             } catch (NoSuchFieldException | SecurityException e) {
-                System.err.println("ApplicationController: getGUIFromThisClass: " + e.toString());
+                logger.log(Level.SEVERE, "A critical error occurred", e);
                 return null;
             }
             try { 
                 gui = (String) field.get(null);
             } catch (IllegalArgumentException | IllegalAccessException e) {
-
-                System.err.println("ApplicationController: getGUIFromThisClass: " + e.toString());
+                logger.log(Level.SEVERE, "A critical error occurred", e);
             }
         } catch (ClassNotFoundException e) {
-            System.err.println("ApplicationController: getGUIFromThisClass: " + e.toString());
+            logger.log(Level.SEVERE, "A critical error occurred", e);
         }
         
         return gui;

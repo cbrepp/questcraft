@@ -4,6 +4,6 @@ package app;
  *
  * @author repp
  */
-public enum Alignment {
+public enum HorizontalAlignment {
     LEFT, CENTER, RIGHT;
 }

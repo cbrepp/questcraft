@@ -1,6 +1,6 @@
 package quest.view;
 
-import app.ApplicationController;
+import app.controller.BaseController;
 import app.Color;
 import quest.model.Book;
 
@@ -154,7 +154,7 @@ import quest.model.Book;
  * 
  * @author repp
  */
-public class Questcraft extends app.ApplicationView {
+public class Questcraft extends app.view.BaseView {
     
     public final static String APPLICATION = "Application";
     public final static String CRAFTING_TABLE = "Crafting Table";
@@ -162,7 +162,7 @@ public class Questcraft extends app.ApplicationView {
     public final static String INVENTORY = "Inventory";
     public final static String QUEST = "Quest";
     
-    public ApplicationController appController;
+    public BaseController appController;
     public Quest quest;
     public CraftingTable craftingTable;
     public HighScores highScores;
@@ -238,7 +238,7 @@ public class Questcraft extends app.ApplicationView {
     }
 
     @Override
-    public void onLoad(ApplicationController appController) {
+    public void onLoad(BaseController appController) {
         this.appController = appController;
         this.app.addListener("book", this);
         appController.addView(this.app);

@@ -1,14 +1,23 @@
-package app;
+package app.controller;
 
-import app.desktop.SoundController;
-import app.control.GridControl;
+import app.view.BaseView;
+import app.Color;
+import app.Coordinates;
+import app.EventListener;
+import app.Icon;
+import app.Layout;
+import app.controller.desktop.SoundController;
+import app.dialog.BaseDialog;
+import app.node.BaseNode;
+import app.node.Grid;
 import java.util.List;
+import app.view.Animation;
 
 /**
  *
  * @author repp
  */
-public class AWTApplication extends ApplicationController {
+public class AWTApplication extends BaseController {
     
     public SoundController soundController = new SoundController();
     
@@ -23,7 +32,7 @@ public class AWTApplication extends ApplicationController {
             args = new String[1];
             args[0] = new Throwable().getStackTrace()[0].getClassName();
         }
-        ApplicationController.main(args);
+        BaseController.main(args);
     }
     
     @Override
@@ -37,17 +46,22 @@ public class AWTApplication extends ApplicationController {
     }
 
     @Override
-    public void open(ApplicationView splashView, ApplicationView mainView) {
+    public void open(BaseView splashView, BaseView mainView) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
     @Override
-    public void displayView(ApplicationView view) {
+    public void displayView(BaseView view) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
     @Override
     public void displayView(String viewName) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
+    public void newDialog(BaseDialog dialog) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
@@ -72,12 +86,12 @@ public class AWTApplication extends ApplicationController {
     }
     
     @Override
-    public void addView(ApplicationView view) {
+    public void addView(BaseView view) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
     @Override
-    public void addView(ApplicationView view, Boolean isParent, int index, Boolean isRefresh) {
+    public void addView(BaseView view, Boolean isParent, int index, Boolean isRefresh) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
@@ -107,62 +121,12 @@ public class AWTApplication extends ApplicationController {
     }
     
     @Override
-    public void displayMessageBox(String title, String text, int level, List<String> emojis) {
+    public void displayGrid(String viewName, Grid control) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
     @Override
-    public void displayText(String viewName, String text, Integer row, Integer column) {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-    
-    @Override
-    public void displayText(String viewName, String text, Integer row, Integer column, Color color) {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-    
-    @Override
-    public void displayText(String viewName, String text, Integer row, Integer column, Color color, int style) {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-    
-    @Override
-    public void displayGrid(String viewName, GridControl control) {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-            
-    @Override
-    public void displayLink(String viewName, String name, String linkText, int row, int column, int length, EventListener listener) {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-    
-    @Override
-    public void displayButton(String viewName, String name, String text, Integer row, Integer column, Integer endRow, Integer endColumn, Boolean isMonospace, String fontName, Boolean glow, EventListener listener) {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-    
-    @Override
-    public void displayOpenFileButton(String viewName, String name, String text, Integer row, Integer column, Integer endRow, Integer endColumn, Boolean isMonospace, String fontName, Boolean glow, EventListener listener) {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-    
-    @Override
-    public int displayImage(String viewName, String name, String fileName, int row, int column, Boolean fillParent) {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-    
-    @Override
-    public void displayFloatingText(String viewName, String name, String text, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, app.Color fontColor, Integer fontSize, Integer fontStyle, String fontName) {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-    
-    @Override
-    public void displayInputField(String viewName, String name, String label, int length, int row, int column, String initValue, Boolean addButton, Boolean isMonospace, Boolean isUpperCase, Boolean isMultiUse, EventListener listener) {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-    
-    @Override
-    public void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, Alignment alignment, EventListener listener, Boolean allowRepeatClicks) {
+    public void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, Layout layout, EventListener listener, Boolean allowRepeatClicks) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
@@ -217,12 +181,12 @@ public class AWTApplication extends ApplicationController {
     }
     
     @Override
-    public void setBackgroundImage(String viewName, String imageFileName) {
+    public void addNode(String viewName, BaseNode node, String parentName) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
     @Override
-    public void addAnimation(String viewName, String name, int row, int startColumn, String backgroundImageFileName, List<String> imageFiles, double animationDelay, AnimationView listener) {
+    public void addAnimation(String viewName, String name, int row, int startColumn, String backgroundImageFileName, List<String> imageFiles, double animationDelay, Animation listener) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
@@ -268,11 +232,6 @@ public class AWTApplication extends ApplicationController {
     
     @Override
     public void refreshView(String viewName) {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-    
-    @Override
-    public void setBackgroundColor(String viewName, app.Color color) {
         throw new UnsupportedOperationException("Not supported.");
     }
 }

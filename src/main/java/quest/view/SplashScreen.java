@@ -1,6 +1,6 @@
 package quest.view;
 
-import app.ApplicationController;
+import app.controller.BaseController;
 import app.Color;
 import app.FontStyle;
 
@@ -8,9 +8,9 @@ import app.FontStyle;
  *
  * @author repp
  */
-public class SplashScreen extends app.ApplicationView {
+public class SplashScreen extends app.view.BaseView {
     
-    public ApplicationController appController;
+    public BaseController appController;
     
     public SplashScreen(String name) {
         super(name);
@@ -19,7 +19,7 @@ public class SplashScreen extends app.ApplicationView {
     }
     
     @Override
-    public void onLoad(ApplicationController appController) {
+    public void onLoad(BaseController appController) {
         System.out.println("SplashScreen: onLoad");
         this.appController = appController;
         Color black = new Color(0, 0, 0);
@@ -29,7 +29,7 @@ public class SplashScreen extends app.ApplicationView {
     }
     
     @Override
-    public void onDisplay(ApplicationController appController) {
+    public void onDisplay(BaseController appController) {
         System.out.println("SplashScreen: onDisplay");
         appController.setTimer("timeout", 4.0, this);
     }
