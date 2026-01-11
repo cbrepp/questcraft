@@ -17,4 +17,8 @@ public class Alert extends BaseDialog {
         super();
     }
     
+    public Alert (String title) {
+        super(title);
+    }
+    
 }

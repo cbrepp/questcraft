@@ -116,7 +116,7 @@ public class InventoryControl extends QuestControl implements EventListener {
         if (item.onSelect == null) {
             // Default to displaying a message box that describes the item
             String title = eventName;
-            this.quest.appController.displayMessageBox(title, item.description, Icon.INFORMATION, item.emojis);
+            //this.quest.appController.displayMessageBox(title, item.description, Icon.INFORMATION, item.emojis);
         } else {
             Story itemStory = item.onSelect;
             System.out.println("InventoryControl: onEvent: Executing story");

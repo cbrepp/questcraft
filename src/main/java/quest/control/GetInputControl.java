@@ -41,7 +41,7 @@ public class GetInputControl extends QuestControl {
             value = this.quest.variables.get(variable);
         }
         
-        this.quest.appController.displayInputField(this.quest.name, eventName, prompt, length, realRow, realColumn, value, addButton, true, isUpperCase, isMultiUse, this.quest);
+        //this.quest.appController.displayInputField(this.quest.name, eventName, prompt, length, realRow, realColumn, value, addButton, true, isUpperCase, isMultiUse, this.quest);
         this.quest.textRow = this.quest.textRow + 2;
         this.quest.textColumn = 1;
         return "";

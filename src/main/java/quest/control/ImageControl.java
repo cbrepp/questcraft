@@ -55,7 +55,7 @@ public class ImageControl extends QuestControl {
             imageColumn = startingColumn;
         }
         // TODO - Support right align
-        this.quest.appController.displayImage(Questcraft.QUEST, name, imageFile, row, imageColumn, fillParent);
+        //this.quest.appController.displayImage(Questcraft.QUEST, name, imageFile, row, imageColumn, fillParent);
     }
     
 }

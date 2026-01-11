@@ -11,4 +11,8 @@ public abstract class BaseDialog {
     public BaseDialog() {
     }
     
+    public BaseDialog(String title) {
+        this.title = title;
+    }
+    
 }

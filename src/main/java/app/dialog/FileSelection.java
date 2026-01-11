@@ -18,4 +18,8 @@ public class FileSelection extends BaseDialog {
         super();
     }
     
+    public FileSelection (String title) {
+        super(title);
+    }
+    
 }

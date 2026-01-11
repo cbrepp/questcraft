@@ -3,6 +3,14 @@ package quest.view;
 import app.controller.BaseController;
 import app.Color;
 import app.FontStyle;
+import app.HorizontalAlignment;
+import app.Layout;
+import app.VerticalAlignment;
+import app.dialog.Alert;
+import app.node.BaseNode;
+import app.node.Button;
+import app.node.Label;
+import app.node.VerticalGroup;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -30,6 +38,12 @@ import quest.model.Story;
  */
 public class Application extends app.view.BaseView {
     
+    public final static String CREATE_EVENT = "create";
+    public final static String FONT_NAME = "Minecraft";
+    public final static String OPTIONS_EVENT = "options";
+    public final static String SELECT_EVENT = "select";
+    public final static String QUIT_EVENT = "quit";
+    
     public BaseController appController;
     public Book bookFile;
     public String flavorText;
@@ -46,18 +60,26 @@ public class Application extends app.view.BaseView {
         System.out.println("Application: onEvent: eventName=" + eventName + ", eventValue=" + eventValue);
         
         switch (eventName) {
-            case "quest" -> {
+            case SELECT_EVENT -> {
                 this.appController.stopAllSounds();
                 String fileName = (String) eventValue;
                 this.bookFile = deserializeBook(fileName);
                 this.appController.clearScreen(this.name);
                 this.display();
                 this.publishEvent("book", bookFile);
-            } case "create" -> {
-                this.appController.displayMessageBox("Coming soon!", "Creating a new quest is not available at this time.", app.Icon.INFORMATION, null);
-            } case "options" -> {
-                this.appController.displayMessageBox("Coming soon!", "Application options are not available at this time.", app.Icon.INFORMATION, null);
-            } case "quit" -> {
+            } case CREATE_EVENT -> {
+                Alert alert = new Alert(this.name);
+                alert.header = "Coming soon!";
+                alert.text = "Creating a new quest is not available at this time.";
+                alert.icon = app.Icon.INFORMATION;
+                this.appController.newDialog(alert);
+            } case OPTIONS_EVENT -> {
+                Alert alert = new Alert(this.name);
+                alert.header = "Coming soon!";
+                alert.text = "Application options are not available at this time.";
+                alert.icon = app.Icon.INFORMATION;
+                this.appController.newDialog(alert);
+            } case QUIT_EVENT -> {
                 this.appController.close();
             } default -> System.err.println("Application: onEvent: Unsupported event");
         }
@@ -89,26 +111,84 @@ public class Application extends app.view.BaseView {
         int gifColumn = parentColumns - spiderColumns + 2;    // Puts the spider in the upper right-hand corner
         appController.displayGif(this.name, "/assets/images/spider.gif", 1, gifColumn);
         
-        appController.displayButton(this.name, "quit", "Quit Game", 22, 67, 24, 84, false, "Minecraft", true, this);        
-        appController.displayButton(this.name, "options", "Options...", 22, 46, 24, 64, false, "Minecraft", true, this);        
-        appController.displayButton(this.name, "create", "Create Quest", 19, 46, 21, 84, false, "Minecraft", true, this);        
-        appController.displayOpenFileButton(this.name, "quest", "Select Quest", 16, 46, 18, 84, false, "Minecraft", true, this);        
+        VerticalGroup box = new VerticalGroup("box", new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
+        box.borderWidth = 0;
+        
+        Color titleColor = Color.DARK_GRAY;
+        Color infoTextColor = Color.DARK_MAGENTA;
+        Label titleLabel = new Label("title");        
+        titleLabel.text = "QUESTCRAFT";
+        titleLabel.pixelSize = 64.0;
+        titleLabel.textColor = titleColor;
+        titleLabel.textFont = FONT_NAME;
+        titleLabel.textStyle = FontStyle.BOLD;
+        box.nodes.add(titleLabel);
+        
+        Label subtitleLabel = new Label("subtitle");        
+        subtitleLabel.text = "- JAVA  EDITION -";
+        subtitleLabel.pixelSize = 64.0;
+        subtitleLabel.textColor = titleColor;
+        subtitleLabel.textFont = FONT_NAME;
+        subtitleLabel.textStyle = FontStyle.BOLD;
+        box.nodes.add(subtitleLabel);
 
-        app.Color titleColor = new app.Color(74, 74, 74);   // Dark gray
-        app.Color infoTextColor = new Color(139, 0, 139); // Dark magenta
-        appController.displayFloatingText(this.name, null, this.flavorText, 14, 40, 15, 90, infoTextColor, 12, FontStyle.ITALIC, "Minecraft");
-        appController.displayFloatingText(this.name, null, "- JAVA  EDITION -", 11, 42, 13, 88, titleColor, 32, FontStyle.BOLD, "Minecraft");
-        appController.displayFloatingText(this.name, null, "QUESTCRAFT", 7, 32, 11, 98, titleColor, 64, FontStyle.BOLD, "Minecraft");
+        Label flavorTextLabel = new Label("flavor");        
+        flavorTextLabel.text = this.flavorText;
+        flavorTextLabel.pixelSize = 32.0;
+        flavorTextLabel.textColor = infoTextColor;
+        flavorTextLabel.textFont = FONT_NAME;
+        flavorTextLabel.textStyle = FontStyle.ITALIC;
+        box.nodes.add(flavorTextLabel);
+        
+        Button selectButton = new Button(SELECT_EVENT);
+        selectButton.eventListener = this;
+        selectButton.eventName = CREATE_EVENT;
+        selectButton.pixelSize = 64.0;
+        selectButton.text = "Select Quest";
+        selectButton.textFont = FONT_NAME;
+        box.nodes.add(selectButton);
+
+        Button createButton = new Button(CREATE_EVENT);
+        createButton.eventListener = this;
+        createButton.eventName = CREATE_EVENT;
+        createButton.pixelSize = 64.0;
+        createButton.text = "Create Quest";
+        createButton.textFont = FONT_NAME;
+        box.nodes.add(createButton);
+        
+        Button optionsButton = new Button(OPTIONS_EVENT);
+        optionsButton.eventListener = this;
+        optionsButton.eventName = OPTIONS_EVENT;
+        optionsButton.pixelSize = 64.0;
+        optionsButton.text = "Options...";
+        optionsButton.textFont = FONT_NAME;
+        box.nodes.add(optionsButton);
+
+        Button quitButton = new Button(QUIT_EVENT);
+        quitButton.eventListener = this;
+        quitButton.eventName = QUIT_EVENT;
+        quitButton.pixelSize = 64.0;
+        quitButton.text = "Quit Game";
+        quitButton.textFont = FONT_NAME;
+        box.nodes.add(quitButton);
+        
+        this.appController.addNode(this.name, box, this.name);
+        // TODO - This shouldn't need to be done.  And box is probably being added twice to the app controller's named controls list.
+        for (BaseNode node : box.nodes) {
+            this.appController.addNode(this.name, node, box.name);        
+        }
 
         if (bookFile != null) {
             // Display "Now Playing" info
+            /*
             appController.displayFloatingText(this.name, null, this.bookFile.updateDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.getDefault())), 35, 42, 37, 88, infoTextColor, 18, null, "Minecraft");
             appController.displayFloatingText(this.name, null, "by " + this.bookFile.author, 33, 42, 35, 88, infoTextColor, 18, null, "Minecraft");
             appController.displayFloatingText(this.name, null, this.bookFile.title, 31, 42, 33, 88, infoTextColor, 18, null, "Minecraft");
             appController.displayFloatingText(this.name, null, "Now Playing...", 28, 42, 30, 88, infoTextColor, 18, FontStyle.BOLD, "Minecraft");
+            */
         }
         
-        appController.displayFloatingText(this.name, null, "Coming soon... Twin Quest Chapter 2", 41, 90, 42, 126, null, 12, FontStyle.BOLD, "Minecraft");
+        //appController.displayFloatingText(this.name, null, "Coming soon... Twin Quest Chapter 2", 41, 90, 42, 126, null, 12, FontStyle.BOLD, "Minecraft");
     }
     
     public Book deserializeBook(String fileName) {

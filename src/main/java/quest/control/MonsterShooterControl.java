@@ -294,23 +294,23 @@ public class MonsterShooterControl extends QuestControl implements Animation, Ev
                 Coordinates monsterMissileLeftMiniDimensions = this.dimensionsMap.get(MONSTER_MISSILE_MINI_NAME);
                 // Right edge of the left-side missiles is staggered at 25%, 50%, and 100% of the distance from the x-axis center of the monster
                 if ((this.difficulty.equals(DIFFICULTY_HARD)) || (this.difficulty.equals(DIFFICULTY_MAGICAL))) {
-                    this.monsterMissilesAttached.add(new Sprite(this.quest.appController, MONSTER_MISSILE_CHUNGUS_NAME, this.monsterMissileLeftImageFileName, 0.2, this.monster.x - monsterMissileLeftChungusDimensions.x, 1, monsterMissilePotentialCollisions, 0.1, null));
+                    //this.monsterMissilesAttached.add(new Sprite(this.quest.appController, MONSTER_MISSILE_CHUNGUS_NAME, this.monsterMissileLeftImageFileName, 0.2, this.monster.x - monsterMissileLeftChungusDimensions.x, 1, monsterMissilePotentialCollisions, 0.1, null));
                 }
                 if ((this.difficulty.equals(DIFFICULTY_NORMAL)) || (this.difficulty.equals(DIFFICULTY_HARD)) || (this.difficulty.equals(DIFFICULTY_MAGICAL))) {
-                    this.monsterMissilesAttached.add(new Sprite(this.quest.appController, MONSTER_MISSILE_NAME, this.monsterMissileLeftImageFileName, 0.15, this.monster.x + (int) (0.5 * monsterDimensions.x * 0.5) -  monsterMissileLeftDimensions.x, 1, monsterMissilePotentialCollisions, 0.1, null));
+                    //this.monsterMissilesAttached.add(new Sprite(this.quest.appController, MONSTER_MISSILE_NAME, this.monsterMissileLeftImageFileName, 0.15, this.monster.x + (int) (0.5 * monsterDimensions.x * 0.5) -  monsterMissileLeftDimensions.x, 1, monsterMissilePotentialCollisions, 0.1, null));
                 }
                 if ((this.difficulty.equals(DIFFICULTY_EASY)) || (this.difficulty.equals(DIFFICULTY_NORMAL)) || (this.difficulty.equals(DIFFICULTY_HARD)) || (this.difficulty.equals(DIFFICULTY_MAGICAL))) {
-                    this.monsterMissilesAttached.add(new Sprite(this.quest.appController, MONSTER_MISSILE_MINI_NAME, this.monsterMissileLeftImageFileName, 0.1, this.monster.x + (int) (0.75 * monsterDimensions.x * 0.5) -  monsterMissileLeftMiniDimensions.x, 1, monsterMissilePotentialCollisions, 0.1, null));
+                    //this.monsterMissilesAttached.add(new Sprite(this.quest.appController, MONSTER_MISSILE_MINI_NAME, this.monsterMissileLeftImageFileName, 0.1, this.monster.x + (int) (0.75 * monsterDimensions.x * 0.5) -  monsterMissileLeftMiniDimensions.x, 1, monsterMissilePotentialCollisions, 0.1, null));
                 }
                 // Left edge of the right-side missiles is staggered at 25%, 50%, and 100% of the distance from the x-axis center of the monster
                 if ((this.difficulty.equals(DIFFICULTY_EASY)) || (this.difficulty.equals(DIFFICULTY_NORMAL)) || (this.difficulty.equals(DIFFICULTY_HARD)) || (this.difficulty.equals(DIFFICULTY_MAGICAL))) {
-                    this.monsterMissilesAttached.add(new Sprite(this.quest.appController, MONSTER_MISSILE_MINI_NAME, this.monsterMissileRightImageFileName, 0.1, this.monster.x + monsterDimensions.x - (int) (0.75 * monsterDimensions.x * 0.5), 1, monsterMissilePotentialCollisions, 0.1, null));
+                    //this.monsterMissilesAttached.add(new Sprite(this.quest.appController, MONSTER_MISSILE_MINI_NAME, this.monsterMissileRightImageFileName, 0.1, this.monster.x + monsterDimensions.x - (int) (0.75 * monsterDimensions.x * 0.5), 1, monsterMissilePotentialCollisions, 0.1, null));
                 }
                 if ((this.difficulty.equals(DIFFICULTY_NORMAL)) || (this.difficulty.equals(DIFFICULTY_HARD)) || (this.difficulty.equals(DIFFICULTY_MAGICAL))) {
-                    this.monsterMissilesAttached.add(new Sprite(this.quest.appController, MONSTER_MISSILE_NAME, this.monsterMissileRightImageFileName, 0.15, this.monster.x + monsterDimensions.x - (int) (0.5 * monsterDimensions.x * 0.5), 1, monsterMissilePotentialCollisions, 0.1, null));
+                    //this.monsterMissilesAttached.add(new Sprite(this.quest.appController, MONSTER_MISSILE_NAME, this.monsterMissileRightImageFileName, 0.15, this.monster.x + monsterDimensions.x - (int) (0.5 * monsterDimensions.x * 0.5), 1, monsterMissilePotentialCollisions, 0.1, null));
                 }
                 if ((this.difficulty.equals(DIFFICULTY_HARD)) || (this.difficulty.equals(DIFFICULTY_MAGICAL))) {
-                    this.monsterMissilesAttached.add(new Sprite(this.quest.appController, MONSTER_MISSILE_CHUNGUS_NAME, this.monsterMissileRightImageFileName, 0.2, this.monster.x + monsterDimensions.x, 1, monsterMissilePotentialCollisions, 0.1, null));
+                    //this.monsterMissilesAttached.add(new Sprite(this.quest.appController, MONSTER_MISSILE_CHUNGUS_NAME, this.monsterMissileRightImageFileName, 0.2, this.monster.x + monsterDimensions.x, 1, monsterMissilePotentialCollisions, 0.1, null));
                 }
                 this.monsterMissilesSpawned = true;
             }
@@ -392,12 +392,12 @@ public class MonsterShooterControl extends QuestControl implements Animation, Ev
                         if ((this.playerMissilesAttached.isEmpty()) || (this.lastPlayerLeftMissile == null) || (!this.playerMissilesAttached.get(0).equals(this.lastPlayerLeftMissile))) {
                             // Spawn the missile on the left
                             Coordinates playerMissileLeftChungusDimensions = this.dimensionsMap.get(PLAYER_MISSILE_CHUNGUS_NAME);
-                            Sprite leftMissile = new Sprite(this.quest.appController, PLAYER_MISSILE_CHUNGUS_NAME, this.missileLeftImageFileName, 0.2, this.player.x - playerMissileLeftChungusDimensions.x, this.player.y, playerMissilePotentialCollisions, 0.1, COLOR_RED);
-                            this.playerMissilesAttached.add(leftMissile);
-                            this.lastPlayerLeftMissile = leftMissile;
+                            //Sprite leftMissile = new Sprite(this.quest.appController, PLAYER_MISSILE_CHUNGUS_NAME, this.missileLeftImageFileName, 0.2, this.player.x - playerMissileLeftChungusDimensions.x, this.player.y, playerMissilePotentialCollisions, 0.1, COLOR_RED);
+                            //this.playerMissilesAttached.add(leftMissile);
+                            //this.lastPlayerLeftMissile = leftMissile;
                         } else {
                             // Spawn the missile on the right
-                            this.playerMissilesAttached.add(new Sprite(this.quest.appController, PLAYER_MISSILE_CHUNGUS_NAME, this.missileRightImageFileName, 0.2, this.player.x + playerDimensions.x, this.player.y, playerMissilePotentialCollisions, 0.1, COLOR_RED));
+                            //this.playerMissilesAttached.add(new Sprite(this.quest.appController, PLAYER_MISSILE_CHUNGUS_NAME, this.missileRightImageFileName, 0.2, this.player.x + playerDimensions.x, this.player.y, playerMissilePotentialCollisions, 0.1, COLOR_RED));
                         }
                         this.playerMissileChungusSpawnTimer = PLAYER_MISSILE_CHUNGUS_SPAWN_DELAY;
                     } else {
@@ -405,12 +405,12 @@ public class MonsterShooterControl extends QuestControl implements Animation, Ev
                         if ((this.playerMissilesAttached.isEmpty()) || (this.lastPlayerLeftMissile == null) || (!this.playerMissilesAttached.get(0).equals(this.lastPlayerLeftMissile))) {
                             // Spawn the missile on the left
                             Coordinates playerMissileLeftMiniDimensions = this.dimensionsMap.get(PLAYER_MISSILE_MINI_NAME);
-                            Sprite leftMissile = new Sprite(this.quest.appController, PLAYER_MISSILE_MINI_NAME, this.missileLeftImageFileName, 0.1, this.player.x - playerMissileLeftMiniDimensions.x, this.player.y, playerMissilePotentialCollisions, 0.1, COLOR_RED);
-                            this.playerMissilesAttached.add(leftMissile);
-                            this.lastPlayerLeftMissile = leftMissile;
+                            //Sprite leftMissile = new Sprite(this.quest.appController, PLAYER_MISSILE_MINI_NAME, this.missileLeftImageFileName, 0.1, this.player.x - playerMissileLeftMiniDimensions.x, this.player.y, playerMissilePotentialCollisions, 0.1, COLOR_RED);
+                            //this.playerMissilesAttached.add(leftMissile);
+                            //this.lastPlayerLeftMissile = leftMissile;
                         } else {
                             // Spawn the missile on the right
-                            this.playerMissilesAttached.add(new Sprite(this.quest.appController, PLAYER_MISSILE_MINI_NAME, this.missileRightImageFileName, 0.1, this.player.x + playerDimensions.x, this.player.y, playerMissilePotentialCollisions, 0.1, COLOR_RED));
+                            //this.playerMissilesAttached.add(new Sprite(this.quest.appController, PLAYER_MISSILE_MINI_NAME, this.missileRightImageFileName, 0.1, this.player.x + playerDimensions.x, this.player.y, playerMissilePotentialCollisions, 0.1, COLOR_RED));
                         }
                     }
                 }
@@ -437,7 +437,7 @@ public class MonsterShooterControl extends QuestControl implements Animation, Ev
                 }
                 if (monsterMissileHitCount > 0) {
                     this.quest.appController.clearControl(Questcraft.QUEST, LABEL_PLAYER_HP);
-                    this.quest.appController.displayFloatingText(Questcraft.QUEST, LABEL_PLAYER_HP, "HP: " + String.valueOf(this.quest.getPlayerHP()), this.row, this.column, null, null, null, 12, null, "RobotoMono-Medium");
+                    //this.quest.appController.displayFloatingText(Questcraft.QUEST, LABEL_PLAYER_HP, "HP: " + String.valueOf(this.quest.getPlayerHP()), this.row, this.column, null, null, null, 12, null, "RobotoMono-Medium");
                     this.quest.appController.playSound(this.monsterMissileSoundFileName, false);
                 }
                 this.player.collisionSprites.clear();
@@ -451,7 +451,7 @@ public class MonsterShooterControl extends QuestControl implements Animation, Ev
                         this.monsterHP -= 1;
                     }
                     this.quest.appController.clearControl(Questcraft.QUEST, LABEL_MONSTER_HP);
-                    this.quest.appController.displayFloatingText(Questcraft.QUEST, LABEL_MONSTER_HP, "Monster HP: " + String.valueOf(this.monsterHP), this.row, this.column + 34, null, null, null, 12, null, "RobotoMono-Medium");
+                    //this.quest.appController.displayFloatingText(Questcraft.QUEST, LABEL_MONSTER_HP, "Monster HP: " + String.valueOf(this.monsterHP), this.row, this.column + 34, null, null, null, 12, null, "RobotoMono-Medium");
                 }
                 this.monster.collisionSprites.clear();
                 this.monster.glowColor = null;
@@ -463,7 +463,7 @@ public class MonsterShooterControl extends QuestControl implements Animation, Ev
             if ((this.animationCompleteDelay <= 0.0) && (this.animationCompleteDelay > -1.0)) {
                 // Display the Continue button that will refresh the pages to let the quest resume
                 int buttonRow = this.quest.buttonRow;
-                this.quest.appController.displayButton(this.quest.name, CONTINUE_BUTTON_NAME, "Continue", buttonRow, this.column, null, null, false, null, true, this);
+                //this.quest.appController.displayButton(this.quest.name, CONTINUE_BUTTON_NAME, "Continue", buttonRow, this.column, null, null, false, null, true, this);
                 this.animationCompleteDelay = -1.0;
                 this.quest.appController.stopAllSounds();
             } else if (this.animationCompleteDelay > -1.0) {
@@ -639,7 +639,7 @@ public class MonsterShooterControl extends QuestControl implements Animation, Ev
         Coordinates monsterDimensions = this.dimensionsMap.get(MONSTER_NAME);
         int monsterCenterX = Math.floorDiv(monsterDimensions.x, 2);
         int monsterPositionX = centerX - monsterCenterX;
-        this.monster = new Sprite(this.quest.appController, MONSTER_NAME, monsterFacingLeftImageFileName, 0.2, monsterPositionX, 1, null, 0.0, null) {
+        /*this.monster = new Sprite(this.quest.appController, MONSTER_NAME, monsterFacingLeftImageFileName, 0.2, monsterPositionX, 1, null, 0.0, null) {
             @Override
             public void onCollision(Sprite collidingSprite) {
                 if (collidingSprite.name.equals(PLAYER_MISSILE_CHUNGUS_NAME) || collidingSprite.name.equals(PLAYER_MISSILE_MINI_NAME)) {
@@ -647,6 +647,7 @@ public class MonsterShooterControl extends QuestControl implements Animation, Ev
                 }
             }
         };
+        */
         this.monsterDirection = 1;
         this.monsterDestinationX = this.monster.x + (int) (Math.random() * (backgroundDimensions.x - this.monster.x));
         this.monsterHalfwayPoint = (Math.floorDiv(Math.abs(monsterPositionX - this.monsterDestinationX), 2) * this.monsterDirection) + monsterPositionX;
@@ -654,7 +655,7 @@ public class MonsterShooterControl extends QuestControl implements Animation, Ev
         this.monsterHP = 100;
         Coordinates playerDimensions = this.dimensionsMap.get(PLAYER_NAME);
         int halfPlayerX = Math.floorDiv(playerDimensions.x, 2);
-        this.player = new Sprite(this.quest.appController, PLAYER_NAME, playerFacingRightImageFileName, 0.2, centerX - halfPlayerX, backgroundDimensions.y - playerDimensions.y, null, 0.0, null) {
+        /*this.player = new Sprite(this.quest.appController, PLAYER_NAME, playerFacingRightImageFileName, 0.2, centerX - halfPlayerX, backgroundDimensions.y - playerDimensions.y, null, 0.0, null) {
             @Override
             public void onCollision(Sprite collidingSprite) {
                 if (collidingSprite.name.equals(MONSTER_MISSILE_CHUNGUS_NAME) || collidingSprite.name.equals(MONSTER_MISSILE_NAME) || collidingSprite.name.equals(MONSTER_MISSILE_MINI_NAME)) {
@@ -662,6 +663,7 @@ public class MonsterShooterControl extends QuestControl implements Animation, Ev
                 }
             }
         };
+        */
         this.playerMovedLeftCount = 0;
         this.playerMovedRightCount = 0;
         
@@ -681,9 +683,9 @@ public class MonsterShooterControl extends QuestControl implements Animation, Ev
         this.quest.variables.put("animation-up", "false");
         
         // Add floating text above the animation to indicate the player and monster's stats
-        this.quest.appController.displayFloatingText(Questcraft.QUEST, LABEL_PLAYER_HP, "HP: " + String.valueOf(this.quest.getPlayerHP()), this.row, this.column, null, null, null, 12, null, "RobotoMono-Medium");
-        this.quest.appController.displayFloatingText(Questcraft.QUEST, LABEL_PLAYER_MP, "MP: " + String.valueOf(this.quest.getPlayerMP()), this.row, this.column + 17, null, null, null, 12, null, "RobotoMono-Medium");
-        this.quest.appController.displayFloatingText(Questcraft.QUEST, LABEL_MONSTER_HP, "Monster HP: " + String.valueOf(this.monsterHP), this.row, this.column + 34, null, null, null, 12, null, "RobotoMono-Medium");
+        //this.quest.appController.displayFloatingText(Questcraft.QUEST, LABEL_PLAYER_HP, "HP: " + String.valueOf(this.quest.getPlayerHP()), this.row, this.column, null, null, null, 12, null, "RobotoMono-Medium");
+        //this.quest.appController.displayFloatingText(Questcraft.QUEST, LABEL_PLAYER_MP, "MP: " + String.valueOf(this.quest.getPlayerMP()), this.row, this.column + 17, null, null, null, 12, null, "RobotoMono-Medium");
+        //this.quest.appController.displayFloatingText(Questcraft.QUEST, LABEL_MONSTER_HP, "Monster HP: " + String.valueOf(this.monsterHP), this.row, this.column + 34, null, null, null, 12, null, "RobotoMono-Medium");
 
         // Initialize the animation
         this.quest.appController.addAnimation(Questcraft.QUEST, name, this.row + 2, this.column, backgroundImageFileName, imageFiles, ANIMATION_DELAY, this);

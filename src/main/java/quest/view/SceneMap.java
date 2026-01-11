@@ -115,7 +115,7 @@ public class SceneMap extends app.view.BaseView implements EventListener {
                         Group itemGroup = new VerticalGroup(COMPASS, new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
                         Image imageControl = new Image(COMPASS + " image", new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
                         imageControl.file = "/assets/images/compass-small.png";
-                        itemGroup.list.add(imageControl);
+                        itemGroup.nodes.add(imageControl);
                         gridControl.cells.add(itemGroup);
                     } else {
                         emptyCellCount++;   // TODO - This is ugly
@@ -145,7 +145,7 @@ public class SceneMap extends app.view.BaseView implements EventListener {
                         labelControl.text = sceneName;
                         System.out.println("SceneMap: render: Adding " + sceneName + " to " + x + ", " + y);
                     }
-                    itemGroup.list.add(labelControl);
+                    itemGroup.nodes.add(labelControl);
                 }
                 if ((this.quest.playerX != null) && (this.quest.playerX == x) && (this.quest.playerY != null) && (this.quest.playerY == y)) {
                     String playerSymbol = this.quest.playerSymbol;
@@ -157,7 +157,7 @@ public class SceneMap extends app.view.BaseView implements EventListener {
                     }
                     Label labelControl = new Label("player", new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
                     labelControl.text = playerSymbol;
-                    itemGroup.list.add(labelControl);
+                    itemGroup.nodes.add(labelControl);
                     System.out.println("SceneMap: render: Added " + playerSymbol + " to " + x + ", " + y);
                 }
                 if (sceneName != null) {
@@ -165,7 +165,7 @@ public class SceneMap extends app.view.BaseView implements EventListener {
                     if ((scene != null) && (scene.symbol != null) && (observedActScenes.contains(sceneName))) {
                         Label labelControl2 = new Label(sceneName + " symbol", new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
                         labelControl2.text = scene.symbol;
-                        itemGroup.list.add(labelControl2);
+                        itemGroup.nodes.add(labelControl2);
                         System.out.println("SceneMap: render: Added " + scene.symbol + " to " + x + ", " + y);
                     }
                 }

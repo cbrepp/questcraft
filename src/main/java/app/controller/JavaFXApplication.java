@@ -1288,6 +1288,10 @@ public class JavaFXApplication extends BaseController {
             fxChild = this.newLabel((app.node.Label) node, offsetColor);
         } else if (childClass.equals(app.node.Image.class)) {
             fxChild = this.newImage((app.node.Image) node);
+        } else if (childClass.equals(app.node.HorizontalGroup.class)) {
+            fxChild = this.newGroup(viewName, (app.node.HorizontalGroup) node, offsetColor);
+        } else if (childClass.equals(app.node.VerticalGroup.class)) {
+            fxChild = this.newGroup(viewName, (app.node.VerticalGroup) node, offsetColor);
         } else {
             logger.log(Level.SEVERE, "Class is not a supported child class: {0}", childClass.getSimpleName());
             return;

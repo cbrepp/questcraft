@@ -64,7 +64,7 @@ public class Inventory extends app.view.BaseView implements EventListener {
                 System.out.println("Inventory: onEvent: Executing story");
                 this.quest.displayPage(item.onSelect.contents, true);
             } else {
-                this.quest.appController.displayMessageBox(title, item.description, Icon.INFORMATION, item.emojis);
+                //this.quest.appController.displayMessageBox(title, item.description, Icon.INFORMATION, item.emojis);
             }
         }
     }
@@ -125,13 +125,13 @@ public class Inventory extends app.view.BaseView implements EventListener {
             Label emojiControl = new Label(key + " emojis", itemGroupLayout);
             emojiControl.text = String.join(" ", bookItem.emojis);
             emojiControl.pixelSize = BaseController.EMOJI_SHEET_SIZE;
-            itemGroup.list.add(emojiControl);
+            itemGroup.nodes.add(emojiControl);
 
             Link linkControl = new Link(key + " name link", itemGroupLayout);
             linkControl.text = key;
             linkControl.eventListener = this;
             linkControl.eventName = itemGroup.name;
-            itemGroup.list.add(linkControl);
+            itemGroup.nodes.add(linkControl);
 
             InventoryItem questItem = this.quest.inventory.get(key);
             if (questItem != null) {
@@ -146,7 +146,7 @@ public class Inventory extends app.view.BaseView implements EventListener {
 
                 Label countControl = new Label(key + " count", itemGroupLayout);
                 countControl.text = "x" + questItem.quantity;
-                itemGroup.list.add(countControl);
+                itemGroup.nodes.add(countControl);
             } else {
                 System.out.println("Inventory: render: Item NOT in quest inventory: " + key);
                 itemGroup.backgroundColor = Color.DARK_GRAY;

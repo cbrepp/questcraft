@@ -81,7 +81,7 @@ public class Quest extends app.view.BaseView {
     public Color textColor;
     public int textColumn;
     public int textRow;
-    public int textStyle;
+    public FontStyle textStyle;
     public int titleRow;
     public Map<String, String> variables;
 
@@ -170,7 +170,7 @@ public class Quest extends app.view.BaseView {
         this.questControls.put(VariableSetControl.NAME, new VariableSetControl(this));
         this.questControls.put(VariableAddControl.NAME, new VariableAddControl(this));
         this.textColor = new Color(0, 0, 0);
-        this.textStyle = FontStyle.NORMAL;
+        //this.textStyle = FontStyle.NORMAL;
         this.emojis.add("\uD83D\uDCD6"); // "open book" Unicode emoji
     }
     
@@ -306,7 +306,7 @@ public class Quest extends app.view.BaseView {
             int nextRow = appController.displayGif(this.name, this.book.animationFileName, gifRow, gifColumn);
             int halfTextWidth = ("Loading...".length() / 2);
             int loadingTextColumn = halfColumns - halfTextWidth;
-            appController.displayText(this.name, "Loading...", nextRow, loadingTextColumn, new Color(255, 255, 255));
+            //appController.displayText(this.name, "Loading...", nextRow, loadingTextColumn, new Color(255, 255, 255));
             Act firstAct = book.acts.get(this.book.firstActName);
             Scene firstScene = firstAct.scenes.get(firstAct.firstSceneName);
             if (!firstScene.soundFileName.equals("")) {
@@ -412,11 +412,11 @@ public class Quest extends app.view.BaseView {
         if (!scene.hidePageHeaders) {
             Color black = new Color(0, 0, 0);
             if (FIRST_PAGE == LEFT_PAGE) {
-                this.appController.displayText(this.name, this.book.title, this.titleRow, this.leftPageStartingColumn, black, FontStyle.BOLD);
-                this.appController.displayText(this.name, this.currentAct, this.titleRow, this.rightPageEndingColumn - this.currentAct.length() + 1, black, FontStyle.BOLD);
+                //this.appController.displayText(this.name, this.book.title, this.titleRow, this.leftPageStartingColumn, black, FontStyle.BOLD);
+                //this.appController.displayText(this.name, this.currentAct, this.titleRow, this.rightPageEndingColumn - this.currentAct.length() + 1, black, FontStyle.BOLD);
             } else {
-                this.appController.displayText(this.name, this.currentAct, this.titleRow, this.leftPageStartingColumn, black, FontStyle.BOLD);
-                this.appController.displayText(this.name, this.book.title, this.titleRow, this.rightPageEndingColumn - this.book.title.length() + 1, black, FontStyle.BOLD);
+                //this.appController.displayText(this.name, this.currentAct, this.titleRow, this.leftPageStartingColumn, black, FontStyle.BOLD);
+                //this.appController.displayText(this.name, this.book.title, this.titleRow, this.rightPageEndingColumn - this.book.title.length() + 1, black, FontStyle.BOLD);
             }
 
         }
@@ -441,7 +441,7 @@ public class Quest extends app.view.BaseView {
             String buttonText = "Next >";
             int buttonColumns = appController.getButtonColumns(buttonText);
             int buttonColumn = this.rightPageEndingColumn - buttonColumns + 1;
-            this.appController.displayButton(this.name, NEXT_PAGE, buttonText, this.buttonRow, buttonColumn, null, null, false, null, !page.noGlow, this);
+            //this.appController.displayButton(this.name, NEXT_PAGE, buttonText, this.buttonRow, buttonColumn, null, null, false, null, !page.noGlow, this);
             isNextPageDisplaying = true;
         }
 
@@ -450,7 +450,7 @@ public class Quest extends app.view.BaseView {
             String buttonText = "< Previous";
             int buttonColumn = this.leftPageStartingColumn;
             Boolean glow = ((!isNextPageDisplaying) && (!page.noGlow));   // If there is no Next Page button, then attention should be called to going back
-            this.appController.displayButton(this.name, PREVIOUS_PAGE, buttonText, this.buttonRow, buttonColumn, null, null, false, null, glow, this);
+            //this.appController.displayButton(this.name, PREVIOUS_PAGE, buttonText, this.buttonRow, buttonColumn, null, null, false, null, glow, this);
         }
         
         // Game Over button
@@ -458,7 +458,7 @@ public class Quest extends app.view.BaseView {
             String buttonText = "Game Over >";
             int buttonColumns = appController.getButtonColumns(buttonText);
             int buttonColumn = this.rightPageEndingColumn - buttonColumns + 1;
-            this.appController.displayButton(this.name, GAME_OVER, buttonText, this.buttonRow, buttonColumn, null, null, false, null, true, this);
+            //this.appController.displayButton(this.name, GAME_OVER, buttonText, this.buttonRow, buttonColumn, null, null, false, null, true, this);
         }
     }
     
@@ -470,12 +470,12 @@ public class Quest extends app.view.BaseView {
             this.textColumn = 1;
             this.textRow = 1;
             this.textColor = new Color(0, 0, 0);
-            this.textStyle = FontStyle.NORMAL;
+            //this.textStyle = FontStyle.NORMAL;
             System.out.println("Quest: displayPage : Initialized textRow to 1");
         }
         
         Color currentTextColor = this.textColor;
-        int currentTextStyle = this.textStyle;
+        FontStyle currentTextStyle = this.textStyle;
         
         for (String pageLine : page) {
             String storyText = "";
@@ -541,7 +541,7 @@ public class Quest extends app.view.BaseView {
         }
     }
     
-    public void displayTextOnPage(String text, Integer row, Integer column, Color color, int style) {
+    public void displayTextOnPage(String text, Integer row, Integer column, Color color, FontStyle style) {
         this.textColumn = column;
         int startingColumn;
         int endingColumn;
@@ -590,7 +590,7 @@ public class Quest extends app.view.BaseView {
             }
             if ((!this.magicText) || (color.red != 0) || (color.green != 0) || (color.blue != 0)) {
                 System.out.println("Quest: displayTextOnPage: starting row=" + row + ", now on " + (this.textRow) + ", text=" + lineText + ", realColumn=" + realColumn + ", textColumn=" + this.textColumn);
-                this.appController.displayText(this.name, lineText, realRow, realColumn, color, style);
+                //this.appController.displayText(this.name, lineText, realRow, realColumn, color, style);
             } else {
                 // When magic words are turned on and the font color is black, color each word individually
                 int magicColumn = realColumn;
@@ -602,12 +602,12 @@ public class Quest extends app.view.BaseView {
                     int red = this.random.nextInt(192);
                     int blue = this.random.nextInt(192);
                     Color randomColor = new Color(red, 0, blue);
-                    this.appController.displayText(this.name, magicWord + " ", realRow, magicColumn, randomColor, style);
+                    //this.appController.displayText(this.name, magicWord + " ", realRow, magicColumn, randomColor, style);
                     this.textColumn += magicWord.length() + 1;
                     magicColumn += magicWord.length() + 1;
                 }
                 System.out.println("Quest: displayTextOnPage: lineText=" + lineText + ", realRow=" + realRow + ", realColumn=" + realColumn);
-                this.appController.displayText(this.name, lineText, realRow, realColumn, color, style);
+                //this.appController.displayText(this.name, lineText, realRow, realColumn, color, style);
             }
             remainingText = remainingText.trim();
             if (wrapText) {

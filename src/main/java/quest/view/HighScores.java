@@ -28,11 +28,11 @@ public class HighScores extends app.view.BaseView {
         int row = 3;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy");
         for (HighScore highScore : this.highScores) {
-            appController.displayText(this.name, highScore.score + "   " + highScore.player + "   " + highScore.date.format(formatter), row++, 5);
+            //appController.displayText(this.name, highScore.score + "   " + highScore.player + "   " + highScore.date.format(formatter), row++, 5);
         }
         
         row++;
-        appController.displayText(this.name, "Your score: " + this.quest.getPlayerXP(), row++, 5);
+        //appController.displayText(this.name, "Your score: " + this.quest.getPlayerXP(), row++, 5);
     }
         
     public void setHighScores(List<HighScore> highScores) {
