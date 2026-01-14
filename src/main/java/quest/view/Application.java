@@ -5,12 +5,16 @@ import app.Color;
 import app.FontStyle;
 import app.HorizontalAlignment;
 import app.Layout;
+import app.RelativeCoordinates;
 import app.VerticalAlignment;
+import static app.controller.BaseController.logger;
 import app.dialog.Alert;
+import app.dialog.FileSelection;
 import app.node.BaseNode;
 import app.node.Button;
 import app.node.Label;
 import app.node.VerticalGroup;
+import app.node.effect.Glow;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -24,6 +28,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
 import quest.model.Act;
 import quest.model.Book;
 import quest.model.HighScore;
@@ -39,9 +44,11 @@ import quest.model.Story;
 public class Application extends app.view.BaseView {
     
     public final static String CREATE_EVENT = "create";
-    public final static String FONT_NAME = "Minecraft";
+    public final static String FILE_EVENT = "file";
+    public final static String FONT_NAME = "RobotoMono-Medium";
     public final static String OPTIONS_EVENT = "options";
     public final static String SELECT_EVENT = "select";
+    public final static String TITLE_FONT_NAME = "Minecraft";
     public final static String QUIT_EVENT = "quit";
     
     public BaseController appController;
@@ -57,17 +64,10 @@ public class Application extends app.view.BaseView {
     
     @Override
     public void onEvent(String eventName, Object eventValue) {
-        System.out.println("Application: onEvent: eventName=" + eventName + ", eventValue=" + eventValue);
+        logger.log(Level.INFO, "Entered: eventName={0}, eventValue={1}", new Object[]{eventName, eventValue});
         
         switch (eventName) {
-            case SELECT_EVENT -> {
-                this.appController.stopAllSounds();
-                String fileName = (String) eventValue;
-                this.bookFile = deserializeBook(fileName);
-                this.appController.clearScreen(this.name);
-                this.display();
-                this.publishEvent("book", bookFile);
-            } case CREATE_EVENT -> {
+            case CREATE_EVENT -> {
                 Alert alert = new Alert(this.name);
                 alert.header = "Coming soon!";
                 alert.text = "Creating a new quest is not available at this time.";
@@ -81,6 +81,20 @@ public class Application extends app.view.BaseView {
                 this.appController.newDialog(alert);
             } case QUIT_EVENT -> {
                 this.appController.close();
+            } case SELECT_EVENT -> {
+                FileSelection fs = new FileSelection("Select Quest");
+                fs.eventListener = this;
+                fs.eventName = FILE_EVENT;
+                fs.extensionFilters.add("*.quest");
+                fs.initialFolder = "/home/repp/Documents/quests/";
+                this.appController.newDialog(fs);
+            } case FILE_EVENT -> {
+                this.appController.stopAllSounds();
+                String fileName = (String) eventValue;
+                this.bookFile = deserializeBook(fileName);
+                this.appController.clearScreen(this.name);
+                this.display();
+                this.publishEvent("book", bookFile);                
             } default -> System.err.println("Application: onEvent: Unsupported event");
         }
     }
@@ -93,7 +107,7 @@ public class Application extends app.view.BaseView {
         
         appController.playSound("/assets/sounds/questcraft.mp3", true);
         
-        String[] responses = {"Keep your hands and feet inside the quest at all times", "Presented in Quest-o-Vision (where available)", "Filmed on location", "Proudly made in your imagination", "Recommended by 4 out of 5 unicorns", "The game that plays you", "A stern warning of things to come", "Painstakingly rendered before a live studio audience", "Sock puppets not included", "The official questing game of gnomes", "Or is it?", "It makes a nice sandwich!", "Tips are not expected but appreciated", "There will be a test at the end", "Made you look!", "Proud supporter of the Lollipop Guild", "Soon to be a hit game", "Made from 100% recycled pixels", "WARNING: Do not show to axolotls", "WARNING: May cause tentacles to emerge from your screen", "Featuring a new invisible character who doesn't speak", "You have been warned", "Don't look behind you", "Ask about our new pumpkin spice flavor!"};
+        String[] responses = {"Keep your hands and feet inside the quest at all times.", "Presented in Quest-o-Vision (where available).", "Filmed on location.", "Proudly made in your imagination.", "Recommended by 4 out of 5 unicorns.", "The game that plays you.", "A stern warning of things to come.", "Painstakingly rendered before a live studio audience.", "Sock puppets not included.", "The official questing game of gnomes.", "Or is it?", "It makes a nice sandwich!", "Tips are not expected but appreciated.", "There will be a test at the end.", "Made you look!", "Proud supporter of the Lollipop Guild.", "Soon to be a hit game.", "Made from 100% recycled pixels.", "WARNING: Do not show to axolotls.", "WARNING: May cause tentacles to emerge from your screen.", "Featuring a new invisible character who doesn't speak.", "You have been warned.", "Don't look behind you.", "Ask about our new pumpkin spice flavor!"};
         int randomResponseIndex = (int) (Math.random() * responses.length);
         this.flavorText = responses[randomResponseIndex];
         
@@ -111,72 +125,77 @@ public class Application extends app.view.BaseView {
         int gifColumn = parentColumns - spiderColumns + 2;    // Puts the spider in the upper right-hand corner
         appController.displayGif(this.name, "/assets/images/spider.gif", 1, gifColumn);
         
-        VerticalGroup box = new VerticalGroup("box", new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
-        box.borderWidth = 0;
-        
-        Color titleColor = Color.DARK_GRAY;
-        Color infoTextColor = Color.DARK_MAGENTA;
-        Label titleLabel = new Label("title");        
+        Label titleLabel = new Label("title", new Layout(new RelativeCoordinates(0.0, 0.1), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
         titleLabel.text = "QUESTCRAFT";
         titleLabel.pixelSize = 64.0;
-        titleLabel.textColor = titleColor;
-        titleLabel.textFont = FONT_NAME;
+        titleLabel.textColor = Color.SHADOW;
+        titleLabel.textFont = TITLE_FONT_NAME;
         titleLabel.textStyle = FontStyle.BOLD;
-        box.nodes.add(titleLabel);
+        this.appController.addNode(this.name, titleLabel, this.name);
+        // TODO - Add 
         
-        Label subtitleLabel = new Label("subtitle");        
+        Label subtitleLabel = new Label("subtitle", new Layout(new RelativeCoordinates(0.0, 0.18), HorizontalAlignment.CENTER, VerticalAlignment.TOP));        
         subtitleLabel.text = "- JAVA  EDITION -";
-        subtitleLabel.pixelSize = 64.0;
-        subtitleLabel.textColor = titleColor;
-        subtitleLabel.textFont = FONT_NAME;
+        subtitleLabel.pixelSize = 32.0;
+        subtitleLabel.textColor = Color.SHADOW;
+        subtitleLabel.textFont = TITLE_FONT_NAME;
         subtitleLabel.textStyle = FontStyle.BOLD;
-        box.nodes.add(subtitleLabel);
+        this.appController.addNode(this.name, subtitleLabel, this.name);
 
-        Label flavorTextLabel = new Label("flavor");        
+        Label flavorTextLabel = new Label("flavor", new Layout(new RelativeCoordinates(0.0, 0.26), HorizontalAlignment.CENTER, VerticalAlignment.TOP));        
         flavorTextLabel.text = this.flavorText;
-        flavorTextLabel.pixelSize = 32.0;
-        flavorTextLabel.textColor = infoTextColor;
+        flavorTextLabel.pixelSize = 16.0;
+        flavorTextLabel.textColor = Color.DARK_MAGENTA;
         flavorTextLabel.textFont = FONT_NAME;
         flavorTextLabel.textStyle = FontStyle.ITALIC;
-        box.nodes.add(flavorTextLabel);
+        this.appController.addNode(this.name, flavorTextLabel, this.name);
         
-        Button selectButton = new Button(SELECT_EVENT);
+        Glow glow = new Glow();
+        glow.color = Color.DARK_MAGENTA;
+        
+        // TODO - The buttons should scale horizontally to be as wide as the title label
+        // TODO - Each addNode invokation should return the (relative) bounds of the node
+        // TODO - Need to figure out how to block until the UI thread is complete, or, if the delayed layout issue can be solved another way
+
+        Button selectButton = new Button(SELECT_EVENT, new Layout(new RelativeCoordinates(0.0, 0.34), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
         selectButton.eventListener = this;
-        selectButton.eventName = CREATE_EVENT;
-        selectButton.pixelSize = 64.0;
+        selectButton.eventName = SELECT_EVENT;
+        selectButton.pixelSize = 24.0;
+        selectButton.textColor = Color.SHADOW;
         selectButton.text = "Select Quest";
         selectButton.textFont = FONT_NAME;
-        box.nodes.add(selectButton);
+        selectButton.effects.add(glow);
+        this.appController.addNode(this.name, selectButton, this.name);
 
-        Button createButton = new Button(CREATE_EVENT);
+        Button createButton = new Button(CREATE_EVENT, new Layout(new RelativeCoordinates(0.0, 0.44), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
         createButton.eventListener = this;
         createButton.eventName = CREATE_EVENT;
-        createButton.pixelSize = 64.0;
+        createButton.pixelSize = 24.0;
+        createButton.textColor = Color.SHADOW;
         createButton.text = "Create Quest";
         createButton.textFont = FONT_NAME;
-        box.nodes.add(createButton);
+        createButton.effects.add(glow);
+        this.appController.addNode(this.name, createButton, this.name);
         
-        Button optionsButton = new Button(OPTIONS_EVENT);
+        Button optionsButton = new Button(OPTIONS_EVENT, new Layout(new RelativeCoordinates(0.0, 0.54), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
         optionsButton.eventListener = this;
         optionsButton.eventName = OPTIONS_EVENT;
-        optionsButton.pixelSize = 64.0;
+        optionsButton.pixelSize = 24.0;
+        optionsButton.textColor = Color.SHADOW;
         optionsButton.text = "Options...";
         optionsButton.textFont = FONT_NAME;
-        box.nodes.add(optionsButton);
+        optionsButton.effects.add(glow);
+        this.appController.addNode(this.name, optionsButton, this.name);
 
-        Button quitButton = new Button(QUIT_EVENT);
+        Button quitButton = new Button(QUIT_EVENT, new Layout(new RelativeCoordinates(0.0, 0.64), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
         quitButton.eventListener = this;
         quitButton.eventName = QUIT_EVENT;
-        quitButton.pixelSize = 64.0;
+        quitButton.pixelSize = 24.0;
+        quitButton.textColor = Color.SHADOW;
         quitButton.text = "Quit Game";
         quitButton.textFont = FONT_NAME;
-        box.nodes.add(quitButton);
-        
-        this.appController.addNode(this.name, box, this.name);
-        // TODO - This shouldn't need to be done.  And box is probably being added twice to the app controller's named controls list.
-        for (BaseNode node : box.nodes) {
-            this.appController.addNode(this.name, node, box.name);        
-        }
+        quitButton.effects.add(glow);
+        this.appController.addNode(this.name, quitButton, this.name);
 
         if (bookFile != null) {
             // Display "Now Playing" info

@@ -4,11 +4,19 @@ import app.view.BaseView;
 import app.Coordinates;
 import app.EventListener;
 import app.FontStyle;
+import static app.HorizontalAlignment.CENTER;
+import static app.HorizontalAlignment.LEFT;
+import static app.HorizontalAlignment.RIGHT;
 import app.Icon;
 import app.Layout;
+import static app.VerticalAlignment.BOTTOM;
+import static app.VerticalAlignment.CENTER;
+import static app.VerticalAlignment.TOP;
+import static app.controller.BaseController.logger;
 import app.node.BaseNode;
 import app.controller.javafx.DelegateApplication;
 import app.dialog.BaseDialog;
+import app.node.Group;
 import app.node.Sprite;
 import app.node.effect.BaseEffect;
 import app.node.effect.Glow;
@@ -107,6 +115,12 @@ import javafx.scene.text.TextFlow;
 import javax.imageio.metadata.IIOMetadata;
 import org.w3c.dom.NamedNodeMap;
 import app.view.Animation;
+import java.util.concurrent.CountDownLatch;
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.scene.control.Control;
+import javafx.scene.layout.Region;
 
 /**
  *
@@ -133,7 +147,8 @@ public class JavaFXApplication extends BaseController {
     public BaseView lastSelectedView;
     public HashMap<String, List<MediaPlayer>> mediaPlayers = new HashMap();
     public Font monospaceFont;
-    public HashMap<String, Map<String, Object>> namedControls;
+    public Map<String, Map<String, Object>> namedControls;
+    public Map<String, List<BooleanBinding>> nodeBindings = new HashMap(); // Only necessary because they need to handle UI thread actions that can outlast scoping inside of a method
     public BaseView parentView;
     public Coordinates primaryDimensions;
     public Scene primaryScene;
@@ -190,7 +205,12 @@ public class JavaFXApplication extends BaseController {
     public void close() {
         System.out.println("JavaFXApplication: close");
         Platform.exit();    // Gracefully stop all processes in the JavaFX application
-        System.exit(0);     // Stop any remaining framework processes, including background processes
+        boolean isJPro = System.getProperty("jpro.version") != null;
+        if (isJPro) {
+            logger.log(Level.INFO, "System exit intentionally skipped for JPro environment");
+        } else {
+            System.exit(0);     // Stop any remaining framework processes, including background processes
+        }
     }
     
     public void displayStage(BaseView view) {
@@ -424,12 +444,13 @@ public class JavaFXApplication extends BaseController {
             content.getChildren().clear();
         }
         
-        // Remove all key bindings
+        // Remove all bindings
         this.primaryScene.getAccelerators().clear();
         for (EventHandler<KeyEvent> eventHandler : this.keyBindings.values()) {
             this.primaryScene.removeEventFilter(KeyEvent.KEY_PRESSED, eventHandler);
         }
         this.keyBindings.clear();
+        this.nodeBindings.get(viewName).clear();
     }
     
     @Override
@@ -560,8 +581,8 @@ public class JavaFXApplication extends BaseController {
         scrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
         //scrollPane.setPrefViewportWidth(dimensions.x);
         //scrollPane.setPrefViewportHeight(dimensions.y);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setFitToHeight(true);
+        scrollPane.setFitToWidth(false);
+        scrollPane.setFitToHeight(false);
 
         if (isParent) {
             // Not supported at this time
@@ -579,6 +600,7 @@ public class JavaFXApplication extends BaseController {
         tab.setContent(scrollPane);
         this.tabItemMap.put(view.name, tab);
         this.tabItemViewMap.put(tab, view);
+        this.nodeBindings.put(view.name, new ArrayList());
         
         // Configure the background
         Background background = null;
@@ -727,13 +749,95 @@ public class JavaFXApplication extends BaseController {
     }
     */
     
-    public void positionNode(BaseNode node, Node fxNode, Pane fxParent) {
-        logger.log(Level.INFO, "Entered: node={0}, fxNode={1}, fxParent={2}", new Object[]{node, fxNode, fxParent});
+    public void positionNode(String viewName, BaseNode node, Node fxNode, Pane fxParent) {
+        logger.log(Level.INFO, "Entered: viewName={0}, node={1}, fxNode={2}, fxParent={3}", new Object[]{viewName, node, fxNode, fxParent});
         
         if (node.layout == null) {
             logger.log(Level.INFO, "No layout, node will be managed by parent");
             return;
         }
+        
+        if (node.getClass().equals(app.node.Button.class)) {
+            Button button = (Button) fxNode;
+            
+            if ((button.getWidth() == 0) || (button.getHeight() == 0)) {
+                logger.log(Level.INFO, "Subscribing to size change : width={0}, height={1}", new Object[]{button.getWidth(), button.getHeight()});
+                
+                // Run in a background thread to prevent UI locking
+                new Thread(() -> {
+                    try {
+                        // Wait until the UI thread updates both the width and the height for the control
+                        CountDownLatch latch = new CountDownLatch(1);
+                        Platform.runLater(() -> {                
+                            BooleanBinding sizeEstablished = Bindings.and(
+                                button.widthProperty().greaterThan(0),
+                                button.heightProperty().greaterThan(0)
+                            );
+                            this.nodeBindings.get(viewName).add(sizeEstablished);
+
+                            sizeEstablished.when(sizeEstablished).subscribe(isSet -> {
+                                if (isSet) {
+                                    logger.log(Level.INFO, "Both set! width={0}, height={1}", new Object[]{button.getWidth(), button.getHeight()});
+                                    this.positionNode(viewName, node, fxNode, fxParent);
+                                }
+                            });
+                        });
+                        latch.await();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }).start();
+                return;
+            }
+        }
+        
+        Double x = null;
+        if (node.layout.horizontalAlignment == null) {
+            logger.log(Level.WARNING, "Horizontal alignment was not specified");
+        } else {
+            switch (node.layout.horizontalAlignment) {
+                case LEFT -> {
+                    x = fxParent.getPrefWidth() * node.layout.position.x;
+                }
+                case CENTER -> {
+                    x = (fxParent.getPrefWidth() - fxNode.getBoundsInLocal().getWidth()) / 2;
+                }
+                case RIGHT -> {
+                    x = (fxParent.getPrefWidth() * node.layout.position.x) - fxNode.getBoundsInLocal().getWidth();
+                }
+            }
+        }
+        
+        if (x != null) {
+            fxNode.setLayoutX(x);
+        }
+        
+        Double y = null;
+        if (node.layout.verticalAlignment == null) {
+            logger.log(Level.WARNING, "Vertical alignment was not specified");
+        } else {
+            switch (node.layout.verticalAlignment) {
+                case TOP -> {
+                    y = fxParent.getPrefHeight() * node.layout.position.y;
+                }
+                case CENTER -> {
+                    y = (fxParent.getPrefHeight() - fxNode.getBoundsInLocal().getHeight()) / 2;
+                }
+                case BOTTOM -> {
+                    y = (fxParent.getPrefHeight() * node.layout.position.y) - fxNode.getBoundsInLocal().getHeight();
+                }
+            }
+        }
+        
+        if (y != null) {
+            fxNode.setLayoutY(y);
+        }
+            
+        // TODO - node.scaleX and node.scaleY
+        
+        logger.log(Level.INFO, "Calculated coordinates ({0}, {1}) for parent width {2} and height {3} and node width {4} and height {5}", new Object[]{x, y, fxParent.getPrefWidth(), fxParent.getPrefHeight(), fxNode.getBoundsInLocal().getWidth(), fxNode.getBoundsInLocal().getHeight()});
+        
+
         
         /*
         if (fxNode.isManaged()) {
@@ -742,17 +846,21 @@ public class JavaFXApplication extends BaseController {
         }
         */
 
+        /*
         // Handle the configured horizontal alignment
         if (node.layout.horizontalAlignment == null) {
             logger.log(Level.WARNING, "Horizontal alignment was not specified");
         } else {
             switch (node.layout.horizontalAlignment) {
                 case LEFT -> fxNode.layoutXProperty().bind(fxParent.widthProperty().multiply(node.layout.position.x));
-                case CENTER -> fxNode.layoutXProperty().bind(Bindings.createDoubleBinding(() -> {
+                case CENTER -> { fxNode.layoutXProperty().bind(Bindings.createDoubleBinding(() -> {
                         double parentWidth = fxParent.getWidth();
                         double nodeWidth = fxNode.getLayoutBounds().getWidth();
+                        logger.log(Level.INFO, "H align center: parent width={0}, node width={1}, h position={2}, name={3}", new Object[]{fxParent.getWidth(), fxNode.getLayoutBounds().getWidth(), ((fxParent.getWidth() - fxNode.getLayoutBounds().getWidth()) / 2), node.name});
                         return (parentWidth - nodeWidth) / 2;
                     }, fxParent.widthProperty(), fxNode.layoutBoundsProperty()));
+                    logger.log(Level.INFO, "H align center: parent width={0}, node width={1}, h position={2}, name={3}", new Object[]{fxParent.getWidth(), fxNode.getLayoutBounds().getWidth(), ((fxParent.getWidth() - fxNode.getLayoutBounds().getWidth()) / 2), node.name});
+                }
                 case RIGHT -> fxNode.layoutXProperty().bind(Bindings.createDoubleBinding(() -> {
                         double parentWidth = fxParent.getWidth();
                         double nodeWidth = fxNode.getLayoutBounds().getWidth();
@@ -767,11 +875,14 @@ public class JavaFXApplication extends BaseController {
         } else {
             switch (node.layout.verticalAlignment) {
                 case TOP -> fxNode.layoutYProperty().bind(fxParent.heightProperty().multiply(node.layout.position.y));
-                case CENTER -> fxNode.layoutYProperty().bind(Bindings.createDoubleBinding(() -> {
+                case CENTER -> { fxNode.layoutYProperty().bind(Bindings.createDoubleBinding(() -> {
                         double parentHeight = fxParent.getHeight();
                         double nodeHeight = fxNode.getLayoutBounds().getHeight();
+                        logger.log(Level.INFO, "V align center update: parent height={0}, node height={1}, v position={2}, name={3}", new Object[]{fxParent.getHeight(), fxNode.getLayoutBounds().getHeight(), ((fxParent.getHeight() - fxNode.getLayoutBounds().getHeight()) / 2), node.name});
                         return (parentHeight - nodeHeight) / 2;
                     }, fxParent.heightProperty(), fxNode.layoutBoundsProperty()));
+                    logger.log(Level.INFO, "V align center: parent height={0}, node height={1}, v position={2}, name={3}", new Object[]{fxParent.getHeight(), fxNode.getLayoutBounds().getHeight(), ((fxParent.getHeight() - fxNode.getLayoutBounds().getHeight()) / 2), node.name});
+                }
                 case BOTTOM -> fxNode.layoutYProperty().bind(Bindings.createDoubleBinding(() -> {
                         double parentHeight = fxParent.getHeight();
                         double nodeHeight = fxNode.getLayoutBounds().getHeight();
@@ -779,6 +890,12 @@ public class JavaFXApplication extends BaseController {
                     }, fxParent.heightProperty(), fxNode.layoutBoundsProperty()));
                 }
         }
+        
+        if (node.scaleY != null) {
+            Pane box = (Pane) fxNode;
+            box.prefHeightProperty().bind(fxParent.heightProperty().multiply(node.scaleY));
+        }
+        */
     }
     
     /*
@@ -888,7 +1005,7 @@ public class JavaFXApplication extends BaseController {
         // TODO - Move each dialog to its own separate handler method
         if (dialogClass.equals(app.dialog.FileSelection.class)) {
             newFileSelection((app.dialog.FileSelection) dialog);
-        } else if (dialogClass.equals(app.node.Button.class)) {
+        } else if (dialogClass.equals(app.dialog.Alert.class)) {
             newAlert((app.dialog.Alert) dialog);            
         } else {
             logger.log(Level.SEVERE, "Class is not a supported dialog class: {0}", dialogClass.getSimpleName());
@@ -908,7 +1025,9 @@ public class JavaFXApplication extends BaseController {
             Alert alert = new Alert(type);
             alert.initOwner(this.delegateApp.primaryStage);
             if (dialog.title != null) {
-                alert.setTitle(dialog.title);
+                alert.setTitle(dialog.title + " - " + this.parentView.name);
+            } else {
+                alert.setTitle(this.parentView.name);
             }
             if (dialog.header != null) {
                 TextFlow header = this.stringToTextFlow(dialog.header, DEFAULT_FONT, new app.Color(0, 0, 0), DEFAULT_FONT_SIZE, FontStyle.BOLD);
@@ -1127,13 +1246,16 @@ public class JavaFXApplication extends BaseController {
         }
         
         // Use a graphic instead of text to support formatted text
-        fxButton.setGraphic(this.stringToTextFlow(node.text, font, textColor, pixelSize, fontStyle));
+        fxButton.setAlignment(Pos.CENTER);
+        TextFlow textFlow = this.stringToTextFlow(node.text, font, textColor, pixelSize, fontStyle);
+        textFlow.setTextAlignment(TextAlignment.CENTER);
+        fxButton.setGraphic(textFlow);
         
         if (node.backgroundColor != null) {
             Color fxBackgroundColor = Color.rgb(node.backgroundColor.red, node.backgroundColor.green, node.backgroundColor.blue);
             fxButton.setBackground(new Background(new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY)));
         } else {
-            fxButton.setBackground(Background.EMPTY); // Transparent        
+            //fxButton.setBackground(Background.EMPTY); // Transparent        
         }
         
         if (node.eventListener != null) {
@@ -1145,6 +1267,15 @@ public class JavaFXApplication extends BaseController {
                 node.eventListener.onEvent(node.eventName, null);
             });
         }
+        
+        fxButton.prefHeightProperty().bind(
+            Bindings.createDoubleBinding(
+                () -> textFlow.prefHeight(fxButton.getWidth()) + 10, // +10 for button padding
+                fxButton.widthProperty(), 
+                textFlow.widthProperty()
+            )
+        );
+        fxButton.setMaxHeight(Control.USE_PREF_SIZE);
         
         return fxButton;
     }
@@ -1279,7 +1410,7 @@ public class JavaFXApplication extends BaseController {
         if (childClass.equals(app.node.Link.class)) {
             fxChild = this.newLink((app.node.Link) node, offsetColor);
         } else if (childClass.equals(app.node.Button.class)) {
-            fxChild = this.newButton((app.node.Button) node, offsetColor);            
+            fxChild = this.newButton((app.node.Button) node, offsetColor);
         } else if (childClass.equals(app.node.Field.class)) {
             fxChild = this.newField((app.node.Field) node, offsetColor);
         } else if (childClass.equals(app.node.InputField.class)) {
@@ -1290,8 +1421,14 @@ public class JavaFXApplication extends BaseController {
             fxChild = this.newImage((app.node.Image) node);
         } else if (childClass.equals(app.node.HorizontalGroup.class)) {
             fxChild = this.newGroup(viewName, (app.node.HorizontalGroup) node, offsetColor);
+            for (BaseNode childNode : ((app.node.Group) node).nodes) {
+                this.addNode(viewName, childNode, node.name);
+            }
         } else if (childClass.equals(app.node.VerticalGroup.class)) {
             fxChild = this.newGroup(viewName, (app.node.VerticalGroup) node, offsetColor);
+            for (BaseNode childNode : ((app.node.Group) node).nodes) {
+                this.addNode(viewName, childNode, node.name);
+            }
         } else {
             logger.log(Level.SEVERE, "Class is not a supported child class: {0}", childClass.getSimpleName());
             return;
@@ -1302,11 +1439,16 @@ public class JavaFXApplication extends BaseController {
         if (parentControlClass.equals(Pane.class)) {
             Pane pane = (Pane) actualParent;
             pane.getChildren().add(fxChild);
-            this.positionNode(node, fxChild, fxParent);
+            this.positionNode(viewName, node, fxChild, fxParent);
+        } else if (parentControlClass.equals(StackPane.class)) {
+            StackPane pane = (StackPane) actualParent;
+            pane.getChildren().add(fxChild);
         } else if (parentControlClass.equals(HBox.class)) {
+            HBox.setHgrow(fxChild, Priority.NEVER); // Preventing HBox from stretching children horizontally just to fill its width
             HBox box = (HBox) actualParent;
             box.getChildren().add(fxChild); 
         } else if (parentControlClass.equals(VBox.class)) {
+            VBox.setVgrow(fxChild, Priority.NEVER); // Preventing VBox from stretching children vertically just to fill its height
             VBox box = (VBox) actualParent;
             box.getChildren().add(fxChild);            
         } else {
@@ -1441,13 +1583,10 @@ public class JavaFXApplication extends BaseController {
                 currentColumn = 1;
             }
             
-            Pane box = newGroup(viewName, cellGroup, genericOffsetColor);
-            cell.getChildren().add(box);
-            
-            // Add zero to many nodes to the grid cell
-            for (BaseNode abstractNode : cellGroup.nodes) {
-                this.addNode(viewName, abstractNode, cellGroup.name);
-            }
+            this.namedControls.get(viewName).put(cellGroup.name + " cell", cell);
+            this.addNode(viewName, cellGroup, cellGroup.name + " cell");
+            //Pane box = newGroup(viewName, cellGroup, genericOffsetColor);
+            //cell.getChildren().add(box);
             
             gridContent.add(cell, currentColumn - 1, currentRow - 1);
         }
@@ -2480,6 +2619,12 @@ public class JavaFXApplication extends BaseController {
     @Override
     public void playSound(String fileName, Boolean isLoop) {
         System.out.println("JavaFXApplication: playSound: fileName=" + fileName + ", isLoop=" + isLoop);
+        
+        boolean isJPro = System.getProperty("jpro.version") != null;
+        if (isJPro) {
+            logger.log(Level.WARNING, "Sound is not supported for JPro environments");
+            return;
+        }
 
         URL resource = getClass().getResource(fileName);
         if (resource == null) {
@@ -2544,6 +2689,12 @@ public class JavaFXApplication extends BaseController {
     public void stopSound(String fileName, Boolean removeAudioPlayer) {
         System.out.println("JavaFXApplication: stopSound: fileName=" + fileName + ", removeAudioPlayer=" + removeAudioPlayer);
         
+        boolean isJPro = System.getProperty("jpro.version") != null;
+        if (isJPro) {
+            logger.log(Level.WARNING, "Sound is not supported for JPro environments");
+            return;
+        }
+        
         if (!this.mediaPlayers.containsKey(fileName)) {
             System.out.println("JavaFXApplication: stopSound: Collection for file not found");
             return;
@@ -2580,6 +2731,12 @@ public class JavaFXApplication extends BaseController {
     public void stopAllSounds() {
         System.out.println("JavaFXApplication: stopAllSounds");
         
+        boolean isJPro = System.getProperty("jpro.version") != null;
+        if (isJPro) {
+            logger.log(Level.WARNING, "Sound is not supported for JPro environments");
+            return;
+        }
+        
         this.audioLock.lock();
         System.out.println("JavaFXApplication: stopAllSounds: Claimed lock");
         
@@ -2605,6 +2762,12 @@ public class JavaFXApplication extends BaseController {
     public void pauseAllSounds() {
         System.out.println("JavaFXApplication: pauseAllSounds");
         
+        boolean isJPro = System.getProperty("jpro.version") != null;
+        if (isJPro) {
+            logger.log(Level.WARNING, "Sound is not supported for JPro environments");
+            return;
+        }
+        
         this.audioLock.lock();
         System.out.println("JavaFXApplication: pauseAllSounds: Claimed lock");
         
@@ -2628,6 +2791,12 @@ public class JavaFXApplication extends BaseController {
     @Override
     public void unpauseAllSounds() {
         System.out.println("JavaFXApplication: unpauseAllSounds");
+        
+        boolean isJPro = System.getProperty("jpro.version") != null;
+        if (isJPro) {
+            logger.log(Level.WARNING, "Sound is not supported for JPro environments");
+            return;
+        }
         
         this.audioLock.lock();
         System.out.println("JavaFXApplication: unpauseAllSounds: Claimed lock");

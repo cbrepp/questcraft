@@ -8,7 +8,7 @@ import app.*;
  */
 public class Button extends BaseNode {
     
-    public Color backgroundColor; // Default (null) is transparent
+    public Color backgroundColor; // Default (null) is system default
     public EventListener eventListener;
     public String eventName;
     public Boolean isEnabled = true;
