@@ -9,6 +9,8 @@ import static app.HorizontalAlignment.LEFT;
 import static app.HorizontalAlignment.RIGHT;
 import app.Icon;
 import app.Layout;
+import app.RelativeBounds;
+import app.RelativeCoordinates;
 import static app.VerticalAlignment.BOTTOM;
 import static app.VerticalAlignment.CENTER;
 import static app.VerticalAlignment.TOP;
@@ -16,7 +18,6 @@ import static app.controller.BaseController.logger;
 import app.node.BaseNode;
 import app.controller.javafx.DelegateApplication;
 import app.dialog.BaseDialog;
-import app.node.Group;
 import app.node.Sprite;
 import app.node.effect.BaseEffect;
 import app.node.effect.Glow;
@@ -115,12 +116,8 @@ import javafx.scene.text.TextFlow;
 import javax.imageio.metadata.IIOMetadata;
 import org.w3c.dom.NamedNodeMap;
 import app.view.Animation;
-import java.util.concurrent.CountDownLatch;
 import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.scene.control.Control;
-import javafx.scene.layout.Region;
+import javafx.scene.text.FontSmoothingType;
 
 /**
  *
@@ -130,7 +127,7 @@ public class JavaFXApplication extends BaseController {
     
     private static final int DEFAULT_BUTTON_FONT_SIZE = 10;
     private static final String DEFAULT_FONT = "RobotoMono-Medium";
-    private static final int DEFAULT_FONT_SIZE = 12;
+    private static final int DEFAULT_FONT_SIZE = 16;
     public static List<String> TIMER_EVENTS = new ArrayList();
     
     public DelegateApplication delegateApp;
@@ -341,9 +338,9 @@ public class JavaFXApplication extends BaseController {
         
         this.addView(this.parentView, true);
         
-        this.parentView.onDisplay(this);
-        
         this.delegateApp.primaryStage.show();
+        
+        this.parentView.onDisplay(this);
         
         // TODO - Stop all sounds
     }
@@ -562,7 +559,7 @@ public class JavaFXApplication extends BaseController {
         tab.setText(view.name);
         if (!view.emojis.isEmpty()) {
             String emojiString = String.join(" ", view.emojis);
-            TextFlow emojis = stringToTextFlow(emojiString, null, null, DEFAULT_FONT_SIZE, null);
+            TextFlow emojis = stringToTextFlow(emojiString, null, null, DEFAULT_FONT_SIZE, null, FontSmoothingType.LCD);
             tab.setGraphic(emojis);
         }
     }
@@ -581,8 +578,8 @@ public class JavaFXApplication extends BaseController {
         scrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
         //scrollPane.setPrefViewportWidth(dimensions.x);
         //scrollPane.setPrefViewportHeight(dimensions.y);
-        scrollPane.setFitToWidth(false);
-        scrollPane.setFitToHeight(false);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setFitToHeight(true);
 
         if (isParent) {
             // Not supported at this time
@@ -757,11 +754,12 @@ public class JavaFXApplication extends BaseController {
             return;
         }
         
+        /*
         if (node.getClass().equals(app.node.Button.class)) {
             Button button = (Button) fxNode;
             
             if ((button.getWidth() == 0) || (button.getHeight() == 0)) {
-                logger.log(Level.INFO, "Subscribing to size change : width={0}, height={1}", new Object[]{button.getWidth(), button.getHeight()});
+                logger.log(Level.INFO, "Subscribing to size change : width={0}, height={1}, alt width={2}, alt alt width={3}", new Object[]{button.getWidth(), button.getHeight(), button.getLayoutBounds().getWidth(), button.prefWidth(-1)});
                 
                 // Run in a background thread to prevent UI locking
                 new Thread(() -> {
@@ -790,6 +788,7 @@ public class JavaFXApplication extends BaseController {
                 return;
             }
         }
+        */
         
         Double x = null;
         if (node.layout.horizontalAlignment == null) {
@@ -833,8 +832,6 @@ public class JavaFXApplication extends BaseController {
             fxNode.setLayoutY(y);
         }
             
-        // TODO - node.scaleX and node.scaleY
-        
         logger.log(Level.INFO, "Calculated coordinates ({0}, {1}) for parent width {2} and height {3} and node width {4} and height {5}", new Object[]{x, y, fxParent.getPrefWidth(), fxParent.getPrefHeight(), fxNode.getBoundsInLocal().getWidth(), fxNode.getBoundsInLocal().getHeight()});
         
 
@@ -1030,7 +1027,7 @@ public class JavaFXApplication extends BaseController {
                 alert.setTitle(this.parentView.name);
             }
             if (dialog.header != null) {
-                TextFlow header = this.stringToTextFlow(dialog.header, DEFAULT_FONT, new app.Color(0, 0, 0), DEFAULT_FONT_SIZE, FontStyle.BOLD);
+                TextFlow header = this.stringToTextFlow(dialog.header, DEFAULT_FONT, new app.Color(0, 0, 0), DEFAULT_FONT_SIZE, FontStyle.BOLD, FontSmoothingType.LCD);
                 alert.getDialogPane().setHeader(header);
             }
             if (dialog.emojis != null) {
@@ -1195,7 +1192,7 @@ public class JavaFXApplication extends BaseController {
             pixelSize = (int) Math.round(node.pixelSize);
         }
         
-        Text fieldText = stringToText("temp", fontName, textColor, pixelSize, node.textStyle); // Allow stringToText to parse the font style
+        Text fieldText = stringToText("temp", fontName, textColor, pixelSize, node.textStyle, FontSmoothingType.LCD); // Allow stringToText to parse the font style
         fxTextField.setFont(fieldText.getFont());
         fxTextField.setStyle("-fx-text-fill: rgb(" + textColor.red + ", " + textColor.green + ", " + textColor.blue + ");");                
          
@@ -1240,14 +1237,14 @@ public class JavaFXApplication extends BaseController {
         // Configure the font style based on whether the button is enabled
         FontStyle fontStyle;
         if (node.isEnabled) {
-            fontStyle = FontStyle.BOLD;
-        } else {
             fontStyle = FontStyle.NORMAL;
+        } else {
+            fontStyle = FontStyle.ITALIC;
         }
         
         // Use a graphic instead of text to support formatted text
         fxButton.setAlignment(Pos.CENTER);
-        TextFlow textFlow = this.stringToTextFlow(node.text, font, textColor, pixelSize, fontStyle);
+        TextFlow textFlow = this.stringToTextFlow(node.text, font, textColor, pixelSize, fontStyle, FontSmoothingType.LCD);
         textFlow.setTextAlignment(TextAlignment.CENTER);
         fxButton.setGraphic(textFlow);
         
@@ -1268,6 +1265,7 @@ public class JavaFXApplication extends BaseController {
             });
         }
         
+        // Fix the height of the button scaling beyond control.  This may be an issue caused by the scroll pane.
         fxButton.prefHeightProperty().bind(
             Bindings.createDoubleBinding(
                 () -> textFlow.prefHeight(fxButton.getWidth()) + 10, // +10 for button padding
@@ -1275,13 +1273,12 @@ public class JavaFXApplication extends BaseController {
                 textFlow.widthProperty()
             )
         );
-        fxButton.setMaxHeight(Control.USE_PREF_SIZE);
         
         return fxButton;
     }
     
-    public TextFlow newLabel(app.node.Label node, app.Color offsetColor) {
-        logger.log(Level.INFO, "Entered: node={0}, offsetColor={1}", new Object[]{node, offsetColor});
+    public TextFlow newLabel(app.node.Label node, app.Color offsetColor, FontSmoothingType fst) {
+        logger.log(Level.INFO, "Entered: node={0}, offsetColor={1}, fst={2}", new Object[]{node, offsetColor, fst});
         
         String font;
         if (node.textFont == null) {
@@ -1312,7 +1309,7 @@ public class JavaFXApplication extends BaseController {
         }
         
         // Use a graphic instead of text to support formatted text
-        TextFlow label = this.stringToTextFlow(node.text, font, textColor, pixelSize, fontStyle);
+        TextFlow label = this.stringToTextFlow(node.text, font, textColor, pixelSize, fontStyle, fst);
         
         if (node.backgroundColor != null) {
             Color fxBackgroundColor = Color.rgb(node.backgroundColor.red, node.backgroundColor.green, node.backgroundColor.blue);
@@ -1322,6 +1319,28 @@ public class JavaFXApplication extends BaseController {
         }
         
         return label;
+    }
+    
+    public VBox newScrollingLabel(app.node.Label node, app.Color offsetColor) {
+        logger.log(Level.INFO, "Entered: node={0}, offsetColor={1}", new Object[]{node, offsetColor});
+        
+        TextFlow label = newLabel(node, offsetColor, FontSmoothingType.GRAY); // Needed because scroll pane's dork with FontSmoothingType.LCD
+        
+        // Allow text to be scrolled if needed
+        label.setCache(false);
+        ScrollPane scrollPane = new ScrollPane(label);
+        scrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
+        scrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setBackground(Background.EMPTY);
+        VBox textBox = new VBox(scrollPane);
+        textBox.setBackground(Background.EMPTY);
+        textBox.setSnapToPixel(true);
+        scrollPane.getStyleClass().add("edge-to-edge"); // Removes the border
+        scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
+        scrollPane.setCache(false);
+        
+        return textBox;
     }
     
     public ImageView newImage(app.node.Image node) {
@@ -1369,7 +1388,7 @@ public class JavaFXApplication extends BaseController {
         }
         
         // Use a graphic instead of text to support formatted text
-        fxHyperlink.setGraphic(this.stringToTextFlow(node.text, font, textColor, pixelSize, fontStyle));
+        fxHyperlink.setGraphic(this.stringToTextFlow(node.text, font, textColor, pixelSize, fontStyle, FontSmoothingType.LCD));
         
         if (node.backgroundColor != null) {
             Color fxBackgroundColor = Color.rgb(node.backgroundColor.red, node.backgroundColor.green, node.backgroundColor.blue);
@@ -1389,7 +1408,7 @@ public class JavaFXApplication extends BaseController {
     }
     
     @Override
-    public void addNode(String viewName, BaseNode node, String parentName) {
+    public RelativeBounds addNode(String viewName, BaseNode node, String parentName) {
         logger.log(Level.INFO, "Entered: viewName={0}, node={1}, parentName={2}", new Object[]{viewName, node, parentName});
         
         // TODO - Probably need a default application-level background color
@@ -1399,7 +1418,7 @@ public class JavaFXApplication extends BaseController {
         Object actualParent = (Object) this.namedControls.get(viewName).get(parentName);
         if (actualParent == null) {
             logger.log(Level.SEVERE, "Parent with provided name not found");
-            return;
+            return null;
         }
         Pane fxParent = (Pane)actualParent;
         Class<?> childClass = node.getClass();
@@ -1411,12 +1430,35 @@ public class JavaFXApplication extends BaseController {
             fxChild = this.newLink((app.node.Link) node, offsetColor);
         } else if (childClass.equals(app.node.Button.class)) {
             fxChild = this.newButton((app.node.Button) node, offsetColor);
+            Button button = (Button) fxChild;
+            if (node.scaleX != null) {
+                button.setPrefWidth(fxParent.getPrefWidth() * node.scaleX);
+            }
+            if (node.scaleY != null) {
+                button.setPrefHeight(fxParent.getPrefHeight() * node.scaleY);
+            }
         } else if (childClass.equals(app.node.Field.class)) {
             fxChild = this.newField((app.node.Field) node, offsetColor);
         } else if (childClass.equals(app.node.InputField.class)) {
             fxChild = this.newInputField(viewName, (app.node.InputField) node, offsetColor);
         } else if (childClass.equals(app.node.Label.class)) {
-            fxChild = this.newLabel((app.node.Label) node, offsetColor);
+            fxChild = this.newLabel((app.node.Label) node, offsetColor, FontSmoothingType.LCD);
+            TextFlow flow = (TextFlow) fxChild;
+            if (node.scaleX != null) {
+                flow.setPrefWidth(fxParent.getPrefWidth() * node.scaleX);
+            }
+            if (node.scaleY != null) {
+                flow.setPrefHeight(fxParent.getPrefHeight() * node.scaleY);
+            }
+        } else if (childClass.equals(app.node.ScrollingLabel.class)) {
+            fxChild = this.newScrollingLabel((app.node.Label) node, offsetColor);
+            VBox flowBox = (VBox) fxChild;
+            if (node.scaleX != null) {
+                flowBox.setPrefWidth(fxParent.getPrefWidth() * node.scaleX);
+            }
+            if (node.scaleY != null) {
+                flowBox.setPrefHeight(fxParent.getPrefHeight() * node.scaleY);
+            }
         } else if (childClass.equals(app.node.Image.class)) {
             fxChild = this.newImage((app.node.Image) node);
         } else if (childClass.equals(app.node.HorizontalGroup.class)) {
@@ -1431,14 +1473,24 @@ public class JavaFXApplication extends BaseController {
             }
         } else {
             logger.log(Level.SEVERE, "Class is not a supported child class: {0}", childClass.getSimpleName());
-            return;
+            return null;
         }
         
         // TODO - This is ugly.  Parent nodes do not have a base type (Parent) with a public getChildren() method so each parent class needs to be handled.
         Class<?> parentControlClass = actualParent.getClass();
         if (parentControlClass.equals(Pane.class)) {
+            // To allow the width and height to be accessed immediately, add the child to a temporary Scene.
+            // The temporary Scene and Group will be garbage collected.
+            javafx.scene.Group tempRoot = new javafx.scene.Group(fxChild);
+            Scene tempScene = new Scene(tempRoot);
+            fxChild.applyCss();
+            double width = fxChild.prefWidth(-1); 
+            logger.log(Level.INFO, "Temp width for {0} = {1}", new Object[]{childClass, width});
+            ((javafx.scene.Group)fxChild.getScene().getRoot()).getChildren().remove(fxChild);
+            
             Pane pane = (Pane) actualParent;
             pane.getChildren().add(fxChild);
+            fxParent.layout();
             this.positionNode(viewName, node, fxChild, fxParent);
         } else if (parentControlClass.equals(StackPane.class)) {
             StackPane pane = (StackPane) actualParent;
@@ -1453,7 +1505,7 @@ public class JavaFXApplication extends BaseController {
             box.getChildren().add(fxChild);            
         } else {
             logger.log(Level.SEVERE, "Parent does not have a supported class: {0}", parentControlClass.getSimpleName());
-            return;
+            return null;
         }
         
         if ((node.effects != null) && (!node.effects.isEmpty())) {
@@ -1462,7 +1514,20 @@ public class JavaFXApplication extends BaseController {
         
         this.namedControls.get(viewName).put(node.name, fxChild);
         
-        logger.log(Level.INFO, "Added node: {0} {1}", new Object[]{childClass.getSimpleName(), node.name});
+        double parentWidth = fxParent.getPrefWidth();
+        double width = fxChild.getBoundsInLocal().getWidth();
+        double relativeWidth = width / parentWidth;
+        double parentHeight = fxParent.getPrefHeight();
+        double height = fxChild.getBoundsInLocal().getHeight();
+        double relativeHeight = height / parentHeight;
+        double x = fxChild.getLayoutX();
+        double relativeX = x / parentWidth;
+        double y = fxChild.getLayoutY();
+        double relativeY = y / parentHeight;
+        RelativeBounds relativeBounds = new RelativeBounds(new RelativeCoordinates(relativeX, relativeY), relativeWidth, relativeHeight);
+        logger.log(Level.INFO, "Added node {0} {1} at ({2},{3}), width={4}, height={5}", new Object[]{childClass.getSimpleName(), node.name, relativeX, relativeY, relativeWidth, relativeHeight});
+        
+        return relativeBounds;
     }
     
     // TODO - Make this newGrid() and add to addNode()
@@ -1660,7 +1725,7 @@ public class JavaFXApplication extends BaseController {
         this.addView(view, false, index, true);
     }
     
-    public static Text stringToText(String string, String fontName, app.Color fontColor, Integer fontSize, app.FontStyle fontStyle) {
+    public static Text stringToText(String string, String fontName, app.Color fontColor, Integer fontSize, app.FontStyle fontStyle, FontSmoothingType fst) {
         //System.out.println("JavaFXApplication: stringToText: string=" + string + ", fontName=" + fontName + ", fontColor=" + fontColor + ", fontSize=" + fontSize + ", fontStyle=" + fontStyle);
         
         Text text = new Text(string);
@@ -1729,6 +1794,8 @@ public class JavaFXApplication extends BaseController {
         if (fontColor != null) {
             text.setFill(Color.rgb(fontColor.red, fontColor.green, fontColor.blue));
         }
+        
+        text.setFontSmoothingType(fst);
         
         return text;
     }
@@ -1818,7 +1885,7 @@ public class JavaFXApplication extends BaseController {
         return emojiView;
     }
     
-    public TextFlow stringToTextFlow(String string, String fontName, app.Color fontColor, Integer fontSize, app.FontStyle fontStyle) {
+    public TextFlow stringToTextFlow(String string, String fontName, app.Color fontColor, Integer fontSize, app.FontStyle fontStyle, FontSmoothingType fst) {
         if ((string == null) || (string.isEmpty())) {
             return null;
         }
@@ -1838,7 +1905,7 @@ public class JavaFXApplication extends BaseController {
                 textFlow.getChildren().add(emojiView);
             } else {
                 // Normal text - Add a Text node
-                Text textNode = stringToText(cluster, fontName, fontColor, fontSize, fontStyle);
+                Text textNode = stringToText(cluster, fontName, fontColor, fontSize, fontStyle, fst);
                 textFlow.getChildren().add(textNode);
             }
         }

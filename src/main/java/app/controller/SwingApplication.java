@@ -1,11 +1,10 @@
 package app.controller;
 
 import app.view.BaseView;
-import app.Color;
 import app.Coordinates;
 import app.EventListener;
-import app.Icon;
 import app.Layout;
+import app.RelativeBounds;
 import app.controller.desktop.SoundController;
 import app.dialog.BaseDialog;
 import app.node.BaseNode;
@@ -41,7 +40,7 @@ public class SwingApplication extends BaseController {
     }
     
     @Override
-    public void addNode(String viewName, BaseNode node, String parentName) {
+    public RelativeBounds addNode(String viewName, BaseNode node, String parentName) {
         throw new UnsupportedOperationException("Not supported.");
     }
 

@@ -10,7 +10,8 @@ public class Glow extends BaseEffect {
     
     public Color color; // Default (null) is the offset color
     
-    public Glow() {
+    public Glow(Color color) {
+        this.color = color;
     }
     
 }

@@ -17,11 +17,10 @@ package app.controller;
  */
 
 import app.view.BaseView;
-import app.Color;
 import app.Coordinates;
 import app.EventListener;
-import app.Icon;
 import app.Layout;
+import app.RelativeBounds;
 import app.Utility;
 import app.dialog.BaseDialog;
 import app.node.BaseNode;
@@ -73,7 +72,7 @@ public abstract class BaseController {
     //public abstract void displayText(String viewName, String text, Integer row, Integer column, Color color);
     //public abstract void displayText(String viewName, String text, Integer row, Integer column, Color color, int style);
     public abstract void displayGrid(String viewName, Grid control);
-    public abstract void addNode(String viewName, BaseNode node, String parentName);
+    public abstract RelativeBounds addNode(String viewName, BaseNode node, String parentName);
     public abstract void newDialog(BaseDialog dialog);
     //public abstract void displayLink(String viewName, String name, String linkText, int row, int column, int length, EventListener listener);
     //public abstract void displayButton(String viewName, String name, String text, Integer row, Integer column, Integer endRow, Integer endColumn, Boolean isMonospace, String fontName, Boolean glow, EventListener listener);

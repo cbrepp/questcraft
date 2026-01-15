@@ -5,6 +5,7 @@ import app.Color;
 import app.FontStyle;
 import app.HorizontalAlignment;
 import app.Layout;
+import app.RelativeBounds;
 import app.RelativeCoordinates;
 import app.VerticalAlignment;
 import static app.controller.BaseController.logger;
@@ -13,14 +14,19 @@ import app.dialog.FileSelection;
 import app.node.BaseNode;
 import app.node.Button;
 import app.node.Label;
+import app.node.ScrollingLabel;
 import app.node.VerticalGroup;
 import app.node.effect.Glow;
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
@@ -29,6 +35,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 import quest.model.Act;
 import quest.model.Book;
 import quest.model.HighScore;
@@ -45,7 +52,7 @@ public class Application extends app.view.BaseView {
     
     public final static String CREATE_EVENT = "create";
     public final static String FILE_EVENT = "file";
-    public final static String FONT_NAME = "RobotoMono-Medium";
+    public final static String FONT_NAME = "Roboto Mono Medium";
     public final static String OPTIONS_EVENT = "options";
     public final static String SELECT_EVENT = "select";
     public final static String TITLE_FONT_NAME = "Minecraft";
@@ -131,8 +138,7 @@ public class Application extends app.view.BaseView {
         titleLabel.textColor = Color.SHADOW;
         titleLabel.textFont = TITLE_FONT_NAME;
         titleLabel.textStyle = FontStyle.BOLD;
-        this.appController.addNode(this.name, titleLabel, this.name);
-        // TODO - Add 
+        RelativeBounds titleBounds = this.appController.addNode(this.name, titleLabel, this.name);
         
         Label subtitleLabel = new Label("subtitle", new Layout(new RelativeCoordinates(0.0, 0.18), HorizontalAlignment.CENTER, VerticalAlignment.TOP));        
         subtitleLabel.text = "- JAVA  EDITION -";
@@ -142,60 +148,70 @@ public class Application extends app.view.BaseView {
         subtitleLabel.textStyle = FontStyle.BOLD;
         this.appController.addNode(this.name, subtitleLabel, this.name);
 
-        Label flavorTextLabel = new Label("flavor", new Layout(new RelativeCoordinates(0.0, 0.26), HorizontalAlignment.CENTER, VerticalAlignment.TOP));        
+        Label flavorTextLabel = new Label("flavor", new Layout(new RelativeCoordinates(0.0, 0.24), HorizontalAlignment.CENTER, VerticalAlignment.TOP));        
         flavorTextLabel.text = this.flavorText;
         flavorTextLabel.pixelSize = 16.0;
         flavorTextLabel.textColor = Color.DARK_MAGENTA;
-        flavorTextLabel.textFont = FONT_NAME;
+        flavorTextLabel.textFont = TITLE_FONT_NAME;
         flavorTextLabel.textStyle = FontStyle.ITALIC;
         this.appController.addNode(this.name, flavorTextLabel, this.name);
-        
-        Glow glow = new Glow();
-        glow.color = Color.DARK_MAGENTA;
         
         // TODO - The buttons should scale horizontally to be as wide as the title label
         // TODO - Each addNode invokation should return the (relative) bounds of the node
         // TODO - Need to figure out how to block until the UI thread is complete, or, if the delayed layout issue can be solved another way
 
-        Button selectButton = new Button(SELECT_EVENT, new Layout(new RelativeCoordinates(0.0, 0.34), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
+        Button selectButton = new Button(SELECT_EVENT, new Layout(new RelativeCoordinates(0.0, 0.30), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
         selectButton.eventListener = this;
         selectButton.eventName = SELECT_EVENT;
-        selectButton.pixelSize = 24.0;
+        selectButton.pixelSize = 26.0;
         selectButton.textColor = Color.SHADOW;
         selectButton.text = "Select Quest";
         selectButton.textFont = FONT_NAME;
-        selectButton.effects.add(glow);
+        selectButton.effects.add(new Glow(Color.DARK_MAGENTA));
+        selectButton.scaleX = titleBounds.width;
         this.appController.addNode(this.name, selectButton, this.name);
 
-        Button createButton = new Button(CREATE_EVENT, new Layout(new RelativeCoordinates(0.0, 0.44), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
+        Button createButton = new Button(CREATE_EVENT, new Layout(new RelativeCoordinates(0.0, 0.40), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
         createButton.eventListener = this;
         createButton.eventName = CREATE_EVENT;
-        createButton.pixelSize = 24.0;
+        createButton.pixelSize = 26.0;
         createButton.textColor = Color.SHADOW;
         createButton.text = "Create Quest";
         createButton.textFont = FONT_NAME;
-        createButton.effects.add(glow);
+        createButton.effects.add(new Glow(Color.DARK_MAGENTA));
+        createButton.scaleX = titleBounds.width;
         this.appController.addNode(this.name, createButton, this.name);
         
-        Button optionsButton = new Button(OPTIONS_EVENT, new Layout(new RelativeCoordinates(0.0, 0.54), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
+        Button optionsButton = new Button(OPTIONS_EVENT, new Layout(new RelativeCoordinates(0.0, 0.50), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
         optionsButton.eventListener = this;
         optionsButton.eventName = OPTIONS_EVENT;
-        optionsButton.pixelSize = 24.0;
+        optionsButton.pixelSize = 26.0;
         optionsButton.textColor = Color.SHADOW;
         optionsButton.text = "Options...";
         optionsButton.textFont = FONT_NAME;
-        optionsButton.effects.add(glow);
+        optionsButton.effects.add(new Glow(Color.DARK_MAGENTA));
+        optionsButton.scaleX = titleBounds.width;
         this.appController.addNode(this.name, optionsButton, this.name);
 
-        Button quitButton = new Button(QUIT_EVENT, new Layout(new RelativeCoordinates(0.0, 0.64), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
+        Button quitButton = new Button(QUIT_EVENT, new Layout(new RelativeCoordinates(0.0, 0.60), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
         quitButton.eventListener = this;
         quitButton.eventName = QUIT_EVENT;
-        quitButton.pixelSize = 24.0;
+        quitButton.pixelSize = 26.0;
         quitButton.textColor = Color.SHADOW;
         quitButton.text = "Quit Game";
         quitButton.textFont = FONT_NAME;
-        quitButton.effects.add(glow);
+        quitButton.effects.add(new Glow(Color.DARK_MAGENTA));
+        quitButton.scaleX = titleBounds.width;
         this.appController.addNode(this.name, quitButton, this.name);
+        
+        Label changelog = new ScrollingLabel("changelog", new Layout(new RelativeCoordinates(0.98, 0.0), HorizontalAlignment.RIGHT, VerticalAlignment.CENTER));
+        changelog.text = this.readChangelog();
+        changelog.pixelSize = 12.0;
+        changelog.textColor = Color.BLACK;
+        changelog.textFont = FONT_NAME;
+        changelog.scaleX = 0.25;
+        changelog.scaleY = 0.55;
+        this.appController.addNode(this.name, changelog, this.name);
 
         if (bookFile != null) {
             // Display "Now Playing" info
@@ -208,6 +224,21 @@ public class Application extends app.view.BaseView {
         }
         
         //appController.displayFloatingText(this.name, null, "Coming soon... Twin Quest Chapter 2", 41, 90, 42, 126, null, 12, FontStyle.BOLD, "Minecraft");
+    }
+    
+    public String readChangelog() {
+        try (InputStream is = getClass().getResourceAsStream("/CHANGELOG.md")) {
+            if (is == null) {
+                return "Changelog not found.";
+            }
+
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+                return reader.lines().collect(Collectors.joining("\n"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Error reading changelog.";
+        }
     }
     
     public Book deserializeBook(String fileName) {
