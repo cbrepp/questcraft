@@ -221,10 +221,10 @@ public class Application extends app.view.BaseView {
         changelog.scaleY = 0.5;
         this.appController.addNode(this.name, changelog, this.name);
 
-        this.nowPlayingLayout = new Layout(new RelativeCoordinates(0.0, (quitBounds.coordinates.y + (quitBounds.height * 2))), HorizontalAlignment.CENTER, VerticalAlignment.TOP);
+        this.nowPlayingLayout = new Layout(new RelativeCoordinates(0.0, (quitBounds.coordinates.y + (quitBounds.height * 4))), HorizontalAlignment.CENTER, VerticalAlignment.TOP);
         
         Label comingSoonLabel = new Label("coming soon", new Layout(new RelativeCoordinates(0.99, 0.99), HorizontalAlignment.RIGHT, VerticalAlignment.BOTTOM));        
-        comingSoonLabel.text = "Coming soon... Twin Quest - DoW Chapter 2";
+        comingSoonLabel.text = "Coming soon... TWIN QUEST: DoW Chapter 2";
         comingSoonLabel.pixelSize = 14.0;
         comingSoonLabel.textColor = Color.SHADOW;
         comingSoonLabel.textFont = NORMAL_FONT;
@@ -489,7 +489,7 @@ public class Application extends app.view.BaseView {
         book.preloadEmojisDuringAnimation = true;
         book.author = "R. W. Chung";
         book.firstActName = "Opening";
-        book.title = "Destroyer of Worlds";
+        book.title = "TWIN QUEST: Destroyer of Worlds";
         book.updateDate = LocalDate.now();    
         book.inventory = new LinkedHashMap<>();
 

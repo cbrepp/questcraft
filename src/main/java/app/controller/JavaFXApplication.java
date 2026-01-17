@@ -116,6 +116,8 @@ import javafx.scene.text.TextFlow;
 import javax.imageio.metadata.IIOMetadata;
 import org.w3c.dom.NamedNodeMap;
 import app.view.Animation;
+import javafx.beans.binding.DoubleBinding;
+import javafx.scene.Group;
 import javafx.scene.text.FontSmoothingType;
 
 /**
@@ -261,6 +263,7 @@ public class JavaFXApplication extends BaseController {
         
         // Initialize the application's tab folder and set it as the application's primary scene
         this.tabFolder = new TabPane();
+        VBox.setVgrow(this.tabFolder, Priority.ALWAYS);
         //this.tabFolder.setPrefSize(dimensions.x, dimensions.y);
         this.tabFolder.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
             String selectedTabTitle = newTab.getText();
@@ -572,14 +575,22 @@ public class JavaFXApplication extends BaseController {
         //content.setPrefSize(this.primaryDimensions.x, this.primaryDimensions.y);
         ScrollPane scrollPane = new ScrollPane(content);
         //scrollPane.setContent(this.tabFolder);
-        //Group zoomGroup = new Group(myContent);
-        //scrollPane.setContent(zoomGroup);
+        
+        // Configure automatic zooming
+        Group zoomGroup = new Group(content);
+        StackPane contentHolder = new StackPane(zoomGroup);
+        scrollPane.setContent(contentHolder);
+        
+        double zoomFactor = 1.0; 
+        zoomGroup.setScaleX(zoomFactor);
+        zoomGroup.setScaleY(zoomFactor);
+        
         scrollPane.setHbarPolicy(ScrollBarPolicy.AS_NEEDED);
         scrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
         //scrollPane.setPrefViewportWidth(dimensions.x);
         //scrollPane.setPrefViewportHeight(dimensions.y);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setFitToHeight(true);
+        scrollPane.setFitToWidth(false);
+        scrollPane.setFitToHeight(false);
 
         if (isParent) {
             // Not supported at this time
@@ -599,13 +610,15 @@ public class JavaFXApplication extends BaseController {
         this.tabItemViewMap.put(tab, view);
         
         // Configure the background
+        Coordinates dimensions = new Coordinates(1280, 793);
         Background background = null;
         if (view.backgroundImage != null) {
             System.out.println("JavaFXApplication: addView: name=" + view.name + ", using background image " + view.backgroundImage);
             Image image = loadImage(view.backgroundImage);
-            Coordinates dimensions = this.getDimensions(view.backgroundImage);
-            content.setMinSize(dimensions.x, dimensions.y);
-            content.setPrefSize(dimensions.x, dimensions.y);
+            Coordinates imageDimensions = this.getDimensions(view.backgroundImage);
+            dimensions.x = imageDimensions.x;
+            dimensions.y = imageDimensions.y;
+
             BackgroundImage backgroundImage = new BackgroundImage(
                 image,
                 BackgroundRepeat.NO_REPEAT, // Repeat in X direction
@@ -634,8 +647,32 @@ public class JavaFXApplication extends BaseController {
             Color backgroundColor = Color.rgb(view.backgroundColor.red, view.backgroundColor.green, view.backgroundColor.blue);
             BackgroundFill backgroundFill = new BackgroundFill(backgroundColor, CornerRadii.EMPTY, Insets.EMPTY);
             background = new Background(backgroundFill);
-            content.setBackground(background);
+            content.setBackground(background);    
         }
+        
+        content.setMinSize(dimensions.x, dimensions.y);
+        content.setPrefSize(dimensions.x, dimensions.y);
+        
+        // Create automatic scaling binding to finish configuring the zoom group
+        DoubleBinding dynamicScale = Bindings.createDoubleBinding(() -> {
+            double viewportW = scrollPane.getViewportBounds().getWidth();
+            double viewportH = scrollPane.getViewportBounds().getHeight();
+
+            // Calculate scale factors for both dimensions
+            double scaleX = viewportW / dimensions.x;
+            double scaleY = viewportH / dimensions.y;
+
+            // Return the minimum to 'Fit' inside the window without cropping
+            return Math.min(scaleX, scaleY);
+        }, scrollPane.viewportBoundsProperty());
+        zoomGroup.scaleXProperty().bind(dynamicScale);
+        zoomGroup.scaleYProperty().bind(dynamicScale);
+
+        // Center the zoom group
+        contentHolder.minWidthProperty().bind(Bindings.createDoubleBinding(
+            () -> scrollPane.getViewportBounds().getWidth(), scrollPane.viewportBoundsProperty()));
+        contentHolder.minHeightProperty().bind(Bindings.createDoubleBinding(
+            () -> scrollPane.getViewportBounds().getHeight(), scrollPane.viewportBoundsProperty()));
 
         // Track the tab position of each view.  (Inserting a new view shifts all of the other views to the right.)
         HashMap<String, Integer> indicesToAdd = new HashMap();
