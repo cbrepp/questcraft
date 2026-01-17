@@ -116,7 +116,6 @@ import javafx.scene.text.TextFlow;
 import javax.imageio.metadata.IIOMetadata;
 import org.w3c.dom.NamedNodeMap;
 import app.view.Animation;
-import javafx.beans.binding.BooleanBinding;
 import javafx.scene.text.FontSmoothingType;
 
 /**
@@ -125,9 +124,10 @@ import javafx.scene.text.FontSmoothingType;
  */
 public class JavaFXApplication extends BaseController {
     
-    private static final int DEFAULT_BUTTON_FONT_SIZE = 10;
-    private static final String DEFAULT_FONT = "RobotoMono-Medium";
-    private static final int DEFAULT_FONT_SIZE = 16;
+    public static final int DEFAULT_BUTTON_FONT_SIZE = 10;
+    public static final String DEFAULT_FONT = "RobotoMono-Medium";
+    public static final int DEFAULT_FONT_SIZE = 16;
+    public static final boolean IS_JPRO = (System.getProperty("jpro.version") != null);
     public static List<String> TIMER_EVENTS = new ArrayList();
     
     public DelegateApplication delegateApp;
@@ -139,13 +139,13 @@ public class JavaFXApplication extends BaseController {
     public Image emojiSheet;
     public String emptyBook;
     public int fontHeight = 0;
+    public static List<String> fontFamiliesLoaded = new ArrayList();
     public int fontWidth = 0;
     public Map<Object, EventHandler<KeyEvent>> keyBindings = new HashMap();
     public BaseView lastSelectedView;
     public HashMap<String, List<MediaPlayer>> mediaPlayers = new HashMap();
     public Font monospaceFont;
     public Map<String, Map<String, Object>> namedControls;
-    public Map<String, List<BooleanBinding>> nodeBindings = new HashMap(); // Only necessary because they need to handle UI thread actions that can outlast scoping inside of a method
     public BaseView parentView;
     public Coordinates primaryDimensions;
     public Scene primaryScene;
@@ -202,8 +202,7 @@ public class JavaFXApplication extends BaseController {
     public void close() {
         System.out.println("JavaFXApplication: close");
         Platform.exit();    // Gracefully stop all processes in the JavaFX application
-        boolean isJPro = System.getProperty("jpro.version") != null;
-        if (isJPro) {
+        if (IS_JPRO) {
             logger.log(Level.INFO, "System exit intentionally skipped for JPro environment");
         } else {
             System.exit(0);     // Stop any remaining framework processes, including background processes
@@ -447,7 +446,6 @@ public class JavaFXApplication extends BaseController {
             this.primaryScene.removeEventFilter(KeyEvent.KEY_PRESSED, eventHandler);
         }
         this.keyBindings.clear();
-        this.nodeBindings.get(viewName).clear();
     }
     
     @Override
@@ -574,6 +572,8 @@ public class JavaFXApplication extends BaseController {
         //content.setPrefSize(this.primaryDimensions.x, this.primaryDimensions.y);
         ScrollPane scrollPane = new ScrollPane(content);
         //scrollPane.setContent(this.tabFolder);
+        //Group zoomGroup = new Group(myContent);
+        //scrollPane.setContent(zoomGroup);
         scrollPane.setHbarPolicy(ScrollBarPolicy.AS_NEEDED);
         scrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
         //scrollPane.setPrefViewportWidth(dimensions.x);
@@ -597,7 +597,6 @@ public class JavaFXApplication extends BaseController {
         tab.setContent(scrollPane);
         this.tabItemMap.put(view.name, tab);
         this.tabItemViewMap.put(tab, view);
-        this.nodeBindings.put(view.name, new ArrayList());
         
         // Configure the background
         Background background = null;
@@ -612,7 +611,7 @@ public class JavaFXApplication extends BaseController {
                 BackgroundRepeat.NO_REPEAT, // Repeat in X direction
                 BackgroundRepeat.NO_REPEAT, // Repeat in Y direction
                 BackgroundPosition.DEFAULT,   // Position of the image
-                new BackgroundSize(1.0, 1.0, true, true, false, false)
+                new BackgroundSize(dimensions.x, dimensions.y, false, false, false, false)
             );
             
             Color backgroundColor;
@@ -1339,15 +1338,69 @@ public class JavaFXApplication extends BaseController {
         scrollPane.getStyleClass().add("edge-to-edge"); // Removes the border
         scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
         scrollPane.setCache(false);
+        label.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE); // Fill the scroll pane.  The scroll pane will be scaled as needed.
         
         return textBox;
     }
     
     public ImageView newImage(app.node.Image node) {
         logger.log(Level.INFO, "Entered: node={0}", node);
+        
+        int dotIndex = node.file.lastIndexOf('.');
+        String extension = (dotIndex > 0) ? node.file.substring(dotIndex + 1) : "";
+
         final Image image = loadImage(node.file);
         ImageView imageView = new ImageView(image);
         imageView.setSmooth(true);
+
+        // JPro does not support animated gifs, so animation needs to be manually handled
+        if ((IS_JPRO) && (extension.toLowerCase().equals("gif"))) {
+            List<Image> frames = new ArrayList<>();
+            List<Duration> frameDelays = new ArrayList<>();
+            Timeline timeline;
+
+            javax.imageio.ImageReader reader = javax.imageio.ImageIO.getImageReadersByFormatName("gif").next();
+            try (javax.imageio.stream.ImageInputStream ciis = javax.imageio.ImageIO.createImageInputStream(getClass().getResourceAsStream(node.file))) {
+                reader.setInput(ciis, false);
+                int numberOfImages = reader.getNumImages(true);
+
+                for (int i = 0; i < numberOfImages; i++) {
+                    java.awt.image.BufferedImage frameImage = reader.read(i);
+                    Image fxImage = SwingFXUtils.toFXImage(frameImage, null); // Convert to JavaFX Image
+                    frames.add(fxImage);
+
+                    // Extract frame delay
+                    IIOMetadata metadata = reader.getImageMetadata(i);
+                    int delayMs = getFrameDelay(metadata);
+                    frameDelays.add(Duration.millis(delayMs));
+                }
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "A critical error occurred", e);
+            }
+
+            if (frames.isEmpty()) {
+                return null;
+            }
+
+            timeline = new Timeline();
+            timeline.setCycleCount(Timeline.INDEFINITE); // Loop indefinitely
+
+            Duration currentTime = Duration.ZERO;
+            for (int i = 0; i < frames.size(); i++) {
+                final int frameIndex = i;
+                // Add a KeyFrame at the specific time instant to switch the image
+                KeyFrame keyFrame = new KeyFrame(currentTime, event -> {
+                    imageView.setImage(frames.get(frameIndex));
+                });
+                timeline.getKeyFrames().add(keyFrame);
+                // Advance the time by the frame's duration
+                currentTime = currentTime.add(frameDelays.get(i));
+            }
+
+            // Add and play the image
+            timeline.play(); // TODO - Probably needs to happen after the image has been added to its parent
+        }
+        
         return imageView;
     }
     
@@ -1453,11 +1506,14 @@ public class JavaFXApplication extends BaseController {
         } else if (childClass.equals(app.node.ScrollingLabel.class)) {
             fxChild = this.newScrollingLabel((app.node.Label) node, offsetColor);
             VBox flowBox = (VBox) fxChild;
+            ScrollPane sp = (ScrollPane)flowBox.getChildren().get(0); // TODO - This is ugly
             if (node.scaleX != null) {
                 flowBox.setPrefWidth(fxParent.getPrefWidth() * node.scaleX);
+                sp.setPrefWidth(fxParent.getPrefWidth() * node.scaleX);
             }
             if (node.scaleY != null) {
                 flowBox.setPrefHeight(fxParent.getPrefHeight() * node.scaleY);
+                sp.setPrefHeight(fxParent.getPrefHeight() * node.scaleY);
             }
         } else if (childClass.equals(app.node.Image.class)) {
             fxChild = this.newImage((app.node.Image) node);
@@ -1515,17 +1571,17 @@ public class JavaFXApplication extends BaseController {
         this.namedControls.get(viewName).put(node.name, fxChild);
         
         double parentWidth = fxParent.getPrefWidth();
-        double width = fxChild.getBoundsInLocal().getWidth();
+        double width = fxChild.prefWidth(-1); //fxChild.getBoundsInLocal().getWidth();
         double relativeWidth = width / parentWidth;
         double parentHeight = fxParent.getPrefHeight();
-        double height = fxChild.getBoundsInLocal().getHeight();
+        double height = fxChild.prefHeight(-1); //fxChild.getBoundsInLocal().getHeight();
         double relativeHeight = height / parentHeight;
         double x = fxChild.getLayoutX();
         double relativeX = x / parentWidth;
         double y = fxChild.getLayoutY();
         double relativeY = y / parentHeight;
         RelativeBounds relativeBounds = new RelativeBounds(new RelativeCoordinates(relativeX, relativeY), relativeWidth, relativeHeight);
-        logger.log(Level.INFO, "Added node {0} {1} at ({2},{3}), width={4}, height={5}", new Object[]{childClass.getSimpleName(), node.name, relativeX, relativeY, relativeWidth, relativeHeight});
+        logger.log(Level.INFO, "Added node {0} {1} at ({2},{3}), width={4}, height={5} using parent pixel width={6}, parent pixel height={7}, pixel width={8}, pixel height={9}", new Object[]{childClass.getSimpleName(), node.name, relativeX, relativeY, relativeWidth, relativeHeight, parentWidth, parentHeight, width, height});
         
         return relativeBounds;
     }
@@ -1725,8 +1781,8 @@ public class JavaFXApplication extends BaseController {
         this.addView(view, false, index, true);
     }
     
-    public static Text stringToText(String string, String fontName, app.Color fontColor, Integer fontSize, app.FontStyle fontStyle, FontSmoothingType fst) {
-        //System.out.println("JavaFXApplication: stringToText: string=" + string + ", fontName=" + fontName + ", fontColor=" + fontColor + ", fontSize=" + fontSize + ", fontStyle=" + fontStyle);
+    public Text stringToText(String string, String fontName, app.Color fontColor, Integer fontSize, app.FontStyle fontStyle, FontSmoothingType fst) {
+        logger.log(Level.FINE, "Entered", new Object[]{string, fontName, fontColor, fontSize, fontStyle, fst});
         
         Text text = new Text(string);
         
@@ -1780,6 +1836,23 @@ public class JavaFXApplication extends BaseController {
         // Configure the text font
         if (fontName == null) {
             fontName = Font.getDefault().getName();
+            logger.log(Level.FINE, "Using default font", fontName);
+        } else {
+            // Load all font files for the font family if not already loaded.
+            // The font size is required for loading a font but subsequent calls can use any size once loaded.
+            if (!fontFamiliesLoaded.contains(fontName)) {
+                List<String> fontFiles = app.Font.getFontFiles(fontName);
+                for (String fontFileName : fontFiles) {
+                    logger.log(Level.FINE, "Loading font file", fontFileName);
+                    Font.loadFont(getClass().getResourceAsStream(fontFileName), fontSize);
+                }
+                if (!fontFiles.isEmpty()) {
+                    fontFamiliesLoaded.add(fontName);
+                } else {
+                    logger.log(Level.WARNING, "Unsupported font family, using default", new Object[]{fontName, Font.getDefault().getName()});
+                    fontName = Font.getDefault().getName();
+                }
+            }
         }
         
         // Adjust for DPI
@@ -2159,8 +2232,7 @@ public class JavaFXApplication extends BaseController {
     public int displayGif(String viewName, String fileName, int row, int column) {
         System.out.println("JavaFXApplication: displayGif: viewName=" + viewName + ", fileName=" + fileName + ", row=" + row + ", column=" + column);
         
-        boolean isJPro = System.getProperty("jpro.version") != null;
-        if (!isJPro) {
+        if (!IS_JPRO) {
             System.out.println("JavaFXApplication: displayGif: Detected desktop app, reverting to regular gif support");
             return this.displayGifOrig(viewName, fileName, row, column);
         }
@@ -2687,8 +2759,7 @@ public class JavaFXApplication extends BaseController {
     public void playSound(String fileName, Boolean isLoop) {
         System.out.println("JavaFXApplication: playSound: fileName=" + fileName + ", isLoop=" + isLoop);
         
-        boolean isJPro = System.getProperty("jpro.version") != null;
-        if (isJPro) {
+        if (IS_JPRO) {
             logger.log(Level.WARNING, "Sound is not supported for JPro environments");
             return;
         }
@@ -2756,8 +2827,7 @@ public class JavaFXApplication extends BaseController {
     public void stopSound(String fileName, Boolean removeAudioPlayer) {
         System.out.println("JavaFXApplication: stopSound: fileName=" + fileName + ", removeAudioPlayer=" + removeAudioPlayer);
         
-        boolean isJPro = System.getProperty("jpro.version") != null;
-        if (isJPro) {
+        if (IS_JPRO) {
             logger.log(Level.WARNING, "Sound is not supported for JPro environments");
             return;
         }
@@ -2798,8 +2868,7 @@ public class JavaFXApplication extends BaseController {
     public void stopAllSounds() {
         System.out.println("JavaFXApplication: stopAllSounds");
         
-        boolean isJPro = System.getProperty("jpro.version") != null;
-        if (isJPro) {
+        if (IS_JPRO) {
             logger.log(Level.WARNING, "Sound is not supported for JPro environments");
             return;
         }
@@ -2829,8 +2898,7 @@ public class JavaFXApplication extends BaseController {
     public void pauseAllSounds() {
         System.out.println("JavaFXApplication: pauseAllSounds");
         
-        boolean isJPro = System.getProperty("jpro.version") != null;
-        if (isJPro) {
+        if (IS_JPRO) {
             logger.log(Level.WARNING, "Sound is not supported for JPro environments");
             return;
         }
@@ -2859,8 +2927,7 @@ public class JavaFXApplication extends BaseController {
     public void unpauseAllSounds() {
         System.out.println("JavaFXApplication: unpauseAllSounds");
         
-        boolean isJPro = System.getProperty("jpro.version") != null;
-        if (isJPro) {
+        if (IS_JPRO) {
             logger.log(Level.WARNING, "Sound is not supported for JPro environments");
             return;
         }

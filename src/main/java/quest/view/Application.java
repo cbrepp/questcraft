@@ -2,6 +2,7 @@ package quest.view;
 
 import app.controller.BaseController;
 import app.Color;
+import app.Font;
 import app.FontStyle;
 import app.HorizontalAlignment;
 import app.Layout;
@@ -11,11 +12,10 @@ import app.VerticalAlignment;
 import static app.controller.BaseController.logger;
 import app.dialog.Alert;
 import app.dialog.FileSelection;
-import app.node.BaseNode;
 import app.node.Button;
+import app.node.Image;
 import app.node.Label;
 import app.node.ScrollingLabel;
-import app.node.VerticalGroup;
 import app.node.effect.Glow;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -50,17 +50,20 @@ import quest.model.Story;
  */
 public class Application extends app.view.BaseView {
     
+    public final static String BUTTON_FONT = Font.ROBOTO_BLACK;
     public final static String CREATE_EVENT = "create";
     public final static String FILE_EVENT = "file";
-    public final static String FONT_NAME = "Roboto Mono Medium";
+    public final static String MONO_FONT = Font.ROBOTO_MONO;
+    public final static String NORMAL_FONT = Font.ROBOTO;
     public final static String OPTIONS_EVENT = "options";
     public final static String SELECT_EVENT = "select";
-    public final static String TITLE_FONT_NAME = "Minecraft";
+    public final static String TITLE_FONT = Font.MINECRAFT;
     public final static String QUIT_EVENT = "quit";
     
     public BaseController appController;
     public Book bookFile;
     public String flavorText;
+    public Layout nowPlayingLayout;
     
     public Application(String name) {
         super(name);
@@ -96,11 +99,21 @@ public class Application extends app.view.BaseView {
                 fs.initialFolder = "/home/repp/Documents/quests/";
                 this.appController.newDialog(fs);
             } case FILE_EVENT -> {
-                this.appController.stopAllSounds();
                 String fileName = (String) eventValue;
+
+                this.appController.stopAllSounds();
                 this.bookFile = deserializeBook(fileName);
-                this.appController.clearScreen(this.name);
-                this.display();
+
+                // Display "Now Playing" info
+                this.appController.clearControl(this.name, "now playing");
+                Label nowPlayingLabel = new Label("now playing", this.nowPlayingLayout);
+                nowPlayingLabel.text = "Now Playing...\n" + this.bookFile.title + "\n" + "by " + this.bookFile.author + "\n" + this.bookFile.updateDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.getDefault()));
+                nowPlayingLabel.pixelSize = 26.0;
+                nowPlayingLabel.textColor = Color.DARK_MAGENTA;
+                nowPlayingLabel.textFont = NORMAL_FONT;
+                nowPlayingLabel.textStyle = FontStyle.BOLD;
+                this.appController.addNode(this.name, nowPlayingLabel, this.name);
+
                 this.publishEvent("book", bookFile);                
             } default -> System.err.println("Application: onEvent: Unsupported event");
         }
@@ -108,7 +121,7 @@ public class Application extends app.view.BaseView {
     
     @Override
     public void onLoad(BaseController appController) {
-        System.out.println("Application: onLoad");
+        logger.log(Level.INFO, "Entered: appController={0}", appController);
         
         this.appController = appController;
         
@@ -125,105 +138,98 @@ public class Application extends app.view.BaseView {
     }
     
     public void display() {
-        System.out.println("Application: display");
+        logger.log(Level.INFO, "Entered");
         
-        int spiderColumns = appController.getColumns("/assets/images/spider.gif");
-        int parentColumns = appController.getTextColumns();
-        int gifColumn = parentColumns - spiderColumns + 2;    // Puts the spider in the upper right-hand corner
-        appController.displayGif(this.name, "/assets/images/spider.gif", 1, gifColumn);
+        Image spiderAnimation = new Image("spider", new Layout(new RelativeCoordinates(1.0, 0.0), HorizontalAlignment.RIGHT, VerticalAlignment.TOP));
+        spiderAnimation.file = "/assets/images/spider.gif";
+        this.appController.addNode(this.name, spiderAnimation, this.name);
         
-        Label titleLabel = new Label("title", new Layout(new RelativeCoordinates(0.0, 0.1), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
+        Label titleLabel = new Label("title", new Layout(new RelativeCoordinates(0.0, 0.13), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
         titleLabel.text = "QUESTCRAFT";
-        titleLabel.pixelSize = 64.0;
+        titleLabel.pixelSize = 86.0;
         titleLabel.textColor = Color.SHADOW;
-        titleLabel.textFont = TITLE_FONT_NAME;
+        titleLabel.textFont = TITLE_FONT;
         titleLabel.textStyle = FontStyle.BOLD;
         RelativeBounds titleBounds = this.appController.addNode(this.name, titleLabel, this.name);
         
-        Label subtitleLabel = new Label("subtitle", new Layout(new RelativeCoordinates(0.0, 0.18), HorizontalAlignment.CENTER, VerticalAlignment.TOP));        
+        Label subtitleLabel = new Label("subtitle", new Layout(new RelativeCoordinates(0.0, 0.24), HorizontalAlignment.CENTER, VerticalAlignment.TOP));        
         subtitleLabel.text = "- JAVA  EDITION -";
-        subtitleLabel.pixelSize = 32.0;
+        subtitleLabel.pixelSize = 38.0;
         subtitleLabel.textColor = Color.SHADOW;
-        subtitleLabel.textFont = TITLE_FONT_NAME;
+        subtitleLabel.textFont = TITLE_FONT;
         subtitleLabel.textStyle = FontStyle.BOLD;
         this.appController.addNode(this.name, subtitleLabel, this.name);
 
-        Label flavorTextLabel = new Label("flavor", new Layout(new RelativeCoordinates(0.0, 0.24), HorizontalAlignment.CENTER, VerticalAlignment.TOP));        
+        Label flavorTextLabel = new Label("flavor", new Layout(new RelativeCoordinates(0.0, 0.31), HorizontalAlignment.CENTER, VerticalAlignment.TOP));        
         flavorTextLabel.text = this.flavorText;
         flavorTextLabel.pixelSize = 16.0;
         flavorTextLabel.textColor = Color.DARK_MAGENTA;
-        flavorTextLabel.textFont = TITLE_FONT_NAME;
+        flavorTextLabel.textFont = TITLE_FONT;
         flavorTextLabel.textStyle = FontStyle.ITALIC;
         this.appController.addNode(this.name, flavorTextLabel, this.name);
         
-        // TODO - The buttons should scale horizontally to be as wide as the title label
-        // TODO - Each addNode invokation should return the (relative) bounds of the node
-        // TODO - Need to figure out how to block until the UI thread is complete, or, if the delayed layout issue can be solved another way
-
-        Button selectButton = new Button(SELECT_EVENT, new Layout(new RelativeCoordinates(0.0, 0.30), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
+        Button selectButton = new Button(SELECT_EVENT, new Layout(new RelativeCoordinates(0.0, 0.38), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
         selectButton.eventListener = this;
         selectButton.eventName = SELECT_EVENT;
         selectButton.pixelSize = 26.0;
         selectButton.textColor = Color.SHADOW;
         selectButton.text = "Select Quest";
-        selectButton.textFont = FONT_NAME;
+        selectButton.textFont = BUTTON_FONT;
         selectButton.effects.add(new Glow(Color.DARK_MAGENTA));
         selectButton.scaleX = titleBounds.width;
         this.appController.addNode(this.name, selectButton, this.name);
 
-        Button createButton = new Button(CREATE_EVENT, new Layout(new RelativeCoordinates(0.0, 0.40), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
+        Button createButton = new Button(CREATE_EVENT, new Layout(new RelativeCoordinates(0.0, 0.46), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
         createButton.eventListener = this;
         createButton.eventName = CREATE_EVENT;
         createButton.pixelSize = 26.0;
         createButton.textColor = Color.SHADOW;
         createButton.text = "Create Quest";
-        createButton.textFont = FONT_NAME;
+        createButton.textFont = BUTTON_FONT;
         createButton.effects.add(new Glow(Color.DARK_MAGENTA));
         createButton.scaleX = titleBounds.width;
         this.appController.addNode(this.name, createButton, this.name);
         
-        Button optionsButton = new Button(OPTIONS_EVENT, new Layout(new RelativeCoordinates(0.0, 0.50), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
+        Button optionsButton = new Button(OPTIONS_EVENT, new Layout(new RelativeCoordinates(titleBounds.coordinates.x, 0.54), HorizontalAlignment.LEFT, VerticalAlignment.TOP));
         optionsButton.eventListener = this;
         optionsButton.eventName = OPTIONS_EVENT;
         optionsButton.pixelSize = 26.0;
         optionsButton.textColor = Color.SHADOW;
         optionsButton.text = "Options...";
-        optionsButton.textFont = FONT_NAME;
+        optionsButton.textFont = BUTTON_FONT;
         optionsButton.effects.add(new Glow(Color.DARK_MAGENTA));
-        optionsButton.scaleX = titleBounds.width;
+        optionsButton.scaleX = titleBounds.width * 0.45;
         this.appController.addNode(this.name, optionsButton, this.name);
 
-        Button quitButton = new Button(QUIT_EVENT, new Layout(new RelativeCoordinates(0.0, 0.60), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
+        Button quitButton = new Button(QUIT_EVENT, new Layout(new RelativeCoordinates(titleBounds.coordinates.x + titleBounds.width, 0.54), HorizontalAlignment.RIGHT, VerticalAlignment.TOP));
         quitButton.eventListener = this;
         quitButton.eventName = QUIT_EVENT;
         quitButton.pixelSize = 26.0;
         quitButton.textColor = Color.SHADOW;
         quitButton.text = "Quit Game";
-        quitButton.textFont = FONT_NAME;
+        quitButton.textFont = BUTTON_FONT;
         quitButton.effects.add(new Glow(Color.DARK_MAGENTA));
-        quitButton.scaleX = titleBounds.width;
-        this.appController.addNode(this.name, quitButton, this.name);
+        quitButton.scaleX = titleBounds.width * 0.45;
+        RelativeBounds quitBounds = this.appController.addNode(this.name, quitButton, this.name);
         
-        Label changelog = new ScrollingLabel("changelog", new Layout(new RelativeCoordinates(0.98, 0.0), HorizontalAlignment.RIGHT, VerticalAlignment.CENTER));
+        Label changelog = new ScrollingLabel("changelog", new Layout(new RelativeCoordinates(0.99, 0.0), HorizontalAlignment.RIGHT, VerticalAlignment.CENTER));
         changelog.text = this.readChangelog();
         changelog.pixelSize = 12.0;
         changelog.textColor = Color.BLACK;
-        changelog.textFont = FONT_NAME;
-        changelog.scaleX = 0.25;
-        changelog.scaleY = 0.55;
+        changelog.textFont = MONO_FONT;
+        changelog.scaleX = 1 - (quitBounds.coordinates.x + quitBounds.width) - 0.04; // Space between the right edge of the button and the right edge of the pane (with .04 padding)
+        changelog.scaleY = 0.5;
         this.appController.addNode(this.name, changelog, this.name);
 
-        if (bookFile != null) {
-            // Display "Now Playing" info
-            /*
-            appController.displayFloatingText(this.name, null, this.bookFile.updateDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.getDefault())), 35, 42, 37, 88, infoTextColor, 18, null, "Minecraft");
-            appController.displayFloatingText(this.name, null, "by " + this.bookFile.author, 33, 42, 35, 88, infoTextColor, 18, null, "Minecraft");
-            appController.displayFloatingText(this.name, null, this.bookFile.title, 31, 42, 33, 88, infoTextColor, 18, null, "Minecraft");
-            appController.displayFloatingText(this.name, null, "Now Playing...", 28, 42, 30, 88, infoTextColor, 18, FontStyle.BOLD, "Minecraft");
-            */
-        }
+        this.nowPlayingLayout = new Layout(new RelativeCoordinates(0.0, (quitBounds.coordinates.y + (quitBounds.height * 2))), HorizontalAlignment.CENTER, VerticalAlignment.TOP);
         
-        //appController.displayFloatingText(this.name, null, "Coming soon... Twin Quest Chapter 2", 41, 90, 42, 126, null, 12, FontStyle.BOLD, "Minecraft");
+        Label comingSoonLabel = new Label("coming soon", new Layout(new RelativeCoordinates(0.99, 0.99), HorizontalAlignment.RIGHT, VerticalAlignment.BOTTOM));        
+        comingSoonLabel.text = "Coming soon... Twin Quest - DoW Chapter 2";
+        comingSoonLabel.pixelSize = 14.0;
+        comingSoonLabel.textColor = Color.SHADOW;
+        comingSoonLabel.textFont = NORMAL_FONT;
+        comingSoonLabel.textStyle = FontStyle.ITALIC;
+        this.appController.addNode(this.name, comingSoonLabel, this.name);
     }
     
     public String readChangelog() {
@@ -483,7 +489,7 @@ public class Application extends app.view.BaseView {
         book.preloadEmojisDuringAnimation = true;
         book.author = "R. W. Chung";
         book.firstActName = "Opening";
-        book.title = "BIG CHUNG, Destroyer of Worlds";
+        book.title = "Destroyer of Worlds";
         book.updateDate = LocalDate.now();    
         book.inventory = new LinkedHashMap<>();
 

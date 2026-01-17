@@ -36,12 +36,23 @@ import java.util.logging.Logger;
 import app.view.Animation;
 
 /**
- *
+ * Available font families:
+ * - Lato
+ * - Minecraft
+ * - Roboto
+ * - Roboto Black
+ * - Roboto Light
+ * - Roboto Medium
+ * - Roboto Mono
+ * - Roboto Mono Medium
+ * - Roboto Mono Thin
+ * - Roboto Mono Light
+ * - Roboto Thin
+ * - 
  * @author repp
  */
 public abstract class BaseController {
 
-    public static final String DEFAULT_FONT = "RobotoMono-Medium";
     public static final Double DEFAULT_PIXEL_SIZE = 14.0;
     public static final String EMOJI_SHEET = "/assets/images/sheet_google_64.png";
     public static final String EMOJI_SHEET_JSON = "/assets/json/emoji.json";
