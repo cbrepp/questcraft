@@ -22,7 +22,6 @@ public class BaseView implements EventListener {
     public Boolean isSplash;
     public String name;
     public int timeoutSeconds;
-    public String version;
     public LinkedHashMap<String, List<BaseView>> eventListenerMap;
     
     public BaseView(String name) {

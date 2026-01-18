@@ -1,5 +1,6 @@
 package quest.view;
 
+import app.Changelog;
 import app.controller.BaseController;
 import app.Color;
 import app.Font;
@@ -112,6 +113,7 @@ public class Application extends app.view.BaseView {
                 nowPlayingLabel.textColor = Color.DARK_MAGENTA;
                 nowPlayingLabel.textFont = NORMAL_FONT;
                 nowPlayingLabel.textStyle = FontStyle.BOLD;
+                nowPlayingLabel.backgroundColor = Color.WHITE;
                 this.appController.addNode(this.name, nowPlayingLabel, this.name);
 
                 this.publishEvent("book", bookFile);                
@@ -212,14 +214,31 @@ public class Application extends app.view.BaseView {
         quitButton.scaleX = titleBounds.width * 0.45;
         RelativeBounds quitBounds = this.appController.addNode(this.name, quitButton, this.name);
         
-        Label changelog = new ScrollingLabel("changelog", new Layout(new RelativeCoordinates(0.99, 0.0), HorizontalAlignment.RIGHT, VerticalAlignment.CENTER));
-        changelog.text = this.readChangelog();
-        changelog.pixelSize = 12.0;
-        changelog.textColor = Color.BLACK;
-        changelog.textFont = MONO_FONT;
-        changelog.scaleX = 1 - (quitBounds.coordinates.x + quitBounds.width) - 0.04; // Space between the right edge of the button and the right edge of the pane (with .04 padding)
-        changelog.scaleY = 0.5;
-        this.appController.addNode(this.name, changelog, this.name);
+        String changelog = Changelog.get();
+        if (changelog != null) {
+            String currentVersion = Changelog.findFirstReleasedVersion(changelog);
+            if (currentVersion != null) {
+                currentVersion = " " + currentVersion + " "; // Pad with spaces
+                // Display the current version in the lower left-hand corner
+                Label versionLabel = new Label("version", new Layout(new RelativeCoordinates(0.01, 0.99), HorizontalAlignment.LEFT, VerticalAlignment.BOTTOM));
+                versionLabel.text = currentVersion;
+                versionLabel.pixelSize = 14.0;
+                versionLabel.textColor = Color.SHADOW;
+                versionLabel.textFont = NORMAL_FONT;
+                versionLabel.backgroundColor = Color.WHITE;
+                this.appController.addNode(this.name, versionLabel, this.name);
+            }
+            
+            // Display the changelog in a scrolling region centered on the right with a spacer separating it from the quit button
+            Label changelogLabel = new ScrollingLabel("changelog", new Layout(new RelativeCoordinates(0.99, 0.0), HorizontalAlignment.RIGHT, VerticalAlignment.CENTER));
+            changelogLabel.text = changelog;
+            changelogLabel.pixelSize = 12.0;
+            changelogLabel.textColor = Color.BLACK;
+            changelogLabel.textFont = MONO_FONT;
+            changelogLabel.scaleX = 1 - (quitBounds.coordinates.x + quitBounds.width) - 0.04; // Space between the right edge of the button and the right edge of the pane (with .04 padding)
+            changelogLabel.scaleY = 0.5;
+            this.appController.addNode(this.name, changelogLabel, this.name);
+        }
 
         this.nowPlayingLayout = new Layout(new RelativeCoordinates(0.0, (quitBounds.coordinates.y + (quitBounds.height * 4))), HorizontalAlignment.CENTER, VerticalAlignment.TOP);
         
@@ -230,21 +249,6 @@ public class Application extends app.view.BaseView {
         comingSoonLabel.textFont = NORMAL_FONT;
         comingSoonLabel.textStyle = FontStyle.ITALIC;
         this.appController.addNode(this.name, comingSoonLabel, this.name);
-    }
-    
-    public String readChangelog() {
-        try (InputStream is = getClass().getResourceAsStream("/CHANGELOG.md")) {
-            if (is == null) {
-                return "Changelog not found.";
-            }
-
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
-                return reader.lines().collect(Collectors.joining("\n"));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "Error reading changelog.";
-        }
     }
     
     public Book deserializeBook(String fileName) {

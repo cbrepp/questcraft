@@ -142,11 +142,10 @@ public abstract class BaseController {
         // Instance the application view
         logger.log(Level.INFO, "Instancing the application view for app class: {0}", props.getProperty("app.class"));
         String configAppClass = props.getProperty("app.class");
-        String configAppVersion = props.getProperty("app.version");
         String configSplashClass = props.getProperty("app.splash");
         
         Class<?> clazz;
-        String appName = getAppName(configAppClass, configAppVersion);
+        String appName = getAppName(configAppClass);
 
         // Initialize the splash view
         BaseView splashView = null;
@@ -170,7 +169,6 @@ public abstract class BaseController {
         }
         appView.className = configAppClass;
         appView.iconFileName = props.getProperty("app.icon");
-        appView.version = configAppVersion;
         
         // Display the application
         logger.log(Level.INFO, "Displaying the application");
@@ -182,8 +180,8 @@ public abstract class BaseController {
         logger.log(Level.INFO, "System exit");
     }
     
-    public static String getAppName(String appClassName, String appVersion) {
-        logger.log(Level.INFO, "Entered: appClassName={0}, appVersion={1}", new Object[]{appClassName, appVersion});
+    public static String getAppName(String appClassName) {
+        logger.log(Level.INFO, "Entered: appClassName={0}", appClassName);
         
         String appName = "";
         
@@ -191,7 +189,6 @@ public abstract class BaseController {
         try {
             appClass = Class.forName(appClassName);
             String className = appClass.getSimpleName();
-            appName = className + " " + appVersion;
         } catch (ClassNotFoundException e) {
             logger.log(Level.SEVERE, "A critical error occurred", e);
         }

@@ -661,9 +661,12 @@ public class JavaFXApplication extends BaseController {
             // Calculate scale factors for both dimensions
             double scaleX = viewportW / dimensions.x;
             double scaleY = viewportH / dimensions.y;
+            
+            // Maintain aspect ratio
+            double fitScale = Math.min(scaleX, scaleY);
 
-            // Return the minimum to 'Fit' inside the window without cropping
-            return Math.min(scaleX, scaleY);
+            // Prevent shrinking below the preferred size
+            return Math.max(1.0, fitScale);
         }, scrollPane.viewportBoundsProperty());
         zoomGroup.scaleXProperty().bind(dynamicScale);
         zoomGroup.scaleYProperty().bind(dynamicScale);
@@ -790,42 +793,6 @@ public class JavaFXApplication extends BaseController {
             return;
         }
         
-        /*
-        if (node.getClass().equals(app.node.Button.class)) {
-            Button button = (Button) fxNode;
-            
-            if ((button.getWidth() == 0) || (button.getHeight() == 0)) {
-                logger.log(Level.INFO, "Subscribing to size change : width={0}, height={1}, alt width={2}, alt alt width={3}", new Object[]{button.getWidth(), button.getHeight(), button.getLayoutBounds().getWidth(), button.prefWidth(-1)});
-                
-                // Run in a background thread to prevent UI locking
-                new Thread(() -> {
-                    try {
-                        // Wait until the UI thread updates both the width and the height for the control
-                        CountDownLatch latch = new CountDownLatch(1);
-                        Platform.runLater(() -> {                
-                            BooleanBinding sizeEstablished = Bindings.and(
-                                button.widthProperty().greaterThan(0),
-                                button.heightProperty().greaterThan(0)
-                            );
-                            this.nodeBindings.get(viewName).add(sizeEstablished);
-
-                            sizeEstablished.when(sizeEstablished).subscribe(isSet -> {
-                                if (isSet) {
-                                    logger.log(Level.INFO, "Both set! width={0}, height={1}", new Object[]{button.getWidth(), button.getHeight()});
-                                    this.positionNode(viewName, node, fxNode, fxParent);
-                                }
-                            });
-                        });
-                        latch.await();
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                }).start();
-                return;
-            }
-        }
-        */
-        
         Double x = null;
         if (node.layout.horizontalAlignment == null) {
             logger.log(Level.WARNING, "Horizontal alignment was not specified");
@@ -868,67 +835,7 @@ public class JavaFXApplication extends BaseController {
             fxNode.setLayoutY(y);
         }
             
-        logger.log(Level.INFO, "Calculated coordinates ({0}, {1}) for parent width {2} and height {3} and node width {4} and height {5}", new Object[]{x, y, fxParent.getPrefWidth(), fxParent.getPrefHeight(), fxNode.getBoundsInLocal().getWidth(), fxNode.getBoundsInLocal().getHeight()});
-        
-
-        
-        /*
-        if (fxNode.isManaged()) {
-            logger.log(Level.WARNING, "A layout was specified but the node is managed");
-            return;
-        }
-        */
-
-        /*
-        // Handle the configured horizontal alignment
-        if (node.layout.horizontalAlignment == null) {
-            logger.log(Level.WARNING, "Horizontal alignment was not specified");
-        } else {
-            switch (node.layout.horizontalAlignment) {
-                case LEFT -> fxNode.layoutXProperty().bind(fxParent.widthProperty().multiply(node.layout.position.x));
-                case CENTER -> { fxNode.layoutXProperty().bind(Bindings.createDoubleBinding(() -> {
-                        double parentWidth = fxParent.getWidth();
-                        double nodeWidth = fxNode.getLayoutBounds().getWidth();
-                        logger.log(Level.INFO, "H align center: parent width={0}, node width={1}, h position={2}, name={3}", new Object[]{fxParent.getWidth(), fxNode.getLayoutBounds().getWidth(), ((fxParent.getWidth() - fxNode.getLayoutBounds().getWidth()) / 2), node.name});
-                        return (parentWidth - nodeWidth) / 2;
-                    }, fxParent.widthProperty(), fxNode.layoutBoundsProperty()));
-                    logger.log(Level.INFO, "H align center: parent width={0}, node width={1}, h position={2}, name={3}", new Object[]{fxParent.getWidth(), fxNode.getLayoutBounds().getWidth(), ((fxParent.getWidth() - fxNode.getLayoutBounds().getWidth()) / 2), node.name});
-                }
-                case RIGHT -> fxNode.layoutXProperty().bind(Bindings.createDoubleBinding(() -> {
-                        double parentWidth = fxParent.getWidth();
-                        double nodeWidth = fxNode.getLayoutBounds().getWidth();
-                        return (parentWidth * node.layout.position.x) - nodeWidth;
-                    }, fxParent.widthProperty(), fxNode.layoutBoundsProperty()));
-                }
-        }
-        
-        // Handle the configured horizontal alignment
-        if (node.layout.verticalAlignment == null) {
-            logger.log(Level.WARNING, "Vertical alignment was not specified");
-        } else {
-            switch (node.layout.verticalAlignment) {
-                case TOP -> fxNode.layoutYProperty().bind(fxParent.heightProperty().multiply(node.layout.position.y));
-                case CENTER -> { fxNode.layoutYProperty().bind(Bindings.createDoubleBinding(() -> {
-                        double parentHeight = fxParent.getHeight();
-                        double nodeHeight = fxNode.getLayoutBounds().getHeight();
-                        logger.log(Level.INFO, "V align center update: parent height={0}, node height={1}, v position={2}, name={3}", new Object[]{fxParent.getHeight(), fxNode.getLayoutBounds().getHeight(), ((fxParent.getHeight() - fxNode.getLayoutBounds().getHeight()) / 2), node.name});
-                        return (parentHeight - nodeHeight) / 2;
-                    }, fxParent.heightProperty(), fxNode.layoutBoundsProperty()));
-                    logger.log(Level.INFO, "V align center: parent height={0}, node height={1}, v position={2}, name={3}", new Object[]{fxParent.getHeight(), fxNode.getLayoutBounds().getHeight(), ((fxParent.getHeight() - fxNode.getLayoutBounds().getHeight()) / 2), node.name});
-                }
-                case BOTTOM -> fxNode.layoutYProperty().bind(Bindings.createDoubleBinding(() -> {
-                        double parentHeight = fxParent.getHeight();
-                        double nodeHeight = fxNode.getLayoutBounds().getHeight();
-                        return (parentHeight * node.layout.position.y) - nodeHeight;
-                    }, fxParent.heightProperty(), fxNode.layoutBoundsProperty()));
-                }
-        }
-        
-        if (node.scaleY != null) {
-            Pane box = (Pane) fxNode;
-            box.prefHeightProperty().bind(fxParent.heightProperty().multiply(node.scaleY));
-        }
-        */
+        logger.log(Level.INFO, "Calculated coordinates ({0}, {1}) for parent width {2} and height {3} and node width {4} and height {5}", new Object[]{x, y, fxParent.getPrefWidth(), fxParent.getPrefHeight(), fxNode.getBoundsInLocal().getWidth(), fxNode.getBoundsInLocal().getHeight()});        
     }
     
     /*

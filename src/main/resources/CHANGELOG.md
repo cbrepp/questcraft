@@ -1,14 +1,15 @@
 # Changelog
 Read on for exciting new changes!
 
-## - 2026-01-14
+## Prototype
 ### Added
-- New CHANGELOG displays on the Application screen.
-- New ScrollingLabel node type that automatically adds a vertical scrollbar when needed.
+- New app framework that can be used to create a Java application using AWT, JavaFX, SWT, or Swing.  (With built-in support for JPro for projecting the UI to a web browser.)
+- New game framework (Questcraft) for easily building quests using the app framework.
+- New quest, "TWIN QUEST: Mad Quest" featuring 3 chapters.
+- New quest, "TWIN QUEST: Destroyer of Worlds" featuring 1 chapter.
 
 ### Changed
-- Base controller method addNode() returns RelativeBounds.
-- Application screen buttons left and right align with the main title text.
+- Nothing... this is a base version!  (Remove this section.)
 
 ### Fixed
-- Fixed button nodes needing bindings in order to position and scale.
+- Nothing... this is a base version!  (Remove this section.)
