@@ -40,6 +40,11 @@ public class SwingApplication extends BaseController {
     }
     
     @Override
+    public RelativeBounds changeNode(String viewName, BaseNode node) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
     public RelativeBounds addNode(String viewName, BaseNode node, String parentName) {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -75,7 +80,7 @@ public class SwingApplication extends BaseController {
     }
     
     @Override
-    public void clearControl(String viewName, String controlName) {
+    public void removeNode(String viewName, String nodeName) {
         throw new UnsupportedOperationException("Not supported.");
     }
     

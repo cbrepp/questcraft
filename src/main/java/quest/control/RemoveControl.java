@@ -18,8 +18,8 @@ public class RemoveControl extends QuestControl {
     @Override
     public String onExecute(String tag) {
         System.out.println("RemoveControl: onExecute: tag=" + tag);
-        String controlName = getTagToken(tag, 1, true);
-        this.quest.appController.clearControl(this.quest.name, controlName);
+        String nodeName = getTagToken(tag, 1, true);
+        this.quest.appController.removeNode(this.quest.name, nodeName);
         return "";
     }
     

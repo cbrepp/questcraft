@@ -436,7 +436,7 @@ public class MonsterShooterControl extends QuestControl implements Animation, Ev
                     }
                 }
                 if (monsterMissileHitCount > 0) {
-                    this.quest.appController.clearControl(Questcraft.QUEST, LABEL_PLAYER_HP);
+                    this.quest.appController.removeNode(Questcraft.QUEST, LABEL_PLAYER_HP);
                     //this.quest.appController.displayFloatingText(Questcraft.QUEST, LABEL_PLAYER_HP, "HP: " + String.valueOf(this.quest.getPlayerHP()), this.row, this.column, null, null, null, 12, null, "RobotoMono-Medium");
                     this.quest.appController.playSound(this.monsterMissileSoundFileName, false);
                 }
@@ -450,7 +450,7 @@ public class MonsterShooterControl extends QuestControl implements Animation, Ev
                     } else if (collidingSprite.name.equals(PLAYER_MISSILE_MINI_NAME)) {
                         this.monsterHP -= 1;
                     }
-                    this.quest.appController.clearControl(Questcraft.QUEST, LABEL_MONSTER_HP);
+                    this.quest.appController.removeNode(Questcraft.QUEST, LABEL_MONSTER_HP);
                     //this.quest.appController.displayFloatingText(Questcraft.QUEST, LABEL_MONSTER_HP, "Monster HP: " + String.valueOf(this.monsterHP), this.row, this.column + 34, null, null, null, 12, null, "RobotoMono-Medium");
                 }
                 this.monster.collisionSprites.clear();
@@ -473,7 +473,7 @@ public class MonsterShooterControl extends QuestControl implements Animation, Ev
         } else if ((this.quest.getPlayerHP() <= 0) || (this.monsterHP <= 0)) {
             this.quest.variables.put("animation-paused", "true");
             this.quest.variables.put("animation-complete", "true");
-            this.quest.appController.clearControl(this.quest.name, ANIMATION_CONTROLS_NAME);
+            this.quest.appController.removeNode(this.quest.name, ANIMATION_CONTROLS_NAME);
             this.quest.appController.playSound(this.monsterSoundFileName, false);
         }
         
@@ -521,7 +521,7 @@ public class MonsterShooterControl extends QuestControl implements Animation, Ev
         if (eventName.equals(CONTINUE_BUTTON_NAME)) {
             System.out.println("MonsterShooterControl: onEvent: Continuing on from animation");
             this.animationComplete = true;
-            this.quest.appController.clearControl(this.quest.name, CONTINUE_BUTTON_NAME);
+            this.quest.appController.removeNode(this.quest.name, CONTINUE_BUTTON_NAME);
             this.quest.display(); // Refresh the pages
         } else {
             if ((!this.quest.variables.containsKey("animation-paused")) || (!this.quest.variables.get("animation-paused").equals("true"))) {

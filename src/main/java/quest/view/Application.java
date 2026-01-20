@@ -18,16 +18,13 @@ import app.node.Image;
 import app.node.Label;
 import app.node.ScrollingLabel;
 import app.node.effect.Glow;
-import java.io.BufferedReader;
+import app.node.effect.Transition;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
@@ -36,7 +33,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 import quest.model.Act;
 import quest.model.Book;
 import quest.model.HighScore;
@@ -52,6 +48,7 @@ import quest.model.Story;
 public class Application extends app.view.BaseView {
     
     public final static String BUTTON_FONT = Font.ROBOTO_BLACK;
+    public final static String CHANGELOG_EVENT = "toggle changelog";
     public final static String CREATE_EVENT = "create";
     public final static String FILE_EVENT = "file";
     public final static String MONO_FONT = Font.ROBOTO_MONO;
@@ -63,8 +60,11 @@ public class Application extends app.view.BaseView {
     
     public BaseController appController;
     public Book bookFile;
+    public Button changelogButton;
+    public Label changelogLabel;
     public String flavorText;
     public Layout nowPlayingLayout;
+    public Boolean showChangelog = false;
     
     public Application(String name) {
         super(name);
@@ -78,6 +78,19 @@ public class Application extends app.view.BaseView {
         logger.log(Level.INFO, "Entered: eventName={0}, eventValue={1}", new Object[]{eventName, eventValue});
         
         switch (eventName) {
+            case CHANGELOG_EVENT -> {
+                if (this.changelogButton.text.equals("<")) {
+                    this.changelogButton.text = ">";
+                    this.appController.addNode(this.name, this.changelogLabel, this.name);
+                    // TODO - Need a simple way to subscribe to the animation being complete before changing the button text
+                    // TODO - Verify that the button click is only processed once while the animation is in effect
+                    this.appController.changeNode(this.name, this.changelogButton);
+                } else {
+                    this.changelogButton.text = "<";
+                    this.appController.removeNode(this.name, this.changelogLabel.name);
+                    this.appController.changeNode(this.name, this.changelogButton);
+                }
+            }
             case CREATE_EVENT -> {
                 Alert alert = new Alert(this.name);
                 alert.header = "Coming soon!";
@@ -106,7 +119,7 @@ public class Application extends app.view.BaseView {
                 this.bookFile = deserializeBook(fileName);
 
                 // Display "Now Playing" info
-                this.appController.clearControl(this.name, "now playing");
+                this.appController.removeNode(this.name, "now playing");
                 Label nowPlayingLabel = new Label("now playing", this.nowPlayingLayout);
                 nowPlayingLabel.text = "Now Playing...\n" + this.bookFile.title + "\n" + "by " + this.bookFile.author + "\n" + this.bookFile.updateDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.getDefault()));
                 nowPlayingLabel.pixelSize = 26.0;
@@ -229,15 +242,25 @@ public class Application extends app.view.BaseView {
                 this.appController.addNode(this.name, versionLabel, this.name);
             }
             
+            this.changelogButton = new Button(CHANGELOG_EVENT, new Layout(new RelativeCoordinates(1.0, 0.0), HorizontalAlignment.RIGHT, VerticalAlignment.CENTER));
+            this.changelogButton.eventListener = this;
+            this.changelogButton.eventName = CHANGELOG_EVENT;
+            this.changelogButton.pixelSize = 20.0;
+            this.changelogButton.textColor = Color.SHADOW;
+            this.changelogButton.text = "<";
+            this.changelogButton.isMultiUse = true;
+            changelogButton.textFont = BUTTON_FONT;
+            RelativeBounds changelogButtonBounds = this.appController.addNode(this.name, this.changelogButton, this.name);
+
             // Display the changelog in a scrolling region centered on the right with a spacer separating it from the quit button
-            Label changelogLabel = new ScrollingLabel("changelog", new Layout(new RelativeCoordinates(0.99, 0.0), HorizontalAlignment.RIGHT, VerticalAlignment.CENTER));
-            changelogLabel.text = changelog;
-            changelogLabel.pixelSize = 12.0;
-            changelogLabel.textColor = Color.BLACK;
-            changelogLabel.textFont = MONO_FONT;
-            changelogLabel.scaleX = 1 - (quitBounds.coordinates.x + quitBounds.width) - 0.04; // Space between the right edge of the button and the right edge of the pane (with .04 padding)
-            changelogLabel.scaleY = 0.5;
-            this.appController.addNode(this.name, changelogLabel, this.name);
+            this.changelogLabel = new ScrollingLabel("changelog", new Layout(new RelativeCoordinates(changelogButtonBounds.coordinates.x, 0.0), HorizontalAlignment.RIGHT, VerticalAlignment.CENTER));
+            this.changelogLabel.text = changelog;
+            this.changelogLabel.pixelSize = 10.0;
+            this.changelogLabel.textColor = Color.BLACK;
+            this.changelogLabel.textFont = MONO_FONT;
+            this.changelogLabel.scaleX = changelogButtonBounds.coordinates.x - (quitBounds.coordinates.x + quitBounds.width) - 0.02; // Space between the right edge of the button and the right edge of the changelog button (with .04 padding)
+            this.changelogLabel.scaleY = 0.5;
+            this.changelogLabel.effects.add(new Transition());
         }
 
         this.nowPlayingLayout = new Layout(new RelativeCoordinates(0.0, (quitBounds.coordinates.y + (quitBounds.height * 4))), HorizontalAlignment.CENTER, VerticalAlignment.TOP);

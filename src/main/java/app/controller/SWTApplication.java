@@ -297,6 +297,11 @@ public class SWTApplication extends BaseController {
     }
     
     @Override
+    public RelativeBounds changeNode(String viewName, BaseNode node) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
+    @Override
     public RelativeBounds addNode(String viewName, BaseNode node, String parentName) {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -642,16 +647,16 @@ public class SWTApplication extends BaseController {
     }
     
     @Override
-    public void clearControl(String viewName, String controlName) {
-        System.out.println("SWTApplication: clearControl : viewName=" + viewName + ", controlName=" + controlName);
-        List<Control> controlList = this.namedControls.get(viewName).get(controlName);
+    public void removeNode(String viewName, String nodeName) {
+        System.out.println("SWTApplication: clearControl : viewName=" + viewName + ", nodeName=" + nodeName);
+        List<Control> controlList = this.namedControls.get(viewName).get(nodeName);
         if (controlList == null) {
             return;
         }
         for (Control control : controlList) {
             control.dispose();
         }
-        this.namedControls.get(viewName).remove(controlName);
+        this.namedControls.get(viewName).remove(nodeName);
     }
     
     /*

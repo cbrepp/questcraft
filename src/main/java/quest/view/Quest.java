@@ -179,23 +179,23 @@ public class Quest extends app.view.BaseView {
         System.out.println("Quest: onEvent: eventName=" + eventName + ", eventValue=" + eventValue);
         
         switch(eventName) {
-            case HP_CHANGE -> this.appController.clearControl(this.name, HP_CHANGE);
+            case HP_CHANGE -> this.appController.removeNode(this.name, HP_CHANGE);
             case HP_CHANGE_REFRESH -> {
-                this.appController.clearControl(this.name, HP_CHANGE_REFRESH);
+                this.appController.removeNode(this.name, HP_CHANGE_REFRESH);
                 this.display();
             }
-            case MP_CHANGE -> this.appController.clearControl(this.name, MP_CHANGE);
+            case MP_CHANGE -> this.appController.removeNode(this.name, MP_CHANGE);
             case MP_CHANGE_REFRESH -> {
-                this.appController.clearControl(this.name, MP_CHANGE_REFRESH);
+                this.appController.removeNode(this.name, MP_CHANGE_REFRESH);
                 this.display();
             }
-            case XP_CHANGE -> this.appController.clearControl(this.name, XP_CHANGE);
+            case XP_CHANGE -> this.appController.removeNode(this.name, XP_CHANGE);
             case XP_CHANGE_REFRESH -> {
-                this.appController.clearControl(this.name, XP_CHANGE_REFRESH);
+                this.appController.removeNode(this.name, XP_CHANGE_REFRESH);
                 this.display();
             }
             case LOADING_COMPLETE -> {
-                this.appController.clearControl(this.name, LOADING_OVERLAY);
+                this.appController.removeNode(this.name, LOADING_OVERLAY);
                 this.startAct(this.book.firstActName);
                 this.display();
             }

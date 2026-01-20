@@ -77,12 +77,13 @@ public abstract class BaseController {
     public abstract void displayView(String viewName);
     public abstract void displayOverlay(String viewName, String name, app.Color color, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, Integer transparency, Boolean invert);
     public abstract void clearScreen(String name);
-    public abstract void clearControl(String viewName, String controlName);
+    public abstract void removeNode(String viewName, String nodeName);
     //public abstract void displayMessageBox(String title, String text, Icon level, List<String> emojis);
     //public abstract void displayText(String viewName, String text, Integer row, Integer column);
     //public abstract void displayText(String viewName, String text, Integer row, Integer column, Color color);
     //public abstract void displayText(String viewName, String text, Integer row, Integer column, Color color, int style);
     public abstract void displayGrid(String viewName, Grid control);
+    public abstract RelativeBounds changeNode(String viewName, BaseNode node);
     public abstract RelativeBounds addNode(String viewName, BaseNode node, String parentName);
     public abstract void newDialog(BaseDialog dialog);
     //public abstract void displayLink(String viewName, String name, String linkText, int row, int column, int length, EventListener listener);

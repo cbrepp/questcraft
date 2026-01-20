@@ -116,6 +116,8 @@ import javafx.scene.text.TextFlow;
 import javax.imageio.metadata.IIOMetadata;
 import org.w3c.dom.NamedNodeMap;
 import app.view.Animation;
+import javafx.animation.Interpolator;
+import javafx.animation.TranslateTransition;
 import javafx.beans.binding.DoubleBinding;
 import javafx.scene.Group;
 import javafx.scene.text.FontSmoothingType;
@@ -147,7 +149,9 @@ public class JavaFXApplication extends BaseController {
     public BaseView lastSelectedView;
     public HashMap<String, List<MediaPlayer>> mediaPlayers = new HashMap();
     public Font monospaceFont;
-    public Map<String, Map<String, Object>> namedControls;
+    public Map<String, Map<String, Node>> namedFXNodes; // view -> node name -> FX node
+    public Map<String, Map<String, BaseNode>> namedNodes; // view -> node name -> app (generic) node
+    public Map<String, Map<String, String>> parentNodes; // view -> node name -> parent node name
     public BaseView parentView;
     public Coordinates primaryDimensions;
     public Scene primaryScene;
@@ -308,7 +312,9 @@ public class JavaFXApplication extends BaseController {
         this.tabItemMap = new HashMap<>();
         this.tabItemViewMap = new HashMap<>();
         this.views = new HashMap();
-        this.namedControls = new HashMap();
+        this.namedFXNodes = new HashMap();
+        this.namedNodes = new HashMap();
+        this.parentNodes = new HashMap();
             
         // Init a font for all text areas and buttons to use
         this.monospaceFont = Font.font("Consolas", FontWeight.NORMAL, adjustFontSizeForDPI(DEFAULT_FONT_SIZE));
@@ -424,16 +430,21 @@ public class JavaFXApplication extends BaseController {
             overlay.setFill(new Color((color.red + 1) / 255, (color.green + 1) / 255, (color.blue + 1) / 255, opacityPercent));
         }
         content.getChildren().add(overlay);
-        this.namedControls.get(viewName).put(name, overlay);
+        this.namedFXNodes.get(viewName).put(name, overlay);
     }
     
     @Override
     public void clearScreen(String viewName) {
         System.out.println("JavaFXApplication: clearScreen : viewName=" + viewName); 
 
-        if (this.namedControls.get(viewName) != null) {
+        if (this.namedFXNodes.get(viewName) != null) {
             // The pane's conent is named the same as the view
-            this.namedControls.get(viewName).keySet().removeIf(key -> !key.equals(viewName));
+            this.namedFXNodes.get(viewName).keySet().removeIf(key -> !key.equals(viewName));
+        }
+        
+        if (this.namedNodes.get(viewName) != null) {
+            // The pane's conent is named the same as the view
+            this.namedNodes.get(viewName).keySet().removeIf(key -> !key.equals(viewName));
         }
         
         Pane content = this.tabContentMap.get(viewName);
@@ -452,19 +463,69 @@ public class JavaFXApplication extends BaseController {
     }
     
     @Override
-    public void clearControl(String viewName, String controlName) {
-        System.out.println("JavaFXApplication: clearControl : viewName=" + viewName + ", controlName=" + controlName);
-        Object control = this.namedControls.get(viewName).get(controlName);
-        if (control != null) {
-            Pane content = this.tabContentMap.get(viewName);
-            content.getChildren().remove((Node) control);
-            this.namedControls.get(viewName).remove(controlName);
-            
-            // If the control is a button with a key binding remove the event filter from the scene
-            if (this.keyBindings.containsKey(control)) {
-                this.primaryScene.removeEventFilter(KeyEvent.KEY_PRESSED, this.keyBindings.get(control));
-                this.keyBindings.remove(control);
+    public void removeNode(String viewName, String nodeName) {
+        logger.log(Level.INFO, "Entered: viewName={0}, nodeName={1}", new Object[]{viewName, nodeName});
+        
+        BaseNode node = this.namedNodes.get(viewName).get(nodeName);
+        if (node == null) {
+            logger.log(Level.WARNING, "Node could NOT be found");
+            return;
+        }
+        
+        Node fxNode = this.namedFXNodes.get(viewName).get(nodeName);
+        if (fxNode == null) {
+            logger.log(Level.WARNING, "FX node could NOT be found");
+            return;
+        }
+        
+        if (!node.effects.isEmpty()) {
+            boolean isReadyToRemove = this.removeEffects(viewName, node, fxNode);
+            if (!isReadyToRemove) {
+                logger.log(Level.INFO, "Delaying node removal until effects have completed");
+                return;
             }
+        }
+        
+        this.removeFXNode(viewName, node, fxNode);
+    }
+    
+    public void removeFXNode(String viewName, BaseNode node, Node fxNode) {
+        logger.log(Level.INFO, "Entered: viewName={0}, node={1}, fxNode={3}", new Object[]{viewName, node, fxNode});
+        
+        String parentName = this.parentNodes.get(viewName).get(node.name);
+        Node fxParentNode = this.namedFXNodes.get(viewName).get(parentName);
+
+        // TODO - This is ugly.  Parent nodes do not have a base type (Parent) with a public getChildren() method so each parent class needs to be handled.
+        Class<?> parentControlClass = fxParentNode.getClass();
+        if (parentControlClass.equals(Pane.class)) {
+            Pane pane = (Pane) fxParentNode;
+            pane.getChildren().remove(fxNode);
+            pane.layout();
+        } else if (parentControlClass.equals(StackPane.class)) {
+            StackPane pane = (StackPane) fxParentNode;
+            pane.getChildren().remove(fxNode);
+            pane.layout();
+        } else if (parentControlClass.equals(HBox.class)) {
+            HBox box = (HBox) fxParentNode;
+            box.getChildren().remove(fxNode);
+            box.layout();
+        } else if (parentControlClass.equals(VBox.class)) {
+            VBox box = (VBox) fxParentNode;
+            box.getChildren().remove(fxNode);
+            box.layout();         
+        } else {
+            logger.log(Level.SEVERE, "Parent does not have a supported class: {0}", parentControlClass.getSimpleName());
+            return;
+        }
+
+        this.namedNodes.get(viewName).remove(node.name);
+        this.namedFXNodes.get(viewName).remove(node.name);
+        this.parentNodes.get(viewName).remove(node.name);
+
+        // If the control is a button with a key binding remove the event filter from the scene
+        if (this.keyBindings.containsKey(fxNode)) {
+            this.primaryScene.removeEventFilter(KeyEvent.KEY_PRESSED, this.keyBindings.get(fxNode));
+            this.keyBindings.remove(fxNode);
         }
     }
     
@@ -522,7 +583,7 @@ public class JavaFXApplication extends BaseController {
 
         this.tabItemMap.remove(viewName);
         
-        this.namedControls.remove(viewName);
+        this.namedFXNodes.remove(viewName);
         
         // Remove all references to the view
         if ((this.lastSelectedView != null) && (this.lastSelectedView.name.equals(viewName))) {
@@ -697,9 +758,11 @@ public class JavaFXApplication extends BaseController {
 
         this.views.put(view.name, view);
 
-        if (this.namedControls.get(view.name) == null) {
-            this.namedControls.put(view.name, new HashMap());
-            this.namedControls.get(view.name).put(view.name, content);
+        if (this.namedFXNodes.get(view.name) == null) {
+            this.namedFXNodes.put(view.name, new HashMap());
+            this.namedFXNodes.get(view.name).put(view.name, content);
+            this.parentNodes.put(view.name, new HashMap());
+            this.namedNodes.put(view.name, new HashMap());
         }
         
         // Add overlay pane AFTER HTMLEditor as StackPane displays its contents back-to-front
@@ -811,6 +874,11 @@ public class JavaFXApplication extends BaseController {
         }
         
         if (x != null) {
+            // Prevent placing the child node directly on the right edge of the parent node to prevent issues
+            if ((fxNode.getBoundsInLocal().getWidth() < fxParent.getPrefWidth() - 1) && ((x + fxNode.getBoundsInLocal().getWidth()) >= fxParent.getPrefWidth() - 1)) {
+                x -= 2; // Unfortunate fudge factor.  A gap of 2 pixels is needed to prevent triggering a resize of the application window.
+                logger.log(Level.WARNING, "Reduced the node's width by 2 to prevent overlap with the parent");
+            }
             fxNode.setLayoutX(x);
         }
         
@@ -832,6 +900,11 @@ public class JavaFXApplication extends BaseController {
         }
         
         if (y != null) {
+            // Prevent placing the child node directly on the bottom edge of the parent node to prevent issues
+            if ((fxNode.getBoundsInLocal().getHeight() < fxParent.getPrefHeight() - 1) && ((y + fxNode.getBoundsInLocal().getHeight()) >= fxParent.getPrefHeight() - 1)) {
+                y -= 2; // Unfortunate fudge factor.  A gap of 2 pixels is needed to prevent triggering a resize of the application window.
+                logger.log(Level.WARNING, "Reduced the node's height by 2 to prevent overlap with the parent");
+            }
             fxNode.setLayoutY(y);
         }
             
@@ -901,24 +974,88 @@ public class JavaFXApplication extends BaseController {
             button.setOnMouseExited(e -> button.setStyle(defaultStyle));
         }
         
-        this.namedControls.get(viewName).put(name, button);
+        this.namedFXNodes.get(viewName).put(name, button);
         
         return button;
     }
     */
     
     public void addEffects(app.node.BaseNode node, Node fxNode, app.Color offsetColor) {
-        logger.log(Level.INFO, "Entered: node={0}, fxNode={1} offsetColor={2}", new Object[]{node, fxNode, offsetColor});
-        if ((node.effects != null) && (!node.effects.isEmpty())) {
-            for (BaseEffect effect : node.effects) {
-                Class<?> effectClass = effect.getClass();
-                if (effectClass.equals(app.node.effect.Glow.class)) {
-                    this.addGlow(fxNode, (Glow)effect, offsetColor);
-                } else {
-                    logger.log(Level.SEVERE, "Class is not a supported effect class: {0}", effectClass.getSimpleName());
-                }
+        logger.log(Level.INFO, "Entered: node={0}, fxNode={1}, offsetColor={2}", new Object[]{node, fxNode, offsetColor});
+        
+        if ((node.effects == null) || (node.effects.isEmpty())) {
+            logger.log(Level.INFO, "No effects, nothing to do");
+            return;
+        }
+        
+        for (BaseEffect effect : node.effects) {
+            Class<?> effectClass = effect.getClass();
+            if (effectClass.equals(app.node.effect.Glow.class)) {
+                this.addGlow(fxNode, (Glow) effect, offsetColor);
+                logger.log(Level.INFO, "Added glow effect");
+            } else if (effectClass.equals(app.node.effect.Transition.class)) {
+                // TODO - Need to do something like disable the parent pane's scrollbars during the animation so they don't get confused
+                //parentScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+                //parentScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+                
+                // TODO - If the application window is grown above the preferred dimensions, the centering of the content gets wonky during the animation
+
+                // TODO - Set the initial translation based properties on the effect
+                double nodeWidth = fxNode.prefWidth(-1);
+                fxNode.setTranslateX(nodeWidth);
+                TranslateTransition slide = new TranslateTransition(Duration.millis(500), fxNode);
+                slide.setFromX(nodeWidth);
+                slide.setToX(0);
+                slide.setInterpolator(Interpolator.EASE_OUT);
+                slide.play();
+                logger.log(Level.INFO, "Added transition effect");
+            } else {
+                logger.log(Level.SEVERE, "Class is not a supported effect class: {0}", effectClass.getSimpleName());
             }
         }
+    }
+    
+    public boolean removeEffects(String viewName, BaseNode node, Node fxNode) {
+        logger.log(Level.INFO, "Entered: viewName={0}, node={1}, fxNode={3}", new Object[]{viewName, node, fxNode});
+        
+        if ((node.effects == null) || (node.effects.isEmpty())) {
+            logger.log(Level.INFO, "No effects, nothing to do");
+            return true;
+        }
+        
+        boolean allowNodeRemoval = true;
+        
+        for (BaseEffect effect : node.effects) {
+            Class<?> effectClass = effect.getClass();
+            if (effectClass.equals(app.node.effect.Transition.class)) {
+                // The transition effect needs to be de-transitioned
+                logger.log(Level.INFO, "Transition for node {0} starting", node.name);
+                allowNodeRemoval = false;
+                
+                // TODO - Need to do something like disable the parent pane's scrollbars during the animation so they don't get confused
+                //parentScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+                //parentScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+
+                // TODO - Set the initial translation based properties on the effect
+                double nodeWidth = fxNode.prefWidth(-1);
+                fxNode.setTranslateX(0);
+                TranslateTransition slide = new TranslateTransition(Duration.millis(500), fxNode);
+                slide.setFromX(0);
+                slide.setToX(nodeWidth);
+                slide.setInterpolator(Interpolator.EASE_OUT);
+                slide.setOnFinished(event -> {
+                    // TODO - This is VERY crude and should be cleaned up.  We don't know that the removeNode method called this.
+                    logger.log(Level.INFO, "Transition for node {0} complete", node.name);
+                    this.removeFXNode(viewName, node, fxNode);
+                });
+                slide.play();
+                logger.log(Level.INFO, "Added transition effect");
+            } else {
+                logger.log(Level.SEVERE, "Class is not a supported effect class: {0}", effectClass.getSimpleName());
+            }
+        }
+        
+        return allowNodeRemoval;
     }
     
     public void addGlow(Node fxNode, Glow effect, app.Color offsetColor) {
@@ -1016,39 +1153,58 @@ public class JavaFXApplication extends BaseController {
         }
     }
     
-    public Pane newGroup(String viewName, app.node.Group node, app.Color offsetColor) {
-        logger.log(Level.INFO, "Entered: viewName={0}, node={1}, offsetColor={2}", new Object[]{viewName, node, offsetColor});
+    public Pane newGroup(String viewName, app.node.Group node, Pane fxPane, app.Color offsetColor) {
+        logger.log(Level.INFO, "Entered: viewName={0}, node={1}, fxPane={2}, offsetColor={3}", new Object[]{viewName, node, fxPane, offsetColor});
+        
+        if (fxPane != null) {
+            fxPane.getChildren().clear();
+        }
     
         Class<?> groupClass = node.getClass();
-        Pane box;
         if (groupClass.equals(app.node.VerticalGroup.class)) {
-            VBox vbox = new VBox(node.borderWidth);
+            VBox vbox;
+            if (fxPane == null) {
+                vbox = new VBox();
+            } else {
+                vbox = (VBox) fxPane;
+            }
+            vbox.setBorder(new Border(new BorderStroke(Color.rgb(offsetColor.red, offsetColor.green, offsetColor.blue), BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
             vbox.setAlignment(Pos.CENTER);
-            box = vbox;
+            fxPane = vbox;
         } else if (groupClass.equals(app.node.HorizontalGroup.class)) {
-            HBox hbox = new HBox(node.borderWidth);
+            HBox hbox;
+            if (fxPane == null) {
+                hbox = new HBox();
+            } else {
+                hbox = (HBox) fxPane;
+            }
+            hbox.setBorder(new Border(new BorderStroke(Color.rgb(offsetColor.red, offsetColor.green, offsetColor.blue), BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
             hbox.setAlignment(Pos.CENTER);
-            box = hbox;
+            fxPane = hbox;
         } else {
             logger.log(Level.SEVERE, "Unsupported group: {0}", groupClass);
             return null;
         }
-        box.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        fxPane.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         if (node.backgroundColor == null) {
-            box.setBackground(Background.EMPTY);
+            fxPane.setBackground(Background.EMPTY);
         } else {
             Color fxBackgroundColor = Color.rgb(node.backgroundColor.red, node.backgroundColor.green, node.backgroundColor.blue);
-            box.setBackground(new Background(new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY)));
+            fxPane.setBackground(new Background(new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY)));
         }
-        this.namedControls.get(viewName).put(node.name, box);
+        this.namedFXNodes.get(viewName).put(node.name, fxPane);
         
-        return box;
+        return fxPane;
     }
     
-    public Pane newInputField(String viewName, app.node.InputField node, app.Color offsetColor) {
-        logger.log(Level.INFO, "Entered: viewName={0}, node={1}, offsetColor={2}", new Object[]{viewName, node, offsetColor});
+    public Pane newInputField(String viewName, app.node.InputField node, Pane fxBox, app.Color offsetColor) {
+        logger.log(Level.INFO, "Entered: viewName={0}, node={1}, fxBox={2}, offsetColor={3}", new Object[]{viewName, node, fxBox, offsetColor});
     
-        Pane box = newGroup(viewName, node.group, offsetColor);
+        if (fxBox == null) {
+            fxBox = newGroup(viewName, node.group, fxBox, offsetColor);
+        } else {
+            fxBox.getChildren().clear();
+        }
 
         app.node.Field fieldNode = new app.node.Field(node.group.name + " field");
         fieldNode.backgroundColor = node.childBackgroundColor;
@@ -1074,13 +1230,15 @@ public class JavaFXApplication extends BaseController {
         buttonNode.textFont = node.textFont;
         this.addNode(viewName, buttonNode, node.group.name);
         
-        return box;
+        return fxBox;
     }
     
-    public TextField newField(app.node.Field node, app.Color offsetColor) {
-        logger.log(Level.INFO, "Entered: node={0}, offsetColor={1}", new Object[]{node, offsetColor});
+    public TextField newField(app.node.Field node, TextField fxTextField, app.Color offsetColor) {
+        logger.log(Level.INFO, "Entered: node={0}, fxTextField={1}, offsetColor={2}", new Object[]{node, fxTextField, offsetColor});
         
-        TextField fxTextField = new TextField();
+        if (fxTextField == null) {
+            fxTextField = new TextField();
+        }
         
         fxTextField.setDisable(!node.isEnabled);
         
@@ -1149,10 +1307,15 @@ public class JavaFXApplication extends BaseController {
         return fxTextField;
     }
     
-    public Button newButton(app.node.Button node, app.Color offsetColor) {
-        logger.log(Level.INFO, "Entered: node={0}, offsetColor={1}", new Object[]{node, offsetColor});
+    public Button newButton(app.node.Button node, Button fxButton, app.Color offsetColor) {
+        logger.log(Level.INFO, "Entered: node={0}, fxButton={1}, offsetColor={2}", new Object[]{node, fxButton, offsetColor});
         
-        Button fxButton = new Button();
+        Boolean isNew = true;
+        if (fxButton == null) {
+            fxButton = new Button();
+        } else {
+            isNew = false;
+        }
         
         fxButton.setDisable(!node.isEnabled);
                 
@@ -1198,30 +1361,42 @@ public class JavaFXApplication extends BaseController {
             //fxButton.setBackground(Background.EMPTY); // Transparent        
         }
         
+        if (!isNew) {
+            return fxButton;
+        }
+        
+        final Button fxButtonFinal = fxButton;
         if (node.eventListener != null) {
             fxButton.setOnAction(e -> {
                 logger.log(Level.INFO, "Button selected: name={0}", node.name);
                 if (!node.isMultiUse) {
-                    fxButton.setDisable(true);
+                    fxButtonFinal.setDisable(true);
                 }
                 node.eventListener.onEvent(node.eventName, null);
             });
         }
         
-        // Fix the height of the button scaling beyond control.  This may be an issue caused by the scroll pane.
-        fxButton.prefHeightProperty().bind(
-            Bindings.createDoubleBinding(
-                () -> textFlow.prefHeight(fxButton.getWidth()) + 10, // +10 for button padding
-                fxButton.widthProperty(), 
-                textFlow.widthProperty()
-            )
-        );
+        if (node.scaleY == null) {
+            // Fix the height of the button scaling beyond control.  This may be an issue caused by the scroll pane.
+            fxButton.prefHeightProperty().bind(
+                Bindings.createDoubleBinding(
+                    () -> textFlow.prefHeight(fxButtonFinal.getWidth()) + 10, // +10 for button padding
+                    fxButton.widthProperty(), 
+                    textFlow.widthProperty()
+                )
+            );
+        }
         
         return fxButton;
     }
     
-    public TextFlow newLabel(app.node.Label node, app.Color offsetColor, FontSmoothingType fst) {
-        logger.log(Level.INFO, "Entered: node={0}, offsetColor={1}, fst={2}", new Object[]{node, offsetColor, fst});
+    public TextFlow newLabel(String viewName, app.node.Label node, TextFlow fxLabel, app.Color offsetColor, FontSmoothingType fst) {
+        logger.log(Level.INFO, "Entered: viewName={0}, node={1}, fxLabel={2}, offsetColor={3}, fst={4}", new Object[]{viewName, node, fxLabel, offsetColor, fst});
+        
+        // Labels (like Strings) are immutable
+        if (fxLabel != null) {
+            this.removeNode(viewName, node.name);
+        }
         
         String font;
         if (node.textFont == null) {
@@ -1252,22 +1427,28 @@ public class JavaFXApplication extends BaseController {
         }
         
         // Use a graphic instead of text to support formatted text
-        TextFlow label = this.stringToTextFlow(node.text, font, textColor, pixelSize, fontStyle, fst);
+        fxLabel = this.stringToTextFlow(node.text, font, textColor, pixelSize, fontStyle, fst);
         
         if (node.backgroundColor != null) {
             Color fxBackgroundColor = Color.rgb(node.backgroundColor.red, node.backgroundColor.green, node.backgroundColor.blue);
-            label.setBackground(new Background(new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY)));
+            fxLabel.setBackground(new Background(new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY)));
         } else {
-            label.setBackground(Background.EMPTY); // Transparent        
+            fxLabel.setBackground(Background.EMPTY); // Transparent        
         }
         
-        return label;
+        return fxLabel;
     }
     
-    public VBox newScrollingLabel(app.node.Label node, app.Color offsetColor) {
+    public VBox newScrollingLabel(String viewName, app.node.Label node, VBox fxTextBox, app.Color offsetColor) {
         logger.log(Level.INFO, "Entered: node={0}, offsetColor={1}", new Object[]{node, offsetColor});
         
-        TextFlow label = newLabel(node, offsetColor, FontSmoothingType.GRAY); // Needed because scroll pane's dork with FontSmoothingType.LCD
+        // Text boxes (like Strings) are immutable
+        if (fxTextBox != null) {
+            fxTextBox.getChildren().clear();
+            this.removeNode(viewName, node.name);
+        }
+        
+        TextFlow label = newLabel(viewName, node, null, offsetColor, FontSmoothingType.GRAY); // Needed because scroll pane's dork with FontSmoothingType.LCD
         
         // Allow text to be scrolled if needed
         label.setCache(false);
@@ -1276,26 +1457,29 @@ public class JavaFXApplication extends BaseController {
         scrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
         scrollPane.setFitToWidth(true);
         scrollPane.setBackground(Background.EMPTY);
-        VBox textBox = new VBox(scrollPane);
-        textBox.setBackground(Background.EMPTY);
-        textBox.setSnapToPixel(true);
+        fxTextBox = new VBox(scrollPane);
+        fxTextBox.setBackground(Background.EMPTY);
+        fxTextBox.setSnapToPixel(true);
         scrollPane.getStyleClass().add("edge-to-edge"); // Removes the border
         scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
         scrollPane.setCache(false);
         label.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE); // Fill the scroll pane.  The scroll pane will be scaled as needed.
         
-        return textBox;
+        return fxTextBox;
     }
     
-    public ImageView newImage(app.node.Image node) {
-        logger.log(Level.INFO, "Entered: node={0}", node);
+    public ImageView newImage(app.node.Image node, ImageView fxImageView) {
+        logger.log(Level.INFO, "Entered: node={0}, fxImageView={1}", new Object[]{node, fxImageView});
         
+        if (fxImageView == null) {
+            final Image image = loadImage(node.file);
+            fxImageView = new ImageView(image);
+            fxImageView.setSmooth(true);
+        }
+
         int dotIndex = node.file.lastIndexOf('.');
         String extension = (dotIndex > 0) ? node.file.substring(dotIndex + 1) : "";
-
-        final Image image = loadImage(node.file);
-        ImageView imageView = new ImageView(image);
-        imageView.setSmooth(true);
+        final ImageView fxImageViewFinal = fxImageView;
 
         // JPro does not support animated gifs, so animation needs to be manually handled
         if ((IS_JPRO) && (extension.toLowerCase().equals("gif"))) {
@@ -1334,7 +1518,7 @@ public class JavaFXApplication extends BaseController {
                 final int frameIndex = i;
                 // Add a KeyFrame at the specific time instant to switch the image
                 KeyFrame keyFrame = new KeyFrame(currentTime, event -> {
-                    imageView.setImage(frames.get(frameIndex));
+                    fxImageViewFinal.setImage(frames.get(frameIndex));
                 });
                 timeline.getKeyFrames().add(keyFrame);
                 // Advance the time by the frame's duration
@@ -1345,13 +1529,15 @@ public class JavaFXApplication extends BaseController {
             timeline.play(); // TODO - Probably needs to happen after the image has been added to its parent
         }
         
-        return imageView;
+        return fxImageView;
     }
     
-    public Hyperlink newLink(app.node.Link node, app.Color offsetColor) {
-        logger.log(Level.INFO, "Entered: node={0}, offsetColor={1}", new Object[]{node, offsetColor});
+    public Hyperlink newLink(app.node.Link node, Hyperlink fxHyperlink, app.Color offsetColor) {
+        logger.log(Level.INFO, "Entered: node={0}, fxHyperlink={1}, offsetColor={2}", new Object[]{node, fxHyperlink, offsetColor});
         
-        Hyperlink fxHyperlink = new Hyperlink();
+        if (fxHyperlink == null) {
+            fxHyperlink = new Hyperlink();
+        }
         
         fxHyperlink.setDisable(!node.isEnabled);
                 
@@ -1405,69 +1591,114 @@ public class JavaFXApplication extends BaseController {
     }
     
     @Override
+    public RelativeBounds changeNode(String viewName, BaseNode node) {
+        logger.log(Level.INFO, "Entered: viewName={0}, node={1}", new Object[]{viewName, node});
+        String parentName = this.parentNodes.get(viewName).get(node.name);
+        if (parentName == null) {
+            logger.log(Level.WARNING, "Parent not found for node {0}", node.name);
+            return null;
+        }
+        Node fxNode = this.namedFXNodes.get(viewName).get(node.name);
+        if (fxNode == null) {
+            logger.log(Level.WARNING, "Node {0} not found", node.name);
+            return null;
+        }
+        RelativeBounds relativeBounds = this.publishNode(viewName, node, parentName, fxNode);
+        return relativeBounds;
+    }
+    
+    @Override
     public RelativeBounds addNode(String viewName, BaseNode node, String parentName) {
         logger.log(Level.INFO, "Entered: viewName={0}, node={1}, parentName={2}", new Object[]{viewName, node, parentName});
+        RelativeBounds relativeBounds = this.publishNode(viewName, node, parentName, null);
+        return relativeBounds;
+    }
+    
+    public RelativeBounds publishNode(String viewName, BaseNode node, String parentName, Node fxNode) {
+        logger.log(Level.INFO, "Entered: viewName={0}, node={1}, parentName={2}, fxChild={3}", new Object[]{viewName, node, parentName, fxNode});
         
         // TODO - Probably need a default application-level background color
         // TODO - Maintain a class-level map of child name key to parent object and traverse that to get the real background color
         BaseView view = this.views.get(viewName);
         app.Color offsetColor = view.backgroundColor.getOffset();
-        Object actualParent = (Object) this.namedControls.get(viewName).get(parentName);
-        if (actualParent == null) {
+        Node fxParent = this.namedFXNodes.get(viewName).get(parentName);
+        if (fxParent == null) {
             logger.log(Level.SEVERE, "Parent with provided name not found");
             return null;
         }
-        Pane fxParent = (Pane)actualParent;
+        Boolean isNew = (fxNode == null);
+        
+        // TODO - This is ugly.  Parent nodes do not have a base type with public getPrefWidth() and getPrefHeight() methods so each parent class needs to be handled.
+        double parentWidth;
+        double parentHeight;
+        Class<?> parentControlClass = fxParent.getClass();
+        if (parentControlClass.equals(Pane.class)) {
+            Pane pane = (Pane) fxParent;
+            parentWidth = pane.getPrefWidth();
+            parentHeight = pane.getPrefHeight();
+        } else if (parentControlClass.equals(StackPane.class)) {
+            StackPane pane = (StackPane) fxParent;
+            parentWidth = pane.getPrefWidth();
+            parentHeight = pane.getPrefHeight();
+        } else if (parentControlClass.equals(HBox.class)) {
+            HBox box = (HBox) fxParent;
+            parentWidth = box.getPrefWidth();
+            parentHeight = box.getPrefHeight();
+        } else if (parentControlClass.equals(VBox.class)) {
+            VBox box = (VBox) fxParent;
+            parentWidth = box.getPrefWidth();
+            parentHeight = box.getPrefHeight();
+        } else {
+            logger.log(Level.SEVERE, "Parent does not have a supported class: {0}", parentControlClass.getSimpleName());
+            return null;
+        }
+        
         Class<?> childClass = node.getClass();
-                
-        // TODO - Move each class to its own separate handler method
-        // TODO - Implement layout and size control
-        Node fxChild;
         if (childClass.equals(app.node.Link.class)) {
-            fxChild = this.newLink((app.node.Link) node, offsetColor);
+            fxNode = this.newLink((app.node.Link) node, (Hyperlink) fxNode, offsetColor);
         } else if (childClass.equals(app.node.Button.class)) {
-            fxChild = this.newButton((app.node.Button) node, offsetColor);
-            Button button = (Button) fxChild;
+            fxNode = this.newButton((app.node.Button) node, (Button) fxNode, offsetColor);
+            Button button = (Button) fxNode;
             if (node.scaleX != null) {
-                button.setPrefWidth(fxParent.getPrefWidth() * node.scaleX);
+                button.setPrefWidth(parentWidth * node.scaleX);
             }
             if (node.scaleY != null) {
-                button.setPrefHeight(fxParent.getPrefHeight() * node.scaleY);
+                button.setPrefHeight(parentHeight * node.scaleY);
             }
         } else if (childClass.equals(app.node.Field.class)) {
-            fxChild = this.newField((app.node.Field) node, offsetColor);
+            fxNode = this.newField((app.node.Field) node, (TextField) fxNode, offsetColor);
         } else if (childClass.equals(app.node.InputField.class)) {
-            fxChild = this.newInputField(viewName, (app.node.InputField) node, offsetColor);
+            fxNode = this.newInputField(viewName, (app.node.InputField) node, (Pane) fxNode, offsetColor);
         } else if (childClass.equals(app.node.Label.class)) {
-            fxChild = this.newLabel((app.node.Label) node, offsetColor, FontSmoothingType.LCD);
-            TextFlow flow = (TextFlow) fxChild;
+            fxNode = this.newLabel(viewName, (app.node.Label) node, (TextFlow) fxNode, offsetColor, FontSmoothingType.LCD);
+            TextFlow flow = (TextFlow) fxNode;
             if (node.scaleX != null) {
-                flow.setPrefWidth(fxParent.getPrefWidth() * node.scaleX);
+                flow.setPrefWidth(parentWidth * node.scaleX);
             }
             if (node.scaleY != null) {
-                flow.setPrefHeight(fxParent.getPrefHeight() * node.scaleY);
+                flow.setPrefHeight(parentHeight * node.scaleY);
             }
         } else if (childClass.equals(app.node.ScrollingLabel.class)) {
-            fxChild = this.newScrollingLabel((app.node.Label) node, offsetColor);
-            VBox flowBox = (VBox) fxChild;
+            fxNode = this.newScrollingLabel(viewName, (app.node.Label) node, (VBox) fxNode, offsetColor);
+            VBox flowBox = (VBox) fxNode;
             ScrollPane sp = (ScrollPane)flowBox.getChildren().get(0); // TODO - This is ugly
             if (node.scaleX != null) {
-                flowBox.setPrefWidth(fxParent.getPrefWidth() * node.scaleX);
-                sp.setPrefWidth(fxParent.getPrefWidth() * node.scaleX);
+                flowBox.setPrefWidth(parentWidth * node.scaleX);
+                sp.setPrefWidth(parentWidth * node.scaleX);
             }
             if (node.scaleY != null) {
-                flowBox.setPrefHeight(fxParent.getPrefHeight() * node.scaleY);
-                sp.setPrefHeight(fxParent.getPrefHeight() * node.scaleY);
+                flowBox.setPrefHeight(parentHeight * node.scaleY);
+                sp.setPrefHeight(parentHeight * node.scaleY);
             }
         } else if (childClass.equals(app.node.Image.class)) {
-            fxChild = this.newImage((app.node.Image) node);
+            fxNode = this.newImage((app.node.Image) node, (ImageView) fxNode);
         } else if (childClass.equals(app.node.HorizontalGroup.class)) {
-            fxChild = this.newGroup(viewName, (app.node.HorizontalGroup) node, offsetColor);
+            fxNode = this.newGroup(viewName, (app.node.HorizontalGroup) node, (Pane) fxNode, offsetColor);
             for (BaseNode childNode : ((app.node.Group) node).nodes) {
                 this.addNode(viewName, childNode, node.name);
             }
         } else if (childClass.equals(app.node.VerticalGroup.class)) {
-            fxChild = this.newGroup(viewName, (app.node.VerticalGroup) node, offsetColor);
+            fxNode = this.newGroup(viewName, (app.node.VerticalGroup) node, (Pane) fxNode, offsetColor);
             for (BaseNode childNode : ((app.node.Group) node).nodes) {
                 this.addNode(viewName, childNode, node.name);
             }
@@ -1477,52 +1708,61 @@ public class JavaFXApplication extends BaseController {
         }
         
         // TODO - This is ugly.  Parent nodes do not have a base type (Parent) with a public getChildren() method so each parent class needs to be handled.
-        Class<?> parentControlClass = actualParent.getClass();
         if (parentControlClass.equals(Pane.class)) {
-            // To allow the width and height to be accessed immediately, add the child to a temporary Scene.
-            // The temporary Scene and Group will be garbage collected.
-            javafx.scene.Group tempRoot = new javafx.scene.Group(fxChild);
-            Scene tempScene = new Scene(tempRoot);
-            fxChild.applyCss();
-            double width = fxChild.prefWidth(-1); 
-            logger.log(Level.INFO, "Temp width for {0} = {1}", new Object[]{childClass, width});
-            ((javafx.scene.Group)fxChild.getScene().getRoot()).getChildren().remove(fxChild);
+            if (isNew) {
+                // To allow the width and height to be accessed immediately, add the child to a temporary Scene.
+                // The temporary Scene and Group will be garbage collected.
+                javafx.scene.Group tempRoot = new javafx.scene.Group(fxNode);
+                Scene tempScene = new Scene(tempRoot);
+                fxNode.applyCss();
+                double width = fxNode.prefWidth(-1); 
+                logger.log(Level.INFO, "Temp width for {0} = {1}", new Object[]{childClass, width});
+                ((javafx.scene.Group)fxNode.getScene().getRoot()).getChildren().remove(fxNode);
+            }
             
-            Pane pane = (Pane) actualParent;
-            pane.getChildren().add(fxChild);
-            fxParent.layout();
-            this.positionNode(viewName, node, fxChild, fxParent);
+            Pane pane = (Pane) fxParent;
+            if (isNew) {
+                pane.getChildren().add(fxNode);
+            }
+            pane.layout();
+            this.positionNode(viewName, node, fxNode, pane);
         } else if (parentControlClass.equals(StackPane.class)) {
-            StackPane pane = (StackPane) actualParent;
-            pane.getChildren().add(fxChild);
+            StackPane pane = (StackPane) fxParent;
+            if (isNew) {
+                pane.getChildren().add(fxNode);
+            }
         } else if (parentControlClass.equals(HBox.class)) {
-            HBox.setHgrow(fxChild, Priority.NEVER); // Preventing HBox from stretching children horizontally just to fill its width
-            HBox box = (HBox) actualParent;
-            box.getChildren().add(fxChild); 
+            HBox.setHgrow(fxNode, Priority.NEVER); // Preventing HBox from stretching children horizontally just to fill its width
+            HBox box = (HBox) fxParent;
+            if (isNew) {
+                box.getChildren().add(fxNode);
+            }
         } else if (parentControlClass.equals(VBox.class)) {
-            VBox.setVgrow(fxChild, Priority.NEVER); // Preventing VBox from stretching children vertically just to fill its height
-            VBox box = (VBox) actualParent;
-            box.getChildren().add(fxChild);            
+            VBox.setVgrow(fxNode, Priority.NEVER); // Preventing VBox from stretching children vertically just to fill its height
+            VBox box = (VBox) fxParent;
+            if (isNew) {
+                box.getChildren().add(fxNode);
+            }
         } else {
             logger.log(Level.SEVERE, "Parent does not have a supported class: {0}", parentControlClass.getSimpleName());
             return null;
         }
         
         if ((node.effects != null) && (!node.effects.isEmpty())) {
-            this.addEffects(node, fxChild, offsetColor);
+            this.addEffects(node, fxNode, offsetColor);
         }
         
-        this.namedControls.get(viewName).put(node.name, fxChild);
+        this.namedNodes.get(viewName).put(node.name, node);
+        this.namedFXNodes.get(viewName).put(node.name, fxNode);
+        this.parentNodes.get(viewName).put(node.name, parentName);
         
-        double parentWidth = fxParent.getPrefWidth();
-        double width = fxChild.prefWidth(-1); //fxChild.getBoundsInLocal().getWidth();
+        double width = fxNode.prefWidth(-1); //fxChild.getBoundsInLocal().getWidth();
         double relativeWidth = width / parentWidth;
-        double parentHeight = fxParent.getPrefHeight();
-        double height = fxChild.prefHeight(-1); //fxChild.getBoundsInLocal().getHeight();
+        double height = fxNode.prefHeight(-1); //fxChild.getBoundsInLocal().getHeight();
         double relativeHeight = height / parentHeight;
-        double x = fxChild.getLayoutX();
+        double x = fxNode.getLayoutX();
         double relativeX = x / parentWidth;
-        double y = fxChild.getLayoutY();
+        double y = fxNode.getLayoutY();
         double relativeY = y / parentHeight;
         RelativeBounds relativeBounds = new RelativeBounds(new RelativeCoordinates(relativeX, relativeY), relativeWidth, relativeHeight);
         logger.log(Level.INFO, "Added node {0} {1} at ({2},{3}), width={4}, height={5} using parent pixel width={6}, parent pixel height={7}, pixel width={8}, pixel height={9}", new Object[]{childClass.getSimpleName(), node.name, relativeX, relativeY, relativeWidth, relativeHeight, parentWidth, parentHeight, width, height});
@@ -1648,7 +1888,7 @@ public class JavaFXApplication extends BaseController {
                 currentColumn = 1;
             }
             
-            this.namedControls.get(viewName).put(cellGroup.name + " cell", cell);
+            this.namedFXNodes.get(viewName).put(cellGroup.name + " cell", cell);
             this.addNode(viewName, cellGroup, cellGroup.name + " cell");
             //Pane box = newGroup(viewName, cellGroup, genericOffsetColor);
             //cell.getChildren().add(box);
@@ -1680,7 +1920,7 @@ public class JavaFXApplication extends BaseController {
             imageView.fitWidthProperty().bind(content.widthProperty());
             imageView.fitHeightProperty().bind(content.heightProperty());
             content.getChildren().add(imageView);
-            this.namedControls.get(viewName).put(name, imageView);
+            this.namedFXNodes.get(viewName).put(name, imageView);
             
             nextRow = 0; // Advance the text cursor automatically
         } else {
@@ -1695,7 +1935,7 @@ public class JavaFXApplication extends BaseController {
             imageView.setSmooth(true);
             
             content.getChildren().add(imageView);
-            this.namedControls.get(viewName).put(name, imageView);
+            this.namedFXNodes.get(viewName).put(name, imageView);
             
             nextRow = row + this.getRows(dimensions.y); // Advance the text cursor automatically
         }
@@ -1971,7 +2211,7 @@ public class JavaFXApplication extends BaseController {
         content.getChildren().add(textFlow);
         
         if (name != null) {
-            this.namedControls.get(viewName).put(name, textFlow);
+            this.namedFXNodes.get(viewName).put(name, textFlow);
         }
         
         // TODO - Return the final height
@@ -2143,7 +2383,7 @@ public class JavaFXApplication extends BaseController {
             flowPane.getChildren().add(button);
         }
         
-        this.namedControls.get(viewName).put(name, flowPane);
+        this.namedFXNodes.get(viewName).put(name, flowPane);
     }
     
     //@Override
@@ -2899,7 +3139,7 @@ public class JavaFXApplication extends BaseController {
     @Override
     public void sendToFront(String viewName, String name) {
         System.out.println("JavaFXApplication: sendToFront: viewName=" + viewName + ", name=" + name);
-        Node control = (Node) this.namedControls.get(viewName).get(name);
+        Node control = (Node) this.namedFXNodes.get(viewName).get(name);
         if (control == null) {
             System.out.println("JavaFXApplication: sendToBack: Control not found");
             return;
@@ -2910,7 +3150,7 @@ public class JavaFXApplication extends BaseController {
     @Override
     public void sendToBack(String viewName, String name) {
         System.out.println("JavaFXApplication: sendToBack: viewName=" + viewName + ", name=" + name);
-        Node control = (Node) this.namedControls.get(viewName).get(name);
+        Node control = (Node) this.namedFXNodes.get(viewName).get(name);
         if (control == null) {
             System.out.println("JavaFXApplication: sendToBack: Control not found");
             return;
