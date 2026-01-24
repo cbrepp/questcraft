@@ -989,10 +989,12 @@ public class JavaFXApplication extends BaseController {
             return fxNode;
         }
         
-        Node effectsNode = fxNode;
+        Pane wrapperNode = null;
         
         for (BaseEffect effect : node.effects) {
             Class<?> effectClass = effect.getClass();
+            logger.log(Level.INFO, "Adding effect: class={0}", effectClass.getSimpleName());
+            
             if (effectClass.equals(app.node.effect.Glow.class)) {
                 this.addGlow(fxNode, (Glow) effect, offsetColor);
                 logger.log(Level.INFO, "Added glow effect");
@@ -1002,68 +1004,71 @@ public class JavaFXApplication extends BaseController {
                 //parentScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
                 
                 SlideTransition transitionEffect = (SlideTransition) effect;
-                logger.log(Level.INFO, "Adding transition effect: path={0}, duration={1}, eventListener={2}, stage={3}", new Object[]{transitionEffect.path, transitionEffect.duration, transitionEffect.eventListener, transitionEffect.stage});
+                logger.log(Level.INFO, "Adding transition effect: path={0}, duration={1}, eventListener={2}, stage={3}", new Object[]{transitionEffect.path, transitionEffect.duration, transitionEffect.eventListener, transitionEffect.getStage()});
 
-                if (transitionEffect.stage == SlideTransition.Stage.INIT) {
-                    transitionEffect.stage = SlideTransition.Stage.ENTERING;
+                if (transitionEffect.getStage() == SlideTransition.Stage.INIT) {
+                    transitionEffect.onEvent(NODE_TRANSITIONED_EVENT, SlideTransition.Stage.ENTERING);
                 }
                 
-                if ((transitionEffect.stage == SlideTransition.Stage.ENTERING) || (transitionEffect.stage == SlideTransition.Stage.EXITING)) {
+                if ((transitionEffect.getStage() == SlideTransition.Stage.ENTERING) || (transitionEffect.getStage() == SlideTransition.Stage.EXITING)) {
+                    if (wrapperNode != null) {
+                        logger.log(Level.WARNING, "Node is being wrapped by another effect, skipping effect");
+                        continue;
+                    }
+                    
                     // Clip the transition in a wrapper so that when the application window is maximized, the spill-over node contents aren't seen
-                    Pane transitionWrapper = new Pane(fxNode);
+                    wrapperNode = new Pane(fxNode);
                     Rectangle clip = new Rectangle();
-                    clip.widthProperty().bind(transitionWrapper.widthProperty());
-                    clip.heightProperty().bind(transitionWrapper.heightProperty());
-                    transitionWrapper.setClip(clip);
+                    clip.widthProperty().bind(wrapperNode.widthProperty());
+                    clip.heightProperty().bind(wrapperNode.heightProperty());
+                    wrapperNode.setClip(clip);
 
-                    effectsNode = transitionWrapper; // TODO - This won't apply to other effects, re-use if possible
-
-                    double nodeWidth = transitionWrapper.prefWidth(-1);
-                    double nodeHeight = transitionWrapper.prefHeight(-1);
+                    double nodeWidth = wrapperNode.prefWidth(-1);
+                    double nodeHeight = wrapperNode.prefHeight(-1);
                     logger.log(Level.FINE, "Measured effects wrapper: width={0}, height={1}", new Object[]{nodeWidth, nodeHeight});
                     TranslateTransition slide = new TranslateTransition(Duration.seconds(transitionEffect.duration), fxNode);
                     if (transitionEffect.path == null) {
                         logger.log(Level.WARNING, "Unsupported transition path");
                     } else switch (transitionEffect.path) {
                         case FROM_LEFT -> {
-                            if (transitionEffect.stage == SlideTransition.Stage.ENTERING) {
+                            if (transitionEffect.getStage() == SlideTransition.Stage.ENTERING) {
                                 fxNode.setTranslateX(-nodeWidth);
                                 slide.setFromX(-nodeWidth);
                                 slide.setToX(0);
-                            } else if (transitionEffect.stage == SlideTransition.Stage.EXITING) {
+                            } else if (transitionEffect.getStage() == SlideTransition.Stage.EXITING) {
                                 fxNode.setTranslateX(0);
                                 slide.setFromX(0);
                                 slide.setToX(-nodeWidth);
                             }
                         }
                         case FROM_RIGHT -> {
-                            if (transitionEffect.stage == SlideTransition.Stage.ENTERING) {
+                            if (transitionEffect.getStage() == SlideTransition.Stage.ENTERING) {
                                 fxNode.setTranslateX(nodeWidth);
                                 slide.setFromX(nodeWidth);
                                 slide.setToX(0);
-                            } else if (transitionEffect.stage == SlideTransition.Stage.EXITING) {
+                            } else if (transitionEffect.getStage() == SlideTransition.Stage.EXITING) {
                                 fxNode.setTranslateX(0);
                                 slide.setFromX(0);
                                 slide.setToX(nodeWidth);
                             }
                         }
                         case FROM_TOP -> {
-                            if (transitionEffect.stage == SlideTransition.Stage.ENTERING) {
+                            if (transitionEffect.getStage() == SlideTransition.Stage.ENTERING) {
                                 fxNode.setTranslateY(-nodeHeight);
                                 slide.setFromY(-nodeHeight);
                                 slide.setToY(0);
-                            } else if (transitionEffect.stage == SlideTransition.Stage.EXITING) {
+                            } else if (transitionEffect.getStage() == SlideTransition.Stage.EXITING) {
                                 fxNode.setTranslateY(0);
                                 slide.setFromY(0);
                                 slide.setToY(-nodeHeight);
                             }
                         }
                         case FROM_BOTTOM -> {
-                            if (transitionEffect.stage == SlideTransition.Stage.ENTERING) {
+                            if (transitionEffect.getStage() == SlideTransition.Stage.ENTERING) {
                                 fxNode.setTranslateY(nodeHeight);
                                 slide.setFromY(nodeHeight);
                                 slide.setToY(0);
-                            } else if (transitionEffect.stage == SlideTransition.Stage.EXITING) {
+                            } else if (transitionEffect.getStage() == SlideTransition.Stage.EXITING) {
                                 fxNode.setTranslateY(0);
                                 slide.setFromY(0);
                                 slide.setToY(nodeHeight);
@@ -1072,20 +1077,21 @@ public class JavaFXApplication extends BaseController {
                         default -> logger.log(Level.WARNING, "Unsupported transition path");
                     }
                     slide.setInterpolator(Interpolator.EASE_OUT);
+                    final Pane finalWrapperNode = wrapperNode;
                     slide.setOnFinished(event -> {
-                        if (transitionEffect.stage == SlideTransition.Stage.ENTERING) {
-                            transitionEffect.stage = SlideTransition.Stage.READY;
-                        } else if (transitionEffect.stage == SlideTransition.Stage.EXITING) {
-                            transitionEffect.stage = SlideTransition.Stage.COMPLETE;
+                        if (transitionEffect.getStage() == SlideTransition.Stage.ENTERING) {
+                            transitionEffect.onEvent(NODE_TRANSITIONED_EVENT, SlideTransition.Stage.READY);
+                        } else if (transitionEffect.getStage() == SlideTransition.Stage.EXITING) {
+                            transitionEffect.onEvent(NODE_TRANSITIONED_EVENT, SlideTransition.Stage.COMPLETE);
                         }
-                        logger.log(Level.INFO, "Transition for node {0} complete, stage={1}", new Object[]{node.name, transitionEffect.stage});
+                        logger.log(Level.INFO, "Transition for node {0} complete, stage={1}", new Object[]{node.name, transitionEffect.getStage()});
                         // When the transition play is complete, re-position the child outside of the wrapper and added it directly to the parent
-                        this.removeFXNode(viewName, node, transitionWrapper); // Remove the wrapper
-                        if (transitionEffect.stage == SlideTransition.Stage.READY) {
+                        this.removeFXNode(viewName, node, finalWrapperNode); // Remove the wrapper
+                        if (transitionEffect.getStage() == SlideTransition.Stage.READY) {
                             this.publishNode(viewName, node, parentName, null); // Re-publish the node to directly add it to its parent
                         }
                         // Also, publish an event so that the button can be disabled during the transition and re-enabled upon completion
-                        transitionEffect.eventListener.onEvent(node.name, transitionEffect.stage);
+                        transitionEffect.eventListener.onEvent(node.name, transitionEffect.getStage());
                     });
                     slide.play();
                 }
@@ -1094,7 +1100,12 @@ public class JavaFXApplication extends BaseController {
             }
         }
         
-        return effectsNode;
+        if (wrapperNode != null) {
+            logger.log(Level.INFO, "Wrapping node: wrapper={0}", wrapperNode.getClass().getSimpleName());
+            return wrapperNode;
+        }
+        
+        return fxNode;
     }
     
     public void removeEffects(String viewName, BaseNode node, String parentName, Node fxNode) {
@@ -1109,8 +1120,8 @@ public class JavaFXApplication extends BaseController {
             Class<?> effectClass = effect.getClass();
             if (effectClass.equals(app.node.effect.SlideTransition.class)) {
                 SlideTransition transitionEffect = (SlideTransition) effect;
-                if (transitionEffect.stage == SlideTransition.Stage.READY) {
-                    transitionEffect.stage = SlideTransition.Stage.EXITING;
+                if (transitionEffect.getStage() == SlideTransition.Stage.READY) {
+                    transitionEffect.onEvent(NODE_TRANSITIONED_EVENT, SlideTransition.Stage.EXITING);
                     // Re-add the node without it's fx self which will call back into addEffects() which will see
                     // the advanced stage on the effect and know to remove it with a slide out.
                     this.publishNode(viewName, node, parentName, null);

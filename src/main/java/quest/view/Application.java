@@ -103,7 +103,7 @@ public class Application extends app.view.BaseView {
                     this.changelogLabel.textFont = MONO_FONT;
                     this.changelogLabel.scaleX = this.changelogButton.getBounds().coordinates.x - (this.quitButton.getBounds().coordinates.x + this.quitButton.getBounds().width) - 0.02; // Space between the right edge of the button and the right edge of the changelog button (with .04 padding)
                     this.changelogLabel.scaleY = 0.5;
-                    this.changelogLabel.effects.add(new SlideTransition(SlideTransition.Path.FROM_RIGHT, 0.5, this)); // Slide the label from the right over a 0.5 second duration
+                    this.changelogLabel.effects.add(new SlideTransition(SlideTransition.Path.FROM_RIGHT, this)); // Slide the label from the right
                     this.appController.addNode(this.name, this.changelogLabel, this.name);
                 } else {
                     this.changelogButton.text = "<";

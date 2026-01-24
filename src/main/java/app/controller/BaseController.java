@@ -59,6 +59,7 @@ public abstract class BaseController {
     public static final Double EMOJI_SHEET_SIZE = 64.0;
     public static final String NAME_PROPERTY = "NAME";
     public static final String NODE_PUBLISHED_EVENT = "node published";
+    public static final String NODE_TRANSITIONED_EVENT = "node transitioned";
     public static final String PROPERTIES_FILE = "assets/app.properties";
     public static String NAME;
     public static BaseController appController;
