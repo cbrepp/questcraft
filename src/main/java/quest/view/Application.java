@@ -7,7 +7,6 @@ import app.Font;
 import app.FontStyle;
 import app.HorizontalAlignment;
 import app.Layout;
-import app.RelativeBounds;
 import app.RelativeCoordinates;
 import app.VerticalAlignment;
 import static app.controller.BaseController.logger;
@@ -18,7 +17,7 @@ import app.node.Image;
 import app.node.Label;
 import app.node.ScrollingLabel;
 import app.node.effect.Glow;
-import app.node.effect.Transition;
+import app.node.effect.SlideTransition;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -49,6 +48,7 @@ public class Application extends app.view.BaseView {
     
     public final static String BUTTON_FONT = Font.ROBOTO_BLACK;
     public final static String CHANGELOG_EVENT = "toggle changelog";
+    public final static String CHANGELOG_LABEL = "changelog";
     public final static String CREATE_EVENT = "create";
     public final static String FILE_EVENT = "file";
     public final static String MONO_FONT = Font.ROBOTO_MONO;
@@ -60,10 +60,12 @@ public class Application extends app.view.BaseView {
     
     public BaseController appController;
     public Book bookFile;
+    public String changelog = Changelog.get();
     public Button changelogButton;
     public Label changelogLabel;
     public String flavorText;
     public Layout nowPlayingLayout;
+    public Button quitButton;
     public Boolean showChangelog = false;
     
     public Application(String name) {
@@ -78,17 +80,34 @@ public class Application extends app.view.BaseView {
         logger.log(Level.INFO, "Entered: eventName={0}, eventValue={1}", new Object[]{eventName, eventValue});
         
         switch (eventName) {
+            case CHANGELOG_LABEL -> {
+                // The changelog transition completed
+                if (eventValue == SlideTransition.Stage.READY) {
+                    this.changelogButton.text = ">";
+                    this.changelogButton.isEnabled = true; // Not multi-use button, so re-enable
+                    this.appController.changeNode(this.name, this.changelogButton);
+                } else if (eventValue == SlideTransition.Stage.COMPLETE) {
+                    this.changelogButton.text = "<";
+                    this.changelogButton.isEnabled = true; // Not multi-use button, so re-enable
+                    this.appController.changeNode(this.name, this.changelogButton);
+                }
+            }
             case CHANGELOG_EVENT -> {
                 if (this.changelogButton.text.equals("<")) {
-                    this.changelogButton.text = ">";
+                    // Display the changelog in a scrolling region centered on the right with a spacer separating it from the quit button.
+                    // Event CHANGELOG_LABEL will be raised when the event is complete.
+                    this.changelogLabel = new ScrollingLabel(CHANGELOG_LABEL, new Layout(new RelativeCoordinates(changelogButton.getBounds().coordinates.x, 0.0), HorizontalAlignment.RIGHT, VerticalAlignment.CENTER));
+                    this.changelogLabel.text = this.changelog;
+                    this.changelogLabel.pixelSize = 10.0;
+                    this.changelogLabel.textColor = Color.BLACK;
+                    this.changelogLabel.textFont = MONO_FONT;
+                    this.changelogLabel.scaleX = this.changelogButton.getBounds().coordinates.x - (this.quitButton.getBounds().coordinates.x + this.quitButton.getBounds().width) - 0.02; // Space between the right edge of the button and the right edge of the changelog button (with .04 padding)
+                    this.changelogLabel.scaleY = 0.5;
+                    this.changelogLabel.effects.add(new SlideTransition(SlideTransition.Path.FROM_RIGHT, 0.5, this)); // Slide the label from the right over a 0.5 second duration
                     this.appController.addNode(this.name, this.changelogLabel, this.name);
-                    // TODO - Need a simple way to subscribe to the animation being complete before changing the button text
-                    // TODO - Verify that the button click is only processed once while the animation is in effect
-                    this.appController.changeNode(this.name, this.changelogButton);
                 } else {
                     this.changelogButton.text = "<";
                     this.appController.removeNode(this.name, this.changelogLabel.name);
-                    this.appController.changeNode(this.name, this.changelogButton);
                 }
             }
             case CREATE_EVENT -> {
@@ -165,7 +184,7 @@ public class Application extends app.view.BaseView {
         titleLabel.textColor = Color.SHADOW;
         titleLabel.textFont = TITLE_FONT;
         titleLabel.textStyle = FontStyle.BOLD;
-        RelativeBounds titleBounds = this.appController.addNode(this.name, titleLabel, this.name);
+        this.appController.addNode(this.name, titleLabel, this.name);
         
         Label subtitleLabel = new Label("subtitle", new Layout(new RelativeCoordinates(0.0, 0.24), HorizontalAlignment.CENTER, VerticalAlignment.TOP));        
         subtitleLabel.text = "- JAVA  EDITION -";
@@ -191,7 +210,7 @@ public class Application extends app.view.BaseView {
         selectButton.text = "Select Quest";
         selectButton.textFont = BUTTON_FONT;
         selectButton.effects.add(new Glow(Color.DARK_MAGENTA));
-        selectButton.scaleX = titleBounds.width;
+        selectButton.scaleX = titleLabel.getBounds().width;
         this.appController.addNode(this.name, selectButton, this.name);
 
         Button createButton = new Button(CREATE_EVENT, new Layout(new RelativeCoordinates(0.0, 0.46), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
@@ -202,10 +221,10 @@ public class Application extends app.view.BaseView {
         createButton.text = "Create Quest";
         createButton.textFont = BUTTON_FONT;
         createButton.effects.add(new Glow(Color.DARK_MAGENTA));
-        createButton.scaleX = titleBounds.width;
+        createButton.scaleX = titleLabel.getBounds().width;
         this.appController.addNode(this.name, createButton, this.name);
         
-        Button optionsButton = new Button(OPTIONS_EVENT, new Layout(new RelativeCoordinates(titleBounds.coordinates.x, 0.54), HorizontalAlignment.LEFT, VerticalAlignment.TOP));
+        Button optionsButton = new Button(OPTIONS_EVENT, new Layout(new RelativeCoordinates(titleLabel.getBounds().coordinates.x, 0.54), HorizontalAlignment.LEFT, VerticalAlignment.TOP));
         optionsButton.eventListener = this;
         optionsButton.eventName = OPTIONS_EVENT;
         optionsButton.pixelSize = 26.0;
@@ -213,23 +232,22 @@ public class Application extends app.view.BaseView {
         optionsButton.text = "Options...";
         optionsButton.textFont = BUTTON_FONT;
         optionsButton.effects.add(new Glow(Color.DARK_MAGENTA));
-        optionsButton.scaleX = titleBounds.width * 0.45;
+        optionsButton.scaleX = titleLabel.getBounds().width * 0.45;
         this.appController.addNode(this.name, optionsButton, this.name);
 
-        Button quitButton = new Button(QUIT_EVENT, new Layout(new RelativeCoordinates(titleBounds.coordinates.x + titleBounds.width, 0.54), HorizontalAlignment.RIGHT, VerticalAlignment.TOP));
-        quitButton.eventListener = this;
-        quitButton.eventName = QUIT_EVENT;
-        quitButton.pixelSize = 26.0;
-        quitButton.textColor = Color.SHADOW;
-        quitButton.text = "Quit Game";
-        quitButton.textFont = BUTTON_FONT;
-        quitButton.effects.add(new Glow(Color.DARK_MAGENTA));
-        quitButton.scaleX = titleBounds.width * 0.45;
-        RelativeBounds quitBounds = this.appController.addNode(this.name, quitButton, this.name);
+        this.quitButton = new Button(QUIT_EVENT, new Layout(new RelativeCoordinates(titleLabel.getBounds().coordinates.x + titleLabel.getBounds().width, 0.54), HorizontalAlignment.RIGHT, VerticalAlignment.TOP));
+        this.quitButton.eventListener = this;
+        this.quitButton.eventName = QUIT_EVENT;
+        this.quitButton.pixelSize = 26.0;
+        this.quitButton.textColor = Color.SHADOW;
+        this.quitButton.text = "Quit Game";
+        this.quitButton.textFont = BUTTON_FONT;
+        this.quitButton.effects.add(new Glow(Color.DARK_MAGENTA));
+        this.quitButton.scaleX = titleLabel.getBounds().width * 0.45;
+        this.appController.addNode(this.name, this.quitButton, this.name);
         
-        String changelog = Changelog.get();
-        if (changelog != null) {
-            String currentVersion = Changelog.findFirstReleasedVersion(changelog);
+        if (this.changelog != null) {
+            String currentVersion = Changelog.findFirstReleasedVersion(this.changelog);
             if (currentVersion != null) {
                 currentVersion = " " + currentVersion + " "; // Pad with spaces
                 // Display the current version in the lower left-hand corner
@@ -248,22 +266,12 @@ public class Application extends app.view.BaseView {
             this.changelogButton.pixelSize = 20.0;
             this.changelogButton.textColor = Color.SHADOW;
             this.changelogButton.text = "<";
-            this.changelogButton.isMultiUse = true;
+            this.changelogButton.isMultiUse = false;
             changelogButton.textFont = BUTTON_FONT;
-            RelativeBounds changelogButtonBounds = this.appController.addNode(this.name, this.changelogButton, this.name);
-
-            // Display the changelog in a scrolling region centered on the right with a spacer separating it from the quit button
-            this.changelogLabel = new ScrollingLabel("changelog", new Layout(new RelativeCoordinates(changelogButtonBounds.coordinates.x, 0.0), HorizontalAlignment.RIGHT, VerticalAlignment.CENTER));
-            this.changelogLabel.text = changelog;
-            this.changelogLabel.pixelSize = 10.0;
-            this.changelogLabel.textColor = Color.BLACK;
-            this.changelogLabel.textFont = MONO_FONT;
-            this.changelogLabel.scaleX = changelogButtonBounds.coordinates.x - (quitBounds.coordinates.x + quitBounds.width) - 0.02; // Space between the right edge of the button and the right edge of the changelog button (with .04 padding)
-            this.changelogLabel.scaleY = 0.5;
-            this.changelogLabel.effects.add(new Transition());
+            this.appController.addNode(this.name, this.changelogButton, this.name);
         }
 
-        this.nowPlayingLayout = new Layout(new RelativeCoordinates(0.0, (quitBounds.coordinates.y + (quitBounds.height * 4))), HorizontalAlignment.CENTER, VerticalAlignment.TOP);
+        this.nowPlayingLayout = new Layout(new RelativeCoordinates(0.0, (quitButton.getBounds().coordinates.y + (quitButton.getBounds().height * 4))), HorizontalAlignment.CENTER, VerticalAlignment.TOP);
         
         Label comingSoonLabel = new Label("coming soon", new Layout(new RelativeCoordinates(0.99, 0.99), HorizontalAlignment.RIGHT, VerticalAlignment.BOTTOM));        
         comingSoonLabel.text = "Coming soon... TWIN QUEST: DoW Chapter 2";

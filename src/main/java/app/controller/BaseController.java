@@ -58,6 +58,7 @@ public abstract class BaseController {
     public static final String EMOJI_SHEET_JSON = "/assets/json/emoji.json";
     public static final Double EMOJI_SHEET_SIZE = 64.0;
     public static final String NAME_PROPERTY = "NAME";
+    public static final String NODE_PUBLISHED_EVENT = "node published";
     public static final String PROPERTIES_FILE = "assets/app.properties";
     public static String NAME;
     public static BaseController appController;
@@ -83,8 +84,8 @@ public abstract class BaseController {
     //public abstract void displayText(String viewName, String text, Integer row, Integer column, Color color);
     //public abstract void displayText(String viewName, String text, Integer row, Integer column, Color color, int style);
     public abstract void displayGrid(String viewName, Grid control);
-    public abstract RelativeBounds changeNode(String viewName, BaseNode node);
-    public abstract RelativeBounds addNode(String viewName, BaseNode node, String parentName);
+    public abstract void changeNode(String viewName, BaseNode node);
+    public abstract void addNode(String viewName, BaseNode node, String parentName);
     public abstract void newDialog(BaseDialog dialog);
     //public abstract void displayLink(String viewName, String name, String linkText, int row, int column, int length, EventListener listener);
     //public abstract void displayButton(String viewName, String name, String text, Integer row, Integer column, Integer endRow, Integer endColumn, Boolean isMonospace, String fontName, Boolean glow, EventListener listener);

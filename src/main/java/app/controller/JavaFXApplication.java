@@ -21,6 +21,7 @@ import app.dialog.BaseDialog;
 import app.node.Sprite;
 import app.node.effect.BaseEffect;
 import app.node.effect.Glow;
+import app.node.effect.SlideTransition;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
@@ -116,6 +117,7 @@ import javafx.scene.text.TextFlow;
 import javax.imageio.metadata.IIOMetadata;
 import org.w3c.dom.NamedNodeMap;
 import app.view.Animation;
+import java.util.concurrent.TimeUnit;
 import javafx.animation.Interpolator;
 import javafx.animation.TranslateTransition;
 import javafx.beans.binding.DoubleBinding;
@@ -478,15 +480,14 @@ public class JavaFXApplication extends BaseController {
             return;
         }
         
-        if (!node.effects.isEmpty()) {
-            boolean isReadyToRemove = this.removeEffects(viewName, node, fxNode);
-            if (!isReadyToRemove) {
-                logger.log(Level.INFO, "Delaying node removal until effects have completed");
-                return;
-            }
-        }
+        // Capture the parent name before the registry gets cleaned up
+        String parentName = this.parentNodes.get(viewName).get(node.name);
         
         this.removeFXNode(viewName, node, fxNode);
+
+        if (!node.effects.isEmpty()) {
+            this.removeEffects(viewName, node, parentName, fxNode);
+        }
     }
     
     public void removeFXNode(String viewName, BaseNode node, Node fxNode) {
@@ -980,8 +981,124 @@ public class JavaFXApplication extends BaseController {
     }
     */
     
-    public void addEffects(app.node.BaseNode node, Node fxNode, app.Color offsetColor) {
-        logger.log(Level.INFO, "Entered: node={0}, fxNode={1}, offsetColor={2}", new Object[]{node, fxNode, offsetColor});
+    public Node addEffects(String viewName, app.node.BaseNode node, String parentName, Node fxNode, app.Color offsetColor) {
+        logger.log(Level.INFO, "Entered: viewName={0}, node={1}, parentName={2}, fxNode={3}, offsetColor={4}", new Object[]{viewName, node, parentName, fxNode, offsetColor});
+        
+        if ((node.effects == null) || (node.effects.isEmpty())) {
+            logger.log(Level.INFO, "No effects, nothing to do");
+            return fxNode;
+        }
+        
+        Node effectsNode = fxNode;
+        
+        for (BaseEffect effect : node.effects) {
+            Class<?> effectClass = effect.getClass();
+            if (effectClass.equals(app.node.effect.Glow.class)) {
+                this.addGlow(fxNode, (Glow) effect, offsetColor);
+                logger.log(Level.INFO, "Added glow effect");
+            } else if (effectClass.equals(app.node.effect.SlideTransition.class)) {
+                // TODO - Need to do something like disable the parent pane's scrollbars during the animation so they don't get confused
+                //parentScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+                //parentScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+                
+                SlideTransition transitionEffect = (SlideTransition) effect;
+                logger.log(Level.INFO, "Adding transition effect: path={0}, duration={1}, eventListener={2}, stage={3}", new Object[]{transitionEffect.path, transitionEffect.duration, transitionEffect.eventListener, transitionEffect.stage});
+
+                if (transitionEffect.stage == SlideTransition.Stage.INIT) {
+                    transitionEffect.stage = SlideTransition.Stage.ENTERING;
+                }
+                
+                if ((transitionEffect.stage == SlideTransition.Stage.ENTERING) || (transitionEffect.stage == SlideTransition.Stage.EXITING)) {
+                    // Clip the transition in a wrapper so that when the application window is maximized, the spill-over node contents aren't seen
+                    Pane transitionWrapper = new Pane(fxNode);
+                    Rectangle clip = new Rectangle();
+                    clip.widthProperty().bind(transitionWrapper.widthProperty());
+                    clip.heightProperty().bind(transitionWrapper.heightProperty());
+                    transitionWrapper.setClip(clip);
+
+                    effectsNode = transitionWrapper; // TODO - This won't apply to other effects, re-use if possible
+
+                    double nodeWidth = transitionWrapper.prefWidth(-1);
+                    double nodeHeight = transitionWrapper.prefHeight(-1);
+                    logger.log(Level.FINE, "Measured effects wrapper: width={0}, height={1}", new Object[]{nodeWidth, nodeHeight});
+                    TranslateTransition slide = new TranslateTransition(Duration.seconds(transitionEffect.duration), fxNode);
+                    if (transitionEffect.path == null) {
+                        logger.log(Level.WARNING, "Unsupported transition path");
+                    } else switch (transitionEffect.path) {
+                        case FROM_LEFT -> {
+                            if (transitionEffect.stage == SlideTransition.Stage.ENTERING) {
+                                fxNode.setTranslateX(-nodeWidth);
+                                slide.setFromX(-nodeWidth);
+                                slide.setToX(0);
+                            } else if (transitionEffect.stage == SlideTransition.Stage.EXITING) {
+                                fxNode.setTranslateX(0);
+                                slide.setFromX(0);
+                                slide.setToX(-nodeWidth);
+                            }
+                        }
+                        case FROM_RIGHT -> {
+                            if (transitionEffect.stage == SlideTransition.Stage.ENTERING) {
+                                fxNode.setTranslateX(nodeWidth);
+                                slide.setFromX(nodeWidth);
+                                slide.setToX(0);
+                            } else if (transitionEffect.stage == SlideTransition.Stage.EXITING) {
+                                fxNode.setTranslateX(0);
+                                slide.setFromX(0);
+                                slide.setToX(nodeWidth);
+                            }
+                        }
+                        case FROM_TOP -> {
+                            if (transitionEffect.stage == SlideTransition.Stage.ENTERING) {
+                                fxNode.setTranslateY(-nodeHeight);
+                                slide.setFromY(-nodeHeight);
+                                slide.setToY(0);
+                            } else if (transitionEffect.stage == SlideTransition.Stage.EXITING) {
+                                fxNode.setTranslateY(0);
+                                slide.setFromY(0);
+                                slide.setToY(-nodeHeight);
+                            }
+                        }
+                        case FROM_BOTTOM -> {
+                            if (transitionEffect.stage == SlideTransition.Stage.ENTERING) {
+                                fxNode.setTranslateY(nodeHeight);
+                                slide.setFromY(nodeHeight);
+                                slide.setToY(0);
+                            } else if (transitionEffect.stage == SlideTransition.Stage.EXITING) {
+                                fxNode.setTranslateY(0);
+                                slide.setFromY(0);
+                                slide.setToY(nodeHeight);
+                            }
+                        }
+                        default -> logger.log(Level.WARNING, "Unsupported transition path");
+                    }
+                    slide.setInterpolator(Interpolator.EASE_OUT);
+                    slide.setOnFinished(event -> {
+                        if (transitionEffect.stage == SlideTransition.Stage.ENTERING) {
+                            transitionEffect.stage = SlideTransition.Stage.READY;
+                        } else if (transitionEffect.stage == SlideTransition.Stage.EXITING) {
+                            transitionEffect.stage = SlideTransition.Stage.COMPLETE;
+                        }
+                        logger.log(Level.INFO, "Transition for node {0} complete, stage={1}", new Object[]{node.name, transitionEffect.stage});
+                        // When the transition play is complete, re-position the child outside of the wrapper and added it directly to the parent
+                        this.removeFXNode(viewName, node, transitionWrapper); // Remove the wrapper
+                        if (transitionEffect.stage == SlideTransition.Stage.READY) {
+                            this.publishNode(viewName, node, parentName, null); // Re-publish the node to directly add it to its parent
+                        }
+                        // Also, publish an event so that the button can be disabled during the transition and re-enabled upon completion
+                        transitionEffect.eventListener.onEvent(node.name, transitionEffect.stage);
+                    });
+                    slide.play();
+                }
+            } else {
+                logger.log(Level.SEVERE, "Class is not a supported effect class: {0}", effectClass.getSimpleName());
+            }
+        }
+        
+        return effectsNode;
+    }
+    
+    public void removeEffects(String viewName, BaseNode node, String parentName, Node fxNode) {
+        logger.log(Level.INFO, "Entered: viewName={0}, node={1}, parentName={2}, fxNode={3}", new Object[]{viewName, node, parentName, fxNode});
         
         if ((node.effects == null) || (node.effects.isEmpty())) {
             logger.log(Level.INFO, "No effects, nothing to do");
@@ -990,72 +1107,18 @@ public class JavaFXApplication extends BaseController {
         
         for (BaseEffect effect : node.effects) {
             Class<?> effectClass = effect.getClass();
-            if (effectClass.equals(app.node.effect.Glow.class)) {
-                this.addGlow(fxNode, (Glow) effect, offsetColor);
-                logger.log(Level.INFO, "Added glow effect");
-            } else if (effectClass.equals(app.node.effect.Transition.class)) {
-                // TODO - Need to do something like disable the parent pane's scrollbars during the animation so they don't get confused
-                //parentScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-                //parentScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-                
-                // TODO - If the application window is grown above the preferred dimensions, the centering of the content gets wonky during the animation
-
-                // TODO - Set the initial translation based properties on the effect
-                double nodeWidth = fxNode.prefWidth(-1);
-                fxNode.setTranslateX(nodeWidth);
-                TranslateTransition slide = new TranslateTransition(Duration.millis(500), fxNode);
-                slide.setFromX(nodeWidth);
-                slide.setToX(0);
-                slide.setInterpolator(Interpolator.EASE_OUT);
-                slide.play();
-                logger.log(Level.INFO, "Added transition effect");
+            if (effectClass.equals(app.node.effect.SlideTransition.class)) {
+                SlideTransition transitionEffect = (SlideTransition) effect;
+                if (transitionEffect.stage == SlideTransition.Stage.READY) {
+                    transitionEffect.stage = SlideTransition.Stage.EXITING;
+                    // Re-add the node without it's fx self which will call back into addEffects() which will see
+                    // the advanced stage on the effect and know to remove it with a slide out.
+                    this.publishNode(viewName, node, parentName, null);
+                }
             } else {
                 logger.log(Level.SEVERE, "Class is not a supported effect class: {0}", effectClass.getSimpleName());
             }
         }
-    }
-    
-    public boolean removeEffects(String viewName, BaseNode node, Node fxNode) {
-        logger.log(Level.INFO, "Entered: viewName={0}, node={1}, fxNode={3}", new Object[]{viewName, node, fxNode});
-        
-        if ((node.effects == null) || (node.effects.isEmpty())) {
-            logger.log(Level.INFO, "No effects, nothing to do");
-            return true;
-        }
-        
-        boolean allowNodeRemoval = true;
-        
-        for (BaseEffect effect : node.effects) {
-            Class<?> effectClass = effect.getClass();
-            if (effectClass.equals(app.node.effect.Transition.class)) {
-                // The transition effect needs to be de-transitioned
-                logger.log(Level.INFO, "Transition for node {0} starting", node.name);
-                allowNodeRemoval = false;
-                
-                // TODO - Need to do something like disable the parent pane's scrollbars during the animation so they don't get confused
-                //parentScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-                //parentScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-
-                // TODO - Set the initial translation based properties on the effect
-                double nodeWidth = fxNode.prefWidth(-1);
-                fxNode.setTranslateX(0);
-                TranslateTransition slide = new TranslateTransition(Duration.millis(500), fxNode);
-                slide.setFromX(0);
-                slide.setToX(nodeWidth);
-                slide.setInterpolator(Interpolator.EASE_OUT);
-                slide.setOnFinished(event -> {
-                    // TODO - This is VERY crude and should be cleaned up.  We don't know that the removeNode method called this.
-                    logger.log(Level.INFO, "Transition for node {0} complete", node.name);
-                    this.removeFXNode(viewName, node, fxNode);
-                });
-                slide.play();
-                logger.log(Level.INFO, "Added transition effect");
-            } else {
-                logger.log(Level.SEVERE, "Class is not a supported effect class: {0}", effectClass.getSimpleName());
-            }
-        }
-        
-        return allowNodeRemoval;
     }
     
     public void addGlow(Node fxNode, Glow effect, app.Color offsetColor) {
@@ -1591,30 +1654,28 @@ public class JavaFXApplication extends BaseController {
     }
     
     @Override
-    public RelativeBounds changeNode(String viewName, BaseNode node) {
+    public void changeNode(String viewName, BaseNode node) {
         logger.log(Level.INFO, "Entered: viewName={0}, node={1}", new Object[]{viewName, node});
         String parentName = this.parentNodes.get(viewName).get(node.name);
         if (parentName == null) {
             logger.log(Level.WARNING, "Parent not found for node {0}", node.name);
-            return null;
+            return;
         }
         Node fxNode = this.namedFXNodes.get(viewName).get(node.name);
         if (fxNode == null) {
             logger.log(Level.WARNING, "Node {0} not found", node.name);
-            return null;
+            return;
         }
-        RelativeBounds relativeBounds = this.publishNode(viewName, node, parentName, fxNode);
-        return relativeBounds;
+        this.publishNode(viewName, node, parentName, fxNode);
     }
     
     @Override
-    public RelativeBounds addNode(String viewName, BaseNode node, String parentName) {
+    public void addNode(String viewName, BaseNode node, String parentName) {
         logger.log(Level.INFO, "Entered: viewName={0}, node={1}, parentName={2}", new Object[]{viewName, node, parentName});
-        RelativeBounds relativeBounds = this.publishNode(viewName, node, parentName, null);
-        return relativeBounds;
+        this.publishNode(viewName, node, parentName, null);
     }
     
-    public RelativeBounds publishNode(String viewName, BaseNode node, String parentName, Node fxNode) {
+    public void publishNode(String viewName, BaseNode node, String parentName, Node fxNode) {
         logger.log(Level.INFO, "Entered: viewName={0}, node={1}, parentName={2}, fxChild={3}", new Object[]{viewName, node, parentName, fxNode});
         
         // TODO - Probably need a default application-level background color
@@ -1624,7 +1685,7 @@ public class JavaFXApplication extends BaseController {
         Node fxParent = this.namedFXNodes.get(viewName).get(parentName);
         if (fxParent == null) {
             logger.log(Level.SEVERE, "Parent with provided name not found");
-            return null;
+            return;
         }
         Boolean isNew = (fxNode == null);
         
@@ -1650,7 +1711,7 @@ public class JavaFXApplication extends BaseController {
             parentHeight = box.getPrefHeight();
         } else {
             logger.log(Level.SEVERE, "Parent does not have a supported class: {0}", parentControlClass.getSimpleName());
-            return null;
+            return;
         }
         
         Class<?> childClass = node.getClass();
@@ -1704,22 +1765,29 @@ public class JavaFXApplication extends BaseController {
             }
         } else {
             logger.log(Level.SEVERE, "Class is not a supported child class: {0}", childClass.getSimpleName());
-            return null;
+            return;
+        }
+
+        if (isNew) {
+            // TODO - This is ugly.
+            // To allow the width and height to be accessed immediately, add the child to a temporary Scene.
+            // The temporary Scene and Group will be garbage collected at the end of the method as they fall out of scope.
+            javafx.scene.Group tempRoot = new javafx.scene.Group(fxNode);
+            Scene tempScene = new Scene(tempRoot);
+            fxNode.applyCss();
+            double width = fxNode.prefWidth(-1);
+            double height = fxNode.prefHeight(-1);
+            logger.log(Level.INFO, "Temp dimensions for {0} = {1}x{2}p", new Object[]{childClass, width, height});
+            ((javafx.scene.Group)fxNode.getScene().getRoot()).getChildren().remove(fxNode);
+        }
+        
+        if ((node.effects != null) && (!node.effects.isEmpty())) {
+            // Effects might require a wrapper so handle effects now before adding the node to its parent so that a wrapper can be added if needed
+            fxNode = this.addEffects(viewName, node, parentName, fxNode, offsetColor);
         }
         
         // TODO - This is ugly.  Parent nodes do not have a base type (Parent) with a public getChildren() method so each parent class needs to be handled.
         if (parentControlClass.equals(Pane.class)) {
-            if (isNew) {
-                // To allow the width and height to be accessed immediately, add the child to a temporary Scene.
-                // The temporary Scene and Group will be garbage collected.
-                javafx.scene.Group tempRoot = new javafx.scene.Group(fxNode);
-                Scene tempScene = new Scene(tempRoot);
-                fxNode.applyCss();
-                double width = fxNode.prefWidth(-1); 
-                logger.log(Level.INFO, "Temp width for {0} = {1}", new Object[]{childClass, width});
-                ((javafx.scene.Group)fxNode.getScene().getRoot()).getChildren().remove(fxNode);
-            }
-            
             Pane pane = (Pane) fxParent;
             if (isNew) {
                 pane.getChildren().add(fxNode);
@@ -1745,11 +1813,7 @@ public class JavaFXApplication extends BaseController {
             }
         } else {
             logger.log(Level.SEVERE, "Parent does not have a supported class: {0}", parentControlClass.getSimpleName());
-            return null;
-        }
-        
-        if ((node.effects != null) && (!node.effects.isEmpty())) {
-            this.addEffects(node, fxNode, offsetColor);
+            return;
         }
         
         this.namedNodes.get(viewName).put(node.name, node);
@@ -1765,9 +1829,8 @@ public class JavaFXApplication extends BaseController {
         double y = fxNode.getLayoutY();
         double relativeY = y / parentHeight;
         RelativeBounds relativeBounds = new RelativeBounds(new RelativeCoordinates(relativeX, relativeY), relativeWidth, relativeHeight);
+        node.onEvent(NODE_PUBLISHED_EVENT, relativeBounds); // Let the node know its bounds
         logger.log(Level.INFO, "Added node {0} {1} at ({2},{3}), width={4}, height={5} using parent pixel width={6}, parent pixel height={7}, pixel width={8}, pixel height={9}", new Object[]{childClass.getSimpleName(), node.name, relativeX, relativeY, relativeWidth, relativeHeight, parentWidth, parentHeight, width, height});
-        
-        return relativeBounds;
     }
     
     // TODO - Make this newGrid() and add to addNode()

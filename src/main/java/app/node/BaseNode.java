@@ -1,16 +1,20 @@
 package app.node;
 
 import app.*;
+import static app.controller.BaseController.NODE_PUBLISHED_EVENT;
+import static app.controller.BaseController.logger;
 import app.node.effect.BaseEffect;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  *
  * @author repp
  */
-public abstract class BaseNode {
+public abstract class BaseNode implements EventListener {
     
+    private RelativeBounds bounds; // Boundaries of the node (once published)
     public List<BaseEffect> effects = new ArrayList(); // Default (null/empty) is no effects
     public Layout layout; // Default (null) is to let the parent node handle the layout
     public String name;
@@ -24,6 +28,19 @@ public abstract class BaseNode {
     public BaseNode(String name, Layout layout) {
         this.name = name;
         this.layout = layout;
+    }
+    
+    public RelativeBounds getBounds() {
+        return this.bounds;
+    }
+    
+    @Override
+    public void onEvent(String eventName, Object eventValue) {
+        logger.log(Level.INFO, "Entered: eventName={0}, eventValue={1}", new Object[]{eventName, eventValue});
+        if (eventName.equals(NODE_PUBLISHED_EVENT)) {
+            RelativeBounds bounds = (RelativeBounds) eventValue;
+            this.bounds = bounds;
+        }
     }
     
 }

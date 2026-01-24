@@ -180,12 +180,12 @@ public class AWTApplication extends BaseController {
     }
     
     @Override
-    public RelativeBounds changeNode(String viewName, BaseNode node) {
+    public void changeNode(String viewName, BaseNode node) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
     @Override
-    public RelativeBounds addNode(String viewName, BaseNode node, String parentName) {
+    public void addNode(String viewName, BaseNode node, String parentName) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
