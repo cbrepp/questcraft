@@ -51,6 +51,7 @@ public class Application extends app.view.BaseView {
     public final static String CHANGELOG_EVENT = "toggle changelog";
     public final static String CHANGELOG_LABEL = "changelog";
     public final static String CREATE_EVENT = "create";
+    public final static String DISPLAY_BUTTONS_TIMER = "display buttons";
     public final static String FILE_EVENT = "file";
     public final static String MONO_FONT = Font.ROBOTO_MONO;
     public final static String NORMAL_FONT = Font.ROBOTO;
@@ -69,6 +70,7 @@ public class Application extends app.view.BaseView {
     public Layout nowPlayingLayout;
     public Button quitButton;
     public Boolean showChangelog = false;
+    public Label titleLabel;
     
     public Application(String name) {
         super(name);
@@ -82,6 +84,10 @@ public class Application extends app.view.BaseView {
         logger.log(Level.INFO, "Entered: eventName={0}, eventValue={1}", new Object[]{eventName, eventValue});
         
         switch (eventName) {
+            case DISPLAY_BUTTONS_TIMER -> {
+                this.appController.removeTimer(DISPLAY_BUTTONS_TIMER);
+                this.displayButtons();
+            }
             case NODE_TRANSITIONED_EVENT -> {
                 if (eventValue.equals(CHANGELOG_LABEL)) {
                     // The changelog transition completed
@@ -183,13 +189,13 @@ public class Application extends app.view.BaseView {
         spiderAnimation.file = "/assets/images/spider.gif";
         this.appController.addNode(this.name, spiderAnimation, this.name);
         
-        Label titleLabel = new Label("title", new Layout(new RelativeCoordinates(0.0, 0.13), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
+        this.titleLabel = new Label("title", new Layout(new RelativeCoordinates(0.0, 0.13), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
         titleLabel.text = "QUESTCRAFT";
         titleLabel.pixelSize = 86.0;
         titleLabel.textColor = Color.SHADOW;
         titleLabel.textFont = TITLE_FONT;
         titleLabel.textStyle = FontStyle.BOLD;
-        this.appController.addNode(this.name, titleLabel, this.name);
+        this.appController.addNode(this.name, this.titleLabel, this.name);
         
         Label subtitleLabel = new Label("subtitle", new Layout(new RelativeCoordinates(0.0, 0.24), HorizontalAlignment.CENTER, VerticalAlignment.TOP));        
         subtitleLabel.text = "- JAVA  EDITION -";
@@ -206,54 +212,6 @@ public class Application extends app.view.BaseView {
         flavorTextLabel.textFont = TITLE_FONT;
         flavorTextLabel.textStyle = FontStyle.ITALIC;
         this.appController.addNode(this.name, flavorTextLabel, this.name);
-        
-        Button selectButton = new Button(SELECT_EVENT, new Layout(new RelativeCoordinates(0.0, 0.38), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
-        selectButton.eventListener = this;
-        selectButton.eventName = SELECT_EVENT;
-        selectButton.pixelSize = 26.0;
-        selectButton.textColor = Color.SHADOW;
-        selectButton.text = "Select Quest";
-        selectButton.textFont = BUTTON_FONT;
-        selectButton.effects.add(new Glow(Color.DARK_MAGENTA));
-        selectButton.scaleX = titleLabel.getBounds().width;
-        selectButton.effects.add(new SlideTransition(SlideTransition.Path.FROM_TOP, this)); // Slide the button from the top
-        this.appController.addNode(this.name, selectButton, this.name);
-
-        Button createButton = new Button(CREATE_EVENT, new Layout(new RelativeCoordinates(0.0, 0.46), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
-        createButton.eventListener = this;
-        createButton.eventName = CREATE_EVENT;
-        createButton.pixelSize = 26.0;
-        createButton.textColor = Color.SHADOW;
-        createButton.text = "Create Quest";
-        createButton.textFont = BUTTON_FONT;
-        createButton.effects.add(new Glow(Color.DARK_MAGENTA));
-        createButton.scaleX = titleLabel.getBounds().width;
-        createButton.effects.add(new SlideTransition(SlideTransition.Path.FROM_TOP, this)); // Slide the button from the top
-        this.appController.addNode(this.name, createButton, this.name);
-        
-        Button optionsButton = new Button(OPTIONS_EVENT, new Layout(new RelativeCoordinates(titleLabel.getBounds().coordinates.x, 0.54), HorizontalAlignment.LEFT, VerticalAlignment.TOP));
-        optionsButton.eventListener = this;
-        optionsButton.eventName = OPTIONS_EVENT;
-        optionsButton.pixelSize = 26.0;
-        optionsButton.textColor = Color.SHADOW;
-        optionsButton.text = "Options...";
-        optionsButton.textFont = BUTTON_FONT;
-        optionsButton.effects.add(new Glow(Color.DARK_MAGENTA));
-        optionsButton.scaleX = titleLabel.getBounds().width * 0.45;
-        optionsButton.effects.add(new SlideTransition(SlideTransition.Path.FROM_TOP, this)); // Slide the button from the top
-        this.appController.addNode(this.name, optionsButton, this.name);
-
-        this.quitButton = new Button(QUIT_EVENT, new Layout(new RelativeCoordinates(titleLabel.getBounds().coordinates.x + titleLabel.getBounds().width, 0.54), HorizontalAlignment.RIGHT, VerticalAlignment.TOP));
-        this.quitButton.eventListener = this;
-        this.quitButton.eventName = QUIT_EVENT;
-        this.quitButton.pixelSize = 26.0;
-        this.quitButton.textColor = Color.SHADOW;
-        this.quitButton.text = "Quit Game";
-        this.quitButton.textFont = BUTTON_FONT;
-        this.quitButton.effects.add(new Glow(Color.DARK_MAGENTA));
-        this.quitButton.scaleX = titleLabel.getBounds().width * 0.45;
-        this.quitButton.effects.add(new SlideTransition(SlideTransition.Path.FROM_TOP, this)); // Slide the button from the top
-        this.appController.addNode(this.name, this.quitButton, this.name);
         
         if (this.changelog != null) {
             String currentVersion = Changelog.findFirstReleasedVersion(this.changelog);
@@ -280,8 +238,6 @@ public class Application extends app.view.BaseView {
             this.appController.addNode(this.name, this.changelogButton, this.name);
         }
 
-        this.nowPlayingLayout = new Layout(new RelativeCoordinates(0.0, (quitButton.getBounds().coordinates.y + (quitButton.getBounds().height * 4))), HorizontalAlignment.CENTER, VerticalAlignment.TOP);
-        
         Label comingSoonLabel = new Label("coming soon", new Layout(new RelativeCoordinates(0.99, 0.99), HorizontalAlignment.RIGHT, VerticalAlignment.BOTTOM));        
         comingSoonLabel.text = "Coming soon... TWIN QUEST: DoW Chapter 2";
         comingSoonLabel.pixelSize = 14.0;
@@ -289,6 +245,62 @@ public class Application extends app.view.BaseView {
         comingSoonLabel.textFont = NORMAL_FONT;
         comingSoonLabel.textStyle = FontStyle.ITALIC;
         this.appController.addNode(this.name, comingSoonLabel, this.name);
+        
+        this.appController.setTimer(DISPLAY_BUTTONS_TIMER, 0.5, this);
+    }
+    
+    public void displayButtons() {
+        logger.log(Level.INFO, "Entered");
+                        
+        Button selectButton = new Button(SELECT_EVENT, new Layout(new RelativeCoordinates(0.0, 0.38), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
+        selectButton.eventListener = this;
+        selectButton.eventName = SELECT_EVENT;
+        selectButton.pixelSize = 26.0;
+        selectButton.textColor = Color.SHADOW;
+        selectButton.text = "Select Quest";
+        selectButton.textFont = BUTTON_FONT;
+        selectButton.effects.add(new Glow(Color.DARK_MAGENTA));
+        selectButton.scaleX = this.titleLabel.getBounds().width;
+        selectButton.effects.add(new SlideTransition(SlideTransition.Path.FROM_TOP, this, 1.5)); // Slide the button from the top in 1.5 seconds
+        this.appController.addNode(this.name, selectButton, this.name);
+
+        Button createButton = new Button(CREATE_EVENT, new Layout(new RelativeCoordinates(0.0, 0.46), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
+        createButton.eventListener = this;
+        createButton.eventName = CREATE_EVENT;
+        createButton.pixelSize = 26.0;
+        createButton.textColor = Color.SHADOW;
+        createButton.text = "Create Quest";
+        createButton.textFont = BUTTON_FONT;
+        createButton.effects.add(new Glow(Color.DARK_MAGENTA));
+        createButton.scaleX = this.titleLabel.getBounds().width;
+        createButton.effects.add(new SlideTransition(SlideTransition.Path.FROM_TOP, this, 1.5)); // Slide the button from the top in 1.5 seconds
+        this.appController.addNode(this.name, createButton, this.name);
+        
+        Button optionsButton = new Button(OPTIONS_EVENT, new Layout(new RelativeCoordinates(this.titleLabel.getBounds().coordinates.x, 0.54), HorizontalAlignment.LEFT, VerticalAlignment.TOP));
+        optionsButton.eventListener = this;
+        optionsButton.eventName = OPTIONS_EVENT;
+        optionsButton.pixelSize = 26.0;
+        optionsButton.textColor = Color.SHADOW;
+        optionsButton.text = "Options...";
+        optionsButton.textFont = BUTTON_FONT;
+        optionsButton.effects.add(new Glow(Color.DARK_MAGENTA));
+        optionsButton.scaleX = this.titleLabel.getBounds().width * 0.45;
+        optionsButton.effects.add(new SlideTransition(SlideTransition.Path.FROM_TOP, this, 1.5)); // Slide the button from the top in 1.5 seconds
+        this.appController.addNode(this.name, optionsButton, this.name);
+
+        this.quitButton = new Button(QUIT_EVENT, new Layout(new RelativeCoordinates(this.titleLabel.getBounds().coordinates.x + this.titleLabel.getBounds().width, 0.54), HorizontalAlignment.RIGHT, VerticalAlignment.TOP));
+        this.quitButton.eventListener = this;
+        this.quitButton.eventName = QUIT_EVENT;
+        this.quitButton.pixelSize = 26.0;
+        this.quitButton.textColor = Color.SHADOW;
+        this.quitButton.text = "Quit Game";
+        this.quitButton.textFont = BUTTON_FONT;
+        this.quitButton.effects.add(new Glow(Color.DARK_MAGENTA));
+        this.quitButton.scaleX = this.titleLabel.getBounds().width * 0.45;
+        this.quitButton.effects.add(new SlideTransition(SlideTransition.Path.FROM_TOP, this, 1.5)); // Slide the button from the top in 1.5 seconds
+        this.appController.addNode(this.name, this.quitButton, this.name);
+        
+        this.nowPlayingLayout = new Layout(new RelativeCoordinates(0.0, (quitButton.getBounds().coordinates.y + (quitButton.getBounds().height * 4))), HorizontalAlignment.CENTER, VerticalAlignment.TOP);
     }
     
     public Book deserializeBook(String fileName) {
