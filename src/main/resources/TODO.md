@@ -4,31 +4,20 @@ Upcoming changes.
 
 ## Priorities
 
-1. Refactor Z-order layout to match most recently added images being displayed on top of the other images
-2. Finish animation support and Night Owl minigame and transition to Chapter 2
-3. Finish JavaFX app controllerr
-    1. Columns (and likely rows) are calculated differently than with SWT and shifts the text
-    2. Need new sound system... a better one that allows playing the same sound concurrently
-    3. Implement remaining AppController methods, especially displayGrid() and addAnimation()
-4. Prototype a WebFX (https://docs.webfx.dev/#_getting_started) web page:
-    1. With WebFX "0.1.0-SNAPSHOT ~ 2025-09-04 13:28 GMT" the initial application screen displays only larger floating text with zero support for images, causing all elements to display at coordinate (0, 0)
-    2. Upgrade WebFX as new versions are published and redeploy to https://cbrepp.github.io/questcraft/
-    3. Research alternative JavaScript transpilers
-5. Prototype a JPro (https://www.jpro.one/docs/jpro-webapi/docs/1/1/creating-a-project) web page:
-    1. With a little tweaking of the example app was able to build a server that mostly works!
-    2. So far only the example Gradle app builds with Questcraft.  Need to get Maven app building.  Also need to clean up layout and positioning of controls and implement a stand-alone JavaFX sound solution.
-    3. JPro hosting is approx $132.93/month.  Need to look into cheap alternative server hosting-- https://www.hostinger.com/tutorials/how-to-set-up-vps.
-6. Prototype a Gluon Mobile (https://docs.gluonhq.com/) app using the Charm Glisten UI library
-    1. If Gluon Mobile is promising, work on Android build
-7. Research CheerpJ
-8. Separate this repo into:
-    1. Appcraft repo
-    2. Questcraft repo
-    3. One repo for each quest
-9. Begin implementing each Chapter 2 level
-10. Start designing the Twinquest prequel about Big Chung, the mystery solving chief of police
-11. Fix annoying spacing issues around changing font color, etc.  Add dark magenta color to variables used by Mad Quest.
-12. Document dependencies... for example, SWT requires libwebkit2gtk-4.1-0 for using the Browser class
+1. Refactor the entire application so that it no longer has garbage prototype code and uses a solid foundation with a polished UI and cool visual effects
+   1. Refactor app framework to add/change/remove node objects instead of calling individual static methods for each node type
+      1. The node layout should be passed to add/change/remove methods instead of being configured directly on the node
+      2. addEffects() should skip the special resizing and layout handling if no node layout
+   2. Refactor the Questcraft view
+   3. Refactor the splash view
+   4. Refactor the App view
+   5. Refactor the Quest view
+   6. etc
+2. Make sure revisions work with Mad Quest
+3. Add support for using the spell book to travel back to Chapter 1 from Chapter 2
+4. Add animation/minigame for Chapter 2, Scene 1-- frogger/crossy road
+5. Design Twin Quest prequel about Big Chung, the mystery solving chief of police-- "TWIN QUEST: The Darkest Tail"
+   1. Add AI video teasers to the end of each TQ:DOW chapter
 
 ## Questcraft
 
@@ -38,11 +27,21 @@ Upcoming changes.
 
 ### App
 
-* Implement JavaFXApplication
-  * https://openjfx.io/openjfx-docs/#IDE-NetBeans
-  * Protoype application controller seems to work well!  Note that maximizing the application window causes text to float.  Implement all of the abstract methods.
-  * Research how to use the Deployment Toolkit library or if there's a better solution (ie, Gluon CloudLink or JPro)
-* Application should be able to relaunch using a different application control while preserving the model and view data
+* Refactor SWTApplication to match JavaFXApplication
+* Application should be able to relaunch using a different application controller while preserving the model and view data
+* Prototype a working WebFX (https://docs.webfx.dev/#_getting_started) web page:
+    1. With WebFX "0.1.0-SNAPSHOT ~ 2025-09-04 13:28 GMT" the initial application screen displays only larger floating text with zero support for images, causing all elements to display at coordinate (0, 0)
+    2. Upgrade WebFX as new versions are published and redeploy to https://cbrepp.github.io/questcraft/
+    3. Research alternative JavaScript transpilers
+* Host a JPro (https://www.jpro.one/docs/jpro-webapi/docs/1/1/creating-a-project) web page:
+    1. Animated gif support, sound, and likely other issues exist that should be fixed
+    2. JPro hosting is approx $132.93/month.  Need to look into cheap alternative server hosting-- https://www.hostinger.com/tutorials/how-to-set-up-vps.
+* Prototype a Gluon Mobile (https://docs.gluonhq.com/) app using the Charm Glisten UI library
+    1. If Gluon Mobile is promising, work on Android build
+* Research CheerpJ
+* Separate this repo into:
+    1. Appcraft repo
+    2. Questcraft repo (with quest files for each quest)
 
 ### Quest
 
