@@ -4,6 +4,7 @@ import app.view.BaseView;
 import app.Coordinates;
 import app.EventListener;
 import app.FontStyle;
+import app.HorizontalAlignment;
 import static app.HorizontalAlignment.CENTER;
 import static app.HorizontalAlignment.LEFT;
 import static app.HorizontalAlignment.RIGHT;
@@ -11,6 +12,7 @@ import app.Icon;
 import app.Layout;
 import app.RelativeBounds;
 import app.RelativeCoordinates;
+import app.VerticalAlignment;
 import static app.VerticalAlignment.BOTTOM;
 import static app.VerticalAlignment.CENTER;
 import static app.VerticalAlignment.TOP;
@@ -849,60 +851,32 @@ public class JavaFXApplication extends BaseController {
     }
     */
     
-    public void positionNode(String viewName, BaseNode node, Node fxNode, Pane fxParent) {
-        logger.log(Level.INFO, "Entered: viewName={0}, node={1}, fxNode={2}, fxParent={3}", new Object[]{viewName, node, fxNode, fxParent});
+    public static void positionNode(BaseNode node, Node fxNode, Pane fxParent) {
+        logger.log(Level.INFO, "Entered: viewName={0}, node={1}, fxNode={2}, fxParent={3}", new Object[]{node, fxNode, fxParent});
         
         if (node.layout == null) {
             logger.log(Level.INFO, "No layout, node will be managed by parent");
             return;
         }
         
-        Double x = null;
-        if (node.layout.horizontalAlignment == null) {
-            logger.log(Level.WARNING, "Horizontal alignment was not specified");
-        } else {
-            switch (node.layout.horizontalAlignment) {
-                case LEFT -> {
-                    x = fxParent.getPrefWidth() * node.layout.position.x;
-                }
-                case CENTER -> {
-                    x = (fxParent.getPrefWidth() - fxNode.getBoundsInLocal().getWidth()) / 2;
-                }
-                case RIGHT -> {
-                    x = (fxParent.getPrefWidth() * node.layout.position.x) - fxNode.getBoundsInLocal().getWidth();
-                }
-            }
-        }
-        
+        double nodeWidth = fxNode.getBoundsInLocal().getWidth();
+        double parentWidth = fxParent.getPrefWidth();
+        Double x = calculateNodeX(node.layout.horizontalAlignment, node.layout.position.x, parentWidth, nodeWidth);        
         if (x != null) {
             // Prevent placing the child node directly on the right edge of the parent node to prevent issues
-            if ((fxNode.getBoundsInLocal().getWidth() < fxParent.getPrefWidth() - 1) && ((x + fxNode.getBoundsInLocal().getWidth()) >= fxParent.getPrefWidth() - 1)) {
+            if ((nodeWidth < parentWidth - 1) && ((x + nodeWidth) >= parentWidth - 1)) {
                 x -= 2; // Unfortunate fudge factor.  A gap of 2 pixels is needed to prevent triggering a resize of the application window.
                 logger.log(Level.WARNING, "Reduced the node's width by 2 to prevent overlap with the parent");
             }
             fxNode.setLayoutX(x);
         }
         
-        Double y = null;
-        if (node.layout.verticalAlignment == null) {
-            logger.log(Level.WARNING, "Vertical alignment was not specified");
-        } else {
-            switch (node.layout.verticalAlignment) {
-                case TOP -> {
-                    y = fxParent.getPrefHeight() * node.layout.position.y;
-                }
-                case CENTER -> {
-                    y = (fxParent.getPrefHeight() - fxNode.getBoundsInLocal().getHeight()) / 2;
-                }
-                case BOTTOM -> {
-                    y = (fxParent.getPrefHeight() * node.layout.position.y) - fxNode.getBoundsInLocal().getHeight();
-                }
-            }
-        }
-        
+        double nodeHeight = fxNode.getBoundsInLocal().getHeight();
+        double parentHeight = fxParent.getPrefHeight();
+        Double y = calculateNodeY(node.layout.verticalAlignment, node.layout.position.y, parentHeight, nodeHeight);    
         if (y != null) {
             // Prevent placing the child node directly on the bottom edge of the parent node to prevent issues
-            if ((fxNode.getBoundsInLocal().getHeight() < fxParent.getPrefHeight() - 1) && ((y + fxNode.getBoundsInLocal().getHeight()) >= fxParent.getPrefHeight() - 1)) {
+            if ((nodeHeight < parentHeight - 1) && ((y + nodeHeight) >= parentHeight - 1)) {
                 y -= 2; // Unfortunate fudge factor.  A gap of 2 pixels is needed to prevent triggering a resize of the application window.
                 logger.log(Level.WARNING, "Reduced the node's height by 2 to prevent overlap with the parent");
             }
@@ -910,6 +884,52 @@ public class JavaFXApplication extends BaseController {
         }
             
         logger.log(Level.INFO, "Calculated coordinates ({0}, {1}) for parent width {2} and height {3} and node width {4} and height {5}", new Object[]{x, y, fxParent.getPrefWidth(), fxParent.getPrefHeight(), fxNode.getBoundsInLocal().getWidth(), fxNode.getBoundsInLocal().getHeight()});        
+    }
+    
+    public static Double calculateNodeX(HorizontalAlignment alignment, double relativeX, double parentWidth, double nodeWidth) {
+        logger.log(Level.INFO, "Entered: alignment={0}, relativeX={1}, parentWidth={2}, nodeWidth={3}", new Object[]{alignment, relativeX, parentWidth, nodeWidth});
+        
+        Double x = null;
+        if (alignment == null) {
+            logger.log(Level.WARNING, "Horizontal alignment was not specified");
+        } else {
+            switch (alignment) {
+                case LEFT -> {
+                    x = parentWidth * relativeX;
+                }
+                case CENTER -> {
+                    x = (parentWidth - nodeWidth) / 2;
+                }
+                case RIGHT -> {
+                    x = (parentWidth * relativeX) - nodeWidth;
+                }
+            }
+        }
+        
+        return x;
+    }
+    
+    public static Double calculateNodeY(VerticalAlignment alignment, double relativeY, double parentHeight, double nodeHeight) {
+        logger.log(Level.INFO, "Entered: alignment={0}, relativeX={1}, parentWidth={2}, nodeWidth={3}", new Object[]{alignment, relativeY, parentHeight, nodeHeight});
+        
+        Double y = null;
+        if (alignment == null) {
+            logger.log(Level.WARNING, "Vertical alignment was not specified");
+        } else {
+            switch (alignment) {
+                case TOP -> {
+                    y = parentHeight * relativeY;
+                }
+                case CENTER -> {
+                    y = (parentHeight - nodeHeight) / 2;
+                }
+                case BOTTOM -> {
+                    y = (parentHeight * relativeY) - nodeHeight;
+                }
+            }
+        }
+        
+        return y;
     }
     
     /*
@@ -989,7 +1009,7 @@ public class JavaFXApplication extends BaseController {
             return fxNode;
         }
         
-        Pane wrapperNode = null;
+        Pane fxWrapperNode = null;
         
         for (BaseEffect effect : node.effects) {
             Class<?> effectClass = effect.getClass();
@@ -1011,73 +1031,105 @@ public class JavaFXApplication extends BaseController {
                 }
                 
                 if ((transitionEffect.getStage() == SlideTransition.Stage.ENTERING) || (transitionEffect.getStage() == SlideTransition.Stage.EXITING)) {
-                    if (wrapperNode != null) {
+                    if (fxWrapperNode != null) {
                         logger.log(Level.WARNING, "Node is being wrapped by another effect, skipping effect");
                         continue;
                     }
                     
                     // Clip the transition in a wrapper so that when the application window is maximized, the spill-over node contents aren't seen
-                    wrapperNode = new Pane(fxNode);
+                    fxWrapperNode = new Pane(fxNode);
                     Rectangle clip = new Rectangle();
-                    clip.widthProperty().bind(wrapperNode.widthProperty());
-                    clip.heightProperty().bind(wrapperNode.heightProperty());
-                    wrapperNode.setClip(clip);
+                    clip.widthProperty().bind(fxWrapperNode.widthProperty());
+                    clip.heightProperty().bind(fxWrapperNode.heightProperty());
+                    fxWrapperNode.setClip(clip);
 
-                    double nodeWidth = wrapperNode.prefWidth(-1);
-                    double nodeHeight = wrapperNode.prefHeight(-1);
+                    double nodeWidth = fxWrapperNode.prefWidth(-1);
+                    double nodeHeight = fxWrapperNode.prefHeight(-1);
+                    
+                    Pane fxParent = (Pane) this.namedFXNodes.get(viewName).get(parentName); // TODO - This effect should only be supported when the parent is a pane
+                    Layout nodeLayout = node.layout;
+                    
                     logger.log(Level.FINE, "Measured effects wrapper: width={0}, height={1}", new Object[]{nodeWidth, nodeHeight});
                     TranslateTransition slide = new TranslateTransition(Duration.seconds(transitionEffect.duration), fxNode);
                     if (transitionEffect.path == null) {
                         logger.log(Level.WARNING, "Unsupported transition path");
                     } else switch (transitionEffect.path) {
                         case FROM_LEFT -> {
+                            // Increase the wrapper's width by the intended x-coordinate for the child node so the wrapper can stretch to the left edge of the parent
+                            double parentWidth = fxParent.getPrefWidth();
+                            Double nodeX = calculateNodeX(node.layout.horizontalAlignment, node.layout.position.x, parentWidth, nodeWidth);
+                            double wrapperWidth = nodeWidth + nodeX;
+                            fxWrapperNode.setPrefWidth(wrapperWidth);
+                            // Anchor the wrapper to the left edge of the parent
+                            node.layout = new Layout(new RelativeCoordinates(0.0, nodeLayout.position.y), HorizontalAlignment.LEFT, nodeLayout.verticalAlignment);
                             if (transitionEffect.getStage() == SlideTransition.Stage.ENTERING) {
                                 fxNode.setTranslateX(-nodeWidth);
                                 slide.setFromX(-nodeWidth);
-                                slide.setToX(0);
+                                slide.setToX(wrapperWidth - nodeWidth);
                             } else if (transitionEffect.getStage() == SlideTransition.Stage.EXITING) {
-                                fxNode.setTranslateX(0);
-                                slide.setFromX(0);
+                                fxNode.setTranslateX(wrapperWidth - nodeWidth);
+                                slide.setFromX(wrapperWidth - nodeWidth);
                                 slide.setToX(-nodeWidth);
                             }
                         }
                         case FROM_RIGHT -> {
+                            // Increase the wrapper's width to the difference between the parent's width and the intended x-coordinate for the child node so the wrapper can stretch to the right edge of the parent
+                            double parentWidth = fxParent.getPrefWidth();
+                            Double nodeX = calculateNodeX(node.layout.horizontalAlignment, node.layout.position.x, parentWidth, nodeWidth);
+                            double wrapperWidth = parentWidth - nodeX;
+                            fxWrapperNode.setPrefWidth(wrapperWidth);
+                            // Anchor the wrapper to the right edge of the parent
+                            node.layout = new Layout(new RelativeCoordinates(1.0, nodeLayout.position.y), HorizontalAlignment.RIGHT, nodeLayout.verticalAlignment);
                             if (transitionEffect.getStage() == SlideTransition.Stage.ENTERING) {
-                                fxNode.setTranslateX(nodeWidth);
-                                slide.setFromX(nodeWidth);
+                                fxNode.setTranslateX(wrapperWidth);
+                                slide.setFromX(wrapperWidth);
                                 slide.setToX(0);
                             } else if (transitionEffect.getStage() == SlideTransition.Stage.EXITING) {
                                 fxNode.setTranslateX(0);
                                 slide.setFromX(0);
-                                slide.setToX(nodeWidth);
+                                slide.setToX(wrapperWidth);
                             }
                         }
                         case FROM_TOP -> {
+                            // Increase the wrapper's height by the intended y-coordinate for the child node so the wrapper can stretch to the top edge of the parent
+                            double parentHeight = fxParent.getPrefHeight();
+                            Double nodeY = calculateNodeY(node.layout.verticalAlignment, node.layout.position.y, parentHeight, nodeHeight);
+                            double wrapperHeight = nodeHeight + nodeY;
+                            fxWrapperNode.setPrefHeight(wrapperHeight);
+                            // Anchor the wrapper to the top edge of the parent
+                            node.layout = new Layout(new RelativeCoordinates(nodeLayout.position.x, 0.0), nodeLayout.horizontalAlignment, VerticalAlignment.TOP);
                             if (transitionEffect.getStage() == SlideTransition.Stage.ENTERING) {
                                 fxNode.setTranslateY(-nodeHeight);
                                 slide.setFromY(-nodeHeight);
-                                slide.setToY(0);
+                                slide.setToY(wrapperHeight - nodeHeight);
                             } else if (transitionEffect.getStage() == SlideTransition.Stage.EXITING) {
-                                fxNode.setTranslateY(0);
-                                slide.setFromY(0);
+                                fxNode.setTranslateY(wrapperHeight - nodeHeight);
+                                slide.setFromY(wrapperHeight - nodeHeight);
                                 slide.setToY(-nodeHeight);
                             }
                         }
                         case FROM_BOTTOM -> {
+                            // Increase the wrapper's height to the difference between the parent's height and the intended y-coordinate for the child node so the wrapper can stretch to the bottom edge of the parent
+                            double parentHeight = fxParent.getPrefHeight();
+                            Double nodeY = calculateNodeY(node.layout.verticalAlignment, node.layout.position.y, parentHeight, nodeHeight);
+                            double wrapperHeight = parentHeight - nodeY;
+                            fxWrapperNode.setPrefHeight(wrapperHeight);
+                            // Anchor the wrapper to the bottom edge of the parent
+                            node.layout = new Layout(new RelativeCoordinates(nodeLayout.position.x, 1.0), nodeLayout.horizontalAlignment, VerticalAlignment.BOTTOM);
                             if (transitionEffect.getStage() == SlideTransition.Stage.ENTERING) {
-                                fxNode.setTranslateY(nodeHeight);
-                                slide.setFromY(nodeHeight);
+                                fxNode.setTranslateY(wrapperHeight);
+                                slide.setFromY(wrapperHeight);
                                 slide.setToY(0);
                             } else if (transitionEffect.getStage() == SlideTransition.Stage.EXITING) {
                                 fxNode.setTranslateY(0);
                                 slide.setFromY(0);
-                                slide.setToY(nodeHeight);
+                                slide.setToY(wrapperHeight);
                             }
                         }
                         default -> logger.log(Level.WARNING, "Unsupported transition path");
                     }
                     slide.setInterpolator(Interpolator.EASE_OUT);
-                    final Pane finalWrapperNode = wrapperNode;
+                    final Pane finalWrapperNode = fxWrapperNode;
                     slide.setOnFinished(event -> {
                         if (transitionEffect.getStage() == SlideTransition.Stage.ENTERING) {
                             transitionEffect.onEvent(NODE_TRANSITIONED_EVENT, SlideTransition.Stage.READY);
@@ -1088,10 +1140,11 @@ public class JavaFXApplication extends BaseController {
                         // When the transition play is complete, re-position the child outside of the wrapper and added it directly to the parent
                         this.removeFXNode(viewName, node, finalWrapperNode); // Remove the wrapper
                         if (transitionEffect.getStage() == SlideTransition.Stage.READY) {
+                            node.layout = nodeLayout; // Restore the original layout relative to the parent
                             this.publishNode(viewName, node, parentName, null); // Re-publish the node to directly add it to its parent
                         }
                         // Also, publish an event so that the button can be disabled during the transition and re-enabled upon completion
-                        transitionEffect.eventListener.onEvent(node.name, transitionEffect.getStage());
+                        transitionEffect.eventListener.onEvent(NODE_TRANSITIONED_EVENT, node.name);
                     });
                     slide.play();
                 }
@@ -1100,9 +1153,9 @@ public class JavaFXApplication extends BaseController {
             }
         }
         
-        if (wrapperNode != null) {
-            logger.log(Level.INFO, "Wrapping node: wrapper={0}", wrapperNode.getClass().getSimpleName());
-            return wrapperNode;
+        if (fxWrapperNode != null) {
+            logger.log(Level.INFO, "Wrapping node: wrapper={0}", fxWrapperNode.getClass().getSimpleName());
+            return fxWrapperNode;
         }
         
         return fxNode;
@@ -1804,7 +1857,7 @@ public class JavaFXApplication extends BaseController {
                 pane.getChildren().add(fxNode);
             }
             pane.layout();
-            this.positionNode(viewName, node, fxNode, pane);
+            this.positionNode(node, fxNode, pane);
         } else if (parentControlClass.equals(StackPane.class)) {
             StackPane pane = (StackPane) fxParent;
             if (isNew) {

@@ -9,6 +9,7 @@ import app.HorizontalAlignment;
 import app.Layout;
 import app.RelativeCoordinates;
 import app.VerticalAlignment;
+import static app.controller.BaseController.NODE_TRANSITIONED_EVENT;
 import static app.controller.BaseController.logger;
 import app.dialog.Alert;
 import app.dialog.FileSelection;
@@ -63,6 +64,7 @@ public class Application extends app.view.BaseView {
     public String changelog = Changelog.get();
     public Button changelogButton;
     public Label changelogLabel;
+    public SlideTransition changelogTransition;
     public String flavorText;
     public Layout nowPlayingLayout;
     public Button quitButton;
@@ -80,22 +82,24 @@ public class Application extends app.view.BaseView {
         logger.log(Level.INFO, "Entered: eventName={0}, eventValue={1}", new Object[]{eventName, eventValue});
         
         switch (eventName) {
-            case CHANGELOG_LABEL -> {
-                // The changelog transition completed
-                if (eventValue == SlideTransition.Stage.READY) {
-                    this.changelogButton.text = ">";
-                    this.changelogButton.isEnabled = true; // Not multi-use button, so re-enable
-                    this.appController.changeNode(this.name, this.changelogButton);
-                } else if (eventValue == SlideTransition.Stage.COMPLETE) {
-                    this.changelogButton.text = "<";
-                    this.changelogButton.isEnabled = true; // Not multi-use button, so re-enable
-                    this.appController.changeNode(this.name, this.changelogButton);
+            case NODE_TRANSITIONED_EVENT -> {
+                if (eventValue.equals(CHANGELOG_LABEL)) {
+                    // The changelog transition completed
+                    if (this.changelogTransition.getStage() == SlideTransition.Stage.READY) {
+                        this.changelogButton.text = ">";
+                        this.changelogButton.isEnabled = true; // Not multi-use button, so re-enable
+                        this.appController.changeNode(this.name, this.changelogButton);
+                    } else if (this.changelogTransition.getStage() == SlideTransition.Stage.COMPLETE) {
+                        this.changelogButton.text = "<";
+                        this.changelogButton.isEnabled = true; // Not multi-use button, so re-enable
+                        this.appController.changeNode(this.name, this.changelogButton);
+                    }
                 }
             }
             case CHANGELOG_EVENT -> {
                 if (this.changelogButton.text.equals("<")) {
                     // Display the changelog in a scrolling region centered on the right with a spacer separating it from the quit button.
-                    // Event CHANGELOG_LABEL will be raised when the event is complete.
+                    // Event NODE_TRANSITIONED_EVENT will be raised when the event is complete.
                     this.changelogLabel = new ScrollingLabel(CHANGELOG_LABEL, new Layout(new RelativeCoordinates(changelogButton.getBounds().coordinates.x, 0.0), HorizontalAlignment.RIGHT, VerticalAlignment.CENTER));
                     this.changelogLabel.text = this.changelog;
                     this.changelogLabel.pixelSize = 10.0;
@@ -103,7 +107,8 @@ public class Application extends app.view.BaseView {
                     this.changelogLabel.textFont = MONO_FONT;
                     this.changelogLabel.scaleX = this.changelogButton.getBounds().coordinates.x - (this.quitButton.getBounds().coordinates.x + this.quitButton.getBounds().width) - 0.02; // Space between the right edge of the button and the right edge of the changelog button (with .04 padding)
                     this.changelogLabel.scaleY = 0.5;
-                    this.changelogLabel.effects.add(new SlideTransition(SlideTransition.Path.FROM_RIGHT, this)); // Slide the label from the right
+                    this.changelogTransition = new SlideTransition(SlideTransition.Path.FROM_RIGHT, this); // Slide the label from the right
+                    this.changelogLabel.effects.add(this.changelogTransition);
                     this.appController.addNode(this.name, this.changelogLabel, this.name);
                 } else {
                     this.changelogButton.text = "<";
@@ -211,6 +216,7 @@ public class Application extends app.view.BaseView {
         selectButton.textFont = BUTTON_FONT;
         selectButton.effects.add(new Glow(Color.DARK_MAGENTA));
         selectButton.scaleX = titleLabel.getBounds().width;
+        selectButton.effects.add(new SlideTransition(SlideTransition.Path.FROM_TOP, this)); // Slide the button from the top
         this.appController.addNode(this.name, selectButton, this.name);
 
         Button createButton = new Button(CREATE_EVENT, new Layout(new RelativeCoordinates(0.0, 0.46), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
@@ -222,6 +228,7 @@ public class Application extends app.view.BaseView {
         createButton.textFont = BUTTON_FONT;
         createButton.effects.add(new Glow(Color.DARK_MAGENTA));
         createButton.scaleX = titleLabel.getBounds().width;
+        createButton.effects.add(new SlideTransition(SlideTransition.Path.FROM_TOP, this)); // Slide the button from the top
         this.appController.addNode(this.name, createButton, this.name);
         
         Button optionsButton = new Button(OPTIONS_EVENT, new Layout(new RelativeCoordinates(titleLabel.getBounds().coordinates.x, 0.54), HorizontalAlignment.LEFT, VerticalAlignment.TOP));
@@ -233,6 +240,7 @@ public class Application extends app.view.BaseView {
         optionsButton.textFont = BUTTON_FONT;
         optionsButton.effects.add(new Glow(Color.DARK_MAGENTA));
         optionsButton.scaleX = titleLabel.getBounds().width * 0.45;
+        optionsButton.effects.add(new SlideTransition(SlideTransition.Path.FROM_TOP, this)); // Slide the button from the top
         this.appController.addNode(this.name, optionsButton, this.name);
 
         this.quitButton = new Button(QUIT_EVENT, new Layout(new RelativeCoordinates(titleLabel.getBounds().coordinates.x + titleLabel.getBounds().width, 0.54), HorizontalAlignment.RIGHT, VerticalAlignment.TOP));
@@ -244,6 +252,7 @@ public class Application extends app.view.BaseView {
         this.quitButton.textFont = BUTTON_FONT;
         this.quitButton.effects.add(new Glow(Color.DARK_MAGENTA));
         this.quitButton.scaleX = titleLabel.getBounds().width * 0.45;
+        this.quitButton.effects.add(new SlideTransition(SlideTransition.Path.FROM_TOP, this)); // Slide the button from the top
         this.appController.addNode(this.name, this.quitButton, this.name);
         
         if (this.changelog != null) {
