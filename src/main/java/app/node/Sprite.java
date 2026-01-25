@@ -1,8 +1,6 @@
 package app.node;
 
-import app.controller.BaseController;
 import app.*;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,10 +21,6 @@ public class Sprite extends BaseNode {
     
     public Sprite (String name) {
         super(name);
-    }
-    
-    public Sprite(String name, Layout layout) {
-        super(name, layout);
     }
     
     /*

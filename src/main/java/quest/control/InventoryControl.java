@@ -86,12 +86,11 @@ public class InventoryControl extends QuestControl implements EventListener {
                 realRow++;
                 realColumn = startingColumn;
             }
-            // TODO - Need to pass in relative coordinates
-            Link linkControl = new Link(key, new Layout(new RelativeCoordinates(0.25, 0.25), HorizontalAlignment.LEFT, VerticalAlignment.TOP));
+            Link linkControl = new Link(key);
             linkControl.text = linkText;
             linkControl.eventListener = this;
             linkControl.eventName = key;
-            this.quest.appController.addNode(this.quest.name, linkControl, this.quest.name);
+            this.quest.appController.addNode(this.quest.name, this.quest.name, linkControl, new Layout(new RelativeCoordinates(0.25, 0.25), HorizontalAlignment.LEFT, VerticalAlignment.TOP));
             //this.quest.appController.displayLink(this.quest.name, key, linkText, realRow, realColumn, linkTextLength, this);
             realColumn = realColumn + linkTextLength;
             totalLength += linkTextLength;

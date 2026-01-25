@@ -297,12 +297,12 @@ public class SWTApplication extends BaseController {
     }
     
     @Override
-    public void changeNode(String viewName, BaseNode node) {
+    public void changeNode(String viewName, BaseNode node, Layout layout) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
     @Override
-    public void addNode(String viewName, BaseNode node, String parentName) {
+    public void addNode(String viewName, String parentName, BaseNode node, Layout layout) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
@@ -796,8 +796,8 @@ public class SWTApplication extends BaseController {
     */
     
     @Override
-    public void displayGrid(String viewName, Grid control) {
-        System.out.println("SWTApplication: displayGrid: viewName=" + viewName + ", control=" + control);
+    public void displayGrid(String viewName, app.node.Grid grid, Layout layout) {
+        System.out.println("SWTApplication: displayGrid: viewName=" + viewName + ", grid=" + grid);
         
         /*
         

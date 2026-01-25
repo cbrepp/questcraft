@@ -18,8 +18,4 @@ public abstract class Group extends BaseNode {
         super(name);
     }
     
-    public Group(String name, Layout layout) {
-        super(name, layout);
-    }
-    
 }

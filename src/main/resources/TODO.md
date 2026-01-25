@@ -6,7 +6,7 @@ Upcoming changes.
 
 1. Refactor the entire application so that it no longer has garbage prototype code and uses a solid foundation with a polished UI and cool visual effects
    1. Refactor app framework to add/change/remove node objects instead of calling individual static methods for each node type
-      1. The node layout should be passed to add/change/remove methods instead of being configured directly on the node
+      1. Fix-- buttons that have been scaled vertically don't center align the graphic
       2. addEffects() should skip the special resizing and layout handling if no node layout
    2. Refactor the Questcraft view
    3. Refactor the splash view
@@ -27,6 +27,7 @@ Upcoming changes.
 
 ### App
 
+* Review if AI can be used to animate portions of the background image of the Application tab at regular intervals by using a timer and overlaying a video/animated gif
 * Refactor SWTApplication to match JavaFXApplication
 * Application should be able to relaunch using a different application controller while preserving the model and view data
 * Prototype a working WebFX (https://docs.webfx.dev/#_getting_started) web page:
@@ -42,6 +43,8 @@ Upcoming changes.
 * Separate this repo into:
     1. Appcraft repo
     2. Questcraft repo (with quest files for each quest)
+* Review whether the idea of nodes can be abstracted out in a naked objects fashion so that the application controller gets to decide the best node to use and the view simply requests a presentation of a component that does a specific thing
+    * ie, the view has a string and wants that string to be rendered so in such and such a fashion so the framework picks a Label.  Or, the view needs the user to be able to interactively trigger an event that's titled by a string so a button is picked automatically.
 
 ### Quest
 

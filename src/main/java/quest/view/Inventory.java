@@ -109,7 +109,7 @@ public class Inventory extends app.view.BaseView implements EventListener {
             activateInventory = Boolean.valueOf(this.quest.variables.get("activate-inventory").toLowerCase());
         }
         
-        Grid gridControl = new Grid(this.name, new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
+        Grid gridControl = new Grid(this.name);
         gridControl.borderPadding = 5;
         gridControl.cornerRadii = 10; // Rounded corners
         gridControl.columns = 0;
@@ -117,17 +117,16 @@ public class Inventory extends app.view.BaseView implements EventListener {
         gridControl.padding = 5;
         gridControl.showBorders = true;
         for (String key : this.quest.book.inventory.keySet()) {
-            Group itemGroup = new VerticalGroup(key, new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
-            Layout itemGroupLayout = new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+            Group itemGroup = new VerticalGroup(key);
             
             InventoryItem bookItem = this.quest.book.inventory.get(key);
 
-            Label emojiControl = new Label(key + " emojis", itemGroupLayout);
+            Label emojiControl = new Label(key + " emojis");
             emojiControl.text = String.join(" ", bookItem.emojis);
             emojiControl.pixelSize = BaseController.EMOJI_SHEET_SIZE;
             itemGroup.nodes.add(emojiControl);
 
-            Link linkControl = new Link(key + " name link", itemGroupLayout);
+            Link linkControl = new Link(key + " name link");
             linkControl.text = key;
             linkControl.eventListener = this;
             linkControl.eventName = itemGroup.name;
@@ -144,7 +143,7 @@ public class Inventory extends app.view.BaseView implements EventListener {
 
                 linkControl.isEnabled = true;
 
-                Label countControl = new Label(key + " count", itemGroupLayout);
+                Label countControl = new Label(key + " count");
                 countControl.text = "x" + questItem.quantity;
                 itemGroup.nodes.add(countControl);
             } else {
@@ -157,7 +156,7 @@ public class Inventory extends app.view.BaseView implements EventListener {
             gridControl.cells.add(itemGroup);
         }
         
-        appController.displayGrid(this.name, gridControl);
+        appController.displayGrid(this.name, gridControl, new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
     }
 
 }

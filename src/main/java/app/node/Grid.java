@@ -24,8 +24,4 @@ public class Grid extends BaseNode {
         super(name);
     }
     
-    public Grid(String name, Layout layout) {
-        super(name, layout);
-    }
-    
 }

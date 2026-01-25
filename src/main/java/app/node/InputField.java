@@ -28,8 +28,4 @@ public class InputField extends BaseNode {
         super(name);
     }
     
-    public InputField(String name, Layout layout) {
-        super(name, layout);
-    }
-    
 }

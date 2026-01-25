@@ -22,8 +22,4 @@ public class Button extends BaseNode {
         super(name);
     }
     
-    public Button(String name, Layout layout) {
-        super(name, layout);
-    }
-    
 }

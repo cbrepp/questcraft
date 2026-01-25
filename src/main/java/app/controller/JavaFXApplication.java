@@ -124,6 +124,8 @@ import javafx.animation.Interpolator;
 import javafx.animation.TranslateTransition;
 import javafx.beans.binding.DoubleBinding;
 import javafx.scene.Group;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.layout.Region;
 import javafx.scene.text.FontSmoothingType;
 
 /**
@@ -153,9 +155,10 @@ public class JavaFXApplication extends BaseController {
     public BaseView lastSelectedView;
     public HashMap<String, List<MediaPlayer>> mediaPlayers = new HashMap();
     public Font monospaceFont;
-    public Map<String, Map<String, Node>> namedFXNodes; // view -> node name -> FX node
-    public Map<String, Map<String, BaseNode>> namedNodes; // view -> node name -> app (generic) node
-    public Map<String, Map<String, String>> parentNodes; // view -> node name -> parent node name
+    public Map<String, Map<String, Node>> namedFXNodes; // view name -> node name -> FX node
+    public Map<String, Map<String, BaseNode>> namedNodes; // view name -> node name -> app (generic) node
+    public Map<String, Map<String, Layout>> nodeLayouts; // view name -> node name -> layout
+    public Map<String, Map<String, String>> parentNodes; // view name -> node name -> parent node name
     public BaseView parentView;
     public Coordinates primaryDimensions;
     public Scene primaryScene;
@@ -319,6 +322,7 @@ public class JavaFXApplication extends BaseController {
         this.namedFXNodes = new HashMap();
         this.namedNodes = new HashMap();
         this.parentNodes = new HashMap();
+        this.nodeLayouts = new HashMap();
             
         // Init a font for all text areas and buttons to use
         this.monospaceFont = Font.font("Consolas", FontWeight.NORMAL, adjustFontSizeForDPI(DEFAULT_FONT_SIZE));
@@ -485,10 +489,11 @@ public class JavaFXApplication extends BaseController {
         // Capture the parent name before the registry gets cleaned up
         String parentName = this.parentNodes.get(viewName).get(node.name);
         
+        Layout nodeLayout = this.nodeLayouts.get(viewName).get(node.name);
         this.removeFXNode(viewName, node, fxNode);
 
         if (!node.effects.isEmpty()) {
-            this.removeEffects(viewName, node, parentName, fxNode);
+            this.removeEffects(viewName, parentName, node, nodeLayout, fxNode);
         }
     }
     
@@ -524,6 +529,7 @@ public class JavaFXApplication extends BaseController {
         this.namedNodes.get(viewName).remove(node.name);
         this.namedFXNodes.get(viewName).remove(node.name);
         this.parentNodes.get(viewName).remove(node.name);
+        this.nodeLayouts.get(viewName).remove(node.name);
 
         // If the control is a button with a key binding remove the event filter from the scene
         if (this.keyBindings.containsKey(fxNode)) {
@@ -766,6 +772,7 @@ public class JavaFXApplication extends BaseController {
             this.namedFXNodes.get(view.name).put(view.name, content);
             this.parentNodes.put(view.name, new HashMap());
             this.namedNodes.put(view.name, new HashMap());
+            this.nodeLayouts.put(view.name, new HashMap());
         }
         
         // Add overlay pane AFTER HTMLEditor as StackPane displays its contents back-to-front
@@ -851,17 +858,17 @@ public class JavaFXApplication extends BaseController {
     }
     */
     
-    public static void positionNode(BaseNode node, Node fxNode, Pane fxParent) {
-        logger.log(Level.INFO, "Entered: viewName={0}, node={1}, fxNode={2}, fxParent={3}", new Object[]{node, fxNode, fxParent});
+    public static void positionNode(Pane fxParent, BaseNode node, Layout layout, Node fxNode) {
+        logger.log(Level.INFO, "Entered: fxParent={0}, node={1}, layout={2}, fxNode={3}", new Object[]{fxParent, node, layout, fxNode});
         
-        if (node.layout == null) {
+        if (layout == null) {
             logger.log(Level.INFO, "No layout, node will be managed by parent");
             return;
         }
         
         double nodeWidth = fxNode.getBoundsInLocal().getWidth();
         double parentWidth = fxParent.getPrefWidth();
-        Double x = calculateNodeX(node.layout.horizontalAlignment, node.layout.position.x, parentWidth, nodeWidth);        
+        Double x = calculateNodeX(layout.horizontalAlignment, layout.position.x, parentWidth, nodeWidth);        
         if (x != null) {
             // Prevent placing the child node directly on the right edge of the parent node to prevent issues
             if ((nodeWidth < parentWidth - 1) && ((x + nodeWidth) >= parentWidth - 1)) {
@@ -873,7 +880,7 @@ public class JavaFXApplication extends BaseController {
         
         double nodeHeight = fxNode.getBoundsInLocal().getHeight();
         double parentHeight = fxParent.getPrefHeight();
-        Double y = calculateNodeY(node.layout.verticalAlignment, node.layout.position.y, parentHeight, nodeHeight);    
+        Double y = calculateNodeY(layout.verticalAlignment, layout.position.y, parentHeight, nodeHeight);    
         if (y != null) {
             // Prevent placing the child node directly on the bottom edge of the parent node to prevent issues
             if ((nodeHeight < parentHeight - 1) && ((y + nodeHeight) >= parentHeight - 1)) {
@@ -1001,8 +1008,8 @@ public class JavaFXApplication extends BaseController {
     }
     */
     
-    public Node addEffects(String viewName, app.node.BaseNode node, String parentName, Node fxNode, app.Color offsetColor) {
-        logger.log(Level.INFO, "Entered: viewName={0}, node={1}, parentName={2}, fxNode={3}, offsetColor={4}", new Object[]{viewName, node, parentName, fxNode, offsetColor});
+    public Node addEffects(String viewName, String parentName, app.node.BaseNode node, Layout layout, Node fxNode, app.Color offsetColor) {
+        logger.log(Level.INFO, "Entered: viewName={0}, parentName={1}, node={2}, layout={3}, fxNode={4}, offsetColor={5}", new Object[]{viewName, parentName, node, layout, fxNode, offsetColor});
         
         if ((node.effects == null) || (node.effects.isEmpty())) {
             logger.log(Level.INFO, "No effects, nothing to do");
@@ -1047,7 +1054,12 @@ public class JavaFXApplication extends BaseController {
                     double nodeHeight = fxWrapperNode.prefHeight(-1);
                     
                     Pane fxParent = (Pane) this.namedFXNodes.get(viewName).get(parentName); // TODO - This effect should only be supported when the parent is a pane
-                    Layout nodeLayout = node.layout;
+                    Layout originalLayout;
+                    if (layout == null) {
+                        originalLayout = null;
+                    } else {
+                        originalLayout = layout.copy();
+                    }
                     
                     logger.log(Level.FINE, "Measured effects wrapper: width={0}, height={1}", new Object[]{nodeWidth, nodeHeight});
                     TranslateTransition slide = new TranslateTransition(Duration.seconds(transitionEffect.duration), fxNode);
@@ -1057,11 +1069,12 @@ public class JavaFXApplication extends BaseController {
                         case FROM_LEFT -> {
                             // Increase the wrapper's width by the intended x-coordinate for the child node so the wrapper can stretch to the left edge of the parent
                             double parentWidth = fxParent.getPrefWidth();
-                            Double nodeX = calculateNodeX(node.layout.horizontalAlignment, node.layout.position.x, parentWidth, nodeWidth);
+                            Double nodeX = calculateNodeX(layout.horizontalAlignment, layout.position.x, parentWidth, nodeWidth);
                             double wrapperWidth = nodeWidth + nodeX;
                             fxWrapperNode.setPrefWidth(wrapperWidth);
                             // Anchor the wrapper to the left edge of the parent
-                            node.layout = new Layout(new RelativeCoordinates(0.0, nodeLayout.position.y), HorizontalAlignment.LEFT, nodeLayout.verticalAlignment);
+                            layout.position = new RelativeCoordinates(0.0, layout.position.y);
+                            layout.horizontalAlignment = HorizontalAlignment.LEFT;
                             if (transitionEffect.getStage() == SlideTransition.Stage.ENTERING) {
                                 fxNode.setTranslateX(-nodeWidth);
                                 slide.setFromX(-nodeWidth);
@@ -1075,11 +1088,12 @@ public class JavaFXApplication extends BaseController {
                         case FROM_RIGHT -> {
                             // Increase the wrapper's width to the difference between the parent's width and the intended x-coordinate for the child node so the wrapper can stretch to the right edge of the parent
                             double parentWidth = fxParent.getPrefWidth();
-                            Double nodeX = calculateNodeX(node.layout.horizontalAlignment, node.layout.position.x, parentWidth, nodeWidth);
+                            Double nodeX = calculateNodeX(layout.horizontalAlignment, layout.position.x, parentWidth, nodeWidth);
                             double wrapperWidth = parentWidth - nodeX;
                             fxWrapperNode.setPrefWidth(wrapperWidth);
                             // Anchor the wrapper to the right edge of the parent
-                            node.layout = new Layout(new RelativeCoordinates(1.0, nodeLayout.position.y), HorizontalAlignment.RIGHT, nodeLayout.verticalAlignment);
+                            layout.position = new RelativeCoordinates(1.0, layout.position.y);
+                            layout.horizontalAlignment = HorizontalAlignment.RIGHT;
                             if (transitionEffect.getStage() == SlideTransition.Stage.ENTERING) {
                                 fxNode.setTranslateX(wrapperWidth);
                                 slide.setFromX(wrapperWidth);
@@ -1093,11 +1107,12 @@ public class JavaFXApplication extends BaseController {
                         case FROM_TOP -> {
                             // Increase the wrapper's height by the intended y-coordinate for the child node so the wrapper can stretch to the top edge of the parent
                             double parentHeight = fxParent.getPrefHeight();
-                            Double nodeY = calculateNodeY(node.layout.verticalAlignment, node.layout.position.y, parentHeight, nodeHeight);
+                            Double nodeY = calculateNodeY(layout.verticalAlignment, layout.position.y, parentHeight, nodeHeight);
                             double wrapperHeight = nodeHeight + nodeY;
                             fxWrapperNode.setPrefHeight(wrapperHeight);
                             // Anchor the wrapper to the top edge of the parent
-                            node.layout = new Layout(new RelativeCoordinates(nodeLayout.position.x, 0.0), nodeLayout.horizontalAlignment, VerticalAlignment.TOP);
+                            layout.position = new RelativeCoordinates(layout.position.x, 0.0);
+                            layout.verticalAlignment = VerticalAlignment.TOP;
                             if (transitionEffect.getStage() == SlideTransition.Stage.ENTERING) {
                                 fxNode.setTranslateY(-nodeHeight);
                                 slide.setFromY(-nodeHeight);
@@ -1111,11 +1126,12 @@ public class JavaFXApplication extends BaseController {
                         case FROM_BOTTOM -> {
                             // Increase the wrapper's height to the difference between the parent's height and the intended y-coordinate for the child node so the wrapper can stretch to the bottom edge of the parent
                             double parentHeight = fxParent.getPrefHeight();
-                            Double nodeY = calculateNodeY(node.layout.verticalAlignment, node.layout.position.y, parentHeight, nodeHeight);
+                            Double nodeY = calculateNodeY(layout.verticalAlignment, layout.position.y, parentHeight, nodeHeight);
                             double wrapperHeight = parentHeight - nodeY;
                             fxWrapperNode.setPrefHeight(wrapperHeight);
                             // Anchor the wrapper to the bottom edge of the parent
-                            node.layout = new Layout(new RelativeCoordinates(nodeLayout.position.x, 1.0), nodeLayout.horizontalAlignment, VerticalAlignment.BOTTOM);
+                            layout.position = new RelativeCoordinates(layout.position.x, 1.0);
+                            layout.verticalAlignment = VerticalAlignment.BOTTOM;
                             if (transitionEffect.getStage() == SlideTransition.Stage.ENTERING) {
                                 fxNode.setTranslateY(wrapperHeight);
                                 slide.setFromY(wrapperHeight);
@@ -1140,8 +1156,7 @@ public class JavaFXApplication extends BaseController {
                         // When the transition play is complete, re-position the child outside of the wrapper and added it directly to the parent
                         this.removeFXNode(viewName, node, finalWrapperNode); // Remove the wrapper
                         if (transitionEffect.getStage() == SlideTransition.Stage.READY) {
-                            node.layout = nodeLayout; // Restore the original layout relative to the parent
-                            this.publishNode(viewName, node, parentName, null); // Re-publish the node to directly add it to its parent
+                            this.publishNode(viewName, parentName, node, originalLayout, null); // Re-publish the node to directly add it to its parent (using the original layout)
                         }
                         // Also, publish an event so that the button can be disabled during the transition and re-enabled upon completion
                         transitionEffect.eventListener.onEvent(NODE_TRANSITIONED_EVENT, node.name);
@@ -1161,8 +1176,8 @@ public class JavaFXApplication extends BaseController {
         return fxNode;
     }
     
-    public void removeEffects(String viewName, BaseNode node, String parentName, Node fxNode) {
-        logger.log(Level.INFO, "Entered: viewName={0}, node={1}, parentName={2}, fxNode={3}", new Object[]{viewName, node, parentName, fxNode});
+    public void removeEffects(String viewName, String parentName, BaseNode node, Layout layout, Node fxNode) {
+        logger.log(Level.INFO, "Entered: viewName={0}, parentName={1}, node={2}, layout={3}, fxNode={4}", new Object[]{viewName, parentName, node, layout, fxNode});
         
         if ((node.effects == null) || (node.effects.isEmpty())) {
             logger.log(Level.INFO, "No effects, nothing to do");
@@ -1177,7 +1192,7 @@ public class JavaFXApplication extends BaseController {
                     transitionEffect.onEvent(NODE_TRANSITIONED_EVENT, SlideTransition.Stage.EXITING);
                     // Re-add the node without it's fx self which will call back into addEffects() which will see
                     // the advanced stage on the effect and know to remove it with a slide out.
-                    this.publishNode(viewName, node, parentName, null);
+                    this.publishNode(viewName, parentName, node, layout, null);
                 }
             } else {
                 logger.log(Level.SEVERE, "Class is not a supported effect class: {0}", effectClass.getSimpleName());
@@ -1343,7 +1358,7 @@ public class JavaFXApplication extends BaseController {
         fieldNode.pixelSize = node.pixelSize;
         fieldNode.textColor = node.textColor;
         fieldNode.textFont = node.textFont;
-        this.addNode(viewName, fieldNode, node.group.name);
+        this.addNode(viewName, node.group.name, fieldNode, null);
         
         app.node.Button buttonNode = new app.node.Button(node.group.name + " button");
         buttonNode.backgroundColor = node.childBackgroundColor;
@@ -1355,7 +1370,7 @@ public class JavaFXApplication extends BaseController {
         buttonNode.text = node.buttonText;
         buttonNode.textColor = node.textColor;
         buttonNode.textFont = node.textFont;
-        this.addNode(viewName, buttonNode, node.group.name);
+        this.addNode(viewName, node.group.name, buttonNode, null);
         
         return fxBox;
     }
@@ -1476,6 +1491,8 @@ public class JavaFXApplication extends BaseController {
         }
         
         // Use a graphic instead of text to support formatted text
+        fxButton.setContentDisplay(ContentDisplay.LEFT);
+        fxButton.setPadding(new Insets(5)); // Standard padding
         fxButton.setAlignment(Pos.CENTER);
         TextFlow textFlow = this.stringToTextFlow(node.text, font, textColor, pixelSize, fontStyle, FontSmoothingType.LCD);
         textFlow.setTextAlignment(TextAlignment.CENTER);
@@ -1484,8 +1501,6 @@ public class JavaFXApplication extends BaseController {
         if (node.backgroundColor != null) {
             Color fxBackgroundColor = Color.rgb(node.backgroundColor.red, node.backgroundColor.green, node.backgroundColor.blue);
             fxButton.setBackground(new Background(new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY)));
-        } else {
-            //fxButton.setBackground(Background.EMPTY); // Transparent        
         }
         
         if (!isNew) {
@@ -1718,8 +1733,8 @@ public class JavaFXApplication extends BaseController {
     }
     
     @Override
-    public void changeNode(String viewName, BaseNode node) {
-        logger.log(Level.INFO, "Entered: viewName={0}, node={1}", new Object[]{viewName, node});
+    public void changeNode(String viewName, BaseNode node, Layout layout) {
+        logger.log(Level.INFO, "Entered: viewName={0}, node={1}, layout={2}", new Object[]{viewName, node, layout});
         String parentName = this.parentNodes.get(viewName).get(node.name);
         if (parentName == null) {
             logger.log(Level.WARNING, "Parent not found for node {0}", node.name);
@@ -1730,17 +1745,21 @@ public class JavaFXApplication extends BaseController {
             logger.log(Level.WARNING, "Node {0} not found", node.name);
             return;
         }
-        this.publishNode(viewName, node, parentName, fxNode);
+        if (layout == null) {
+            // As a convenience, re-use the current layout
+            layout = this.nodeLayouts.get(viewName).get(node.name);
+        }
+        this.publishNode(viewName, parentName, node, layout, fxNode);
     }
     
     @Override
-    public void addNode(String viewName, BaseNode node, String parentName) {
-        logger.log(Level.INFO, "Entered: viewName={0}, node={1}, parentName={2}", new Object[]{viewName, node, parentName});
-        this.publishNode(viewName, node, parentName, null);
+    public void addNode(String viewName, String parentName, BaseNode node, Layout layout) {
+        logger.log(Level.INFO, "Entered: viewName={0}, parentName={1}, node={2}, layout={3}", new Object[]{viewName, parentName, node, layout});
+        this.publishNode(viewName, parentName, node,layout, null);
     }
     
-    public void publishNode(String viewName, BaseNode node, String parentName, Node fxNode) {
-        logger.log(Level.INFO, "Entered: viewName={0}, node={1}, parentName={2}, fxChild={3}", new Object[]{viewName, node, parentName, fxNode});
+    public void publishNode(String viewName, String parentName, BaseNode node, Layout layout, Node fxNode) {
+        logger.log(Level.INFO, "Entered: viewName={0}, parentName={1}, node={2}, layout={3}, fxNode={4}", new Object[]{viewName, parentName, node, layout, fxNode});
         
         // TODO - Probably need a default application-level background color
         // TODO - Maintain a class-level map of child name key to parent object and traverse that to get the real background color
@@ -1820,12 +1839,12 @@ public class JavaFXApplication extends BaseController {
         } else if (childClass.equals(app.node.HorizontalGroup.class)) {
             fxNode = this.newGroup(viewName, (app.node.HorizontalGroup) node, (Pane) fxNode, offsetColor);
             for (BaseNode childNode : ((app.node.Group) node).nodes) {
-                this.addNode(viewName, childNode, node.name);
+                this.addNode(viewName, node.name, childNode, null);
             }
         } else if (childClass.equals(app.node.VerticalGroup.class)) {
             fxNode = this.newGroup(viewName, (app.node.VerticalGroup) node, (Pane) fxNode, offsetColor);
             for (BaseNode childNode : ((app.node.Group) node).nodes) {
-                this.addNode(viewName, childNode, node.name);
+                this.addNode(viewName, node.name, childNode, null);
             }
         } else {
             logger.log(Level.SEVERE, "Class is not a supported child class: {0}", childClass.getSimpleName());
@@ -1847,7 +1866,7 @@ public class JavaFXApplication extends BaseController {
         
         if ((node.effects != null) && (!node.effects.isEmpty())) {
             // Effects might require a wrapper so handle effects now before adding the node to its parent so that a wrapper can be added if needed
-            fxNode = this.addEffects(viewName, node, parentName, fxNode, offsetColor);
+            fxNode = this.addEffects(viewName, parentName, node, layout, fxNode, offsetColor);
         }
         
         // TODO - This is ugly.  Parent nodes do not have a base type (Parent) with a public getChildren() method so each parent class needs to be handled.
@@ -1857,7 +1876,7 @@ public class JavaFXApplication extends BaseController {
                 pane.getChildren().add(fxNode);
             }
             pane.layout();
-            this.positionNode(node, fxNode, pane);
+            positionNode(pane, node, layout, fxNode);
         } else if (parentControlClass.equals(StackPane.class)) {
             StackPane pane = (StackPane) fxParent;
             if (isNew) {
@@ -1883,6 +1902,7 @@ public class JavaFXApplication extends BaseController {
         this.namedNodes.get(viewName).put(node.name, node);
         this.namedFXNodes.get(viewName).put(node.name, fxNode);
         this.parentNodes.get(viewName).put(node.name, parentName);
+        this.nodeLayouts.get(viewName).put(node.name, layout);
         
         double width = fxNode.prefWidth(-1); //fxChild.getBoundsInLocal().getWidth();
         double relativeWidth = width / parentWidth;
@@ -1899,8 +1919,10 @@ public class JavaFXApplication extends BaseController {
     
     // TODO - Make this newGrid() and add to addNode()
     @Override
-    public void displayGrid(String viewName, app.node.Grid grid) {
-        System.out.println("JavaFXApplication: displayGrid: viewName=" + viewName + ", grid=" + grid);
+    public void displayGrid(String viewName, app.node.Grid grid, Layout layout) {
+        logger.log(Level.INFO, "Entered: viewName={0}, grid={1}, layout={2}", new Object[]{viewName, grid, layout});
+        
+        // TODO - Implement layout.  Currently, the grid expands to fill the view.
         
         BaseView view = this.views.get(viewName);
         app.Color genericOffsetColor = view.backgroundColor.getOffset();
@@ -2016,7 +2038,7 @@ public class JavaFXApplication extends BaseController {
             }
             
             this.namedFXNodes.get(viewName).put(cellGroup.name + " cell", cell);
-            this.addNode(viewName, cellGroup, cellGroup.name + " cell");
+            this.addNode(viewName, cellGroup.name + " cell", cellGroup, null);
             //Pane box = newGroup(viewName, cellGroup, genericOffsetColor);
             //cell.getChildren().add(box);
             

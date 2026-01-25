@@ -49,13 +49,16 @@ public class Application extends app.view.BaseView {
     
     public final static String BUTTON_FONT = Font.ROBOTO_BLACK;
     public final static String CHANGELOG_EVENT = "toggle changelog";
+    public final static Double CHANGELOG_HEIGHT = 0.5;
     public final static String CHANGELOG_LABEL = "changelog";
     public final static String CREATE_EVENT = "create";
     public final static String DISPLAY_BUTTONS_TIMER = "display buttons";
     public final static String FILE_EVENT = "file";
+    public final static String LEFT_ARROW = "\u2B05"; // Unicode emotion for heavy left arrow
     public final static String MONO_FONT = Font.ROBOTO_MONO;
     public final static String NORMAL_FONT = Font.ROBOTO;
     public final static String OPTIONS_EVENT = "options";
+    public final static String RIGHT_ARROW = "\u27A1"; // Unicode emotion for heavy right arrow
     public final static String SELECT_EVENT = "select";
     public final static String TITLE_FONT = Font.MINECRAFT;
     public final static String QUIT_EVENT = "quit";
@@ -89,55 +92,55 @@ public class Application extends app.view.BaseView {
         switch (eventName) {
             case DISPLAY_BUTTONS_TIMER -> {
                 this.appController.removeTimer(DISPLAY_BUTTONS_TIMER);
-                this.appController.playSound("/assets/sounds/questcraft.mp3", true); // The party don't start 'til the buttons drop in
-                this.displayButtons();
+                this.appController.playSound("/assets/sounds/questcraft.mp3", true); // The party don't start 'til the menu drops in
+                this.displayMenu();
             }
             case NODE_TRANSITIONED_EVENT -> {
                 if (eventValue.equals(CHANGELOG_LABEL)) {
                     // The changelog transition completed
                     if (this.changelogTransition.getStage() == SlideTransition.Stage.READY) {
-                        this.changelogButton.text = ">";
+                        this.changelogButton.text = RIGHT_ARROW;
                         this.changelogButton.isEnabled = true; // Not multi-use button, so re-enable
-                        this.appController.changeNode(this.name, this.changelogButton);
+                        this.appController.changeNode(this.name, this.changelogButton, null);
                     } else if (this.changelogTransition.getStage() == SlideTransition.Stage.COMPLETE) {
-                        this.changelogButton.text = "<";
+                        this.changelogButton.text = LEFT_ARROW;
                         this.changelogButton.isEnabled = true; // Not multi-use button, so re-enable
-                        this.appController.changeNode(this.name, this.changelogButton);
+                        this.appController.changeNode(this.name, this.changelogButton, null);
                     }
                 } else if (eventValue.equals(QUIT_EVENT)) {
                     this.quitButton.effects.clear();
                     this.quitButton.effects.add(new Glow(Color.DARK_MAGENTA));
-                    this.appController.changeNode(this.name, this.quitButton);
+                    this.appController.changeNode(this.name, this.quitButton, null);
                 } else if (eventValue.equals(CREATE_EVENT)) {
                     this.createButton.effects.clear();
                     this.createButton.effects.add(new Glow(Color.DARK_MAGENTA));
-                    this.appController.changeNode(this.name, this.createButton);
+                    this.appController.changeNode(this.name, this.createButton, null);
                 } else if (eventValue.equals(OPTIONS_EVENT)) {
                     this.optionsButton.effects.clear();
                     this.optionsButton.effects.add(new Glow(Color.DARK_MAGENTA));
-                    this.appController.changeNode(this.name, this.optionsButton);
+                    this.appController.changeNode(this.name, this.optionsButton, null);
                 } else if (eventValue.equals(SELECT_EVENT)) {
                     this.selectButton.effects.clear();
                     this.selectButton.effects.add(new Glow(Color.DARK_MAGENTA));
-                    this.appController.changeNode(this.name, this.selectButton);
+                    this.appController.changeNode(this.name, this.selectButton, null);
                 }
             }
             case CHANGELOG_EVENT -> {
-                if (this.changelogButton.text.equals("<")) {
+                if (this.changelogButton.text.equals(LEFT_ARROW)) {
                     // Display the changelog in a scrolling region centered on the right with a spacer separating it from the quit button.
                     // Event NODE_TRANSITIONED_EVENT will be raised when the event is complete.
-                    this.changelogLabel = new ScrollingLabel(CHANGELOG_LABEL, new Layout(new RelativeCoordinates(changelogButton.getBounds().coordinates.x, 0.0), HorizontalAlignment.RIGHT, VerticalAlignment.CENTER));
+                    this.changelogLabel = new ScrollingLabel(CHANGELOG_LABEL);
                     this.changelogLabel.text = this.changelog;
                     this.changelogLabel.pixelSize = 10.0;
                     this.changelogLabel.textColor = Color.BLACK;
                     this.changelogLabel.textFont = MONO_FONT;
                     this.changelogLabel.scaleX = this.changelogButton.getBounds().coordinates.x - (this.quitButton.getBounds().coordinates.x + this.quitButton.getBounds().width) - 0.02; // Space between the right edge of the button and the right edge of the changelog button (with .04 padding)
-                    this.changelogLabel.scaleY = 0.5;
+                    this.changelogLabel.scaleY = CHANGELOG_HEIGHT;
                     this.changelogTransition = new SlideTransition(SlideTransition.Path.FROM_RIGHT, this); // Slide the label from the right
                     this.changelogLabel.effects.add(this.changelogTransition);
-                    this.appController.addNode(this.name, this.changelogLabel, this.name);
+                    this.appController.addNode(this.name, this.name, this.changelogLabel, new Layout(new RelativeCoordinates(changelogButton.getBounds().coordinates.x, 0.0), HorizontalAlignment.RIGHT, VerticalAlignment.CENTER));
                 } else {
-                    this.changelogButton.text = "<";
+                    this.changelogButton.text = LEFT_ARROW;
                     this.appController.removeNode(this.name, this.changelogLabel.name);
                 }
             }
@@ -170,14 +173,14 @@ public class Application extends app.view.BaseView {
 
                 // Display "Now Playing" info
                 this.appController.removeNode(this.name, "now playing");
-                Label nowPlayingLabel = new Label("now playing", this.nowPlayingLayout);
+                Label nowPlayingLabel = new Label("now playing");
                 nowPlayingLabel.text = "Now Playing...\n" + this.bookFile.title + "\n" + "by " + this.bookFile.author + "\n" + this.bookFile.updateDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.getDefault()));
                 nowPlayingLabel.pixelSize = 26.0;
                 nowPlayingLabel.textColor = Color.DARK_MAGENTA;
                 nowPlayingLabel.textFont = NORMAL_FONT;
                 nowPlayingLabel.textStyle = FontStyle.BOLD;
                 nowPlayingLabel.backgroundColor = Color.WHITE;
-                this.appController.addNode(this.name, nowPlayingLabel, this.name);
+                this.appController.addNode(this.name, this.name, nowPlayingLabel, this.nowPlayingLayout);
 
                 this.publishEvent("book", bookFile);                
             } default -> System.err.println("Application: onEvent: Unsupported event");
@@ -203,74 +206,75 @@ public class Application extends app.view.BaseView {
     public void display() {
         logger.log(Level.INFO, "Entered");
         
-        Image spiderAnimation = new Image("spider", new Layout(new RelativeCoordinates(1.0, 0.0), HorizontalAlignment.RIGHT, VerticalAlignment.TOP));
+        Image spiderAnimation = new Image("spider");
         spiderAnimation.file = "/assets/images/spider.gif";
-        this.appController.addNode(this.name, spiderAnimation, this.name);
+        this.appController.addNode(this.name, this.name, spiderAnimation, new Layout(new RelativeCoordinates(1.0, 0.0), HorizontalAlignment.RIGHT, VerticalAlignment.TOP));
         
-        this.titleLabel = new Label("title", new Layout(new RelativeCoordinates(0.0, 0.13), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
+        this.titleLabel = new Label("title");
         titleLabel.text = "QUESTCRAFT";
         titleLabel.pixelSize = 86.0;
         titleLabel.textColor = Color.SHADOW;
         titleLabel.textFont = TITLE_FONT;
         titleLabel.textStyle = FontStyle.BOLD;
-        this.appController.addNode(this.name, this.titleLabel, this.name);
+        this.appController.addNode(this.name, this.name, this.titleLabel, new Layout(new RelativeCoordinates(0.0, 0.13), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
         
-        Label subtitleLabel = new Label("subtitle", new Layout(new RelativeCoordinates(0.0, 0.24), HorizontalAlignment.CENTER, VerticalAlignment.TOP));        
+        Label subtitleLabel = new Label("subtitle");        
         subtitleLabel.text = "- JAVA  EDITION -";
         subtitleLabel.pixelSize = 38.0;
         subtitleLabel.textColor = Color.SHADOW;
         subtitleLabel.textFont = TITLE_FONT;
         subtitleLabel.textStyle = FontStyle.BOLD;
-        this.appController.addNode(this.name, subtitleLabel, this.name);
+        this.appController.addNode(this.name, this.name, subtitleLabel, new Layout(new RelativeCoordinates(0.0, 0.24), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
 
-        Label flavorTextLabel = new Label("flavor", new Layout(new RelativeCoordinates(0.0, 0.31), HorizontalAlignment.CENTER, VerticalAlignment.TOP));        
+        Label flavorTextLabel = new Label("flavor");        
         flavorTextLabel.text = this.flavorText;
         flavorTextLabel.pixelSize = 16.0;
         flavorTextLabel.textColor = Color.DARK_MAGENTA;
         flavorTextLabel.textFont = TITLE_FONT;
         flavorTextLabel.textStyle = FontStyle.ITALIC;
-        this.appController.addNode(this.name, flavorTextLabel, this.name);
+        this.appController.addNode(this.name, this.name, flavorTextLabel, new Layout(new RelativeCoordinates(0.0, 0.31), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
         
         if (this.changelog != null) {
             String currentVersion = Changelog.findFirstReleasedVersion(this.changelog);
             if (currentVersion != null) {
                 currentVersion = " " + currentVersion + " "; // Pad with spaces
                 // Display the current version in the lower left-hand corner
-                Label versionLabel = new Label("version", new Layout(new RelativeCoordinates(0.01, 0.99), HorizontalAlignment.LEFT, VerticalAlignment.BOTTOM));
+                Label versionLabel = new Label("version");
                 versionLabel.text = currentVersion;
                 versionLabel.pixelSize = 14.0;
                 versionLabel.textColor = Color.SHADOW;
                 versionLabel.textFont = NORMAL_FONT;
                 versionLabel.backgroundColor = Color.WHITE;
-                this.appController.addNode(this.name, versionLabel, this.name);
+                this.appController.addNode(this.name, this.name, versionLabel, new Layout(new RelativeCoordinates(0.01, 0.99), HorizontalAlignment.LEFT, VerticalAlignment.BOTTOM));
             }
             
-            this.changelogButton = new Button(CHANGELOG_EVENT, new Layout(new RelativeCoordinates(1.0, 0.0), HorizontalAlignment.RIGHT, VerticalAlignment.CENTER));
+            this.changelogButton = new Button(CHANGELOG_EVENT);
             this.changelogButton.eventListener = this;
             this.changelogButton.eventName = CHANGELOG_EVENT;
             this.changelogButton.pixelSize = 20.0;
             this.changelogButton.textColor = Color.SHADOW;
-            this.changelogButton.text = "<";
+            this.changelogButton.text = LEFT_ARROW;
             this.changelogButton.isMultiUse = false;
-            changelogButton.textFont = BUTTON_FONT;
-            this.appController.addNode(this.name, this.changelogButton, this.name);
+            this.changelogButton.textFont = BUTTON_FONT;
+            this.changelogButton.scaleY = CHANGELOG_HEIGHT;
+            this.appController.addNode(this.name, this.name, this.changelogButton, new Layout(new RelativeCoordinates(1.0, 0.0), HorizontalAlignment.RIGHT, VerticalAlignment.CENTER));
         }
 
-        Label comingSoonLabel = new Label("coming soon", new Layout(new RelativeCoordinates(0.99, 0.99), HorizontalAlignment.RIGHT, VerticalAlignment.BOTTOM));        
+        Label comingSoonLabel = new Label("coming soon");        
         comingSoonLabel.text = "Coming soon... TWIN QUEST: DoW Chapter 2";
         comingSoonLabel.pixelSize = 14.0;
         comingSoonLabel.textColor = Color.SHADOW;
         comingSoonLabel.textFont = NORMAL_FONT;
         comingSoonLabel.textStyle = FontStyle.ITALIC;
-        this.appController.addNode(this.name, comingSoonLabel, this.name);
+        this.appController.addNode(this.name, this.name, comingSoonLabel, new Layout(new RelativeCoordinates(0.99, 0.99), HorizontalAlignment.RIGHT, VerticalAlignment.BOTTOM));
         
         this.appController.setTimer(DISPLAY_BUTTONS_TIMER, 0.5, this);
     }
     
-    public void displayButtons() {
+    public void displayMenu() {
         logger.log(Level.INFO, "Entered");
                         
-        this.selectButton = new Button(SELECT_EVENT, new Layout(new RelativeCoordinates(0.0, 0.38), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
+        this.selectButton = new Button(SELECT_EVENT);
         this.selectButton.eventListener = this;
         this.selectButton.eventName = SELECT_EVENT;
         this.selectButton.pixelSize = 26.0;
@@ -279,9 +283,9 @@ public class Application extends app.view.BaseView {
         this.selectButton.textFont = BUTTON_FONT;
         this.selectButton.scaleX = this.titleLabel.getBounds().width;
         this.selectButton.effects.add(new SlideTransition(SlideTransition.Path.FROM_TOP, this, 1.5)); // Slide the button from the top in 1.5 seconds
-        this.appController.addNode(this.name, this.selectButton, this.name);
+        this.appController.addNode(this.name, this.name, this.selectButton, new Layout(new RelativeCoordinates(0.0, 0.38), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
 
-        this.createButton = new Button(CREATE_EVENT, new Layout(new RelativeCoordinates(0.0, 0.46), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
+        this.createButton = new Button(CREATE_EVENT);
         this.createButton.eventListener = this;
         this.createButton.eventName = CREATE_EVENT;
         this.createButton.pixelSize = 26.0;
@@ -290,9 +294,9 @@ public class Application extends app.view.BaseView {
         this.createButton.textFont = BUTTON_FONT;
         this.createButton.scaleX = this.titleLabel.getBounds().width;
         this.createButton.effects.add(new SlideTransition(SlideTransition.Path.FROM_TOP, this, 1.5)); // Slide the button from the top in 1.5 seconds
-        this.appController.addNode(this.name, this.createButton, this.name);
+        this.appController.addNode(this.name, this.name, this.createButton, new Layout(new RelativeCoordinates(0.0, 0.46), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
         
-        this.optionsButton = new Button(OPTIONS_EVENT, new Layout(new RelativeCoordinates(this.titleLabel.getBounds().coordinates.x, 0.54), HorizontalAlignment.LEFT, VerticalAlignment.TOP));
+        this.optionsButton = new Button(OPTIONS_EVENT);
         this.optionsButton.eventListener = this;
         this.optionsButton.eventName = OPTIONS_EVENT;
         this.optionsButton.pixelSize = 26.0;
@@ -301,9 +305,9 @@ public class Application extends app.view.BaseView {
         this.optionsButton.textFont = BUTTON_FONT;
         this.optionsButton.scaleX = this.titleLabel.getBounds().width * 0.45;
         this.optionsButton.effects.add(new SlideTransition(SlideTransition.Path.FROM_TOP, this, 1.5)); // Slide the button from the top in 1.5 seconds
-        this.appController.addNode(this.name, this.optionsButton, this.name);
+        this.appController.addNode(this.name, this.name, this.optionsButton, new Layout(new RelativeCoordinates(this.titleLabel.getBounds().coordinates.x, 0.54), HorizontalAlignment.LEFT, VerticalAlignment.TOP));
 
-        this.quitButton = new Button(QUIT_EVENT, new Layout(new RelativeCoordinates(this.titleLabel.getBounds().coordinates.x + this.titleLabel.getBounds().width, 0.54), HorizontalAlignment.RIGHT, VerticalAlignment.TOP));
+        this.quitButton = new Button(QUIT_EVENT);
         this.quitButton.eventListener = this;
         this.quitButton.eventName = QUIT_EVENT;
         this.quitButton.pixelSize = 26.0;
@@ -312,7 +316,7 @@ public class Application extends app.view.BaseView {
         this.quitButton.textFont = BUTTON_FONT;
         this.quitButton.scaleX = this.titleLabel.getBounds().width * 0.45;
         this.quitButton.effects.add(new SlideTransition(SlideTransition.Path.FROM_TOP, this, 1.5)); // Slide the button from the top in 1.5 seconds
-        this.appController.addNode(this.name, this.quitButton, this.name);
+        this.appController.addNode(this.name, this.name, this.quitButton, new Layout(new RelativeCoordinates(this.titleLabel.getBounds().coordinates.x + this.titleLabel.getBounds().width, 0.54), HorizontalAlignment.RIGHT, VerticalAlignment.TOP));
         
         this.nowPlayingLayout = new Layout(new RelativeCoordinates(0.0, (quitButton.getBounds().coordinates.y + (quitButton.getBounds().height * 4))), HorizontalAlignment.CENTER, VerticalAlignment.TOP);
     }

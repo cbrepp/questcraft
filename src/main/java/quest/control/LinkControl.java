@@ -38,11 +38,11 @@ public class LinkControl extends QuestControl {
         int textLength = linkText.length();
         
         // TODO - Need to pass in relative coordinates
-        Link linkControl = new Link(linkText, new Layout(new RelativeCoordinates(0.25, 0.25), HorizontalAlignment.LEFT, VerticalAlignment.TOP));
+        Link linkControl = new Link(linkText);
         linkControl.text = linkText;
         linkControl.eventListener = this.quest;
         linkControl.eventName = Quest.LINK_EVENT_PREFIX + ":" + linkText;
-        this.quest.appController.addNode(this.quest.name, linkControl, this.quest.name);
+        this.quest.appController.addNode(this.quest.name, this.quest.name, linkControl, new Layout(new RelativeCoordinates(0.25, 0.25), HorizontalAlignment.LEFT, VerticalAlignment.TOP));
         
         //this.quest.appController.displayLink(this.quest.name, Quest.LINK_EVENT_PREFIX + ":" + linkText, "<a>" + linkText + "</a>", row, column, textLength, this.quest);
         this.quest.textColumn = 1;

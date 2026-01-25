@@ -20,8 +20,4 @@ public class Label extends BaseNode {
         super(name);
     }
     
-    public Label(String name, Layout layout) {
-        super(name, layout);
-    }
-    
 }

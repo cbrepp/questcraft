@@ -21,8 +21,4 @@ public class Link extends BaseNode {
         super(name);
     }
     
-    public Link(String name, Layout layout) {
-        super(name, layout);
-    }
-    
 }

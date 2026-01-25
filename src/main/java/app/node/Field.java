@@ -25,8 +25,4 @@ public class Field extends BaseNode {
         super(name);
     }
     
-    public Field(String name, Layout layout) {
-        super(name, layout);
-    }
-    
 }
