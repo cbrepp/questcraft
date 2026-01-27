@@ -6,11 +6,13 @@ Upcoming changes.
 
 1. Refactor the entire application so that it no longer has garbage prototype code and uses a solid foundation with a polished UI and cool visual effects
    1. Refactor app framework to add/change/remove node objects instead of calling individual static methods for each node type
-      1. Fix-- buttons that have been scaled vertically don't center align the graphic
-      2. addEffects() should skip the special resizing and layout handling if no node layout
+      1. addEffects() should skip the special resizing and layout handling if no node layout
+      2. Clean up BaseController by creating a Bootstrap class that contains the BaseController logic used to start the application
+      3. Fix the application title not getting set
    2. Refactor the Questcraft view
    3. Refactor the splash view
    4. Refactor the App view
+      1. The logic to serialize the quests should be moved to a utility class and rewritten to use only objects, not xml
    5. Refactor the Quest view
    6. etc
 2. Make sure revisions work with Mad Quest

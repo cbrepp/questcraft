@@ -1491,8 +1491,11 @@ public class JavaFXApplication extends BaseController {
         }
         
         // Use a graphic instead of text to support formatted text
-        fxButton.setContentDisplay(ContentDisplay.LEFT);
-        fxButton.setPadding(new Insets(5)); // Standard padding
+        fxButton.setContentDisplay(ContentDisplay.CENTER);
+        if (node.scaleY != null) {
+            // TODO - An unfortunate work-around for the label/graphic not vertically aligning when the node is scaled vertically and there is no text
+            fxButton.setText("\u200B"); // Unicode zero-width space
+        }
         fxButton.setAlignment(Pos.CENTER);
         TextFlow textFlow = this.stringToTextFlow(node.text, font, textColor, pixelSize, fontStyle, FontSmoothingType.LCD);
         textFlow.setTextAlignment(TextAlignment.CENTER);

@@ -54,11 +54,11 @@ public class Application extends app.view.BaseView {
     public final static String CREATE_EVENT = "create";
     public final static String DISPLAY_BUTTONS_TIMER = "display buttons";
     public final static String FILE_EVENT = "file";
-    public final static String LEFT_ARROW = "\u2B05"; // Unicode emotion for heavy left arrow
+    public final static String LEFT_ARROW = "\u2190"; // Unicode emotion for left arrow
     public final static String MONO_FONT = Font.ROBOTO_MONO;
     public final static String NORMAL_FONT = Font.ROBOTO;
     public final static String OPTIONS_EVENT = "options";
-    public final static String RIGHT_ARROW = "\u27A1"; // Unicode emotion for heavy right arrow
+    public final static String RIGHT_ARROW = "\u2192"; // Unicode emotion for right arrow
     public final static String SELECT_EVENT = "select";
     public final static String TITLE_FONT = Font.MINECRAFT;
     public final static String QUIT_EVENT = "quit";
