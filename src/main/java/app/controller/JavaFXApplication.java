@@ -1,5 +1,6 @@
 package app.controller;
 
+import app.Bootstrap;
 import app.view.BaseView;
 import app.Coordinates;
 import app.EventListener;
@@ -119,13 +120,11 @@ import javafx.scene.text.TextFlow;
 import javax.imageio.metadata.IIOMetadata;
 import org.w3c.dom.NamedNodeMap;
 import app.view.Animation;
-import java.util.concurrent.TimeUnit;
 import javafx.animation.Interpolator;
 import javafx.animation.TranslateTransition;
 import javafx.beans.binding.DoubleBinding;
 import javafx.scene.Group;
 import javafx.scene.control.ContentDisplay;
-import javafx.scene.layout.Region;
 import javafx.scene.text.FontSmoothingType;
 
 /**
@@ -183,7 +182,7 @@ public class JavaFXApplication extends BaseController {
             args = new String[1];
             args[0] = new Throwable().getStackTrace()[0].getClassName();
         }
-        BaseController.main(args);
+        Bootstrap.main(args);
     }
     
     @Override
@@ -917,7 +916,7 @@ public class JavaFXApplication extends BaseController {
     }
     
     public static Double calculateNodeY(VerticalAlignment alignment, double relativeY, double parentHeight, double nodeHeight) {
-        logger.log(Level.INFO, "Entered: alignment={0}, relativeX={1}, parentWidth={2}, nodeWidth={3}", new Object[]{alignment, relativeY, parentHeight, nodeHeight});
+        logger.log(Level.INFO, "Entered: alignment={0}, relativeY={1}, parentWidth={2}, nodeWidth={3}", new Object[]{alignment, relativeY, parentHeight, nodeHeight});
         
         Double y = null;
         if (alignment == null) {

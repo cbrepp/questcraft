@@ -1,5 +1,6 @@
 package app.controller;
 
+import app.Bootstrap;
 import app.view.BaseView;
 import app.Coordinates;
 import app.EventListener;
@@ -7,7 +8,6 @@ import app.Layout;
 import app.controller.desktop.SoundController;
 import app.dialog.BaseDialog;
 import app.node.BaseNode;
-import app.node.Grid;
 import java.util.List;
 import app.view.Animation;
 
@@ -30,7 +30,7 @@ public class AWTApplication extends BaseController {
             args = new String[1];
             args[0] = new Throwable().getStackTrace()[0].getClassName();
         }
-        BaseController.main(args);
+        Bootstrap.main(args);
     }
     
     @Override

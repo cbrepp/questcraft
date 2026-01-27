@@ -1,15 +1,14 @@
 package app.controller;
 
+import app.Bootstrap;
 import app.view.BaseView;
 import app.Coordinates;
 import app.EventListener;
 import app.HorizontalAlignment;
 import app.Layout;
-import app.RelativeBounds;
 import app.controller.desktop.SoundController;
 import app.dialog.BaseDialog;
 import app.node.BaseNode;
-import app.node.Grid;
 import app.node.Sprite;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -112,7 +111,7 @@ public class SWTApplication extends BaseController {
             args = new String[1];
             args[0] = new Throwable().getStackTrace()[0].getClassName();
         }
-        BaseController.main(args);
+        Bootstrap.main(args);
     }
     
     @Override

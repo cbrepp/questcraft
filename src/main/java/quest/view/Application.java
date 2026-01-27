@@ -54,11 +54,11 @@ public class Application extends app.view.BaseView {
     public final static String CREATE_EVENT = "create";
     public final static String DISPLAY_BUTTONS_TIMER = "display buttons";
     public final static String FILE_EVENT = "file";
-    public final static String LEFT_ARROW = "\u2190"; // Unicode emotion for left arrow
+    public final static String LEFT_ARROW = "\u2190\n\u2190"; // Unicode emoticon for left arrow (x2)
     public final static String MONO_FONT = Font.ROBOTO_MONO;
     public final static String NORMAL_FONT = Font.ROBOTO;
     public final static String OPTIONS_EVENT = "options";
-    public final static String RIGHT_ARROW = "\u2192"; // Unicode emotion for right arrow
+    public final static String RIGHT_ARROW = "\u2192\n\u2192"; // Unicode emoticon for right arrow (x2)
     public final static String SELECT_EVENT = "select";
     public final static String TITLE_FONT = Font.MINECRAFT;
     public final static String QUIT_EVENT = "quit";
@@ -71,7 +71,6 @@ public class Application extends app.view.BaseView {
     public SlideTransition changelogTransition;
     public Button createButton;
     public String flavorText;
-    public Layout nowPlayingLayout;
     public Button optionsButton;
     public Button quitButton;
     public Button selectButton;
@@ -180,7 +179,7 @@ public class Application extends app.view.BaseView {
                 nowPlayingLabel.textFont = NORMAL_FONT;
                 nowPlayingLabel.textStyle = FontStyle.BOLD;
                 nowPlayingLabel.backgroundColor = Color.WHITE;
-                this.appController.addNode(this.name, this.name, nowPlayingLabel, this.nowPlayingLayout);
+                this.appController.addNode(this.name, this.name, nowPlayingLabel, new Layout(new RelativeCoordinates(0.0, (this.quitButton.getBounds().coordinates.y + (this.quitButton.getBounds().height * 4))), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
 
                 this.publishEvent("book", bookFile);                
             } default -> System.err.println("Application: onEvent: Unsupported event");
@@ -317,8 +316,6 @@ public class Application extends app.view.BaseView {
         this.quitButton.scaleX = this.titleLabel.getBounds().width * 0.45;
         this.quitButton.effects.add(new SlideTransition(SlideTransition.Path.FROM_TOP, this, 1.5)); // Slide the button from the top in 1.5 seconds
         this.appController.addNode(this.name, this.name, this.quitButton, new Layout(new RelativeCoordinates(this.titleLabel.getBounds().coordinates.x + this.titleLabel.getBounds().width, 0.54), HorizontalAlignment.RIGHT, VerticalAlignment.TOP));
-        
-        this.nowPlayingLayout = new Layout(new RelativeCoordinates(0.0, (quitButton.getBounds().coordinates.y + (quitButton.getBounds().height * 4))), HorizontalAlignment.CENTER, VerticalAlignment.TOP);
     }
     
     public Book deserializeBook(String fileName) {
