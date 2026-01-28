@@ -27,19 +27,7 @@ import java.util.logging.Logger;
 import app.view.Animation;
 
 /**
- * Available font families:
- * - Lato
- * - Minecraft
- * - Roboto
- * - Roboto Black
- * - Roboto Light
- * - Roboto Medium
- * - Roboto Mono
- * - Roboto Mono Medium
- * - Roboto Mono Thin
- * - Roboto Mono Light
- * - Roboto Thin
- * - 
+ * 
  * @author repp
  */
 public abstract class BaseController {
@@ -68,7 +56,7 @@ public abstract class BaseController {
     public abstract void open(BaseView splashView, BaseView mainView);
     public abstract void displayView(BaseView view);
     public abstract void displayView(String viewName);
-    public abstract void displayOverlay(String viewName, String name, app.Color color, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, Integer transparency, Boolean invert);
+    //public abstract void displayOverlay(String viewName, String name, app.Color color, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, Integer transparency, Boolean invert);
     public abstract void clearScreen(String name);
     public abstract void removeNode(String viewName, String nodeName);
     //public abstract void displayMessageBox(String title, String text, Icon level, List<String> emojis);

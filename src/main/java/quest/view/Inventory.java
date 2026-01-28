@@ -118,6 +118,7 @@ public class Inventory extends app.view.BaseView implements EventListener {
         gridControl.showBorders = true;
         for (String key : this.quest.book.inventory.keySet()) {
             Group itemGroup = new VerticalGroup(key);
+            itemGroup.borderWidth = 0;
             
             InventoryItem bookItem = this.quest.book.inventory.get(key);
 

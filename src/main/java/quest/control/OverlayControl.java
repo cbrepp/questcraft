@@ -2,6 +2,11 @@
 package quest.control;
 
 import app.Color;
+import app.HorizontalAlignment;
+import app.Layout;
+import app.RelativeCoordinates;
+import app.VerticalAlignment;
+import app.node.Rectangle;
 import quest.view.Quest;
 
 /**
@@ -53,8 +58,15 @@ public class OverlayControl extends QuestControl {
             endColumn += this.quest.leftPageStartingColumn;
         }
         */
-                
-        this.quest.appController.displayOverlay(this.quest.name, controlName, color, null, null, null, null, null, invert);
+        
+        Rectangle overlay = new Rectangle(controlName);
+        overlay.color = color;
+        overlay.opacity = 0.5;
+        overlay.scaleX = 1.0;
+        overlay.scaleY = 1.0;
+        this.quest.appController.addNode(this.quest.name, this.quest.name, overlay, new Layout(new RelativeCoordinates(0.0, 0.0), HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
+
+        //this.quest.appController.displayOverlay(this.quest.name, controlName, color, null, null, null, null, null, invert);
         return "";
     }
     

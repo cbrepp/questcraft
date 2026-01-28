@@ -54,11 +54,11 @@ public class Application extends app.view.BaseView {
     public final static String CREATE_EVENT = "create";
     public final static String DISPLAY_BUTTONS_TIMER = "display buttons";
     public final static String FILE_EVENT = "file";
-    public final static String LEFT_ARROW = "\u2190\n\u2190"; // Unicode emoticon for left arrow (x2)
+    public final static String DOUBLE_LEFT_ARROW = "\u2190\n\u2190"; // Unicode emoticon for left arrow (x2)
     public final static String MONO_FONT = Font.ROBOTO_MONO;
     public final static String NORMAL_FONT = Font.ROBOTO;
     public final static String OPTIONS_EVENT = "options";
-    public final static String RIGHT_ARROW = "\u2192\n\u2192"; // Unicode emoticon for right arrow (x2)
+    public final static String DOUBLE_RIGHT_ARROW = "\u2192\n\u2192"; // Unicode emoticon for right arrow (x2)
     public final static String SELECT_EVENT = "select";
     public final static String TITLE_FONT = Font.MINECRAFT;
     public final static String QUIT_EVENT = "quit";
@@ -98,11 +98,11 @@ public class Application extends app.view.BaseView {
                 if (eventValue.equals(CHANGELOG_LABEL)) {
                     // The changelog transition completed
                     if (this.changelogTransition.getStage() == SlideTransition.Stage.READY) {
-                        this.changelogButton.text = RIGHT_ARROW;
+                        this.changelogButton.text = DOUBLE_RIGHT_ARROW;
                         this.changelogButton.isEnabled = true; // Not multi-use button, so re-enable
                         this.appController.changeNode(this.name, this.changelogButton, null);
                     } else if (this.changelogTransition.getStage() == SlideTransition.Stage.COMPLETE) {
-                        this.changelogButton.text = LEFT_ARROW;
+                        this.changelogButton.text = DOUBLE_LEFT_ARROW;
                         this.changelogButton.isEnabled = true; // Not multi-use button, so re-enable
                         this.appController.changeNode(this.name, this.changelogButton, null);
                     }
@@ -125,7 +125,7 @@ public class Application extends app.view.BaseView {
                 }
             }
             case CHANGELOG_EVENT -> {
-                if (this.changelogButton.text.equals(LEFT_ARROW)) {
+                if (this.changelogButton.text.equals(DOUBLE_LEFT_ARROW)) {
                     // Display the changelog in a scrolling region centered on the right with a spacer separating it from the quit button.
                     // Event NODE_TRANSITIONED_EVENT will be raised when the event is complete.
                     this.changelogLabel = new ScrollingLabel(CHANGELOG_LABEL);
@@ -139,7 +139,7 @@ public class Application extends app.view.BaseView {
                     this.changelogLabel.effects.add(this.changelogTransition);
                     this.appController.addNode(this.name, this.name, this.changelogLabel, new Layout(new RelativeCoordinates(changelogButton.getBounds().coordinates.x, 0.0), HorizontalAlignment.RIGHT, VerticalAlignment.CENTER));
                 } else {
-                    this.changelogButton.text = LEFT_ARROW;
+                    this.changelogButton.text = DOUBLE_LEFT_ARROW;
                     this.appController.removeNode(this.name, this.changelogLabel.name);
                 }
             }
@@ -252,7 +252,7 @@ public class Application extends app.view.BaseView {
             this.changelogButton.eventName = CHANGELOG_EVENT;
             this.changelogButton.pixelSize = 20.0;
             this.changelogButton.textColor = Color.SHADOW;
-            this.changelogButton.text = LEFT_ARROW;
+            this.changelogButton.text = DOUBLE_LEFT_ARROW;
             this.changelogButton.isMultiUse = false;
             this.changelogButton.textFont = BUTTON_FONT;
             this.changelogButton.scaleY = CHANGELOG_HEIGHT;

@@ -69,11 +69,6 @@ public class SwingApplication extends BaseController {
     }
     
     @Override
-    public void displayOverlay(String viewName, String name, app.Color color, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, Integer transparency, Boolean invert) {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-    
-    @Override
     public void clearScreen(String name) {
         throw new UnsupportedOperationException("Not supported.");
     }

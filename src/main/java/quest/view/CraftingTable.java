@@ -3,7 +3,15 @@ package quest.view;
 import app.controller.BaseController;
 import app.view.BaseView;
 import app.Color;
+import app.Font;
 import app.FontStyle;
+import app.HorizontalAlignment;
+import app.Layout;
+import app.RelativeCoordinates;
+import app.VerticalAlignment;
+import static app.controller.BaseController.logger;
+import app.node.Label;
+import java.util.logging.Level;
 
 /**
  *
@@ -15,17 +23,21 @@ public class CraftingTable extends BaseView {
         super(name);
         this.backgroundColor = new Color(255, 255, 255);
         this.backgroundImage = "/assets/images/designer.jpg";
-        //this.addTextArea = false;
         this.emojis.add("\uD83E\uDE9A"); // "carpentry saw" Unicode emoji
     }
     
     @Override
     public void onLoad(BaseController appController) {
-        System.out.println("CraftingTable: display");
+        logger.log(Level.INFO, "Entered: appController={0}", appController);
         
-        // displayFloatingText(String viewName, String text, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, app.Color fontColor, Integer fontSize, Integer fontStyle, String fontName)
-        //appController.displayFloatingText(this.name, null, "Coming soon!", 4, 6, null, null, null, 16, FontStyle.BOLD, null);
-        appController.displayOverlay(this.name, "crafting-table", new Color(255, 255, 255), 3, 5, 7, 30, 200, false);
+        Label comingSoonLabel = new Label("coming soon");
+        comingSoonLabel.text = "Coming soon";
+        comingSoonLabel.pixelSize = 86.0;
+        comingSoonLabel.textColor = Color.SHADOW;
+        comingSoonLabel.textFont = Font.ROBOTO_BLACK;
+        comingSoonLabel.textStyle = FontStyle.BOLD;
+        comingSoonLabel.backgroundColor = Color.WHITE;
+        appController.addNode(this.name, this.name, comingSoonLabel, new Layout(new RelativeCoordinates(0.0, 0.0), HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
     }
     
 }

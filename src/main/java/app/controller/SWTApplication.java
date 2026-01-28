@@ -1319,6 +1319,7 @@ public class SWTApplication extends BaseController {
     }
     */
     
+    /*
     @Override
     public void displayOverlay(String viewName, String name, app.Color color, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, Integer transparency, Boolean invert) {
         System.out.println("SWTApplication: displayOverlay: viewName=" + viewName + ", name=" + name + ", color=" + color + ", startRow=" + startRow + ", startColumn=" + startColumn + ", endRow=" + endRow + ", endColumn=" + endColumn + ", transparency=" + transparency);
@@ -1369,6 +1370,7 @@ public class SWTApplication extends BaseController {
         controlList.add(overlay);
         this.namedControls.get(viewName).put(name, controlList);
     }
+    */
     
     // TODO - Pass in a list of app.Controls with button text and isEnabled
     @Override

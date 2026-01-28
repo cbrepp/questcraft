@@ -3,12 +3,20 @@ package quest.view;
 import app.controller.BaseController;
 import app.Color;
 import app.FontStyle;
+import app.HorizontalAlignment;
+import app.Layout;
+import app.RelativeCoordinates;
+import app.VerticalAlignment;
+import static app.controller.BaseController.logger;
+import app.node.Image;
+import app.node.Rectangle;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.logging.Level;
 import quest.model.Act;
 import quest.model.Book;
 import quest.model.Page;
@@ -19,6 +27,7 @@ import quest.model.Story;
 
 public class Quest extends app.view.BaseView {
     
+    public final static Double DEFAULT_FONT_SIZE = 14.0;
     public final static String DIRECTION_EAST = "EAST";
     public final static String DIRECTION_NORTH = "NORTH";
     public final static String DIRECTION_SOUTH = "SOUTH";
@@ -170,7 +179,7 @@ public class Quest extends app.view.BaseView {
         this.questControls.put(VariableSetControl.NAME, new VariableSetControl(this));
         this.questControls.put(VariableAddControl.NAME, new VariableAddControl(this));
         this.textColor = new Color(0, 0, 0);
-        //this.textStyle = FontStyle.NORMAL;
+        this.textStyle = FontStyle.NORMAL;
         this.emojis.add("\uD83D\uDCD6"); // "open book" Unicode emoji
     }
     
@@ -291,22 +300,23 @@ public class Quest extends app.view.BaseView {
     
     @Override
     public void onLoad(BaseController appController) {
-        System.out.println("Quest: onLoad");
+        logger.log(Level.INFO, "Entered: appController={0}", appController);
+        
         this.appController = appController;
         
         // Loading screen
         if (this.book.animationFileName != null) {
-            this.appController.displayOverlay(this.name, LOADING_OVERLAY, new Color(0, 0, 0), null, null, null, null, null, false);
-            int halfColumns = (appController.getTextColumns() / 2);
-            int halfGifWidth = (appController.getColumns(this.book.animationFileName) / 2);
-            int gifColumn = halfColumns - halfGifWidth;
-            int halfRows = (appController.getTextRows() / 2);
-            int gifHeight = appController.getRows(this.book.animationFileName);
-            int gifRow = halfRows - gifHeight;
-            int nextRow = appController.displayGif(this.name, this.book.animationFileName, gifRow, gifColumn);
-            int halfTextWidth = ("Loading...".length() / 2);
-            int loadingTextColumn = halfColumns - halfTextWidth;
-            //appController.displayText(this.name, "Loading...", nextRow, loadingTextColumn, new Color(255, 255, 255));
+            Rectangle overlay = new Rectangle("overlay");
+            overlay.color = Color.BLACK;
+            overlay.opacity = 0.5;
+            overlay.scaleX = 1.0;
+            overlay.scaleY = 1.0;
+            this.appController.addNode(this.name, this.name, overlay, new Layout(new RelativeCoordinates(0.0, 0.0), HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
+            
+            Image loadingImage = new Image("loading");
+            loadingImage.file = this.book.animationFileName;
+            this.appController.addNode(this.name, this.name, loadingImage, new Layout(new RelativeCoordinates(0.0, 0.25), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
+            
             Act firstAct = book.acts.get(this.book.firstActName);
             Scene firstScene = firstAct.scenes.get(firstAct.firstSceneName);
             if (!firstScene.soundFileName.equals("")) {
@@ -776,13 +786,23 @@ public class Quest extends app.view.BaseView {
                 this.appController.playSound("/assets/sounds/hit-harder.mp3", false);
             }
             if (displayOverlay) {
-                this.appController.displayOverlay(this.name, overlayName, new Color(255, 0, 0), null, null, null, null, null, false);
+                Rectangle overlay = new Rectangle(overlayName);
+                overlay.color = Color.RED;
+                overlay.opacity = 0.5;
+                overlay.scaleX = 1.0;
+                overlay.scaleY = 1.0;
+                this.appController.addNode(this.name, this.name, overlay, new Layout(new RelativeCoordinates(0.0, 0.0), HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
                 appController.setTimer(overlayName, 0.5, this);
             }
         } else if (delta > 0) {
             //this.appController.playSound("/assets/sounds/TODO", false);
             if (displayOverlay) {
-                this.appController.displayOverlay(this.name, overlayName, new Color(0, 255, 0), null, null, null, null, null, false);
+                Rectangle overlay = new Rectangle(overlayName);
+                overlay.color = Color.GREEN;
+                overlay.opacity = 0.5;
+                overlay.scaleX = 1.0;
+                overlay.scaleY = 1.0;
+                this.appController.addNode(this.name, this.name, overlay, new Layout(new RelativeCoordinates(0.0, 0.0), HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
                 appController.setTimer(overlayName, 0.5, this);
             }
         }        
@@ -809,11 +829,21 @@ public class Quest extends app.view.BaseView {
         
         if (delta < 0) {
             this.appController.playSound("/assets/sounds/spell-cast.wav", false);
-            this.appController.displayOverlay(this.name, overlayName, new Color(128, 0, 128), null, null, null, null, null, false);
+            Rectangle overlay = new Rectangle(overlayName);
+            overlay.color = Color.DARK_MAGENTA;
+            overlay.opacity = 0.5;
+            overlay.scaleX = 1.0;
+            overlay.scaleY = 1.0;
+            this.appController.addNode(this.name, this.name, overlay, new Layout(new RelativeCoordinates(0.0, 0.0), HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
             appController.setTimer(overlayName, 0.5, this);
         } else if (delta > 0) {
             this.appController.playSound("/assets/sounds/mp-up.wav", false);
-            this.appController.displayOverlay(this.name, overlayName, new Color(128, 0, 128), null, null, null, null, null, false);
+            Rectangle overlay = new Rectangle(overlayName);
+            overlay.color = Color.DARK_MAGENTA;
+            overlay.opacity = 0.5;
+            overlay.scaleX = 1.0;
+            overlay.scaleY = 1.0;
+            this.appController.addNode(this.name, this.name, overlay, new Layout(new RelativeCoordinates(0.0, 0.0), HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
             appController.setTimer(overlayName, 0.5, this);
         }        
     }

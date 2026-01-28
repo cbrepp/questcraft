@@ -403,6 +403,7 @@ public class JavaFXApplication extends BaseController {
         this.displayView(view);
     }
     
+    /*
     @Override
     public void displayOverlay(String viewName, String name, app.Color color, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, Integer transparency, Boolean invert) {
         System.out.println("JavaFXApplication: displayOverlay: viewName=" + viewName + ", name=" + name + ", color=" + color + ", startRow=" + startRow + ", startColumn=" + startColumn + ", endRow=" + endRow + ", endColumn=" + endColumn + ", transparency=" + transparency + ", invert=" + invert);
@@ -439,6 +440,7 @@ public class JavaFXApplication extends BaseController {
         content.getChildren().add(overlay);
         this.namedFXNodes.get(viewName).put(name, overlay);
     }
+    */
     
     @Override
     public void clearScreen(String viewName) {
@@ -1311,6 +1313,7 @@ public class JavaFXApplication extends BaseController {
             }
             vbox.setBorder(new Border(new BorderStroke(Color.rgb(offsetColor.red, offsetColor.green, offsetColor.blue), BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
             vbox.setAlignment(Pos.CENTER);
+            vbox.setFillWidth(false); // Allow children to stay at their preferred widths and be centered 
             fxPane = vbox;
         } else if (groupClass.equals(app.node.HorizontalGroup.class)) {
             HBox hbox;
@@ -1612,6 +1615,22 @@ public class JavaFXApplication extends BaseController {
         return fxTextBox;
     }
     
+    public Rectangle newRectangle(app.node.Rectangle node, Rectangle fxRectangle, app.Color offsetColor) {
+        logger.log(Level.INFO, "Entered: node={0}, fxRectangle={1}, offsetColor={2}", new Object[]{node, fxRectangle, offsetColor});
+        
+        if (fxRectangle == null) {
+            fxRectangle = new Rectangle();
+        }
+        
+        if (node.color == null) {
+            fxRectangle.setFill(Color.rgb(offsetColor.red, offsetColor.green, offsetColor.blue, node.opacity));
+        } else {
+            fxRectangle.setFill(Color.rgb(node.color.red, node.color.green, node.color.blue, node.opacity));
+        }
+        
+        return fxRectangle;
+    }
+    
     public ImageView newImage(app.node.Image node, ImageView fxImageView) {
         logger.log(Level.INFO, "Entered: node={0}, fxImageView={1}", new Object[]{node, fxImageView});
         
@@ -1847,6 +1866,15 @@ public class JavaFXApplication extends BaseController {
             fxNode = this.newGroup(viewName, (app.node.VerticalGroup) node, (Pane) fxNode, offsetColor);
             for (BaseNode childNode : ((app.node.Group) node).nodes) {
                 this.addNode(viewName, node.name, childNode, null);
+            }
+        } else if (childClass.equals(app.node.Rectangle.class)) {
+            fxNode = this.newRectangle((app.node.Rectangle) node, (Rectangle) fxNode, offsetColor);
+            Rectangle rectangle = (Rectangle) fxNode;
+            if (node.scaleX != null) {
+                rectangle.setWidth(parentWidth * node.scaleX);
+            }
+            if (node.scaleY != null) {
+                rectangle.setHeight(parentHeight * node.scaleY);
             }
         } else {
             logger.log(Level.SEVERE, "Class is not a supported child class: {0}", childClass.getSimpleName());
