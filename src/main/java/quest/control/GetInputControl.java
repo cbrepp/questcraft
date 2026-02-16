@@ -1,6 +1,16 @@
 
 package quest.control;
 
+import app.Color;
+import app.EventListener;
+import app.FontStyle;
+import app.Layout;
+import app.RelativeCoordinates;
+import app.VerticalAlignment;
+import static app.controller.BaseController.logger;
+import app.node.Group;
+import app.node.InputField;
+import java.util.logging.Level;
 import quest.view.Quest;
 
 /**
@@ -17,7 +27,7 @@ public class GetInputControl extends QuestControl {
     
     @Override
     public String onExecute(String tag) {
-        System.out.println("GetInputControl: onExecute: tag=" + tag);
+        logger.log(Level.INFO, "Entered: tag={0}", tag);
         String variable = getTagToken(tag, 1, false);
         int length = Integer.parseInt(getTagToken(tag, 2, false));
         Boolean clearValue = Boolean.valueOf(getTagToken(tag, 3, false));
@@ -27,23 +37,34 @@ public class GetInputControl extends QuestControl {
         String prompt = getTagToken(tag, 7, true);
 
         String eventName = Quest.VARIABLE_EVENT_PREFIX + ":" + variable;
-        int startColumn;
-        if (this.quest.currentDisplayPage == Quest.RIGHT_PAGE) {
-            startColumn = this.quest.rightPageStartingColumn;
+        String location;
+        if (this.quest.currentDisplayPage == Quest.FIRST_PAGE) {
+            location = Quest.Area.STORY.name();
         } else {
-            startColumn = this.quest.leftPageStartingColumn;
+            location = Quest.Area.ILLUSTRATION.name();
         }
-        int realColumn = startColumn + this.quest.textColumn - 1;
-        int realRow = this.quest.titleRow + 1 + this.quest.textRow;
         
         String value = null;
         if (!clearValue) {
             value = this.quest.variables.get(variable);
         }
         
+        InputField control = new InputField(eventName);
+        control.buttonText = "Submit";
+        control.eventListener = this.quest;
+        //control.group; // TODO - The group's collection is meaningless... need to decouple its styling from the collection
+        control.initialValue = value;
+        control.isMultiUse = isMultiUse;
+        control.isUpperCase = isUpperCase; // Default (false) is don't force upper case
+        control.label = prompt;
+        control.length = length; // Default (null) is system default
+        //control.pixelSize; // Default is app controller's default pixel size
+        //control.textColor; // Default (null) is either black or white depending on which color would best offset the background
+        //control.textFont; // Default is the app controller's default font   
+        //control.textStyle; // Default (null) is normal
+        this.quest.appController.addNode(this.quest.name, location, control, null); // TODO - Need to add a layout for the illustration document
+        
         //this.quest.appController.displayInputField(this.quest.name, eventName, prompt, length, realRow, realColumn, value, addButton, true, isUpperCase, isMultiUse, this.quest);
-        this.quest.textRow = this.quest.textRow + 2;
-        this.quest.textColumn = 1;
         return "";
     }
     

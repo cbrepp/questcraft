@@ -1,13 +1,15 @@
 
 package quest.control;
 
+import app.node.BaseNode;
+import java.io.Serializable;
 import quest.view.Quest;
 
 /**
  *
  * @author repp
  */
-public abstract class QuestControl {
+public abstract class QuestControl implements Serializable {
     
     public Quest quest;
     public Boolean unspoolStoryText;
@@ -17,6 +19,7 @@ public abstract class QuestControl {
         this.unspoolStoryText = false;
     }   
 
+    public BaseNode onDisplay() {return null;} // TODO - Make abstract
     public abstract String onExecute(String tag);
     
     public Boolean evalauteCondition(String condition) {

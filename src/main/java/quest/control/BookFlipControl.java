@@ -1,6 +1,8 @@
 
 package quest.control;
 
+import static app.controller.BaseController.logger;
+import java.util.logging.Level;
 import quest.view.Quest;
 
 /**
@@ -17,7 +19,7 @@ public class BookFlipControl extends QuestControl {
     
     @Override
     public String onExecute(String tag) {
-        System.out.println("BookFlipControl: onExecute: tag=" + tag);
+        logger.log(Level.INFO, "Entered: tag={0}", tag);
         this.quest.flipBook();
         this.quest.display();
         return "";

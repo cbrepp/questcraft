@@ -19,7 +19,7 @@ public class UnderlineTextControl extends QuestControl {
     @Override
     public String onExecute(String tag) {
         System.out.println("UnderlineTextControl: onExecute: tag=" + tag);
-        this.quest.textStyle = FontStyle.UNDERLINE_SINGLE;
+        this.quest.defaultTextStyle = FontStyle.UNDERLINE_SINGLE;
         return "";
     }
     

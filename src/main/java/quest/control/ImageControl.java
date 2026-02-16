@@ -30,6 +30,7 @@ public class ImageControl extends QuestControl {
     }
     
     public void displayImage(String name, String imageFile, String alignment) {
+        /*
         int row = this.quest.titleRow + 1 + this.quest.textRow;
         int imageColumn;
         int startingColumn, endingColumn;
@@ -56,6 +57,7 @@ public class ImageControl extends QuestControl {
         }
         // TODO - Support right align
         //this.quest.appController.displayImage(Questcraft.QUEST, name, imageFile, row, imageColumn, fillParent);
+        */
     }
     
 }

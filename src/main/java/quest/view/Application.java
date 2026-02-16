@@ -33,6 +33,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
+import quest.control.BookAuthor;
+import quest.control.BookLastUpdatedDate;
+import quest.control.BookTitle;
+import quest.control.Condition;
+import quest.control.Illustration;
+import quest.control.InventoryAdd;
+import quest.control.Paragraph;
+import quest.control.Subpage;
+import quest.control.Text;
+import quest.control.Variable;
 import quest.model.Act;
 import quest.model.Book;
 import quest.model.HighScore;
@@ -249,7 +259,6 @@ public class Application extends app.view.BaseView {
             
             this.changelogButton = new Button(CHANGELOG_EVENT);
             this.changelogButton.eventListener = this;
-            this.changelogButton.eventName = CHANGELOG_EVENT;
             this.changelogButton.pixelSize = 20.0;
             this.changelogButton.textColor = Color.SHADOW;
             this.changelogButton.text = DOUBLE_LEFT_ARROW;
@@ -275,7 +284,6 @@ public class Application extends app.view.BaseView {
                         
         this.selectButton = new Button(SELECT_EVENT);
         this.selectButton.eventListener = this;
-        this.selectButton.eventName = SELECT_EVENT;
         this.selectButton.pixelSize = 26.0;
         this.selectButton.textColor = Color.SHADOW;
         this.selectButton.text = "Select Quest";
@@ -286,7 +294,6 @@ public class Application extends app.view.BaseView {
 
         this.createButton = new Button(CREATE_EVENT);
         this.createButton.eventListener = this;
-        this.createButton.eventName = CREATE_EVENT;
         this.createButton.pixelSize = 26.0;
         this.createButton.textColor = Color.SHADOW;
         this.createButton.text = "Create Quest";
@@ -297,7 +304,6 @@ public class Application extends app.view.BaseView {
         
         this.optionsButton = new Button(OPTIONS_EVENT);
         this.optionsButton.eventListener = this;
-        this.optionsButton.eventName = OPTIONS_EVENT;
         this.optionsButton.pixelSize = 26.0;
         this.optionsButton.textColor = Color.SHADOW;
         this.optionsButton.text = "Options...";
@@ -308,7 +314,6 @@ public class Application extends app.view.BaseView {
 
         this.quitButton = new Button(QUIT_EVENT);
         this.quitButton.eventListener = this;
-        this.quitButton.eventName = QUIT_EVENT;
         this.quitButton.pixelSize = 26.0;
         this.quitButton.textColor = Color.SHADOW;
         this.quitButton.text = "Quit Game";
@@ -697,7 +702,89 @@ public class Application extends app.view.BaseView {
         titlePage.stopOtherSounds = true;
         titlePage.soundFileName = "/assets/sounds/epic.mp3";
         opening.scenes.put("Title Page", titlePage);
+        
+        // UIControl is implemented by a story control and an illustration control
+        // Illustration control adds a layout property
+        // A special Label control extends the base Label class and provides a collection of string controls where the quest instance can be used if a quest string
+        
+        // TODO - How to change the font color and style between different string controls???
+        // Maybe Paragraph should be a collection of Text, and Text is a collection of string controls
+        
+        // Quest Control is a base interface class with method onExecute() implemented by either Action Control or UI Control
+        // Action Control is an abstract class
+        // UI Control is an abstract class
+        // String Control is really just Object with toString() implemented
+        //
+        // Controls:
+        //   UI control is a class that implements onDisplay()
+        //   String control is a model class that implements toString(), so any Object
+        //   Action control is a class that implements onExecute()
+        //
+        // Paragraph is a UI control and a collection of UI controls that ends with a spacer/break
+        // Text is a UI control and a collection of string-based controls
+        
+        
+        // Page has a Story and BookPart has a Map of Stories
+            // Story is a list of BaseQuestControls
+                // Paragraph is a BaseQuestControl that actually updates the UI's story document and receives a collection of nodes and displays them plus a spacer node
+                    // Label uses an Object for string and calls toString() on it, allowing...
+                    // Text is a collection of Objects... Text has a toString() that iterates each Object and calls toString on it and appends the strings for its return value
+                    // ...if the Object extends BaseStringControl then it is given a Quest instance before toString() is called
+                        // BaseStringControl provides a setQuest() method and is expected to override toString()
+                // Illustration is a BaseQuestControl that actually updates the UI's illustation document and receives both a node and a layout
+                
+        // TODO: The hard part
+        // Could make the Quest instance a singleton so that each control and model can easily access it.  But this makes running the app a one user per runtime thing.
+        /*
+        public class UserSettings {
+            private static final Map<WebAPI, UserSettings> instances = new WeakHashMap<>();
+
+            public static UserSettings get(Scene scene) {
+                WebAPI webAPI = WebAPI.getWebAPI(scene);
+                return instances.computeIfAbsent(webAPI, k -> new UserSettings());
+            }
+
+            // Your session-specific data here
+        }
+        */
+        
+        /*
         Page page1 = new Page();
+        page1.story.controls.add(new Paragraph(List.of(new Label("text1", new Text(List.of("Paragraph 1... ", "\uD83E\uDDD1\u200D\uD83E\uDDB0", new BookAuthor()))))));
+        page1.story.controls.add(new Paragraph());
+        page1.story.controls.add(new Paragraph(List.of(new Label("text2", new Text(List.of("Paragraph 2... ", new BookTitle()))))));
+        page1.story.controls.add(new Paragraph(List.of(new Label("text3", new Text(List.of("Paragraph 3... This is a very super long line of text that needs to wrap.  I am repeating this statement 3x.  This is a very super long line of text that needs to wrap.  I am repeating this statement 3x.  This is a very super long line of text that needs to wrap.  I am repeating this statement 3x.  This is a very super long line of text that needs to wrap.  I am repeating this statement 3x."))))));
+        page1.story.controls.add(new Paragraph(List.of(new Label("text4", new Text(List.of("Paragraph 4."))))));
+        */
+        
+        Page page1 = new Page();
+        List<Object> dragonArt = List.of(
+                "                             ___, ____--'\n",
+                "                        _,-.'_,-'      (\n",
+                "                     ,-' _.-''....____(\n",
+                "           ,))_     /  ,'\\ `'-.     (          /\\\n",
+                "   __ ,+..a`  \\(_   ) /   \\    `'-..(         /  \\\n",
+                "   )`-;...,_   \\(_ ) /     \\  ('''    ;'^^`\\ <./\\.>\n",
+                "       ,_   )   |( )/   ,./^``_..._  < /^^\\ \\_.))\n",
+                "      `=;; (    (/_')-- -'^^`      ^^-.`_.-` >-'\n",
+                "      `=\\ (                             _,./\n",
+                "        ,\\`(                         )^^^\n",
+                "          ``;         __-'^^\\       /\n",
+                "            / _>---^^^   `\\..`-.    ``'.\n",
+                "           / /               / /``'`; /\n",
+                "          / /          ,-=='-`=-'  / /\n",
+                "    ,-=='-`=-.               ,-=='-`=-.",
+                "\n\n",
+                "              T W I N   Q U E S T");
+        Label dragonLabel = new Label("par1", new Text(dragonArt));
+        dragonLabel.textColor = Color.DARK_MAGENTA;
+        dragonLabel.textStyle = FontStyle.BOLD;
+        page1.story.controls.add(new Paragraph(List.of(dragonLabel))); 
+        page1.story.controls.add(new Paragraph(List.of(new Label("par2", new Text(List.of("  **************************************************"))))));
+        page1.story.controls.add(new Paragraph(List.of(new Label("par3", new Text(List.of("  ", new BookTitle(), "\n", "  by ", new BookAuthor(), "\n", "  Last Updated: ", new BookLastUpdatedDate()))))));
+        page1.story.controls.add(new Illustration(new Image("title image", "/assets/images/title-page.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        
+        /*
         page1.story.contents.add("<color 139+0+0>");
         page1.story.contents.add("                             ___, ____--'");
         page1.story.contents.add("                        _,-.'_,-'      (");
@@ -726,6 +813,7 @@ public class Application extends app.view.BaseView {
         page1.story.contents.add("  Last Updated: <book-last-updated-date>");
         page1.story.contents.add("<second-page>");
         page1.story.contents.add("<image title-page center /assets/images/title-page.jpg>");
+        */
         titlePage.pages.put("1", page1);
         
         Scene playerSelection = new Scene();
@@ -735,6 +823,18 @@ public class Application extends app.view.BaseView {
         playerSelection.soundFileName = "/assets/sounds/epic.mp3";
         opening.scenes.put("Player Selection", playerSelection);
         page1 = new Page();
+        page1.story.controls.add(new Paragraph(List.of(new Label("par1", new Text(List.of("Select Player:\n"))))));
+        Subpage subpage = new Subpage("SHMEBULOCK input");
+        subpage.condition = new Condition(new Variable("summonShmebulock"), Condition.Operator.EQUALS, "true", true);
+        page1.story.controls.add(subpage);
+        subpage = new Subpage("input");
+        subpage.condition = new Condition(new Variable("summonShmebulock"), Condition.Operator.EQUALS, "true", false);
+        page1.story.controls.add(subpage);
+        page1.story.controls.add(new InventoryAdd("Map", true));
+        page1.story.controls.add(new InventoryAdd("Spell Book", true));
+        page1.story.controls.add(new Illustration(new Image("select player image", "/assets/images/twins.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        
+        /*
         page1.story.contents.add("Select Player:");
         page1.story.contents.add("<subpage-display condition=\"summonShmebulock=true\" SHMEBULOCK input>");
         page1.story.contents.add("<subpage-display condition=\"summonShmebulock!=true\" input>");
@@ -742,6 +842,16 @@ public class Application extends app.view.BaseView {
         page1.story.contents.add("<inventory-add true Spell Book>");
         page1.story.contents.add("<second-page>");
         page1.story.contents.add("<image twins center /assets/images/twins.jpg>");
+        */
+        
+        // TODO - Implement validated input control in JavaFXApplication
+        
+        /*
+        Story inputSubpage = new Story();
+        inputSubpage.contents.add("<get-validated-input player *Greyson+*Zara>");
+        page1.subpages.put("input", inputSubpage);
+        */
+
         Story playerGreysonSubpage = new Story();
         playerGreysonSubpage.contents.add("<set-player-symbol \uD83E\uDDD2>");
         playerGreysonSubpage.contents.add("<variable-set twin Zara>");
@@ -794,9 +904,6 @@ public class Application extends app.view.BaseView {
         shmebulockCheatSubpage.contents.add("<variable-set summonShmebulock true>");
         shmebulockCheatSubpage.contents.add("<page-refresh>");
         page1.subpages.put("SHMEBULOCK", shmebulockCheatSubpage);
-        Story inputSubpage = new Story();
-        inputSubpage.contents.add("<get-validated-input player *Greyson+*Zara>");
-        page1.subpages.put("input", inputSubpage);
         Story inputWithShmebulockSubpage = new Story();
         inputWithShmebulockSubpage.contents.add("<get-validated-input player *Greyson+*Zara+*Shmebulock>");
         page1.subpages.put("SHMEBULOCK input", inputWithShmebulockSubpage);
@@ -824,7 +931,7 @@ public class Application extends app.view.BaseView {
         Story difficultyMagicalSubpage = new Story();
         difficultyMagicalSubpage.contents.add("<goto-act Introduction>");
         page1.subpages.put("INPUT difficulty=Magical", difficultyMagicalSubpage);
-        inputSubpage = new Story();
+        Story inputSubpage = new Story();
         inputSubpage.contents.add("<get-validated-input difficulty *Easy+*Normal+*Hard>");
         inputSubpage.contents.add("<second-page>");
         inputSubpage.contents.add("<image difficulty center /assets/images/difficulty.jpg>");

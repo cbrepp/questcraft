@@ -27,6 +27,8 @@ public class LinkControl extends QuestControl {
         
         String linkText = getTagToken(tag, 1, true);
         
+        /*
+        
         int row = this.quest.titleRow + 1 + this.quest.textRow;
         int column;
         if (this.quest.currentDisplayPage == Quest.RIGHT_PAGE) {
@@ -38,10 +40,9 @@ public class LinkControl extends QuestControl {
         int textLength = linkText.length();
         
         // TODO - Need to pass in relative coordinates
-        Link linkControl = new Link(linkText);
+        Link linkControl = new Link(Quest.LINK_EVENT_PREFIX + ":" + linkText);
         linkControl.text = linkText;
         linkControl.eventListener = this.quest;
-        linkControl.eventName = Quest.LINK_EVENT_PREFIX + ":" + linkText;
         this.quest.appController.addNode(this.quest.name, this.quest.name, linkControl, new Layout(new RelativeCoordinates(0.25, 0.25), HorizontalAlignment.LEFT, VerticalAlignment.TOP));
         
         //this.quest.appController.displayLink(this.quest.name, Quest.LINK_EVENT_PREFIX + ":" + linkText, "<a>" + linkText + "</a>", row, column, textLength, this.quest);
@@ -49,8 +50,9 @@ public class LinkControl extends QuestControl {
         this.quest.textRow = this.quest.textRow + 1;
         
         String placeholderSpaces = String.valueOf(' ').repeat(textLength);
+        */
         
-        return placeholderSpaces;
+        return "";//return placeholderSpaces;
     }
     
 }

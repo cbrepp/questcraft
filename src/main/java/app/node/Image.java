@@ -12,4 +12,9 @@ public class Image extends BaseNode {
         super(name);
     }
     
+    public Image (String name, String file) {
+        super(name);
+        this.file = file;
+    }
+    
 }

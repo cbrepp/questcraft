@@ -462,7 +462,7 @@ public class MonsterShooterControl extends QuestControl implements Animation, Ev
         if (this.quest.variables.get("animation-complete").equals("true")) {
             if ((this.animationCompleteDelay <= 0.0) && (this.animationCompleteDelay > -1.0)) {
                 // Display the Continue button that will refresh the pages to let the quest resume
-                int buttonRow = this.quest.buttonRow;
+                //int buttonRow = this.quest.buttonRow;
                 //this.quest.appController.displayButton(this.quest.name, CONTINUE_BUTTON_NAME, "Continue", buttonRow, this.column, null, null, false, null, true, this);
                 this.animationCompleteDelay = -1.0;
                 this.quest.appController.stopAllSounds();
@@ -601,6 +601,7 @@ public class MonsterShooterControl extends QuestControl implements Animation, Ev
         this.dimensionsMap.put(MONSTER_MISSILE_NAME, this.getScaledDimensions(this.monsterMissileLeftImageFileName, backgroundDimensions.y, 0.15));
         this.dimensionsMap.put(MONSTER_MISSILE_CHUNGUS_NAME, this.getScaledDimensions(this.monsterMissileLeftImageFileName, backgroundDimensions.y, 0.2));
         
+        /*
         this.row = this.quest.titleRow + 1 + this.quest.textRow;
         int startingColumn, endingColumn;
         if (this.quest.currentDisplayPage == Quest.RIGHT_PAGE) {
@@ -622,6 +623,7 @@ public class MonsterShooterControl extends QuestControl implements Animation, Ev
             }
             default -> this.column = startingColumn;
         }
+        */
                 
         // Build a list of needed sprite images so the controller can cache them
         List<String> imageFiles = new ArrayList();
@@ -692,10 +694,10 @@ public class MonsterShooterControl extends QuestControl implements Animation, Ev
         
         // Display the buttons used to control the animation
         List<String> valueList = new ArrayList<>(Arrays.asList("&left; Move Left+&up; Launch+&right; Move Right+Pause".split("\\+")));
-        int buttonRow = this.quest.buttonRow;
+        //int buttonRow = this.quest.buttonRow;
         int endColumn;
         endColumn = this.column + this.quest.appController.getColumns(backgroundImageFileName);
-        this.quest.appController.displayValidatedInputField(this.quest.name, ANIMATION_CONTROLS_NAME, valueList, buttonRow, this.column, endColumn, new Layout(HorizontalAlignment.LEFT, VerticalAlignment.CENTER), this, true);
+        //this.quest.appController.displayValidatedInputField(this.quest.name, ANIMATION_CONTROLS_NAME, valueList, buttonRow, this.column, endColumn, new Layout(HorizontalAlignment.LEFT, VerticalAlignment.CENTER), this, true);
         
         return "";
     }

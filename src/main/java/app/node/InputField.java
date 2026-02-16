@@ -11,7 +11,6 @@ public class InputField extends BaseNode {
     public String buttonText;
     public Color childBackgroundColor; // Default (null) is transparent
     public EventListener eventListener;
-    public String eventName;
     public Group group; // TODO - The group's collection is meaningless... need to decouple its styling from the collection
     public String initialValue;
     public Boolean isEnabled = true;

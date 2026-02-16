@@ -10,7 +10,6 @@ public class Link extends BaseNode {
     
     public Color backgroundColor; // Default (null) is transparent
     public EventListener eventListener;
-    public String eventName;
     public Boolean isEnabled = true;
     public Double pixelSize; // Default is app controller's default pixel size
     public String text;

@@ -117,7 +117,7 @@ public class Inventory extends app.view.BaseView implements EventListener {
         gridControl.padding = 5;
         gridControl.showBorders = true;
         for (String key : this.quest.book.inventory.keySet()) {
-            Group itemGroup = new VerticalGroup(key);
+            Group itemGroup = new VerticalGroup(key + " group");
             itemGroup.borderWidth = 0;
             
             InventoryItem bookItem = this.quest.book.inventory.get(key);
@@ -127,10 +127,9 @@ public class Inventory extends app.view.BaseView implements EventListener {
             emojiControl.pixelSize = BaseController.EMOJI_SHEET_SIZE;
             itemGroup.nodes.add(emojiControl);
 
-            Link linkControl = new Link(key + " name link");
+            Link linkControl = new Link(key);
             linkControl.text = key;
             linkControl.eventListener = this;
-            linkControl.eventName = itemGroup.name;
             itemGroup.nodes.add(linkControl);
 
             InventoryItem questItem = this.quest.inventory.get(key);

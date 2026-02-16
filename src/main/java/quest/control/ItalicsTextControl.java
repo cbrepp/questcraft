@@ -19,7 +19,7 @@ public class ItalicsTextControl extends QuestControl {
     @Override
     public String onExecute(String tag) {
         System.out.println("ItalicsTextControl: onExecute: tag=" + tag);
-        this.quest.textStyle = FontStyle.ITALIC;
+        this.quest.defaultTextStyle = FontStyle.ITALIC;
         return "";
     }
     

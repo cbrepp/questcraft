@@ -1,5 +1,7 @@
 package app;
 
+import java.io.Serializable;
+
 /**
  * (horizontal alignment, vertical alignment)
  * (LEFT, TOP)
@@ -14,7 +16,7 @@ package app;
  * 
  * @author repp
  */
-public class Layout {
+public class Layout implements Serializable {
     
     public HorizontalAlignment horizontalAlignment;
     public RelativeCoordinates position;

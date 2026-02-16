@@ -1,6 +1,8 @@
 
 package quest.control;
 
+import static app.controller.BaseController.logger;
+import java.util.logging.Level;
 import quest.view.Quest;
 import quest.view.Questcraft;
 import quest.view.SceneMap;
@@ -20,7 +22,7 @@ public class AddViewControl extends QuestControl {
     
     @Override
     public String onExecute(String tag) {
-        System.out.println("AddViewControl: onExecute: tag=" + tag);
+        logger.log(Level.INFO, "Entered: tag={0}", tag);
         String viewName = getTagToken(tag, 1, true);
         // TODO - This needs to be refactored
         switch (viewName) {

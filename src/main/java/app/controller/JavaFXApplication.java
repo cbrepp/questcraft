@@ -96,7 +96,6 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.CacheHint;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
-import javafx.scene.effect.BlendMode;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.Effect;
@@ -125,6 +124,7 @@ import javafx.animation.TranslateTransition;
 import javafx.beans.binding.DoubleBinding;
 import javafx.scene.Group;
 import javafx.scene.control.ContentDisplay;
+import javafx.scene.layout.Region;
 import javafx.scene.text.FontSmoothingType;
 
 /**
@@ -134,7 +134,7 @@ import javafx.scene.text.FontSmoothingType;
 public class JavaFXApplication extends BaseController {
     
     public static final int DEFAULT_BUTTON_FONT_SIZE = 10;
-    public static final String DEFAULT_FONT = "RobotoMono-Medium";
+    public static final String DEFAULT_FONT = app.Font.ROBOTO_MONO;
     public static final int DEFAULT_FONT_SIZE = 16;
     public static final boolean IS_JPRO = (System.getProperty("jpro.version") != null);
     public static List<String> TIMER_EVENTS = new ArrayList();
@@ -527,10 +527,7 @@ public class JavaFXApplication extends BaseController {
             return;
         }
 
-        this.namedNodes.get(viewName).remove(node.name);
-        this.namedFXNodes.get(viewName).remove(node.name);
-        this.parentNodes.get(viewName).remove(node.name);
-        this.nodeLayouts.get(viewName).remove(node.name);
+        this.deregisterNode(viewName, node.name);
 
         // If the control is a button with a key binding remove the event filter from the scene
         if (this.keyBindings.containsKey(fxNode)) {
@@ -643,8 +640,21 @@ public class JavaFXApplication extends BaseController {
         Pane content = new Pane();
         content.setMinSize(this.primaryDimensions.x, this.primaryDimensions.y);
         content.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        content.setSnapToPixel(true);
         //content.setPrefSize(this.primaryDimensions.x, this.primaryDimensions.y);
         ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setSnapToPixel(true);
+        scrollPane.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                newScene.windowProperty().addListener((obsW, oldW, newW) -> {
+                    if (newW != null) {
+                        newW.setOnShown(e -> {
+                            scrollPane.lookup(".viewport").setCache(false);
+                        });
+                    }
+                });
+            }
+        });
         //scrollPane.setContent(this.tabFolder);
         
         // Configure automatic zooming
@@ -867,9 +877,15 @@ public class JavaFXApplication extends BaseController {
             return;
         }
         
-        double nodeWidth = fxNode.getBoundsInLocal().getWidth();
+        double positionX;
+        if (layout.position == null) {
+            positionX = 0;
+        } else {
+            positionX = layout.position.x;
+        }
+        double nodeWidth = fxNode.prefWidth(-1);
         double parentWidth = fxParent.getPrefWidth();
-        Double x = calculateNodeX(layout.horizontalAlignment, layout.position.x, parentWidth, nodeWidth);        
+        Double x = calculateNodeX(layout.horizontalAlignment, positionX, parentWidth, nodeWidth);        
         if (x != null) {
             // Prevent placing the child node directly on the right edge of the parent node to prevent issues
             if ((nodeWidth < parentWidth - 1) && ((x + nodeWidth) >= parentWidth - 1)) {
@@ -879,9 +895,15 @@ public class JavaFXApplication extends BaseController {
             fxNode.setLayoutX(x);
         }
         
-        double nodeHeight = fxNode.getBoundsInLocal().getHeight();
+        double positionY;
+        if (layout.position == null) {
+            positionY = 0;
+        } else {
+            positionY = layout.position.y;
+        }
+        double nodeHeight = fxNode.prefHeight(-1);
         double parentHeight = fxParent.getPrefHeight();
-        Double y = calculateNodeY(layout.verticalAlignment, layout.position.y, parentHeight, nodeHeight);    
+        Double y = calculateNodeY(layout.verticalAlignment, positionY, parentHeight, nodeHeight);    
         if (y != null) {
             // Prevent placing the child node directly on the bottom edge of the parent node to prevent issues
             if ((nodeHeight < parentHeight - 1) && ((y + nodeHeight) >= parentHeight - 1)) {
@@ -918,7 +940,7 @@ public class JavaFXApplication extends BaseController {
     }
     
     public static Double calculateNodeY(VerticalAlignment alignment, double relativeY, double parentHeight, double nodeHeight) {
-        logger.log(Level.INFO, "Entered: alignment={0}, relativeY={1}, parentWidth={2}, nodeWidth={3}", new Object[]{alignment, relativeY, parentHeight, nodeHeight});
+        logger.log(Level.INFO, "Entered: alignment={0}, relativeY={1}, parentHeight={2}, nodeHeight={3}", new Object[]{alignment, relativeY, parentHeight, nodeHeight});
         
         Double y = null;
         if (alignment == null) {
@@ -1296,56 +1318,206 @@ public class JavaFXApplication extends BaseController {
         }
     }
     
-    public Pane newGroup(String viewName, app.node.Group node, Pane fxPane, app.Color offsetColor) {
-        logger.log(Level.INFO, "Entered: viewName={0}, node={1}, fxPane={2}, offsetColor={3}", new Object[]{viewName, node, fxPane, offsetColor});
+    public Node newGroup(String viewName, app.node.Group node, Pane fxNode, app.Color offsetColor) {
+        logger.log(Level.INFO, "Entered: viewName={0}, node={1}, fxNode={2}, offsetColor={3}", new Object[]{viewName, node, fxNode, offsetColor});
         
-        if (fxPane != null) {
-            fxPane.getChildren().clear();
+        if (fxNode != null) {
+            fxNode.getChildren().clear();
         }
     
         Class<?> groupClass = node.getClass();
         if (groupClass.equals(app.node.VerticalGroup.class)) {
             VBox vbox;
-            if (fxPane == null) {
+            if (fxNode == null) {
                 vbox = new VBox();
             } else {
-                vbox = (VBox) fxPane;
+                vbox = (VBox) fxNode;
             }
             vbox.setBorder(new Border(new BorderStroke(Color.rgb(offsetColor.red, offsetColor.green, offsetColor.blue), BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
             vbox.setAlignment(Pos.CENTER);
             vbox.setFillWidth(false); // Allow children to stay at their preferred widths and be centered 
-            fxPane = vbox;
+            fxNode = vbox;
         } else if (groupClass.equals(app.node.HorizontalGroup.class)) {
             HBox hbox;
-            if (fxPane == null) {
+            if (fxNode == null) {
                 hbox = new HBox();
             } else {
-                hbox = (HBox) fxPane;
+                hbox = (HBox) fxNode;
             }
             hbox.setBorder(new Border(new BorderStroke(Color.rgb(offsetColor.red, offsetColor.green, offsetColor.blue), BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
             hbox.setAlignment(Pos.CENTER);
-            fxPane = hbox;
+            fxNode = hbox;
+        } else if (groupClass.equals(app.node.Document.class)) {
+            TextFlow flow;
+            if (fxNode == null) {
+                flow = this.newLabel(viewName, new app.node.Label(node.name), null, offsetColor, FontSmoothingType.LCD);
+            } else {
+                flow = this.newLabel(viewName, new app.node.Label(node.name), (TextFlow) fxNode, offsetColor, FontSmoothingType.LCD);
+            }
         } else {
             logger.log(Level.SEVERE, "Unsupported group: {0}", groupClass);
             return null;
         }
-        fxPane.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        fxNode.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         if (node.backgroundColor == null) {
-            fxPane.setBackground(Background.EMPTY);
+            fxNode.setBackground(Background.EMPTY);
         } else {
             Color fxBackgroundColor = Color.rgb(node.backgroundColor.red, node.backgroundColor.green, node.backgroundColor.blue);
-            fxPane.setBackground(new Background(new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY)));
+            fxNode.setBackground(new Background(new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY)));
         }
-        this.namedFXNodes.get(viewName).put(node.name, fxPane);
+        this.namedFXNodes.get(viewName).put(node.name, fxNode);
+        
+        return fxNode;
+    }
+    
+    public Pane newPane(String viewName, app.node.Pane node, Pane fxPane, app.Color offsetColor) {
+        logger.log(Level.INFO, "Entered: viewName={0}, node={1}, fxTextBox={2}, offsetColor={3}", new Object[]{viewName, node, fxPane, offsetColor});
+        
+        if (fxPane == null) {
+            fxPane = new Pane();
+            fxPane.setSnapToPixel(true);
+            fxPane.setPadding(Insets.EMPTY);
+        }
+
+        fxPane.setCache(false);
+        Color fxBackgroundColor;
+        if (node.backgroundColor == null) {
+            fxBackgroundColor = Color.TRANSPARENT;
+        } else {
+            fxBackgroundColor = Color.rgb(node.backgroundColor.red, node.backgroundColor.green, node.backgroundColor.blue);
+        }
+        fxPane.setBackground(new Background(new BackgroundFill(
+            fxBackgroundColor,
+            CornerRadii.EMPTY, 
+            Insets.EMPTY      // To prevent blurry text
+        )));
+        fxPane.setPadding(Insets.EMPTY);
+        fxPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
+        fxPane.setCache(false);
+        if (node.borderWidth != null) {
+            fxPane.setBorder(new Border(new BorderStroke(Color.rgb(offsetColor.red, offsetColor.green, offsetColor.blue), BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
+        }
         
         return fxPane;
+    }
+    
+    public ScrollPane newScrollingPane(String viewName, app.node.ScrollingPane node, ScrollPane scrollPane, app.Color offsetColor) {
+        logger.log(Level.INFO, "Entered: viewName={0}, node={1}, fxTextBox={2}, offsetColor={3}", new Object[]{viewName, node, scrollPane, offsetColor});
+        
+        Pane fxPane;
+        if (scrollPane != null) {
+            fxPane = (Pane) scrollPane.getContent();
+        } else {
+            fxPane = new Pane();
+            fxPane.setManaged(true);
+            fxPane.setSnapToPixel(true);
+            fxPane.setPadding(Insets.EMPTY);
+            scrollPane = new ScrollPane();
+            scrollPane.setContent(fxPane);
+            scrollPane.setSnapToPixel(true);
+            
+            // Disable the view port's cache once it's ready
+            final ScrollPane finalScrollPane = scrollPane;
+            scrollPane.sceneProperty().addListener((obs, oldScene, newScene) -> {
+                if (newScene != null) {
+                    newScene.windowProperty().addListener((obsW, oldW, newW) -> {
+                        if (newW != null) {
+                            newW.setOnShown(e -> {
+                                finalScrollPane.lookup(".viewport").setCache(false);
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+        // Allow text to be scrolled if needed
+        fxPane.setCache(false);
+        scrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
+        scrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
+        scrollPane.setFitToWidth(true);
+        Color fxBackgroundColor;
+        if (node.backgroundColor == null) {
+            fxBackgroundColor = Color.TRANSPARENT;
+        } else {
+            fxBackgroundColor = Color.rgb(node.backgroundColor.red, node.backgroundColor.green, node.backgroundColor.blue);
+        }
+        scrollPane.setBackground(new Background(new BackgroundFill(
+            fxBackgroundColor,
+            CornerRadii.EMPTY, 
+            Insets.EMPTY      // To prevent blurry text
+        )));
+        scrollPane.setPadding(Insets.EMPTY);
+        scrollPane.getStyleClass().add("edge-to-edge"); // Removes the border
+        scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
+        scrollPane.setCache(false);
+        fxPane.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE); // Fill the scroll pane.  The scroll pane will be scaled as needed.
+        
+        return scrollPane;
+    }
+    
+    public ScrollPane newScrollingDocument(String viewName, app.node.ScrollingDocument node, ScrollPane scrollPane, app.Color offsetColor) {
+        logger.log(Level.INFO, "Entered: viewName={0}, node={1}, fxTextBox={2}, offsetColor={3}", new Object[]{viewName, node, scrollPane, offsetColor});
+        
+        TextFlow fxDocument;
+        if (scrollPane != null) {
+            fxDocument = (TextFlow) scrollPane.getContent();
+            fxDocument = newDocument(viewName, node, fxDocument, offsetColor);
+            scrollPane.setContent(fxDocument);
+        } else {
+            fxDocument = newDocument(viewName, node, null, offsetColor);
+            fxDocument.setManaged(true);
+            fxDocument.setSnapToPixel(true);
+            fxDocument.setPadding(Insets.EMPTY);
+            scrollPane = new ScrollPane();
+            scrollPane.setContent(fxDocument);
+            scrollPane.setSnapToPixel(true);
+            
+            // Disable the view port's cache once it's ready
+            final ScrollPane finalScrollPane = scrollPane;
+            scrollPane.sceneProperty().addListener((obs, oldScene, newScene) -> {
+                if (newScene != null) {
+                    newScene.windowProperty().addListener((obsW, oldW, newW) -> {
+                        if (newW != null) {
+                            newW.setOnShown(e -> {
+                                finalScrollPane.lookup(".viewport").setCache(false);
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+        // Allow text to be scrolled if needed
+        fxDocument.setCache(false);
+        scrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
+        scrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
+        scrollPane.setFitToWidth(true);
+        Color fxBackgroundColor;
+        if (node.backgroundColor == null) {
+            fxBackgroundColor = Color.TRANSPARENT;
+        } else {
+            fxBackgroundColor = Color.rgb(node.backgroundColor.red, node.backgroundColor.green, node.backgroundColor.blue);
+        }
+        scrollPane.setBackground(new Background(new BackgroundFill(
+            fxBackgroundColor,
+            CornerRadii.EMPTY, 
+            Insets.EMPTY      // To prevent blurry text
+        )));
+        scrollPane.setPadding(Insets.EMPTY);
+        scrollPane.getStyleClass().add("edge-to-edge"); // Removes the border
+        scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
+        scrollPane.setCache(false);
+        fxDocument.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE); // Fill the scroll pane.  The scroll pane will be scaled as needed.
+        
+        return scrollPane;
     }
     
     public Pane newInputField(String viewName, app.node.InputField node, Pane fxBox, app.Color offsetColor) {
         logger.log(Level.INFO, "Entered: viewName={0}, node={1}, fxBox={2}, offsetColor={3}", new Object[]{viewName, node, fxBox, offsetColor});
     
         if (fxBox == null) {
-            fxBox = newGroup(viewName, node.group, fxBox, offsetColor);
+            fxBox = (Pane) newGroup(viewName, node.group, fxBox, offsetColor);
         } else {
             fxBox.getChildren().clear();
         }
@@ -1365,7 +1537,6 @@ public class JavaFXApplication extends BaseController {
         app.node.Button buttonNode = new app.node.Button(node.group.name + " button");
         buttonNode.backgroundColor = node.childBackgroundColor;
         buttonNode.eventListener = node.eventListener;
-        buttonNode.eventName = node.eventName;
         buttonNode.isEnabled = node.isEnabled;
         buttonNode.isMultiUse = node.isMultiUse;
         buttonNode.pixelSize = node.pixelSize;
@@ -1375,6 +1546,19 @@ public class JavaFXApplication extends BaseController {
         this.addNode(viewName, node.group.name, buttonNode, null);
         
         return fxBox;
+    }
+    
+    public Region newSpacer(app.node.Spacer node, Region fxSpacer) {
+        logger.log(Level.INFO, "Entered: node={0}, fxSpacer={1}", new Object[]{node, fxSpacer});
+        if (fxSpacer == null) {
+            fxSpacer = new Region();
+        }
+        if (node.height == null) {
+            fxSpacer.setPrefHeight(DEFAULT_PIXEL_SIZE);
+        } else {
+            fxSpacer.setPrefHeight(node.height);
+        }
+        return fxSpacer;
     }
     
     public TextField newField(app.node.Field node, TextField fxTextField, app.Color offsetColor) {
@@ -1519,7 +1703,7 @@ public class JavaFXApplication extends BaseController {
                 if (!node.isMultiUse) {
                     fxButtonFinal.setDisable(true);
                 }
-                node.eventListener.onEvent(node.eventName, null);
+                node.eventListener.onEvent(node.name, null);
             });
         }
         
@@ -1539,11 +1723,6 @@ public class JavaFXApplication extends BaseController {
     
     public TextFlow newLabel(String viewName, app.node.Label node, TextFlow fxLabel, app.Color offsetColor, FontSmoothingType fst) {
         logger.log(Level.INFO, "Entered: viewName={0}, node={1}, fxLabel={2}, offsetColor={3}, fst={4}", new Object[]{viewName, node, fxLabel, offsetColor, fst});
-        
-        // Labels (like Strings) are immutable
-        if (fxLabel != null) {
-            this.removeNode(viewName, node.name);
-        }
         
         String font;
         if (node.textFont == null) {
@@ -1568,19 +1747,30 @@ public class JavaFXApplication extends BaseController {
         
         app.FontStyle fontStyle;
         if (node.textStyle == null) {
+            logger.log(Level.INFO, "Text style not set, defaulting to normal");
             fontStyle = app.FontStyle.NORMAL;
         } else {
+            logger.log(Level.INFO, "Text style set to {0}", node.textStyle);
             fontStyle = node.textStyle;
         }
         
         // Use a graphic instead of text to support formatted text
-        fxLabel = this.stringToTextFlow(node.text, font, textColor, pixelSize, fontStyle, fst);
+        if (fxLabel == null) {
+            fxLabel = this.stringToTextFlow(node.text.toString(), font, textColor, pixelSize, fontStyle, fst);
+        } else {
+            // TODO - Update the values that are passed to stringToTextFlow
+        }
         
+        // TODO - Only set the following values if they're changing
         if (node.backgroundColor != null) {
             Color fxBackgroundColor = Color.rgb(node.backgroundColor.red, node.backgroundColor.green, node.backgroundColor.blue);
             fxLabel.setBackground(new Background(new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY)));
         } else {
             fxLabel.setBackground(Background.EMPTY); // Transparent        
+        }
+        
+        if (node.borderWidth != null) {
+            fxLabel.setBorder(new Border(new BorderStroke(Color.rgb(offsetColor.red, offsetColor.green, offsetColor.blue), BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
         }
         
         return fxLabel;
@@ -1613,6 +1803,28 @@ public class JavaFXApplication extends BaseController {
         label.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE); // Fill the scroll pane.  The scroll pane will be scaled as needed.
         
         return fxTextBox;
+    }
+    
+    public TextFlow newDocument(String viewName, app.node.Document node, TextFlow fxDocument, app.Color offsetColor) {
+        logger.log(Level.INFO, "Entered: viewName={0}, node={1}, fxLabel={2}, offsetColor={3}", new Object[]{viewName, node, fxDocument, offsetColor});
+        
+        if (fxDocument == null) {
+            fxDocument = new TextFlow();
+        }
+        
+        // TODO - Only set the following values if they're changing
+        if (node.backgroundColor != null) {
+            Color fxBackgroundColor = Color.rgb(node.backgroundColor.red, node.backgroundColor.green, node.backgroundColor.blue);
+            fxDocument.setBackground(new Background(new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY)));
+        } else {
+            fxDocument.setBackground(Background.EMPTY); // Transparent        
+        }
+        
+        if (node.borderWidth > 0) {
+            fxDocument.setBorder(new Border(new BorderStroke(Color.rgb(offsetColor.red, offsetColor.green, offsetColor.blue), BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
+        }
+        
+        return fxDocument;
     }
     
     public Rectangle newRectangle(app.node.Rectangle node, Rectangle fxRectangle, app.Color offsetColor) {
@@ -1746,7 +1958,7 @@ public class JavaFXApplication extends BaseController {
         if (node.eventListener != null) {
             fxHyperlink.setOnAction(e -> {
                 logger.log(Level.INFO, "Link selected: name={0}", node.name);
-                node.eventListener.onEvent(node.eventName, null);
+                node.eventListener.onEvent(node.name, null);
             });
         }
         
@@ -1788,40 +2000,55 @@ public class JavaFXApplication extends BaseController {
         app.Color offsetColor = view.backgroundColor.getOffset();
         Node fxParent = this.namedFXNodes.get(viewName).get(parentName);
         if (fxParent == null) {
-            logger.log(Level.SEVERE, "Parent with provided name not found");
+            logger.log(Level.SEVERE, "FX parent with provided name not found");
             return;
         }
+        BaseNode parent = this.namedNodes.get(viewName).get(parentName);
         Boolean isNew = (fxNode == null);
         
         // TODO - This is ugly.  Parent nodes do not have a base type with public getPrefWidth() and getPrefHeight() methods so each parent class needs to be handled.
         double parentWidth;
         double parentHeight;
         Class<?> parentControlClass = fxParent.getClass();
-        if (parentControlClass.equals(Pane.class)) {
+        if (parentControlClass == Pane.class) {
             Pane pane = (Pane) fxParent;
             parentWidth = pane.getPrefWidth();
             parentHeight = pane.getPrefHeight();
-        } else if (parentControlClass.equals(StackPane.class)) {
+        } else if (parentControlClass == StackPane.class) {
             StackPane pane = (StackPane) fxParent;
             parentWidth = pane.getPrefWidth();
             parentHeight = pane.getPrefHeight();
-        } else if (parentControlClass.equals(HBox.class)) {
+        } else if (parentControlClass == HBox.class) {
             HBox box = (HBox) fxParent;
             parentWidth = box.getPrefWidth();
             parentHeight = box.getPrefHeight();
-        } else if (parentControlClass.equals(VBox.class)) {
+        } else if (parentControlClass == VBox.class) {
             VBox box = (VBox) fxParent;
             parentWidth = box.getPrefWidth();
             parentHeight = box.getPrefHeight();
+        } else if (parentControlClass == TextFlow.class) {
+            TextFlow flow = (TextFlow) fxParent;
+            parentWidth = flow.getPrefWidth();
+            parentHeight = flow.getPrefHeight();
+        } else if (parentControlClass == FlowPane.class) {
+            FlowPane pane = (FlowPane) fxParent;
+            parentWidth = pane.getPrefWidth();
+            parentHeight = pane.getPrefHeight();
+        } else if (parentControlClass == ScrollPane.class) {
+            ScrollPane pane = (ScrollPane) fxParent;
+            parentWidth = pane.getPrefWidth();
+            parentHeight = pane.getPrefHeight();
         } else {
             logger.log(Level.SEVERE, "Parent does not have a supported class: {0}", parentControlClass.getSimpleName());
             return;
         }
         
-        Class<?> childClass = node.getClass();
-        if (childClass.equals(app.node.Link.class)) {
+        // TODO - The container nodes should call into publishNode instead of addNode, looking up any pre-existing fxChild node
+        logger.log(Level.INFO, "Instancing fx version of node {0}", node.name);
+        Class<?> nodeClass = node.getClass();
+        if (nodeClass == app.node.Link.class) {
             fxNode = this.newLink((app.node.Link) node, (Hyperlink) fxNode, offsetColor);
-        } else if (childClass.equals(app.node.Button.class)) {
+        } else if (nodeClass == app.node.Button.class) {
             fxNode = this.newButton((app.node.Button) node, (Button) fxNode, offsetColor);
             Button button = (Button) fxNode;
             if (node.scaleX != null) {
@@ -1830,20 +2057,24 @@ public class JavaFXApplication extends BaseController {
             if (node.scaleY != null) {
                 button.setPrefHeight(parentHeight * node.scaleY);
             }
-        } else if (childClass.equals(app.node.Field.class)) {
+        } else if (nodeClass == app.node.Field.class) {
             fxNode = this.newField((app.node.Field) node, (TextField) fxNode, offsetColor);
-        } else if (childClass.equals(app.node.InputField.class)) {
+        } else if (nodeClass == app.node.InputField.class) {
             fxNode = this.newInputField(viewName, (app.node.InputField) node, (Pane) fxNode, offsetColor);
-        } else if (childClass.equals(app.node.Label.class)) {
+        } else if (nodeClass == app.node.Label.class) {
             fxNode = this.newLabel(viewName, (app.node.Label) node, (TextFlow) fxNode, offsetColor, FontSmoothingType.LCD);
             TextFlow flow = (TextFlow) fxNode;
             if (node.scaleX != null) {
-                flow.setPrefWidth(parentWidth * node.scaleX);
+                double prefWidth = parentWidth * node.scaleX;
+                flow.setPrefWidth(prefWidth);
+                flow.setMaxWidth(prefWidth);
+            } else {
+                flow.setMaxWidth(parentWidth);
             }
             if (node.scaleY != null) {
                 flow.setPrefHeight(parentHeight * node.scaleY);
             }
-        } else if (childClass.equals(app.node.ScrollingLabel.class)) {
+        } else if (nodeClass == app.node.ScrollingLabel.class) {
             fxNode = this.newScrollingLabel(viewName, (app.node.Label) node, (VBox) fxNode, offsetColor);
             VBox flowBox = (VBox) fxNode;
             ScrollPane sp = (ScrollPane)flowBox.getChildren().get(0); // TODO - This is ugly
@@ -1855,19 +2086,62 @@ public class JavaFXApplication extends BaseController {
                 flowBox.setPrefHeight(parentHeight * node.scaleY);
                 sp.setPrefHeight(parentHeight * node.scaleY);
             }
-        } else if (childClass.equals(app.node.Image.class)) {
+        } else if (nodeClass == app.node.Document.class) {
+            fxNode = this.newDocument(viewName, (app.node.Document) node, (TextFlow) fxNode, offsetColor);
+            TextFlow flow = (TextFlow) fxNode;
+            if (node.scaleX != null) {
+                double prefWidth = parentWidth * node.scaleX;
+                flow.setPrefWidth(prefWidth);
+            }
+            if (node.scaleY != null) {
+                flow.setPrefHeight(parentHeight * node.scaleY);
+            }
+        } else if (nodeClass == app.node.ScrollingDocument.class) {
+            fxNode = this.newScrollingDocument(viewName, (app.node.ScrollingDocument) node, (ScrollPane) fxNode, offsetColor);
+            ScrollPane sp = (ScrollPane) fxNode;
+            if (node.scaleX != null) {
+                double prefWidth = parentWidth * node.scaleX;
+                sp.setPrefWidth(prefWidth);
+            }
+            if (node.scaleY != null) {
+                double prefHeight = parentHeight * node.scaleY;
+                sp.setPrefHeight(prefHeight);
+            }
+        } else if (nodeClass == app.node.Pane.class) {
+            fxNode = this.newPane(viewName, (app.node.Pane) node, (Pane) fxNode, offsetColor);
+            Pane pane = (Pane) fxNode;
+            if (node.scaleX != null) {
+                double prefWidth = parentWidth * node.scaleX;
+                pane.setPrefWidth(prefWidth);
+            }
+            if (node.scaleY != null) {
+                double prefHeight = parentHeight * node.scaleY;
+                pane.setPrefHeight(prefHeight);
+            }
+        } else if (nodeClass == app.node.ScrollingPane.class) {
+            fxNode = this.newScrollingPane(viewName, (app.node.ScrollingPane) node, (ScrollPane) fxNode, offsetColor);
+            ScrollPane sp = (ScrollPane) fxNode;
+            if (node.scaleX != null) {
+                double prefWidth = parentWidth * node.scaleX;
+                sp.setPrefWidth(prefWidth);
+            }
+            if (node.scaleY != null) {
+                double prefHeight = parentHeight * node.scaleY;
+                sp.setPrefHeight(prefHeight);
+            }
+        } else if (nodeClass == app.node.Image.class) {
             fxNode = this.newImage((app.node.Image) node, (ImageView) fxNode);
-        } else if (childClass.equals(app.node.HorizontalGroup.class)) {
+        } else if (nodeClass == app.node.HorizontalGroup.class) {
             fxNode = this.newGroup(viewName, (app.node.HorizontalGroup) node, (Pane) fxNode, offsetColor);
             for (BaseNode childNode : ((app.node.Group) node).nodes) {
                 this.addNode(viewName, node.name, childNode, null);
             }
-        } else if (childClass.equals(app.node.VerticalGroup.class)) {
+        } else if (nodeClass == app.node.VerticalGroup.class) {
             fxNode = this.newGroup(viewName, (app.node.VerticalGroup) node, (Pane) fxNode, offsetColor);
             for (BaseNode childNode : ((app.node.Group) node).nodes) {
                 this.addNode(viewName, node.name, childNode, null);
             }
-        } else if (childClass.equals(app.node.Rectangle.class)) {
+        } else if (nodeClass == app.node.Rectangle.class) {
             fxNode = this.newRectangle((app.node.Rectangle) node, (Rectangle) fxNode, offsetColor);
             Rectangle rectangle = (Rectangle) fxNode;
             if (node.scaleX != null) {
@@ -1876,8 +2150,18 @@ public class JavaFXApplication extends BaseController {
             if (node.scaleY != null) {
                 rectangle.setHeight(parentHeight * node.scaleY);
             }
+        } else if (nodeClass == app.node.Spacer.class) {
+            // TODO - Instance a new Region
+            fxNode = this.newSpacer((app.node.Spacer) node, (Region) fxNode);
+            Region region = (Region) fxNode;
+            if (node.scaleX != null) {
+                region.setPrefWidth(parentWidth * node.scaleX);
+            }
+            if (node.scaleY != null) {
+                region.setPrefHeight(parentHeight * node.scaleY);
+            }
         } else {
-            logger.log(Level.SEVERE, "Class is not a supported child class: {0}", childClass.getSimpleName());
+            logger.log(Level.SEVERE, "Class is not a supported child class: {0}", nodeClass.getSimpleName());
             return;
         }
 
@@ -1890,7 +2174,7 @@ public class JavaFXApplication extends BaseController {
             fxNode.applyCss();
             double width = fxNode.prefWidth(-1);
             double height = fxNode.prefHeight(-1);
-            logger.log(Level.INFO, "Temp dimensions for {0} = {1}x{2}p", new Object[]{childClass, width, height});
+            logger.log(Level.INFO, "Temp dimensions for {0} = {1}x{2}p", new Object[]{nodeClass, width, height});
             ((javafx.scene.Group)fxNode.getScene().getRoot()).getChildren().remove(fxNode);
         }
         
@@ -1900,39 +2184,103 @@ public class JavaFXApplication extends BaseController {
         }
         
         // TODO - This is ugly.  Parent nodes do not have a base type (Parent) with a public getChildren() method so each parent class needs to be handled.
-        if (parentControlClass.equals(Pane.class)) {
+        Class<?> parentClass;
+        if (parent != null) {
+            parentClass = parent.getClass();
+            logger.log(Level.INFO, "Evaluating parent {0}", parentClass);
+        } else {
+            parentClass = null;
+            logger.log(Level.INFO, "Evaluating null parent");
+        }
+        if (parentControlClass== Pane.class) {
             Pane pane = (Pane) fxParent;
             if (isNew) {
+                logger.log(Level.INFO, "Adding node to pane");
                 pane.getChildren().add(fxNode);
             }
             pane.layout();
             positionNode(pane, node, layout, fxNode);
-        } else if (parentControlClass.equals(StackPane.class)) {
+        } else if (parentControlClass == StackPane.class) {
             StackPane pane = (StackPane) fxParent;
             if (isNew) {
+                logger.log(Level.INFO, "Adding node to stack pane");
                 pane.getChildren().add(fxNode);
             }
-        } else if (parentControlClass.equals(HBox.class)) {
+        } else if (parentClass == app.node.ScrollingPane.class) {
+            ScrollPane sp = (ScrollPane) fxParent;
+            if (isNew) {
+                logger.log(Level.INFO, "Adding node to scroll pane");
+                Pane pane = (Pane) sp.getContent();
+                pane.getChildren().add(fxNode);
+                pane.layout();
+                positionNode(pane, node, layout, fxNode);
+            }
+        } else if (parentControlClass == HBox.class) {
             HBox.setHgrow(fxNode, Priority.NEVER); // Preventing HBox from stretching children horizontally just to fill its width
             HBox box = (HBox) fxParent;
             if (isNew) {
+                logger.log(Level.INFO, "Adding node to HBox");
                 box.getChildren().add(fxNode);
             }
-        } else if (parentControlClass.equals(VBox.class)) {
+        }  else if (parentClass == app.node.ScrollingDocument.class) {
+            // TODO - Most of this is redundant with Document handling above
+            ScrollPane scrollPane = (ScrollPane) fxParent;
+            TextFlow flow = (TextFlow) scrollPane.getContent();
+            if (isNew) {
+                if (nodeClass == app.node.Label.class) {
+                    // TODO - This is ugly and breaks any effects that might be added
+                    // Decompose the textflow into its individual children and add them one by one to allow the FlowPane to handle the baseline alignment.
+                    TextFlow label = (TextFlow) fxNode;
+                    List<Node> textFlowNodes = new ArrayList();
+                    for (Node flowNode : label.getChildren()) {
+                        textFlowNodes.add(flowNode);
+                    }
+                    logger.log(Level.INFO, "Adding TextFlow children to scrolling document");
+                    for (Node textFlowNode : textFlowNodes) {
+                        if (textFlowNode.getClass() == Text.class) {
+                            Text textNode = (Text) textFlowNode;
+                            logger.log(Level.INFO, "Fixing font smoothing type for scrolling document's text");
+                            textNode.setFontSmoothingType(FontSmoothingType.GRAY);
+                        }
+                        flow.getChildren().add(textFlowNode);
+                    }
+                } else {
+                    logger.log(Level.INFO, "Adding node {0} to scrolling document", nodeClass);
+                    flow.getChildren().add(fxNode);
+                }
+                flow.requestLayout();
+            }
+        } else if (parentControlClass == VBox.class) {
             VBox.setVgrow(fxNode, Priority.NEVER); // Preventing VBox from stretching children vertically just to fill its height
             VBox box = (VBox) fxParent;
             if (isNew) {
+                logger.log(Level.INFO, "Adding node to VBox");
                 box.getChildren().add(fxNode);
+            }
+        } else if (parentClass == app.node.Document.class) {
+            TextFlow flow = (TextFlow) fxParent;
+            if (isNew) {
+                if (nodeClass == app.node.Label.class) {
+                    // Decompose the textflow into its individual children and add them one by one to allow the FlowPane to handle the baseline alignment.
+                    TextFlow label = (TextFlow) fxNode;
+                    List<Node> textFlowNodes = new ArrayList();
+                    for (Node flowNode : label.getChildren()) {
+                        textFlowNodes.add(flowNode);
+                    }
+                    for (Node textFlowNode : textFlowNodes) {
+                        flow.getChildren().add(textFlowNode);
+                    }
+                } else {
+                    flow.getChildren().add(fxNode);
+                }
+                flow.layout();
             }
         } else {
             logger.log(Level.SEVERE, "Parent does not have a supported class: {0}", parentControlClass.getSimpleName());
             return;
         }
         
-        this.namedNodes.get(viewName).put(node.name, node);
-        this.namedFXNodes.get(viewName).put(node.name, fxNode);
-        this.parentNodes.get(viewName).put(node.name, parentName);
-        this.nodeLayouts.get(viewName).put(node.name, layout);
+        this.registerNode(viewName, node, fxNode, parentName, layout);
         
         double width = fxNode.prefWidth(-1); //fxChild.getBoundsInLocal().getWidth();
         double relativeWidth = width / parentWidth;
@@ -1944,7 +2292,38 @@ public class JavaFXApplication extends BaseController {
         double relativeY = y / parentHeight;
         RelativeBounds relativeBounds = new RelativeBounds(new RelativeCoordinates(relativeX, relativeY), relativeWidth, relativeHeight);
         node.onEvent(NODE_PUBLISHED_EVENT, relativeBounds); // Let the node know its bounds
-        logger.log(Level.INFO, "Added node {0} {1} at ({2},{3}), width={4}, height={5} using parent pixel width={6}, parent pixel height={7}, pixel width={8}, pixel height={9}", new Object[]{childClass.getSimpleName(), node.name, relativeX, relativeY, relativeWidth, relativeHeight, parentWidth, parentHeight, width, height});
+        logger.log(Level.INFO, "Added node {0} {1} at ({2},{3}), width={4}, height={5} using parent pixel width={6}, parent pixel height={7}, pixel width={8}, pixel height={9}", new Object[]{nodeClass.getSimpleName(), node.name, relativeX, relativeY, relativeWidth, relativeHeight, parentWidth, parentHeight, width, height});
+        
+        // Publish any child nodes for the node
+        if (nodeClass == app.node.Document.class) {
+            for (BaseNode childNode : ((app.node.Document) node).nodes) {
+                Node fxChildNode = this.namedFXNodes.get(viewName).get(childNode.name); // If the child node already exists, get it so it can be updated
+                Layout childLayout = this.nodeLayouts.get(viewName).get(childNode.name); // If the child node's layout already exists, get it
+                this.publishNode(viewName, node.name, childNode, childLayout, fxChildNode);
+            }
+        } else if (nodeClass == app.node.ScrollingDocument.class) {
+            for (BaseNode childNode : ((app.node.ScrollingDocument) node).nodes) {
+                Node fxChildNode = this.namedFXNodes.get(viewName).get(childNode.name); // If the child node already exists, get it so it can be updated
+                Layout childLayout = this.nodeLayouts.get(viewName).get(childNode.name); // If the child node's layout already exists, get it
+                this.publishNode(viewName, node.name, childNode, childLayout, fxChildNode);
+            }
+        }
+    }
+    
+    public void registerNode(String viewName, app.node.BaseNode node, Node fxNode, String parentName, app.Layout layout) {
+        logger.log(Level.INFO, "Entered: viewName={0}, node={1}, fxNode={2}, parentName={3}, layout={4}", new Object[]{viewName, node, fxNode, parentName, layout});
+        this.namedNodes.get(viewName).put(node.name, node);
+        this.namedFXNodes.get(viewName).put(node.name, fxNode);
+        this.parentNodes.get(viewName).put(node.name, parentName);
+        this.nodeLayouts.get(viewName).put(node.name, layout);
+    }
+    
+    public void deregisterNode(String viewName, String nodeName) {
+        logger.log(Level.INFO, "Entered: viewName={0}, nodeName={1}", new Object[]{viewName, nodeName});
+        this.namedNodes.get(viewName).remove(nodeName);
+        this.namedFXNodes.get(viewName).remove(nodeName);
+        this.parentNodes.get(viewName).remove(nodeName);
+        this.nodeLayouts.get(viewName).remove(nodeName);
     }
     
     // TODO - Make this newGrid() and add to addNode()
@@ -2145,7 +2524,7 @@ public class JavaFXApplication extends BaseController {
     }
     
     public Text stringToText(String string, String fontName, app.Color fontColor, Integer fontSize, app.FontStyle fontStyle, FontSmoothingType fst) {
-        logger.log(Level.FINE, "Entered", new Object[]{string, fontName, fontColor, fontSize, fontStyle, fst});
+        logger.log(Level.INFO, "Entered: string={0}, fontName={1}, fontColor={2}, fontSize={3}, fontStyle={4}, fst={5}", new Object[]{string, fontName, fontColor, fontSize, fontStyle, fst});
         
         Text text = new Text(string);
         
@@ -2323,10 +2702,12 @@ public class JavaFXApplication extends BaseController {
     
     public TextFlow stringToTextFlow(String string, String fontName, app.Color fontColor, Integer fontSize, app.FontStyle fontStyle, FontSmoothingType fst) {
         if ((string == null) || (string.isEmpty())) {
-            return null;
+            return new TextFlow();
         }
         
         TextFlow textFlow = new TextFlow();
+        
+        String nonEmojiText = "";
         
         // \X matches a "Unicode extended grapheme cluster" (the full emoji)
         Matcher matcher = Pattern.compile("\\X").matcher(string);
@@ -2335,15 +2716,26 @@ public class JavaFXApplication extends BaseController {
             // Check if the cluster contains a character intended to be an emoji
             boolean isEmoji = isEmoji(cluster);
             if (isEmoji) {
+                // Add and reset accumulated normal text
+                if (!nonEmojiText.isEmpty()) {
+                    Text textNode = stringToText(nonEmojiText, fontName, fontColor, fontSize, fontStyle, fst);
+                    textFlow.getChildren().add(textNode);
+                    nonEmojiText = "";
+                }
+                
                 // Emoji - Add an ImageView
                 System.out.println("JavaFXApplication: stringToTextFlow: Handling emoji: " + cluster);
                 ImageView emojiView = this.stringToEmoji(cluster, fontSize);
                 textFlow.getChildren().add(emojiView);
             } else {
-                // Normal text - Add a Text node
-                Text textNode = stringToText(cluster, fontName, fontColor, fontSize, fontStyle, fst);
-                textFlow.getChildren().add(textNode);
+                // Normal text - Accumulate character(s)
+                nonEmojiText += cluster;
             }
+        }
+        
+        if (!nonEmojiText.isEmpty()) {
+            Text textNode = stringToText(nonEmojiText, fontName, fontColor, fontSize, fontStyle, fst);
+            textFlow.getChildren().add(textNode);
         }
 
         return textFlow;

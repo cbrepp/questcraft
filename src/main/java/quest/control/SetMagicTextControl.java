@@ -1,6 +1,7 @@
 
 package quest.control;
 
+import app.Color;
 import quest.view.Quest;
 
 /**
@@ -19,7 +20,12 @@ public class SetMagicTextControl extends QuestControl {
     public String onExecute(String tag) {
         System.out.println("SetMagicTextControl: onExecute: tag=" + tag);
         String value = getTagToken(tag, 1, false);
-        this.quest.magicText = (value.toLowerCase().equals("true"));
+        Boolean isOn = (value.toLowerCase().equals("true"));
+        if (isOn) {
+            this.quest.defaultTextColor = Color.DARK_MAGENTA;
+        } else {
+            this.quest.defaultTextColor = null;
+        }
         return "";
     }
     

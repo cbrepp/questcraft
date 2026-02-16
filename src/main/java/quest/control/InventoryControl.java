@@ -34,6 +34,7 @@ public class InventoryControl extends QuestControl implements EventListener {
         
         String inventoryItemName = getTagToken(tag, 1, true);
         
+        /*
         int realRow = this.quest.titleRow + this.quest.textRow + 1;
         int startingColumn;
         int endingColumn;
@@ -47,6 +48,7 @@ public class InventoryControl extends QuestControl implements EventListener {
         
         int realColumn = startingColumn + this.quest.textColumn - 1;
         System.out.println("InventoryControl: onExecute: textColumn=" + this.quest.textColumn + ", realColumn=" + realColumn);
+        */
         
         Set<String> keySet;
         if (inventoryItemName.equals("")) {
@@ -60,11 +62,12 @@ public class InventoryControl extends QuestControl implements EventListener {
         
         int totalLength = 0;
         for (String key : keySet) {
-            System.out.println("InventoryControl: onExecute: realRow=" + realRow + ", realColumn=" + realColumn + ", key=" + key);
+            //System.out.println("InventoryControl: onExecute: realRow=" + realRow + ", realColumn=" + realColumn + ", key=" + key);
             InventoryItem questItem = this.quest.inventory.get(key);
             InventoryItem bookItem = this.quest.book.inventory.get(key);
             String emojis = String.join(" ", bookItem.emojis);
             
+            /*
             String linkText;
             int linkTextLength;
             if (inventoryItemName.equals("")) {
@@ -89,11 +92,11 @@ public class InventoryControl extends QuestControl implements EventListener {
             Link linkControl = new Link(key);
             linkControl.text = linkText;
             linkControl.eventListener = this;
-            linkControl.eventName = key;
             this.quest.appController.addNode(this.quest.name, this.quest.name, linkControl, new Layout(new RelativeCoordinates(0.25, 0.25), HorizontalAlignment.LEFT, VerticalAlignment.TOP));
             //this.quest.appController.displayLink(this.quest.name, key, linkText, realRow, realColumn, linkTextLength, this);
             realColumn = realColumn + linkTextLength;
             totalLength += linkTextLength;
+            */
         }
         
         String placeholderSpaces = String.valueOf(' ').repeat(totalLength);

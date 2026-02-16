@@ -4,6 +4,7 @@ import app.*;
 import static app.controller.BaseController.NODE_PUBLISHED_EVENT;
 import static app.controller.BaseController.logger;
 import app.node.effect.BaseEffect;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -12,7 +13,7 @@ import java.util.logging.Level;
  *
  * @author repp
  */
-public abstract class BaseNode implements EventListener {
+public abstract class BaseNode implements EventListener, Serializable {
     
     private RelativeBounds bounds; // Boundaries of the node (once published)
     public List<BaseEffect> effects = new ArrayList(); // Default (null/empty) is no effects

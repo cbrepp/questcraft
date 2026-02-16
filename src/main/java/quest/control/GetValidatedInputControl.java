@@ -4,8 +4,10 @@ package quest.control;
 import app.HorizontalAlignment;
 import app.VerticalAlignment;
 import app.Layout;
+import static app.controller.BaseController.logger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.logging.Level;
 import quest.view.Quest;
 
 /**
@@ -22,7 +24,7 @@ public class GetValidatedInputControl extends QuestControl {
     
     @Override
     public String onExecute(String tag) {
-        System.out.println("GetValidatedInputControl: onExecute: tag=" + tag);
+        logger.log(Level.INFO, "Entered: tag={0}", tag);
         String variable = getTagToken(tag, 1, false);
         HorizontalAlignment alignment = HorizontalAlignment.LEFT;
         String values = "";
@@ -54,6 +56,7 @@ public class GetValidatedInputControl extends QuestControl {
         }
         ArrayList<String> valueList = new ArrayList<>(Arrays.asList(values.split("\\+")));
         String eventName = Quest.VARIABLE_EVENT_PREFIX + ":" + variable;
+        /*
         int startColumn;
         int endColumn;
         if (this.quest.currentDisplayPage == Quest.RIGHT_PAGE) {
@@ -67,6 +70,7 @@ public class GetValidatedInputControl extends QuestControl {
         this.quest.appController.displayValidatedInputField(this.quest.name, eventName, valueList, realRow, startColumn, endColumn, new Layout(alignment, VerticalAlignment.CENTER), this.quest, allowMultipleClicks);
         this.quest.textRow = this.quest.textRow + 2;
         this.quest.textColumn = 1;
+        */
         return "";
     }
     

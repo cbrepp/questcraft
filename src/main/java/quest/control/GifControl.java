@@ -28,6 +28,7 @@ public class GifControl extends QuestControl {
     }
     
     public void displayImage(String imageFile, String alignment) {
+        /*
         int row = this.quest.titleRow + 1 + this.quest.textRow;
         int imageColumn;
         int startingColumn, endingColumn;
@@ -47,6 +48,7 @@ public class GifControl extends QuestControl {
         }
         // TODO - Support right align
         this.quest.appController.displayGif(this.quest.name, imageFile, row, imageColumn);
+        */
     }
     
 }

@@ -1,6 +1,8 @@
 
 package quest.control;
 
+import static app.controller.BaseController.logger;
+import java.util.logging.Level;
 import quest.view.Quest;
 
 /**
@@ -17,7 +19,7 @@ public class BookAuthorControl extends QuestControl {
     
     @Override
     public String onExecute(String tag) {
-        System.out.println("BookAuthorControl: onExecute: tag=" + tag);
+        logger.log(Level.INFO, "Entered: tag={0}", tag);
         String bookAuthor = this.quest.book.author;
         return bookAuthor;
     }

@@ -10,7 +10,6 @@ public class Button extends BaseNode {
     
     public Color backgroundColor; // Default (null) is system default
     public EventListener eventListener;
-    public String eventName;
     public Boolean isEnabled = true;
     public Boolean isMultiUse = true;
     public Double pixelSize; // Default is app controller's default pixel size

@@ -1,6 +1,8 @@
 
 package quest.control;
 
+import static app.controller.BaseController.logger;
+import java.util.logging.Level;
 import quest.view.Quest;
 
 /**
@@ -17,9 +19,8 @@ public class BreakControl extends QuestControl {
     
     @Override
     public String onExecute(String tag) {
-        System.out.println("BreakControl: onExecute: tag=" + tag);
-        this.quest.textRow = this.quest.textRow + 1;
-        this.quest.textColumn = 1;
+        logger.log(Level.INFO, "Entered: tag={0}", tag);
+        //this.quest.displayStoryText("", null, null);
         return "";
     }
     

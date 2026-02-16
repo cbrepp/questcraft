@@ -163,7 +163,6 @@ public class Questcraft extends app.view.BaseView {
     public final static String QUEST = "Quest";
     
     public BaseController appController;
-    public Quest quest;
     public CraftingTable craftingTable;
     public HighScores highScores;
     public Inventory inventory;
@@ -174,7 +173,7 @@ public class Questcraft extends app.view.BaseView {
         this.addTextArea = false;
         this.backgroundColor = new Color(255, 255, 255);
         this.backgroundImage = "/assets/images/book.png";
-        this.quest = null;
+        Quest.quest = null;
         this.craftingTable = null;
         this.app = new Application(APPLICATION);
     }
@@ -199,7 +198,7 @@ public class Questcraft extends app.view.BaseView {
                 }
                 this.appController.removeTab("Map");
                 this.appController.removeTab("Spell Book");
-                if (this.quest != null) {
+                if (Quest.quest != null) {
                     this.appController.removeTab(QUEST);
                 }
                 
@@ -210,28 +209,28 @@ public class Questcraft extends app.view.BaseView {
                 if (questBook.inventory != null) {
                     this.inventory = new Inventory(INVENTORY);
                 }
-                this.quest = new Quest(QUEST);
-                this.quest.book = questBook;
+                Quest.quest = new Quest(QUEST);
+                Quest.quest.book = questBook;
                 if (questBook.inventory != null) {
-                    this.quest.inventoryView = this.inventory;
+                    Quest.quest.inventoryView = this.inventory;
                 }
-                this.appController.addView(this.quest);
+                this.appController.addView(Quest.quest);
                 if (questBook.inventory != null) {
-                    this.inventory.quest = this.quest;
+                    this.inventory.quest = Quest.quest;
                 }
                 if (questBook.inventory != null) {
                     this.appController.addView(this.inventory);
                 }
                 if (questBook.highScores != null) {
-                    this.highScores.setHighScores(this.quest.book.highScores);
-                    this.highScores.quest = this.quest;
+                    this.highScores.setHighScores(Quest.quest.book.highScores);
+                    this.highScores.quest = Quest.quest;
                 }
                 if (questBook.highScores != null) {
                     this.appController.addView(this.highScores);
                 }
                 this.craftingTable = new CraftingTable(CRAFTING_TABLE);
                 this.appController.addView(this.craftingTable);
-                this.appController.displayView(this.quest);
+                this.appController.displayView(Quest.quest);
             }
             default -> System.err.println("Questcraft: onEvent: Unsupported event");
         }

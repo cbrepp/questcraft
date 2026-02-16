@@ -1,7 +1,8 @@
 
 package quest.control;
 
-import app.Color;
+import static app.controller.BaseController.logger;
+import java.util.logging.Level;
 import quest.view.Quest;
 
 /**
@@ -18,8 +19,8 @@ public class ColorTextOffControl extends QuestControl {
     
     @Override
     public String onExecute(String tag) {
-        System.out.println("ColorTextOffControl: onExecute: tag=" + tag);
-        this.quest.textColor = new Color(0, 0, 0);
+        logger.log(Level.INFO, "Entered: tag={0}", tag);
+        this.quest.defaultTextColor = null;
         return "";
     }
     

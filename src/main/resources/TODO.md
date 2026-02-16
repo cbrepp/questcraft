@@ -14,7 +14,8 @@ Upcoming changes.
    4. Refactor the App view
       1. The logic to serialize the quests should be moved to a utility class and rewritten to use only objects, not xml
    5. Refactor the Quest view
-   6. etc
+   6. Add preferred app dimensions to app.properties and use that setting to default the preferred size of each view
+   7. PixelSize is used throughout for text and should be scaled by multiplying by the preferred app size vs a standard app size
 2. Make sure revisions work with Mad Quest
 3. Add support for using the spell book to travel back to Chapter 1 from Chapter 2
 4. Add animation/minigame for Chapter 2, Scene 1-- frogger/crossy road
