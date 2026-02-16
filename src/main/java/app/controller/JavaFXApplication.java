@@ -892,7 +892,7 @@ public class JavaFXApplication extends BaseController {
                 x -= 2; // Unfortunate fudge factor.  A gap of 2 pixels is needed to prevent triggering a resize of the application window.
                 logger.log(Level.WARNING, "Reduced the node's width by 2 to prevent overlap with the parent");
             }
-            fxNode.setLayoutX(x);
+            fxNode.setLayoutX(Math.rint(x));
         }
         
         double positionY;
@@ -910,7 +910,7 @@ public class JavaFXApplication extends BaseController {
                 y -= 2; // Unfortunate fudge factor.  A gap of 2 pixels is needed to prevent triggering a resize of the application window.
                 logger.log(Level.WARNING, "Reduced the node's height by 2 to prevent overlap with the parent");
             }
-            fxNode.setLayoutY(y);
+            fxNode.setLayoutY(Math.rint(y));
         }
             
         logger.log(Level.INFO, "Calculated coordinates ({0}, {1}) for parent width {2} and height {3} and node width {4} and height {5}", new Object[]{x, y, fxParent.getPrefWidth(), fxParent.getPrefHeight(), fxNode.getBoundsInLocal().getWidth(), fxNode.getBoundsInLocal().getHeight()});        
