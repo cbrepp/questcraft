@@ -17,6 +17,7 @@ import app.node.Button;
 import app.node.Image;
 import app.node.Label;
 import app.node.ScrollingLabel;
+import app.node.effect.BaseEffect;
 import app.node.effect.Glow;
 import app.node.effect.SlideTransition;
 import java.io.FileInputStream;
@@ -42,6 +43,7 @@ import quest.control.InventoryAdd;
 import quest.control.Paragraph;
 import quest.control.Subpage;
 import quest.control.Text;
+import quest.control.ValidatedInput;
 import quest.control.Variable;
 import quest.model.Act;
 import quest.model.Book;
@@ -823,7 +825,6 @@ public class Application extends app.view.BaseView {
         playerSelection.soundFileName = "/assets/sounds/epic.mp3";
         opening.scenes.put("Player Selection", playerSelection);
         page1 = new Page();
-        page1.story.controls.add(new Paragraph(List.of(new Label("par1", new Text(List.of("Select Player:\n"))))));
         Subpage subpage = new Subpage("SHMEBULOCK input");
         subpage.condition = new Condition(new Variable("summonShmebulock"), Condition.Operator.EQUALS, "true", true);
         page1.story.controls.add(subpage);
@@ -845,6 +846,17 @@ public class Application extends app.view.BaseView {
         */
         
         // TODO - Implement validated input control in JavaFXApplication
+        //public Map<Object, List<BaseEffect>> effectsButtons;
+        
+        Glow glowEffect = new Glow(Color.DARK_MAGENTA);
+        List<BaseEffect> effectList = new ArrayList();
+        effectList.add(glowEffect);
+        ValidatedInput input = new ValidatedInput("player", List.of("Zara", "Greyson"));
+        input.effectsButtons.put("Greyson", effectList);
+        input.effectsButtons.put("Zara", effectList);
+        Story inputSubpage = new Story();
+        inputSubpage.controls.add(new Paragraph(List.of(new Label("par1", new Text(List.of("Select Player:\n"))), input)));
+        page1.subpages.put("input", inputSubpage);
         
         /*
         Story inputSubpage = new Story();
@@ -852,6 +864,7 @@ public class Application extends app.view.BaseView {
         page1.subpages.put("input", inputSubpage);
         */
 
+        /*
         Story playerGreysonSubpage = new Story();
         playerGreysonSubpage.contents.add("<set-player-symbol \uD83E\uDDD2>");
         playerGreysonSubpage.contents.add("<variable-set twin Zara>");
@@ -907,6 +920,7 @@ public class Application extends app.view.BaseView {
         Story inputWithShmebulockSubpage = new Story();
         inputWithShmebulockSubpage.contents.add("<get-validated-input player *Greyson+*Zara+*Shmebulock>");
         page1.subpages.put("SHMEBULOCK input", inputWithShmebulockSubpage);
+        */
         playerSelection.pages.put("1", page1);
         
         Scene difficultySelection = new Scene();
@@ -931,12 +945,12 @@ public class Application extends app.view.BaseView {
         Story difficultyMagicalSubpage = new Story();
         difficultyMagicalSubpage.contents.add("<goto-act Introduction>");
         page1.subpages.put("INPUT difficulty=Magical", difficultyMagicalSubpage);
-        Story inputSubpage = new Story();
+        inputSubpage = new Story();
         inputSubpage.contents.add("<get-validated-input difficulty *Easy+*Normal+*Hard>");
         inputSubpage.contents.add("<second-page>");
         inputSubpage.contents.add("<image difficulty center /assets/images/difficulty.jpg>");
         page1.subpages.put("input", inputSubpage);
-        inputWithShmebulockSubpage = new Story();
+        Story inputWithShmebulockSubpage = new Story();
         inputWithShmebulockSubpage.contents.add("<get-validated-input difficulty *Magical>");
         inputWithShmebulockSubpage.contents.add("<second-page>");
         inputWithShmebulockSubpage.contents.add("<image difficulty-magical center /assets/images/difficulty-magical.jpg>");

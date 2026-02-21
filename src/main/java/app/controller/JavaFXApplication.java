@@ -21,6 +21,7 @@ import static app.controller.BaseController.logger;
 import app.node.BaseNode;
 import app.controller.javafx.DelegateApplication;
 import app.dialog.BaseDialog;
+import app.node.BaseCompositeNode;
 import app.node.Sprite;
 import app.node.effect.BaseEffect;
 import app.node.effect.Glow;
@@ -2009,60 +2010,43 @@ public class JavaFXApplication extends BaseController {
         // TODO - This is ugly.  Parent nodes do not have a base type with public getPrefWidth() and getPrefHeight() methods so each parent class needs to be handled.
         double parentWidth;
         double parentHeight;
-        Class<?> parentControlClass = fxParent.getClass();
-        if (parentControlClass == Pane.class) {
-            Pane pane = (Pane) fxParent;
-            parentWidth = pane.getPrefWidth();
-            parentHeight = pane.getPrefHeight();
-        } else if (parentControlClass == StackPane.class) {
-            StackPane pane = (StackPane) fxParent;
-            parentWidth = pane.getPrefWidth();
-            parentHeight = pane.getPrefHeight();
-        } else if (parentControlClass == HBox.class) {
-            HBox box = (HBox) fxParent;
-            parentWidth = box.getPrefWidth();
-            parentHeight = box.getPrefHeight();
-        } else if (parentControlClass == VBox.class) {
-            VBox box = (VBox) fxParent;
-            parentWidth = box.getPrefWidth();
-            parentHeight = box.getPrefHeight();
-        } else if (parentControlClass == TextFlow.class) {
-            TextFlow flow = (TextFlow) fxParent;
-            parentWidth = flow.getPrefWidth();
-            parentHeight = flow.getPrefHeight();
-        } else if (parentControlClass == FlowPane.class) {
-            FlowPane pane = (FlowPane) fxParent;
-            parentWidth = pane.getPrefWidth();
-            parentHeight = pane.getPrefHeight();
-        } else if (parentControlClass == ScrollPane.class) {
-            ScrollPane pane = (ScrollPane) fxParent;
-            parentWidth = pane.getPrefWidth();
-            parentHeight = pane.getPrefHeight();
+        if (fxParent instanceof Region region) {
+            parentWidth = region.getPrefWidth();
+            parentHeight = region.getPrefHeight();
         } else {
+            Class<?> parentControlClass = fxParent.getClass();
             logger.log(Level.SEVERE, "Parent does not have a supported class: {0}", parentControlClass.getSimpleName());
             return;
         }
         
         // TODO - The container nodes should call into publishNode instead of addNode, looking up any pre-existing fxChild node
         logger.log(Level.INFO, "Instancing fx version of node {0}", node.name);
-        Class<?> nodeClass = node.getClass();
-        if (nodeClass == app.node.Link.class) {
-            fxNode = this.newLink((app.node.Link) node, (Hyperlink) fxNode, offsetColor);
-        } else if (nodeClass == app.node.Button.class) {
-            fxNode = this.newButton((app.node.Button) node, (Button) fxNode, offsetColor);
-            Button button = (Button) fxNode;
+        if (node instanceof app.node.Link link) {
+            fxNode = this.newLink(link, (Hyperlink) fxNode, offsetColor);
+        } else if (node instanceof app.node.Button button) {
+            fxNode = this.newButton(button, (Button) fxNode, offsetColor);
+            Button fxButton = (Button) fxNode;
             if (node.scaleX != null) {
-                button.setPrefWidth(parentWidth * node.scaleX);
+                fxButton.setPrefWidth(parentWidth * node.scaleX);
             }
             if (node.scaleY != null) {
-                button.setPrefHeight(parentHeight * node.scaleY);
+                fxButton.setPrefHeight(parentHeight * node.scaleY);
             }
-        } else if (nodeClass == app.node.Field.class) {
-            fxNode = this.newField((app.node.Field) node, (TextField) fxNode, offsetColor);
-        } else if (nodeClass == app.node.InputField.class) {
-            fxNode = this.newInputField(viewName, (app.node.InputField) node, (Pane) fxNode, offsetColor);
-        } else if (nodeClass == app.node.Label.class) {
-            fxNode = this.newLabel(viewName, (app.node.Label) node, (TextFlow) fxNode, offsetColor, FontSmoothingType.LCD);
+        } else if (node instanceof app.node.ButtonGroup bg) {
+            fxNode = this.newButtonGroup(bg, (FlowPane) fxNode);
+            FlowPane fxButtonGroup = (FlowPane) fxNode;
+            if (node.scaleX != null) {
+                fxButtonGroup.setPrefWidth(parentWidth * node.scaleX);
+            }
+            if (node.scaleY != null) {
+                fxButtonGroup.setPrefHeight(parentHeight * node.scaleY);
+            }
+        } else if (node instanceof app.node.Field field) {
+            fxNode = this.newField(field, (TextField) fxNode, offsetColor);
+        } else if (node instanceof app.node.InputField inputField) {
+            fxNode = this.newInputField(viewName, inputField, (Pane) fxNode, offsetColor);
+        } else if (node instanceof app.node.Label label) {
+            fxNode = this.newLabel(viewName, label, (TextFlow) fxNode, offsetColor, FontSmoothingType.LCD);
             TextFlow flow = (TextFlow) fxNode;
             if (node.scaleX != null) {
                 double prefWidth = parentWidth * node.scaleX;
@@ -2074,8 +2058,8 @@ public class JavaFXApplication extends BaseController {
             if (node.scaleY != null) {
                 flow.setPrefHeight(parentHeight * node.scaleY);
             }
-        } else if (nodeClass == app.node.ScrollingLabel.class) {
-            fxNode = this.newScrollingLabel(viewName, (app.node.Label) node, (VBox) fxNode, offsetColor);
+        } else if (node instanceof app.node.ScrollingLabel sl) {
+            fxNode = this.newScrollingLabel(viewName, sl, (VBox) fxNode, offsetColor);
             VBox flowBox = (VBox) fxNode;
             ScrollPane sp = (ScrollPane)flowBox.getChildren().get(0); // TODO - This is ugly
             if (node.scaleX != null) {
@@ -2086,8 +2070,8 @@ public class JavaFXApplication extends BaseController {
                 flowBox.setPrefHeight(parentHeight * node.scaleY);
                 sp.setPrefHeight(parentHeight * node.scaleY);
             }
-        } else if (nodeClass == app.node.Document.class) {
-            fxNode = this.newDocument(viewName, (app.node.Document) node, (TextFlow) fxNode, offsetColor);
+        } else if (node instanceof app.node.Document document) {
+            fxNode = this.newDocument(viewName, document, (TextFlow) fxNode, offsetColor);
             TextFlow flow = (TextFlow) fxNode;
             if (node.scaleX != null) {
                 double prefWidth = parentWidth * node.scaleX;
@@ -2096,8 +2080,8 @@ public class JavaFXApplication extends BaseController {
             if (node.scaleY != null) {
                 flow.setPrefHeight(parentHeight * node.scaleY);
             }
-        } else if (nodeClass == app.node.ScrollingDocument.class) {
-            fxNode = this.newScrollingDocument(viewName, (app.node.ScrollingDocument) node, (ScrollPane) fxNode, offsetColor);
+        } else if (node instanceof app.node.ScrollingDocument sd) {
+            fxNode = this.newScrollingDocument(viewName, sd, (ScrollPane) fxNode, offsetColor);
             ScrollPane sp = (ScrollPane) fxNode;
             if (node.scaleX != null) {
                 double prefWidth = parentWidth * node.scaleX;
@@ -2107,8 +2091,8 @@ public class JavaFXApplication extends BaseController {
                 double prefHeight = parentHeight * node.scaleY;
                 sp.setPrefHeight(prefHeight);
             }
-        } else if (nodeClass == app.node.Pane.class) {
-            fxNode = this.newPane(viewName, (app.node.Pane) node, (Pane) fxNode, offsetColor);
+        } else if (node instanceof app.node.Pane p) {
+            fxNode = this.newPane(viewName, p, (Pane) fxNode, offsetColor);
             Pane pane = (Pane) fxNode;
             if (node.scaleX != null) {
                 double prefWidth = parentWidth * node.scaleX;
@@ -2118,49 +2102,50 @@ public class JavaFXApplication extends BaseController {
                 double prefHeight = parentHeight * node.scaleY;
                 pane.setPrefHeight(prefHeight);
             }
-        } else if (nodeClass == app.node.ScrollingPane.class) {
-            fxNode = this.newScrollingPane(viewName, (app.node.ScrollingPane) node, (ScrollPane) fxNode, offsetColor);
-            ScrollPane sp = (ScrollPane) fxNode;
+        } else if (node instanceof app.node.ScrollingPane sp) {
+            fxNode = this.newScrollingPane(viewName, sp, (ScrollPane) fxNode, offsetColor);
+            ScrollPane fxSp = (ScrollPane) fxNode;
             if (node.scaleX != null) {
                 double prefWidth = parentWidth * node.scaleX;
-                sp.setPrefWidth(prefWidth);
+                fxSp.setPrefWidth(prefWidth);
             }
             if (node.scaleY != null) {
                 double prefHeight = parentHeight * node.scaleY;
-                sp.setPrefHeight(prefHeight);
+                fxSp.setPrefHeight(prefHeight);
             }
-        } else if (nodeClass == app.node.Image.class) {
-            fxNode = this.newImage((app.node.Image) node, (ImageView) fxNode);
-        } else if (nodeClass == app.node.HorizontalGroup.class) {
-            fxNode = this.newGroup(viewName, (app.node.HorizontalGroup) node, (Pane) fxNode, offsetColor);
+        } else if (node instanceof app.node.Image image) {
+            fxNode = this.newImage(image, (ImageView) fxNode);
+        } else if (node instanceof app.node.HorizontalGroup hg) {
+            fxNode = this.newGroup(viewName, hg, (Pane) fxNode, offsetColor);
             for (BaseNode childNode : ((app.node.Group) node).nodes) {
                 this.addNode(viewName, node.name, childNode, null);
             }
-        } else if (nodeClass == app.node.VerticalGroup.class) {
-            fxNode = this.newGroup(viewName, (app.node.VerticalGroup) node, (Pane) fxNode, offsetColor);
+        } else if (node instanceof app.node.VerticalGroup vg) {
+            fxNode = this.newGroup(viewName, vg, (Pane) fxNode, offsetColor);
             for (BaseNode childNode : ((app.node.Group) node).nodes) {
                 this.addNode(viewName, node.name, childNode, null);
             }
-        } else if (nodeClass == app.node.Rectangle.class) {
-            fxNode = this.newRectangle((app.node.Rectangle) node, (Rectangle) fxNode, offsetColor);
-            Rectangle rectangle = (Rectangle) fxNode;
+        } else if (node instanceof app.node.Rectangle rectangle) {
+            fxNode = this.newRectangle(rectangle, (Rectangle) fxNode, offsetColor);
+            Rectangle fxRectangle = (Rectangle) fxNode;
             if (node.scaleX != null) {
-                rectangle.setWidth(parentWidth * node.scaleX);
+                fxRectangle.setWidth(parentWidth * node.scaleX);
             }
             if (node.scaleY != null) {
-                rectangle.setHeight(parentHeight * node.scaleY);
+                fxRectangle.setHeight(parentHeight * node.scaleY);
             }
-        } else if (nodeClass == app.node.Spacer.class) {
+        } else if (node instanceof app.node.Spacer spacer) {
             // TODO - Instance a new Region
-            fxNode = this.newSpacer((app.node.Spacer) node, (Region) fxNode);
-            Region region = (Region) fxNode;
+            fxNode = this.newSpacer(spacer, (Region) fxNode);
+            Region fxSpacer = (Region) fxNode;
             if (node.scaleX != null) {
-                region.setPrefWidth(parentWidth * node.scaleX);
+                fxSpacer.setPrefWidth(parentWidth * node.scaleX);
             }
             if (node.scaleY != null) {
-                region.setPrefHeight(parentHeight * node.scaleY);
+                fxSpacer.setPrefHeight(parentHeight * node.scaleY);
             }
         } else {
+            Class<?> nodeClass = node.getClass();
             logger.log(Level.SEVERE, "Class is not a supported child class: {0}", nodeClass.getSimpleName());
             return;
         }
@@ -2174,7 +2159,7 @@ public class JavaFXApplication extends BaseController {
             fxNode.applyCss();
             double width = fxNode.prefWidth(-1);
             double height = fxNode.prefHeight(-1);
-            logger.log(Level.INFO, "Temp dimensions for {0} = {1}x{2}p", new Object[]{nodeClass, width, height});
+            logger.log(Level.INFO, "Temp dimensions for {0} = {1}x{2}p", new Object[]{node, width, height});
             ((javafx.scene.Group)fxNode.getScene().getRoot()).getChildren().remove(fxNode);
         }
         
@@ -2192,21 +2177,24 @@ public class JavaFXApplication extends BaseController {
             parentClass = null;
             logger.log(Level.INFO, "Evaluating null parent");
         }
-        if (parentControlClass== Pane.class) {
-            Pane pane = (Pane) fxParent;
+        if (fxParent instanceof FlowPane fp) {
+            if (isNew) {
+                logger.log(Level.INFO, "Adding node to flow pane");
+                fp.getChildren().add(fxNode);
+            }
+        } else if (fxParent instanceof StackPane sp) {
+            if (isNew) {
+                logger.log(Level.INFO, "Adding node to stack pane");
+                sp.getChildren().add(fxNode);
+            }
+        } else if (fxParent instanceof Pane pane) {
             if (isNew) {
                 logger.log(Level.INFO, "Adding node to pane");
                 pane.getChildren().add(fxNode);
             }
             pane.layout();
             positionNode(pane, node, layout, fxNode);
-        } else if (parentControlClass == StackPane.class) {
-            StackPane pane = (StackPane) fxParent;
-            if (isNew) {
-                logger.log(Level.INFO, "Adding node to stack pane");
-                pane.getChildren().add(fxNode);
-            }
-        } else if (parentClass == app.node.ScrollingPane.class) {
+        } else if (parent instanceof app.node.ScrollingPane) {
             ScrollPane sp = (ScrollPane) fxParent;
             if (isNew) {
                 logger.log(Level.INFO, "Adding node to scroll pane");
@@ -2215,24 +2203,23 @@ public class JavaFXApplication extends BaseController {
                 pane.layout();
                 positionNode(pane, node, layout, fxNode);
             }
-        } else if (parentControlClass == HBox.class) {
+        } else if (fxParent instanceof HBox hbox) {
             HBox.setHgrow(fxNode, Priority.NEVER); // Preventing HBox from stretching children horizontally just to fill its width
-            HBox box = (HBox) fxParent;
             if (isNew) {
                 logger.log(Level.INFO, "Adding node to HBox");
-                box.getChildren().add(fxNode);
+                hbox.getChildren().add(fxNode);
             }
         }  else if (parentClass == app.node.ScrollingDocument.class) {
             // TODO - Most of this is redundant with Document handling above
             ScrollPane scrollPane = (ScrollPane) fxParent;
             TextFlow flow = (TextFlow) scrollPane.getContent();
             if (isNew) {
-                if (nodeClass == app.node.Label.class) {
+                if (node instanceof app.node.Label label) {
                     // TODO - This is ugly and breaks any effects that might be added
                     // Decompose the textflow into its individual children and add them one by one to allow the FlowPane to handle the baseline alignment.
-                    TextFlow label = (TextFlow) fxNode;
+                    TextFlow fxLabel = (TextFlow) fxNode;
                     List<Node> textFlowNodes = new ArrayList();
-                    for (Node flowNode : label.getChildren()) {
+                    for (Node flowNode : fxLabel.getChildren()) {
                         textFlowNodes.add(flowNode);
                     }
                     logger.log(Level.INFO, "Adding TextFlow children to scrolling document");
@@ -2245,22 +2232,22 @@ public class JavaFXApplication extends BaseController {
                         flow.getChildren().add(textFlowNode);
                     }
                 } else {
+                    Class<?> nodeClass = node.getClass();
                     logger.log(Level.INFO, "Adding node {0} to scrolling document", nodeClass);
                     flow.getChildren().add(fxNode);
                 }
                 flow.requestLayout();
             }
-        } else if (parentControlClass == VBox.class) {
+        } else if (fxParent instanceof VBox vbox) {
             VBox.setVgrow(fxNode, Priority.NEVER); // Preventing VBox from stretching children vertically just to fill its height
-            VBox box = (VBox) fxParent;
             if (isNew) {
                 logger.log(Level.INFO, "Adding node to VBox");
-                box.getChildren().add(fxNode);
+                vbox.getChildren().add(fxNode);
             }
         } else if (parentClass == app.node.Document.class) {
             TextFlow flow = (TextFlow) fxParent;
             if (isNew) {
-                if (nodeClass == app.node.Label.class) {
+                if (node instanceof app.node.Label) {
                     // Decompose the textflow into its individual children and add them one by one to allow the FlowPane to handle the baseline alignment.
                     TextFlow label = (TextFlow) fxNode;
                     List<Node> textFlowNodes = new ArrayList();
@@ -2276,6 +2263,7 @@ public class JavaFXApplication extends BaseController {
                 flow.layout();
             }
         } else {
+            Class<?> parentControlClass = fxParent.getClass();
             logger.log(Level.SEVERE, "Parent does not have a supported class: {0}", parentControlClass.getSimpleName());
             return;
         }
@@ -2292,17 +2280,12 @@ public class JavaFXApplication extends BaseController {
         double relativeY = y / parentHeight;
         RelativeBounds relativeBounds = new RelativeBounds(new RelativeCoordinates(relativeX, relativeY), relativeWidth, relativeHeight);
         node.onEvent(NODE_PUBLISHED_EVENT, relativeBounds); // Let the node know its bounds
-        logger.log(Level.INFO, "Added node {0} {1} at ({2},{3}), width={4}, height={5} using parent pixel width={6}, parent pixel height={7}, pixel width={8}, pixel height={9}", new Object[]{nodeClass.getSimpleName(), node.name, relativeX, relativeY, relativeWidth, relativeHeight, parentWidth, parentHeight, width, height});
+        logger.log(Level.INFO, "Added node {0} {1} at ({2},{3}), width={4}, height={5} using parent pixel width={6}, parent pixel height={7}, pixel width={8}, pixel height={9}", new Object[]{node, node.name, relativeX, relativeY, relativeWidth, relativeHeight, parentWidth, parentHeight, width, height});
         
         // Publish any child nodes for the node
-        if (nodeClass == app.node.Document.class) {
-            for (BaseNode childNode : ((app.node.Document) node).nodes) {
-                Node fxChildNode = this.namedFXNodes.get(viewName).get(childNode.name); // If the child node already exists, get it so it can be updated
-                Layout childLayout = this.nodeLayouts.get(viewName).get(childNode.name); // If the child node's layout already exists, get it
-                this.publishNode(viewName, node.name, childNode, childLayout, fxChildNode);
-            }
-        } else if (nodeClass == app.node.ScrollingDocument.class) {
-            for (BaseNode childNode : ((app.node.ScrollingDocument) node).nodes) {
+        if (node instanceof BaseCompositeNode baseCompositeNode) {
+            logger.log(Level.INFO, "Publishing child nodes of composite node");
+            for (BaseNode childNode : baseCompositeNode.getChildren()) {
                 Node fxChildNode = this.namedFXNodes.get(viewName).get(childNode.name); // If the child node already exists, get it so it can be updated
                 Layout childLayout = this.nodeLayouts.get(viewName).get(childNode.name); // If the child node's layout already exists, get it
                 this.publishNode(viewName, node.name, childNode, childLayout, fxChildNode);
@@ -2856,6 +2839,29 @@ public class JavaFXApplication extends BaseController {
         }
     }
     */
+    
+    public FlowPane newButtonGroup(app.node.ButtonGroup node, FlowPane fxButtonGroup) {
+        logger.log(Level.INFO, "Entered: node={0}, fxButtonGroup={1}", new Object[]{node, fxButtonGroup});
+        
+        if (fxButtonGroup == null) {
+            fxButtonGroup = new FlowPane();
+        }
+        
+        if (node.spacerPixels != null) {
+            fxButtonGroup.setHgap(node.spacerPixels);
+            fxButtonGroup.setVgap(node.spacerPixels);
+            fxButtonGroup.setPadding(new Insets(node.spacerPixels));
+        }
+        
+        if (node.backgroundColor != null) {
+            Color fxBackgroundColor = Color.rgb(node.backgroundColor.red, node.backgroundColor.green, node.backgroundColor.blue);
+            BackgroundFill backgroundFill = new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY);
+            Background background = new Background(backgroundFill);
+            fxButtonGroup.setBackground(background);
+        }
+        
+        return fxButtonGroup;
+    }
     
     @Override
     public void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, Layout layout, EventListener listener, Boolean allowRepeatClicks) {

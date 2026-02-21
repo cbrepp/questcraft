@@ -31,7 +31,7 @@ public class Subpage extends BaseQuestControl {
         }
         
         logger.log(Level.WARNING, "Displaying subpage {0}", subpageString);
-        Quest.quest.displayPage(story.contents, true);
+        Quest.quest.displayPagev2(story.controls, true);
     }
     
 }

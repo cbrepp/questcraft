@@ -27,6 +27,11 @@ public class Condition implements Serializable {
     }
 
     public Boolean evaluate() {
+        if (this.result == null) {
+            logger.log(Level.SEVERE, "Expected result is null");
+            return false;
+        }
+        
         String value1 = this.getValue1();
         String value2 = this.getValue2(); // TODO - For performance, evaluate value2 only when necessary
         
@@ -48,9 +53,10 @@ public class Condition implements Serializable {
             }
         }
         
-        logger.log(Level.INFO, "{0} {1} {2} = {3}. Required is {4}.", new Object[]{value1, this.operator, value2, isTrue, this.result});
+        Boolean evaluation = (this.result.equals(isTrue));
+        logger.log(Level.INFO, "{0} {1} {2} = {3}. Required is {4}.  Condition evaluates as {5}.", new Object[]{value1, this.operator, value2, isTrue, this.result, evaluation});
 
-        return (this.result == isTrue);
+        return evaluation;
     }
     
     public String getValue1() {
