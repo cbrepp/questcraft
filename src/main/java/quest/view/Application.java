@@ -34,17 +34,23 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
+import quest.control.ActGoto;
 import quest.control.BookAuthor;
 import quest.control.BookLastUpdatedDate;
 import quest.control.BookTitle;
 import quest.control.Condition;
+import quest.control.DefaultTextColorSet;
 import quest.control.Illustration;
 import quest.control.InventoryAdd;
+import quest.control.PageRefresh;
 import quest.control.Paragraph;
+import quest.control.PlayerSymbolSet;
+import quest.control.SceneGoto;
 import quest.control.Subpage;
 import quest.control.Text;
 import quest.control.ValidatedInput;
 import quest.control.Variable;
+import quest.control.VariableSet;
 import quest.model.Act;
 import quest.model.Book;
 import quest.model.HighScore;
@@ -844,10 +850,13 @@ public class Application extends app.view.BaseView {
         page1.story.contents.add("<second-page>");
         page1.story.contents.add("<image twins center /assets/images/twins.jpg>");
         */
-        
-        // TODO - Implement validated input control in JavaFXApplication
-        //public Map<Object, List<BaseEffect>> effectsButtons;
-        
+
+        Story shmebulockCheatSubpage = new Story();
+        shmebulockCheatSubpage.isSpell = true;
+        shmebulockCheatSubpage.controls.add(new VariableSet("summonShmebulock", "true"));
+        shmebulockCheatSubpage.controls.add(new PageRefresh());
+        page1.subpages.put("SHMEBULOCK", shmebulockCheatSubpage);
+
         Glow glowEffect = new Glow(Color.DARK_MAGENTA);
         List<BaseEffect> effectList = new ArrayList();
         effectList.add(glowEffect);
@@ -857,70 +866,68 @@ public class Application extends app.view.BaseView {
         Story inputSubpage = new Story();
         inputSubpage.controls.add(new Paragraph(List.of(new Label("par1", new Text(List.of("Select Player:\n"))), input)));
         page1.subpages.put("input", inputSubpage);
-        
-        /*
-        Story inputSubpage = new Story();
-        inputSubpage.contents.add("<get-validated-input player *Greyson+*Zara>");
-        page1.subpages.put("input", inputSubpage);
-        */
 
-        /*
+        glowEffect = new Glow(Color.DARK_MAGENTA);
+        effectList = new ArrayList();
+        effectList.add(glowEffect);
+        input = new ValidatedInput("player", List.of("Zara", "Greyson", "Shmebulock"));
+        input.effectsButtons.put("Greyson", effectList);
+        input.effectsButtons.put("Zara", effectList);
+        input.effectsButtons.put("Shmebulock", effectList);
+        inputSubpage = new Story();
+        inputSubpage.controls.add(new Paragraph(List.of(new Label("par1", new Text(List.of("Select Player:\n"))), input)));
+        page1.subpages.put("SHMEBULOCK input", inputSubpage);
+        
         Story playerGreysonSubpage = new Story();
-        playerGreysonSubpage.contents.add("<set-player-symbol \uD83E\uDDD2>");
-        playerGreysonSubpage.contents.add("<variable-set twin Zara>");
-        playerGreysonSubpage.contents.add("<variable-set twin-with-symbol \uD83D\uDC67 Zara>");
-        playerGreysonSubpage.contents.add("<variable-set battle-cry I don't know if I can, but I will try!!!>");
-        playerGreysonSubpage.contents.add("<variable-set twin-voice twin's voice>");
-        playerGreysonSubpage.contents.add("<variable-set player-mylee-nickname kid>");
-        playerGreysonSubpage.contents.add("<variable-set mylee-fandom And I definitely wouldn't want to if I could.  You humans are just too weird.>");
-        playerGreysonSubpage.contents.add("<variable-set mylee-reaction Weird>");
-        playerGreysonSubpage.contents.add("<variable-set twin-was twin was>");
-        playerGreysonSubpage.contents.add("<variable-set why-is-that Why is that?>");
-        playerGreysonSubpage.contents.add("<variable-set eat-twin He's going to eat Zara?!>");
-        playerGreysonSubpage.contents.add("<variable-set thats-horrible That's horrible!!!>");
-        playerGreysonSubpage.contents.add("<goto-scene Difficulty Selection>");
+        playerGreysonSubpage.controls.add(new PlayerSymbolSet("\uD83E\uDDD2"));
+        playerGreysonSubpage.controls.add(new VariableSet("twin", "Zara>"));
+        playerGreysonSubpage.controls.add(new VariableSet("twin-with-symbol", "\uD83D\uDC67 Zara"));
+        playerGreysonSubpage.controls.add(new VariableSet("battle-cry", "I don't know if I can, but I will try!!!"));
+        playerGreysonSubpage.controls.add(new VariableSet("twin-voice", "twin's voice"));
+        playerGreysonSubpage.controls.add(new VariableSet("player-mylee-nickname", "kid"));
+        playerGreysonSubpage.controls.add(new VariableSet("mylee-fandom", "And I definitely wouldn't want to if I could.  You humans are just too weird."));
+        playerGreysonSubpage.controls.add(new VariableSet("mylee-reaction", "Weird"));
+        playerGreysonSubpage.controls.add(new VariableSet("twin-was", "win was"));
+        playerGreysonSubpage.controls.add(new VariableSet("why-is-that", "Why is that?"));
+        playerGreysonSubpage.controls.add(new VariableSet("eat-twin", "He's going to eat Zara?!"));
+        playerGreysonSubpage.controls.add(new VariableSet("thats-horrible", "That's horrible!!!"));
+        playerGreysonSubpage.controls.add(new SceneGoto("Difficulty Selection"));
         page1.subpages.put("INPUT player=Greyson", playerGreysonSubpage);
+        
         Story playerZaraSubpage = new Story();
-        playerZaraSubpage.contents.add("<set-player-symbol \uD83D\uDC67>");
-        playerZaraSubpage.contents.add("<variable-set twin Greyson>");
-        playerZaraSubpage.contents.add("<variable-set twin-with-symbol \uD83E\uDDD2 Greyson>");
-        playerZaraSubpage.contents.add("<variable-set battle-cry I don't know if I can, but I will try!!!>");
-        playerZaraSubpage.contents.add("<variable-set twin-voice twin's voice>");
-        playerZaraSubpage.contents.add("<variable-set player-mylee-nickname kid>");
-        playerZaraSubpage.contents.add("<variable-set mylee-fandom And I definitely wouldn't want to if I could.  You humans are just too weird.>");
-        playerZaraSubpage.contents.add("<variable-set mylee-reaction Weird>");
-        playerZaraSubpage.contents.add("<variable-set twin-was twin was>");
-        playerZaraSubpage.contents.add("<variable-set why-is-that Why is that?>");
-        playerZaraSubpage.contents.add("<variable-set eat-twin He's going to eat Greyson?!>");
-        playerZaraSubpage.contents.add("<variable-set thats-horrible That's horrible!!!>");
-        playerZaraSubpage.contents.add("<goto-scene Difficulty Selection>");
+        playerZaraSubpage.controls.add(new PlayerSymbolSet("\uD83D\uDC67"));
+        playerZaraSubpage.controls.add(new VariableSet("twin", "Greyson"));
+        playerZaraSubpage.controls.add(new VariableSet("twin-with-symbol", "\uD83E\uDDD2 Greyson"));
+        playerZaraSubpage.controls.add(new VariableSet("battle-cry", "I don't know if I can, but I will try!!!"));
+        playerZaraSubpage.controls.add(new VariableSet("twin-voice", "twin's voice"));
+        playerZaraSubpage.controls.add(new VariableSet("player-mylee-nickname", "kid"));
+        playerZaraSubpage.controls.add(new VariableSet("mylee-fandom", "And I definitely wouldn't want to if I could.  You humans are just too weird."));
+        playerZaraSubpage.controls.add(new VariableSet("mylee-reaction", "Weird"));
+        playerZaraSubpage.controls.add(new VariableSet("twin-was", "twin was"));
+        playerZaraSubpage.controls.add(new VariableSet("why-is-that", "Why is that?"));
+        playerZaraSubpage.controls.add(new VariableSet("eat-twin", "He's going to eat Greyson?!"));
+        playerZaraSubpage.controls.add(new VariableSet("thats-horrible", "That's horrible!!!"));
+        playerZaraSubpage.controls.add(new SceneGoto("Difficulty Selection"));
         page1.subpages.put("INPUT player=Zara", playerZaraSubpage);
+        
         Story playerShmebulockSubpage = new Story();
-        playerShmebulockSubpage.contents.add("<set-player-symbol \uD83C\uDF85>");
-        playerShmebulockSubpage.contents.add("<variable-set twin Greyson and Zara>");
-        playerShmebulockSubpage.contents.add("<variable-set twin-with-symbol \uD83E\uDDD2 Greyson and \uD83D\uDC67 Zara>");
-        playerShmebulockSubpage.contents.add("<variable-set battle-cry SHMEBULOCK!!!>");
-        playerShmebulockSubpage.contents.add("<variable-set twin-voice friends' voices>");
-        playerShmebulockSubpage.contents.add("<variable-set player-mylee-nickname magical one>");
-        playerShmebulockSubpage.contents.add("<variable-set mylee-fandom But I wish I could.  You gnomes are just fascinating!>");
-        playerShmebulockSubpage.contents.add("<variable-set mylee-reaction Fascinating>");
-        playerShmebulockSubpage.contents.add("<variable-set twin-was friends were>");
-        playerShmebulockSubpage.contents.add("<set-magic-text true>");
-        playerShmebulockSubpage.contents.add("<variable-set why-is-that SHMEBULOCK?>");
-        playerShmebulockSubpage.contents.add("<variable-set eat-twin SHMEBULOCK?!>");
-        playerShmebulockSubpage.contents.add("<variable-set thats-horrible SHMEBULOCK!!!>");
-        playerShmebulockSubpage.contents.add("<inventory-add true Ring of Taming>");
-        playerShmebulockSubpage.contents.add("<goto-scene Difficulty Selection>");
+        playerShmebulockSubpage.controls.add(new PlayerSymbolSet("\uD83C\uDF85>"));
+        playerShmebulockSubpage.controls.add(new VariableSet("twin", "Greyson and Zara"));
+        playerShmebulockSubpage.controls.add(new VariableSet("twin-with-symbol", "\uD83E\uDDD2 Greyson and \uD83D\uDC67 Zara"));
+        playerShmebulockSubpage.controls.add(new VariableSet("battle-cry", "SHMEBULOCK!!!"));
+        playerShmebulockSubpage.controls.add(new VariableSet("twin-voice", "friends' voices"));
+        playerShmebulockSubpage.controls.add(new VariableSet("player-mylee-nickname", "magical one"));
+        playerShmebulockSubpage.controls.add(new VariableSet("mylee-fandom", "But I wish I could.  You gnomes are just fascinating!"));
+        playerShmebulockSubpage.controls.add(new VariableSet("mylee-reaction", "Fascinating"));
+        playerShmebulockSubpage.controls.add(new VariableSet("twin-was", "friends were"));
+        playerShmebulockSubpage.controls.add(new DefaultTextColorSet(Color.DARK_MAGENTA));
+        playerShmebulockSubpage.controls.add(new VariableSet("why-is-that", "SHMEBULOCK?"));
+        playerShmebulockSubpage.controls.add(new VariableSet("eat-twin", "SHMEBULOCK?!"));
+        playerShmebulockSubpage.controls.add(new VariableSet("thats-horrible", "SHMEBULOCK!!!"));
+        playerShmebulockSubpage.controls.add(new InventoryAdd("Ring of Taming", true));
+        playerShmebulockSubpage.controls.add(new SceneGoto("Difficulty Selection"));
         page1.subpages.put("INPUT player=Shmebulock", playerShmebulockSubpage);
-        Story shmebulockCheatSubpage = new Story();
-        shmebulockCheatSubpage.isSpell = true;
-        shmebulockCheatSubpage.contents.add("<variable-set summonShmebulock true>");
-        shmebulockCheatSubpage.contents.add("<page-refresh>");
-        page1.subpages.put("SHMEBULOCK", shmebulockCheatSubpage);
-        Story inputWithShmebulockSubpage = new Story();
-        inputWithShmebulockSubpage.contents.add("<get-validated-input player *Greyson+*Zara+*Shmebulock>");
-        page1.subpages.put("SHMEBULOCK input", inputWithShmebulockSubpage);
-        */
+
         playerSelection.pages.put("1", page1);
         
         Scene difficultySelection = new Scene();
@@ -929,32 +936,42 @@ public class Application extends app.view.BaseView {
         difficultySelection.stopOtherSounds = true;
         difficultySelection.soundFileName = "/assets/sounds/epic.mp3";
         opening.scenes.put("Difficulty Selection", difficultySelection);
+
         page1 = new Page();
-        page1.story.contents.add("Select Difficulty:");
-        page1.story.contents.add("<subpage-display condition=\"player=Shmebulock\" SHMEBULOCK input>");
-        page1.story.contents.add("<subpage-display condition=\"player!=Shmebulock\" input>");
-        Story difficultyEasySubpage = new Story();
-        difficultyEasySubpage.contents.add("<goto-act Introduction>");
-        page1.subpages.put("INPUT difficulty=Easy", difficultyEasySubpage);
-        Story difficultyNormalSubpage = new Story();
-        difficultyNormalSubpage.contents.add("<goto-act Introduction>");
-        page1.subpages.put("INPUT difficulty=Normal", difficultyNormalSubpage);
-        Story difficultyHardSubpage = new Story();
-        difficultyHardSubpage.contents.add("<goto-act Introduction>");
-        page1.subpages.put("INPUT difficulty=Hard", difficultyHardSubpage);
-        Story difficultyMagicalSubpage = new Story();
-        difficultyMagicalSubpage.contents.add("<goto-act Introduction>");
-        page1.subpages.put("INPUT difficulty=Magical", difficultyMagicalSubpage);
+        
+        subpage = new Subpage("SHMEBULOCK input");
+        subpage.condition = new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true);
+        page1.story.controls.add(subpage);
+        subpage = new Subpage("input");
+        subpage.condition = new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", false);
+        page1.story.controls.add(subpage);
+        
+        glowEffect = new Glow(Color.DARK_MAGENTA);
+        effectList = new ArrayList();
+        effectList.add(glowEffect);
+        input = new ValidatedInput("difficulty", List.of("Easy", "Normal", "Hard"));
+        input.effectsButtons.put("Easy", effectList);
+        input.effectsButtons.put("Normal", effectList);
+        input.effectsButtons.put("Hard", effectList);
         inputSubpage = new Story();
-        inputSubpage.contents.add("<get-validated-input difficulty *Easy+*Normal+*Hard>");
-        inputSubpage.contents.add("<second-page>");
-        inputSubpage.contents.add("<image difficulty center /assets/images/difficulty.jpg>");
+        inputSubpage.controls.add(new Paragraph(List.of(new Label("par1", new Text(List.of("Select Difficulty:\n"))), input)));
+        inputSubpage.controls.add(new Illustration(new Image("select difficulty image", "/assets/images/difficulty.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         page1.subpages.put("input", inputSubpage);
-        Story inputWithShmebulockSubpage = new Story();
-        inputWithShmebulockSubpage.contents.add("<get-validated-input difficulty *Magical>");
-        inputWithShmebulockSubpage.contents.add("<second-page>");
-        inputWithShmebulockSubpage.contents.add("<image difficulty-magical center /assets/images/difficulty-magical.jpg>");
-        page1.subpages.put("SHMEBULOCK input", inputWithShmebulockSubpage);
+        
+        glowEffect = new Glow(Color.DARK_MAGENTA);
+        effectList = new ArrayList();
+        effectList.add(glowEffect);
+        input = new ValidatedInput("difficulty", List.of("Magical"));
+        input.effectsButtons.put("Magical", effectList);
+        inputSubpage = new Story();
+        inputSubpage.controls.add(new Paragraph(List.of(new Label("par1", new Text(List.of("Select Difficulty:\n"))), input)));
+        inputSubpage.controls.add(new Illustration(new Image("select difficulty image", "/assets/images/difficulty-magical.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        page1.subpages.put("SHMEBULOCK input", inputSubpage);
+        
+        Story difficultySelectedSubpage = new Story();
+        difficultySelectedSubpage.controls.add(new ActGoto("Introduction"));
+        page1.subpages.put("INPUT difficulty", difficultySelectedSubpage);
+        
         difficultySelection.pages.put("1", page1);
         
         Act introduction = new Act();
@@ -968,6 +985,8 @@ public class Application extends app.view.BaseView {
         introScene.stopOtherSounds = true;
         introScene.soundFileName = "/assets/sounds/suspense.mp3";
         introduction.scenes.put("Introduction", introScene);
+        
+        // TODO - Continue refactoring
 
         Page page1a = new Page();
         page1a.nextPageName = "1";
@@ -1061,7 +1080,7 @@ public class Application extends app.view.BaseView {
         inputSubpage = new Story();
         inputSubpage.contents.add("<get-validated-input mylee-prompt Who are you?+Where is my twin?+Who is Big Chung?+What's with this book I have?+And this map?+What is this elevator?+*I'm good.>");
         page5.subpages.put("input", inputSubpage);
-        inputWithShmebulockSubpage = new Story();
+        Story inputWithShmebulockSubpage = new Story();
         inputWithShmebulockSubpage.contents.add("<get-validated-input mylee-prompt SHMEBULOCK?+SHMEBULOCK??+SHMEBULOCK???+SHMEBULOCK????+SHMEBULOCK?????+SHMEBULOCK??????+*SHMEBULOCK.>");
         page5.subpages.put("SHMEBULOCK input", inputWithShmebulockSubpage);
         Story whoAreYouSubpage = new Story();

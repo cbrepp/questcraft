@@ -1373,6 +1373,7 @@ public class SWTApplication extends BaseController {
     */
     
     // TODO - Pass in a list of app.Controls with button text and isEnabled
+    /*
     @Override
     public void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, Layout layout, EventListener listener, Boolean allowRepeatClicks) {
         System.out.println("SWTApplication: displayValidatedInputField: viewName=" + viewName + ", name=" + name + ", row=" + row + ", startColumn=" + startColumn + ", endColumn=" + endColumn + ", layout=" + layout + ", listener=" + listener + ", allowRepeatClicks=" + allowRepeatClicks);
@@ -1557,6 +1558,7 @@ public class SWTApplication extends BaseController {
         
         this.namedControls.get(viewName).put(name, controlList);
     }
+    */
     
     public Image scaleImage(String imageFile, Double imageScale, Rectangle parentBounds) {
         System.out.println("SWTApplication: scaleImage: imageFile=" + imageFile + ", imageScale=" + imageScale + ", parentBounds=" + parentBounds);
@@ -1988,4 +1990,10 @@ public class SWTApplication extends BaseController {
             control.moveBelow(null);
         }
     }
+    
+    @Override
+    public void setDefaultFontColor(app.Color fontColor) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
 }

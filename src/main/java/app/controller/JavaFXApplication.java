@@ -145,6 +145,7 @@ public class JavaFXApplication extends BaseController {
     public Font buttonFont;
     public int buttonFontHeight = 0;
     public int buttonFontWidth = 0;
+    public app.Color defaultFontColor;
     public Map<String, JsonObject> emojiMap;
     public Image emojiSheet;
     public String emptyBook;
@@ -1684,7 +1685,8 @@ public class JavaFXApplication extends BaseController {
             fxButton.setText("\u200B"); // Unicode zero-width space
         }
         fxButton.setAlignment(Pos.CENTER);
-        TextFlow textFlow = this.stringToTextFlow(node.text, font, textColor, pixelSize, fontStyle, FontSmoothingType.LCD);
+        String buttonText = node.text.toString();
+        TextFlow textFlow = this.stringToTextFlow(buttonText, font, textColor, pixelSize, fontStyle, FontSmoothingType.LCD);
         textFlow.setTextAlignment(TextAlignment.CENTER);
         fxButton.setGraphic(textFlow);
         
@@ -1697,6 +1699,38 @@ public class JavaFXApplication extends BaseController {
             return fxButton;
         }
         
+        if (node.keyBinding != null) {
+            KeyCode keyBinding = null;
+            if (null != node.keyBinding) switch (node.keyBinding) {
+                case UP -> keyBinding = KeyCode.UP;
+                case DOWN -> keyBinding = KeyCode.DOWN;
+                case LEFT -> keyBinding = KeyCode.LEFT;
+                case RIGHT -> keyBinding = KeyCode.RIGHT;
+                default -> { logger.log(Level.WARNING, "Unsupported key binding {0}", node.keyBinding);
+                }
+            }
+            
+            if (keyBinding != null) {
+                final KeyCode finalKeyBinding = keyBinding;
+                final Button finalFxButton = fxButton;
+                EventHandler<KeyEvent> keyHandler = event -> {
+                    if (event.getCode() == finalKeyBinding) {
+                        finalFxButton.fire();
+                        event.consume(); // Prevent key from triggering other events
+                    }
+                };
+                this.primaryScene.addEventFilter(KeyEvent.KEY_PRESSED, keyHandler);
+                this.keyBindings.put(fxButton, keyHandler);
+            }
+        }
+        
+        String eventName;
+        if (node.eventName == null) {
+            eventName = node.name;
+        } else {
+            eventName = node.eventName.toString();
+        }
+        
         final Button fxButtonFinal = fxButton;
         if (node.eventListener != null) {
             fxButton.setOnAction(e -> {
@@ -1704,7 +1738,7 @@ public class JavaFXApplication extends BaseController {
                 if (!node.isMultiUse) {
                     fxButtonFinal.setDisable(true);
                 }
-                node.eventListener.onEvent(node.name, null);
+                node.eventListener.onEvent(eventName, node.text);
             });
         }
         
@@ -1722,6 +1756,12 @@ public class JavaFXApplication extends BaseController {
         return fxButton;
     }
     
+    @Override
+    public void setDefaultFontColor(app.Color fontColor) {
+        logger.log(Level.INFO, "Entered: fontColor={0}", fontColor);
+        this.defaultFontColor = fontColor;
+    }
+    
     public TextFlow newLabel(String viewName, app.node.Label node, TextFlow fxLabel, app.Color offsetColor, FontSmoothingType fst) {
         logger.log(Level.INFO, "Entered: viewName={0}, node={1}, fxLabel={2}, offsetColor={3}, fst={4}", new Object[]{viewName, node, fxLabel, offsetColor, fst});
         
@@ -1734,7 +1774,11 @@ public class JavaFXApplication extends BaseController {
         
         app.Color textColor;
         if (node.textColor == null) {
-            textColor = offsetColor;
+            if (this.defaultFontColor != null) {
+                textColor = this.defaultFontColor;
+            } else {
+                textColor = offsetColor;
+            }
         } else {
             textColor = node.textColor;
         }
@@ -2863,6 +2907,7 @@ public class JavaFXApplication extends BaseController {
         return fxButtonGroup;
     }
     
+    /*
     @Override
     public void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, Layout layout, EventListener listener, Boolean allowRepeatClicks) {
         System.out.println("JavaFXApplication: displayValidatedInputField: viewName=" + viewName + ", name=" + name + ", row=" + row + ", startColumn=" + startColumn + ", endColumn=" + endColumn + ", layout=" + layout + ", listener=" + listener + ", allowRepeatClicks=" + allowRepeatClicks);
@@ -2962,6 +3007,7 @@ public class JavaFXApplication extends BaseController {
         
         this.namedFXNodes.get(viewName).put(name, flowPane);
     }
+    */
     
     //@Override
     public int displayGifOrig(String viewName, String fileName, int row, int column) {

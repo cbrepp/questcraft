@@ -119,11 +119,6 @@ public class AWTApplication extends BaseController {
     }
     
     @Override
-    public void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, Layout layout, EventListener listener, Boolean allowRepeatClicks) {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-    
-    @Override
     public int displayGif(String viewName, String fileName, int row, int column) {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -232,4 +227,10 @@ public class AWTApplication extends BaseController {
     public void refreshView(String viewName) {
         throw new UnsupportedOperationException("Not supported.");
     }
+    
+    @Override
+    public void setDefaultFontColor(app.Color fontColor) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+    
 }

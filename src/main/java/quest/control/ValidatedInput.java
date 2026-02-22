@@ -21,19 +21,24 @@ public class ValidatedInput extends ButtonGroup implements EventListener {
     
     public ValidatedInput (String name, List<Object> text) {
         super(name, text);
+        this.eventListener = this;
     }
     
     @Override
     public void onEvent(String eventName, Object eventValue) {
         logger.log(Level.INFO, "eventName={0}, eventValue={1}", new Object[]{eventName, eventValue});
 
-        Quest.quest.variables.put(this.name, (String)eventName);
-        String subpageName = "INPUT " + this.name + "=" + eventName;
+        if (!eventName.equals(this.name)) {
+            return;
+        }
+        
+        Quest.quest.variables.put(eventName, (String)eventValue);
+        String subpageName = "INPUT " + eventName + "=" + eventValue;
         Story subpage = Quest.quest.getSubpage(subpageName, false);
         if (subpage != null) {
             Quest.quest.displayPagev2(subpage.controls, true);
         } else {
-            subpageName = "INPUT " + this.name;
+            subpageName = "INPUT " + eventName;
             subpage = Quest.quest.getSubpage(subpageName, false);
             if (subpage != null) {
                 Quest.quest.displayPagev2(subpage.controls, true);

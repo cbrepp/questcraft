@@ -22,6 +22,7 @@ public class ButtonGroup extends BaseNode implements BaseCompositeNode {
     public Boolean isEnabled = true;
     public Map<Object, Boolean> isEnabledButtons;
     public Boolean isMultiUse = true;
+    public Map<Object, KeyboardKey> keyBindingButtons;
     public Double pixelSize; // Default is app controller's default pixel size
     public Integer spacerPixels = 10; // Default is 10 pixels separating the buttons horizontally and vertically
     public List<Object> text; // toString() will be invoked on each object to derive text
@@ -32,6 +33,7 @@ public class ButtonGroup extends BaseNode implements BaseCompositeNode {
         super(name);
         this.effectsButtons = new HashMap();
         this.isEnabledButtons = new HashMap();
+        this.keyBindingButtons = new HashMap();
         this.text = new ArrayList();
     }
     
@@ -62,6 +64,15 @@ public class ButtonGroup extends BaseNode implements BaseCompositeNode {
             isEnabledOverrides.put(buttonText, isEnabled);
         }
         
+        // Build a map of keyBinding for specific buttons
+        Map<String, KeyboardKey> keyBindings = new HashMap();
+        for (Map.Entry<Object, KeyboardKey> entry : this.keyBindingButtons.entrySet()) {
+            Object object = entry.getKey();
+            String buttonText = object.toString();
+            KeyboardKey keyBinding = entry.getValue();
+            keyBindings.put(buttonText, keyBinding);
+        }
+        
         List<String> addedChildren = new ArrayList();
         for (Object object : this.text) {
             String buttonText = object.toString();
@@ -75,13 +86,18 @@ public class ButtonGroup extends BaseNode implements BaseCompositeNode {
             Button button = new Button(buttonName);
             button.backgroundColor = this.buttonBackgroundColor;
             button.eventListener = this.eventListener;
+            button.eventName = this.name;
             if (isEnabledOverrides.containsKey(buttonText)) {
                 button.isEnabled = isEnabledOverrides.get(buttonText);
                 logger.log(Level.WARNING, "Button {0} has custom isEnabled of {1}", new Object[]{buttonText, button.isEnabled});
             } else {
                 button.isEnabled = this.isEnabled;
-            }
+            }            
             button.isMultiUse = this.isMultiUse;
+            if (keyBindings.containsKey(buttonText)) {
+                button.keyBinding = keyBindings.get(buttonText);
+                logger.log(Level.WARNING, "Button {0} has key binding of {1}", new Object[]{buttonText, button.keyBinding});
+            }
             button.pixelSize = this.pixelSize;
             button.text = buttonText;
             button.textColor = this.textColor;

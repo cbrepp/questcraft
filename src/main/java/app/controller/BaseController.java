@@ -73,7 +73,7 @@ public abstract class BaseController {
     //public abstract int displayImage(String viewName, String name, String fileName, int row, int column, Boolean fillParent);
     //public abstract void displayFloatingText(String viewName, String name, String text, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, app.Color fontColor, Integer fontSize, Integer fontStyle, String fontName);
     //public abstract void displayInputField(String viewName, String name, String label, int length, int row, int column, String initValue, Boolean addButton, Boolean isMonospace, Boolean isUpperCase, Boolean isMultiUse, EventListener listener);
-    public abstract void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, Layout layout, EventListener listener, Boolean allowRepeatClicks);
+    //public abstract void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, Layout layout, EventListener listener, Boolean allowRepeatClicks);
     public abstract int displayGif(String viewName, String fileName, int row, int column);
     public abstract void setTimer(String name, double seconds, EventListener listener);
     public abstract void removeTimer(String name);
@@ -94,5 +94,6 @@ public abstract class BaseController {
     public abstract void sendToBack(String viewName, String name);
     public abstract void refreshView(String viewName);
     public abstract void loadEmojiData();
+    public abstract void setDefaultFontColor(app.Color fontColor);
 
 }
