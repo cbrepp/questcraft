@@ -34,23 +34,29 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
-import quest.control.ActGoto;
-import quest.control.BookAuthor;
-import quest.control.BookLastUpdatedDate;
-import quest.control.BookTitle;
-import quest.control.Condition;
-import quest.control.DefaultTextColorSet;
-import quest.control.Illustration;
+import quest.control.ActDisplay;
+import quest.text.BookAuthor;
+import quest.text.BookLastUpdatedDate;
+import quest.text.BookTitle;
+import quest.Condition;
+import quest.control.BookFlip;
+import quest.control_deprecated.DefaultTextColorSet;
+import quest.control.Illustrate;
 import quest.control.InventoryAdd;
+import quest.control.InventoryRemove;
 import quest.control.PageRefresh;
-import quest.control.Paragraph;
+import quest.control.Scribe;
 import quest.control.PlayerSymbolSet;
-import quest.control.SceneGoto;
-import quest.control.Subpage;
-import quest.control.Text;
-import quest.control.ValidatedInput;
-import quest.control.Variable;
+import quest.control.SceneDisplay;
+import quest.control.SoundPlay;
+import quest.control.SoundStop;
+import quest.control.SubpageDisplay;
+import quest.control.TabSelect;
+import quest.text.Texts;
+import quest.node.ValidatedVariablePrompt;
+import quest.text.Variable;
 import quest.control.VariableSet;
+import quest.control.ViewAdd;
 import quest.model.Act;
 import quest.model.Book;
 import quest.model.HighScore;
@@ -58,6 +64,9 @@ import quest.model.InventoryItem;
 import quest.model.Page;
 import quest.model.Scene;
 import quest.model.Story;
+import quest.text.If;
+import quest.text.PlayerSymbol;
+import quest.text.VariableExists;
 
 /**
  *
@@ -576,7 +585,6 @@ public class Application extends app.view.BaseView {
         book.title = "TWIN QUEST: Destroyer of Worlds";
         book.updateDate = LocalDate.now();    
         book.inventory = new LinkedHashMap<>();
-
         
         // Inventory items are added in alphabetical order
         InventoryItem item = new InventoryItem("Inscribed on a scroll in arcane symbols, this spell unlocks powerful magic that you can cast with your Spell Book.", "/assets/sounds/magic.wav", new ArrayList<>(List.of("\uD83D\uDCDC")));
@@ -618,10 +626,10 @@ public class Application extends app.view.BaseView {
         book.inventory.put("Laser Cannon", item);
         item = new InventoryItem("A magical fold-out piece of paper showing each of the locations in the current level.", "/assets/sounds/paper.wav", new ArrayList<>(List.of(SceneMap.EMOJI)));
         Story onAdd = new Story();
-        onAdd.contents.add("<add-view Map>");
+        onAdd.controls.add(new ViewAdd("Map"));
         item.onAdd = onAdd;
         Story onSelect = new Story();
-        onSelect.contents.add("<tab-select Map>");
+        onSelect.controls.add(new TabSelect("Map"));
         item.onSelect = onSelect;
         item.xp = 0;
         book.inventory.put("Map", item);
@@ -638,10 +646,10 @@ public class Application extends app.view.BaseView {
         book.inventory.put("Snowboard", item);
         item = new InventoryItem("A powerful book!  Spells scribed onto its pages become manifest in the world.", "/assets/sounds/spell-cast.wav", new ArrayList<>(List.of(SpellBook.EMOJI)));
         onAdd = new Story();
-        onAdd.contents.add("<add-view Spell Book>");
+        onAdd.controls.add(new ViewAdd("Spell Book"));
         item.onAdd = onAdd;
         onSelect = new Story();
-        onSelect.contents.add("<tab-select Spell Book>");
+        onSelect.controls.add(new TabSelect("Spell Book"));
         item.onSelect = onSelect;
         item.xp = 0;
         book.inventory.put("Spell Book", item);
@@ -654,50 +662,67 @@ public class Application extends app.view.BaseView {
 
         Story flipBookSubpage = new Story();
         flipBookSubpage.isSpell = true;
-        flipBookSubpage.contents.add("<flip-book>");
+        flipBookSubpage.controls.add(new BookFlip());
         book.subpages.put("FLIP BOOK", flipBookSubpage);
         
         Story activateInventorySubpage = new Story();
         activateInventorySubpage.isSpell = true;
-        activateInventorySubpage.contents.add("<variable-set activate-inventory true>");
+        activateInventorySubpage.controls.add(new VariableSet("activate-inventory", "true"));
         book.subpages.put("ACTIVATE INVENTORY", activateInventorySubpage);
         
         // Once the player has selected a difficulty level, allow them to skip straight to the first Night Owl miniboss game
-        Story nightOwlSubpage = new Story();
-        nightOwlSubpage.isSpell = true;
-        nightOwlSubpage.contents.add("<variable-set condition=\"variable difficulty!=\" is-Gianni-tamed true>");
-        nightOwlSubpage.contents.add("<variable-set condition=\"variable difficulty!=\" is-dragon-defeated true>");
-        nightOwlSubpage.contents.add("<subpage-display condition=\"variable difficulty!=\" Chapter 1 Equipment>");
-        nightOwlSubpage.contents.add("<goto-act condition=\"variable difficulty!=\" Chapter 1>");
-        nightOwlSubpage.contents.add("<goto-scene condition=\"variable difficulty!=\" MYLEE'S ELEVATOR>");
-        book.subpages.put("NIGHT OWL", nightOwlSubpage);
+        Story nightOwlCheat = new Story();
+        nightOwlCheat.condition = new Condition(new VariableExists("difficulty"), Condition.Operator.EQUALS, "true", true);
+        nightOwlCheat.isSpell = true;
+        nightOwlCheat.controls.add(new VariableSet("is-Gianni-tamed", "true"));
+        nightOwlCheat.controls.add(new VariableSet("is-dragon-defeated", "true"));
+        nightOwlCheat.controls.add(new SubpageDisplay("Chapter 1 Equipment"));
+        nightOwlCheat.controls.add(new ActDisplay("Chapter 1"));
+        nightOwlCheat.controls.add(new SceneDisplay("MYLEE'S ELEVATOR"));
+        book.subpages.put("NIGHT OWL", nightOwlCheat);
         
         // Once the player has selected a difficulty level, allow them to skip straight to Chapter 2
-        Story act2Subpage = new Story();
-        act2Subpage.isSpell = true;
-        act2Subpage.contents.add("<variable-set condition=\"variable difficulty!=\" is-Gianni-tamed true>");
-        act2Subpage.contents.add("<variable-set condition=\"variable difficulty!=\" is-dragon-defeated true>");
-        act2Subpage.contents.add("<variable-set condition=\"variable difficulty!=\" is-night-owl-defeated true>");
-        act2Subpage.contents.add("<subpage-display condition=\"variable difficulty!=\" Chapter 1 Equipment>");
-        act2Subpage.contents.add("<inventory-remove condition=\"inventory-has Gold=true\" true Gold>");
-        act2Subpage.contents.add("<background-color 0+0+0 Quest>");
-        act2Subpage.contents.add("<background-color 0+0+0 Inventory>");
-        act2Subpage.contents.add("<background-color 0+0+0 Map>");
-        act2Subpage.contents.add("<background-color 0+0+0 Spell Book>");
-        act2Subpage.contents.add("<background-color 0+0+0 High Scores>");
-        act2Subpage.contents.add("<tab-select Quest>");
-        act2Subpage.contents.add("<goto-act condition=\"variable difficulty!=\" Chapter 2>");
-        book.subpages.put("A DARKNESS OVER THE LAND", act2Subpage);
+        Story act2Cheat = new Story();
+        act2Cheat.condition = new Condition(new VariableExists("difficulty"), Condition.Operator.EQUALS, "true", true);
+        act2Cheat.isSpell = true;
+        act2Cheat.controls.add(new VariableSet("is-Gianni-tamed", "true"));
+        act2Cheat.controls.add(new VariableSet("is-dragon-defeated", "true"));
+        act2Cheat.controls.add(new VariableSet("is-night-owl-defeated", "true"));
+        act2Cheat.controls.add(new SubpageDisplay("Chapter 1 Equipment"));
+        act2Cheat.controls.add(new InventoryRemove("Gold"));
+        /*
+        act2Subpage.controls.add("<background-color 0+0+0 Quest>");
+        act2Subpage.controls.add("<background-color 0+0+0 Inventory>");
+        act2Subpage.controls.add("<background-color 0+0+0 Map>");
+        act2Subpage.controls.add("<background-color 0+0+0 Spell Book>");
+        act2Subpage.controls.add("<background-color 0+0+0 High Scores>");
+        */
+        act2Cheat.controls.add(new TabSelect("Quest"));
+        act2Cheat.controls.add(new ActDisplay("Chapter 2"));
+        book.subpages.put("THE DARKNESS", act2Cheat);
         
         Story chapter1EquipmentSubpage = new Story();
-        chapter1EquipmentSubpage.contents.add("<inventory-add condition=\"inventory-has Gold!=true\" true Gold>");
-        chapter1EquipmentSubpage.contents.add("<inventory-add condition=\"inventory-has Ring of Taming!=true\" true Ring of Taming>");
-        chapter1EquipmentSubpage.contents.add("<inventory-add condition=\"player=Greyson\" true Greyson's Great Bow>");
-        chapter1EquipmentSubpage.contents.add("<inventory-add condition=\"player=Greyson\" true UNO Reverse>");
-        chapter1EquipmentSubpage.contents.add("<inventory-add condition=\"player=Zara\" true Zara's Sword>");
-        chapter1EquipmentSubpage.contents.add("<inventory-add condition=\"player=Zara\" true Cat-apult>");
-        chapter1EquipmentSubpage.contents.add("<inventory-add condition=\"player=Shmebulock\" true Cosmic Wonder #1>");
-        chapter1EquipmentSubpage.contents.add("<inventory-add condition=\"player=Shmebulock\" true Faery Launcher>");
+        chapter1EquipmentSubpage.controls.add(new InventoryAdd("Gold", true));
+        chapter1EquipmentSubpage.controls.add(new InventoryAdd("Ring of Taming", true));
+        InventoryAdd ia = new InventoryAdd("Greyson's Great Bow", true);
+        ia.condition = new Condition(new Variable("player"), Condition.Operator.EQUALS, "Greyson", true);
+        chapter1EquipmentSubpage.controls.add(ia);
+        chapter1EquipmentSubpage.controls.add(ia);
+        ia = new InventoryAdd("UNO Reverse", true);
+        ia.condition = new Condition(new Variable("player"), Condition.Operator.EQUALS, "Greyson", true);
+        chapter1EquipmentSubpage.controls.add(ia);
+        ia = new InventoryAdd("Zara's Sword", true);
+        ia.condition = new Condition(new Variable("player"), Condition.Operator.EQUALS, "Zara", true);
+        chapter1EquipmentSubpage.controls.add(ia);
+        ia = new InventoryAdd("Cat-apult", true);
+        ia.condition = new Condition(new Variable("player"), Condition.Operator.EQUALS, "Zara", true);
+        chapter1EquipmentSubpage.controls.add(ia);
+        ia = new InventoryAdd("Cosmic Wonder #1", true);
+        ia.condition = new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true);
+        chapter1EquipmentSubpage.controls.add(ia);
+        ia = new InventoryAdd("Faery Launcher", true);
+        ia.condition = new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true);
+        chapter1EquipmentSubpage.controls.add(ia);
         book.subpages.put("Chapter 1 Equipment", chapter1EquipmentSubpage);
         
         Act opening = new Act();
@@ -710,60 +735,6 @@ public class Application extends app.view.BaseView {
         titlePage.stopOtherSounds = true;
         titlePage.soundFileName = "/assets/sounds/epic.mp3";
         opening.scenes.put("Title Page", titlePage);
-        
-        // UIControl is implemented by a story control and an illustration control
-        // Illustration control adds a layout property
-        // A special Label control extends the base Label class and provides a collection of string controls where the quest instance can be used if a quest string
-        
-        // TODO - How to change the font color and style between different string controls???
-        // Maybe Paragraph should be a collection of Text, and Text is a collection of string controls
-        
-        // Quest Control is a base interface class with method onExecute() implemented by either Action Control or UI Control
-        // Action Control is an abstract class
-        // UI Control is an abstract class
-        // String Control is really just Object with toString() implemented
-        //
-        // Controls:
-        //   UI control is a class that implements onDisplay()
-        //   String control is a model class that implements toString(), so any Object
-        //   Action control is a class that implements onExecute()
-        //
-        // Paragraph is a UI control and a collection of UI controls that ends with a spacer/break
-        // Text is a UI control and a collection of string-based controls
-        
-        
-        // Page has a Story and BookPart has a Map of Stories
-            // Story is a list of BaseQuestControls
-                // Paragraph is a BaseQuestControl that actually updates the UI's story document and receives a collection of nodes and displays them plus a spacer node
-                    // Label uses an Object for string and calls toString() on it, allowing...
-                    // Text is a collection of Objects... Text has a toString() that iterates each Object and calls toString on it and appends the strings for its return value
-                    // ...if the Object extends BaseStringControl then it is given a Quest instance before toString() is called
-                        // BaseStringControl provides a setQuest() method and is expected to override toString()
-                // Illustration is a BaseQuestControl that actually updates the UI's illustation document and receives both a node and a layout
-                
-        // TODO: The hard part
-        // Could make the Quest instance a singleton so that each control and model can easily access it.  But this makes running the app a one user per runtime thing.
-        /*
-        public class UserSettings {
-            private static final Map<WebAPI, UserSettings> instances = new WeakHashMap<>();
-
-            public static UserSettings get(Scene scene) {
-                WebAPI webAPI = WebAPI.getWebAPI(scene);
-                return instances.computeIfAbsent(webAPI, k -> new UserSettings());
-            }
-
-            // Your session-specific data here
-        }
-        */
-        
-        /*
-        Page page1 = new Page();
-        page1.story.controls.add(new Paragraph(List.of(new Label("text1", new Text(List.of("Paragraph 1... ", "\uD83E\uDDD1\u200D\uD83E\uDDB0", new BookAuthor()))))));
-        page1.story.controls.add(new Paragraph());
-        page1.story.controls.add(new Paragraph(List.of(new Label("text2", new Text(List.of("Paragraph 2... ", new BookTitle()))))));
-        page1.story.controls.add(new Paragraph(List.of(new Label("text3", new Text(List.of("Paragraph 3... This is a very super long line of text that needs to wrap.  I am repeating this statement 3x.  This is a very super long line of text that needs to wrap.  I am repeating this statement 3x.  This is a very super long line of text that needs to wrap.  I am repeating this statement 3x.  This is a very super long line of text that needs to wrap.  I am repeating this statement 3x."))))));
-        page1.story.controls.add(new Paragraph(List.of(new Label("text4", new Text(List.of("Paragraph 4."))))));
-        */
         
         Page page1 = new Page();
         List<Object> dragonArt = List.of(
@@ -784,44 +755,14 @@ public class Application extends app.view.BaseView {
                 "    ,-=='-`=-.               ,-=='-`=-.",
                 "\n\n",
                 "              T W I N   Q U E S T");
-        Label dragonLabel = new Label("par1", new Text(dragonArt));
+        Label dragonLabel = new Label("par1", new Texts(dragonArt));
         dragonLabel.textColor = Color.DARK_MAGENTA;
         dragonLabel.textStyle = FontStyle.BOLD;
-        page1.story.controls.add(new Paragraph(List.of(dragonLabel))); 
-        page1.story.controls.add(new Paragraph(List.of(new Label("par2", new Text(List.of("  **************************************************"))))));
-        page1.story.controls.add(new Paragraph(List.of(new Label("par3", new Text(List.of("  ", new BookTitle(), "\n", "  by ", new BookAuthor(), "\n", "  Last Updated: ", new BookLastUpdatedDate()))))));
-        page1.story.controls.add(new Illustration(new Image("title image", "/assets/images/title-page.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
-        
-        /*
-        page1.story.contents.add("<color 139+0+0>");
-        page1.story.contents.add("                             ___, ____--'");
-        page1.story.contents.add("                        _,-.'_,-'      (");
-        page1.story.contents.add("                     ,-' _.-''....____(");
-        page1.story.contents.add("           ,))_     /  ,'\\ `'-.     (          /\\");
-        page1.story.contents.add("   __ ,+..a`  \\(_   ) /   \\    `'-..(         /  \\");
-        page1.story.contents.add("   )`-;...,_   \\(_ ) /     \\  ('''    ;'^^`\\ <./\\.>");
-        page1.story.contents.add("       ,_   )   |( )/   ,./^``_..._  < /^^\\ \\_.))");
-        page1.story.contents.add("      `=;; (    (/_')-- -'^^`      ^^-.`_.-` >-'");
-        page1.story.contents.add("      `=\\ (                             _,./");
-        page1.story.contents.add("        ,\\`(                         )^^^");
-        page1.story.contents.add("          ``;         __-'^^\\       /");
-        page1.story.contents.add("            / _>---^^^   `\\..`-.    ``'.");
-        page1.story.contents.add("           / /               / /``'`; /");
-        page1.story.contents.add("          / /          ,-=='-`=-'  / /");
-        page1.story.contents.add("    ,-=='-`=-.               ,-=='-`=-.");
-        page1.story.contents.add("<color 0+0+0>");
-        page1.story.contents.add("");
-        page1.story.contents.add("  *******************************************");
-        page1.story.contents.add("");
-        page1.story.contents.add("              T W I N   Q U E S T");
-        page1.story.contents.add("<br>");
-        page1.story.contents.add(" <b><book-title></b>");
-        page1.story.contents.add("  by <book-author>");
-        page1.story.contents.add("<br>");
-        page1.story.contents.add("  Last Updated: <book-last-updated-date>");
-        page1.story.contents.add("<second-page>");
-        page1.story.contents.add("<image title-page center /assets/images/title-page.jpg>");
-        */
+        page1.story.controls.add(new Scribe(List.of(dragonLabel))); 
+        page1.story.controls.add(new Scribe(List.of(new Label("par2", new Texts(List.of("  **************************************************"))))));
+        page1.story.controls.add(new Scribe(List.of(new Label("par3", new Texts(List.of("  ", new BookTitle(), "\n", "  by ", new BookAuthor(), "\n", "  Last Updated: ", new BookLastUpdatedDate()))))));
+        page1.story.controls.add(new Illustrate(new Image("title image", "/assets/images/title-page.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+
         titlePage.pages.put("1", page1);
         
         Scene playerSelection = new Scene();
@@ -831,25 +772,15 @@ public class Application extends app.view.BaseView {
         playerSelection.soundFileName = "/assets/sounds/epic.mp3";
         opening.scenes.put("Player Selection", playerSelection);
         page1 = new Page();
-        Subpage subpage = new Subpage("SHMEBULOCK input");
+        SubpageDisplay subpage = new SubpageDisplay("SHMEBULOCK input");
         subpage.condition = new Condition(new Variable("summonShmebulock"), Condition.Operator.EQUALS, "true", true);
         page1.story.controls.add(subpage);
-        subpage = new Subpage("input");
+        subpage = new SubpageDisplay("input");
         subpage.condition = new Condition(new Variable("summonShmebulock"), Condition.Operator.EQUALS, "true", false);
         page1.story.controls.add(subpage);
         page1.story.controls.add(new InventoryAdd("Map", true));
         page1.story.controls.add(new InventoryAdd("Spell Book", true));
-        page1.story.controls.add(new Illustration(new Image("select player image", "/assets/images/twins.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
-        
-        /*
-        page1.story.contents.add("Select Player:");
-        page1.story.contents.add("<subpage-display condition=\"summonShmebulock=true\" SHMEBULOCK input>");
-        page1.story.contents.add("<subpage-display condition=\"summonShmebulock!=true\" input>");
-        page1.story.contents.add("<inventory-add true Map>");
-        page1.story.contents.add("<inventory-add true Spell Book>");
-        page1.story.contents.add("<second-page>");
-        page1.story.contents.add("<image twins center /assets/images/twins.jpg>");
-        */
+        page1.story.controls.add(new Illustrate(new Image("select player image", "/assets/images/twins.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
 
         Story shmebulockCheatSubpage = new Story();
         shmebulockCheatSubpage.isSpell = true;
@@ -860,22 +791,22 @@ public class Application extends app.view.BaseView {
         Glow glowEffect = new Glow(Color.DARK_MAGENTA);
         List<BaseEffect> effectList = new ArrayList();
         effectList.add(glowEffect);
-        ValidatedInput input = new ValidatedInput("player", List.of("Zara", "Greyson"));
+        ValidatedVariablePrompt input = new ValidatedVariablePrompt("player", List.of("Zara", "Greyson"));
         input.effectsButtons.put("Greyson", effectList);
         input.effectsButtons.put("Zara", effectList);
         Story inputSubpage = new Story();
-        inputSubpage.controls.add(new Paragraph(List.of(new Label("par1", new Text(List.of("Select Player:\n"))), input)));
+        inputSubpage.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("Select Player:\n"))), input)));
         page1.subpages.put("input", inputSubpage);
 
         glowEffect = new Glow(Color.DARK_MAGENTA);
         effectList = new ArrayList();
         effectList.add(glowEffect);
-        input = new ValidatedInput("player", List.of("Zara", "Greyson", "Shmebulock"));
+        input = new ValidatedVariablePrompt("player", List.of("Zara", "Greyson", "Shmebulock"));
         input.effectsButtons.put("Greyson", effectList);
         input.effectsButtons.put("Zara", effectList);
         input.effectsButtons.put("Shmebulock", effectList);
         inputSubpage = new Story();
-        inputSubpage.controls.add(new Paragraph(List.of(new Label("par1", new Text(List.of("Select Player:\n"))), input)));
+        inputSubpage.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("Select Player:\n"))), input)));
         page1.subpages.put("SHMEBULOCK input", inputSubpage);
         
         Story playerGreysonSubpage = new Story();
@@ -891,7 +822,7 @@ public class Application extends app.view.BaseView {
         playerGreysonSubpage.controls.add(new VariableSet("why-is-that", "Why is that?"));
         playerGreysonSubpage.controls.add(new VariableSet("eat-twin", "He's going to eat Zara?!"));
         playerGreysonSubpage.controls.add(new VariableSet("thats-horrible", "That's horrible!!!"));
-        playerGreysonSubpage.controls.add(new SceneGoto("Difficulty Selection"));
+        playerGreysonSubpage.controls.add(new SceneDisplay("Difficulty Selection"));
         page1.subpages.put("INPUT player=Greyson", playerGreysonSubpage);
         
         Story playerZaraSubpage = new Story();
@@ -907,7 +838,7 @@ public class Application extends app.view.BaseView {
         playerZaraSubpage.controls.add(new VariableSet("why-is-that", "Why is that?"));
         playerZaraSubpage.controls.add(new VariableSet("eat-twin", "He's going to eat Greyson?!"));
         playerZaraSubpage.controls.add(new VariableSet("thats-horrible", "That's horrible!!!"));
-        playerZaraSubpage.controls.add(new SceneGoto("Difficulty Selection"));
+        playerZaraSubpage.controls.add(new SceneDisplay("Difficulty Selection"));
         page1.subpages.put("INPUT player=Zara", playerZaraSubpage);
         
         Story playerShmebulockSubpage = new Story();
@@ -925,7 +856,7 @@ public class Application extends app.view.BaseView {
         playerShmebulockSubpage.controls.add(new VariableSet("eat-twin", "SHMEBULOCK?!"));
         playerShmebulockSubpage.controls.add(new VariableSet("thats-horrible", "SHMEBULOCK!!!"));
         playerShmebulockSubpage.controls.add(new InventoryAdd("Ring of Taming", true));
-        playerShmebulockSubpage.controls.add(new SceneGoto("Difficulty Selection"));
+        playerShmebulockSubpage.controls.add(new SceneDisplay("Difficulty Selection"));
         page1.subpages.put("INPUT player=Shmebulock", playerShmebulockSubpage);
 
         playerSelection.pages.put("1", page1);
@@ -939,37 +870,37 @@ public class Application extends app.view.BaseView {
 
         page1 = new Page();
         
-        subpage = new Subpage("SHMEBULOCK input");
+        subpage = new SubpageDisplay("SHMEBULOCK input");
         subpage.condition = new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true);
         page1.story.controls.add(subpage);
-        subpage = new Subpage("input");
+        subpage = new SubpageDisplay("input");
         subpage.condition = new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", false);
         page1.story.controls.add(subpage);
         
         glowEffect = new Glow(Color.DARK_MAGENTA);
         effectList = new ArrayList();
         effectList.add(glowEffect);
-        input = new ValidatedInput("difficulty", List.of("Easy", "Normal", "Hard"));
+        input = new ValidatedVariablePrompt("difficulty", List.of("Easy", "Normal", "Hard"));
         input.effectsButtons.put("Easy", effectList);
         input.effectsButtons.put("Normal", effectList);
         input.effectsButtons.put("Hard", effectList);
         inputSubpage = new Story();
-        inputSubpage.controls.add(new Paragraph(List.of(new Label("par1", new Text(List.of("Select Difficulty:\n"))), input)));
-        inputSubpage.controls.add(new Illustration(new Image("select difficulty image", "/assets/images/difficulty.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        inputSubpage.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("Select Difficulty:\n"))), input)));
+        inputSubpage.controls.add(new Illustrate(new Image("select difficulty image", "/assets/images/difficulty.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         page1.subpages.put("input", inputSubpage);
         
         glowEffect = new Glow(Color.DARK_MAGENTA);
         effectList = new ArrayList();
         effectList.add(glowEffect);
-        input = new ValidatedInput("difficulty", List.of("Magical"));
+        input = new ValidatedVariablePrompt("difficulty", List.of("Magical"));
         input.effectsButtons.put("Magical", effectList);
         inputSubpage = new Story();
-        inputSubpage.controls.add(new Paragraph(List.of(new Label("par1", new Text(List.of("Select Difficulty:\n"))), input)));
-        inputSubpage.controls.add(new Illustration(new Image("select difficulty image", "/assets/images/difficulty-magical.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        inputSubpage.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("Select Difficulty:\n"))), input)));
+        inputSubpage.controls.add(new Illustrate(new Image("select difficulty image", "/assets/images/difficulty-magical.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         page1.subpages.put("SHMEBULOCK input", inputSubpage);
         
         Story difficultySelectedSubpage = new Story();
-        difficultySelectedSubpage.controls.add(new ActGoto("Introduction"));
+        difficultySelectedSubpage.controls.add(new ActDisplay("Introduction"));
         page1.subpages.put("INPUT difficulty", difficultySelectedSubpage);
         
         difficultySelection.pages.put("1", page1);
@@ -986,46 +917,48 @@ public class Application extends app.view.BaseView {
         introScene.soundFileName = "/assets/sounds/suspense.mp3";
         introduction.scenes.put("Introduction", introScene);
         
-        // TODO - Continue refactoring
-
         Page page1a = new Page();
         page1a.nextPageName = "1";
-        page1a.story.contents.add("<play-sound /assets/sounds/thunder.wav true>");
-        page1a.story.contents.add("<i>Time has passed has passed by slowly.  The seconds have been monotonous.  Countless.  Like drops of rain in a storm that never ends.  And she has patiently waited.</i>");
-        page1a.story.contents.add("<br>");
-        page1a.story.contents.add("<i>But now in the twenty-first year of the twenty-first century, her long wait is finally over.</i>");
-        page1a.story.contents.add("<br>");
-        page1a.story.contents.add("<i>He has returned...</i>");
-        page1a.story.contents.add("<br>");
-        page1a.story.contents.add("<i><if condition=\"player=Shmebulock\" ...perhaps this time it will be different?></i>");
-        page1a.story.contents.add("<second-page>");
-        page1a.story.contents.add("<gif center /assets/images/cat-storm-large.gif>");
+        page1a.story.controls.add(new SoundPlay("/assets/sounds/thunder.wav", true));
+        Label styledLabel = new Label("par1", new Texts(List.of("Time has passed has passed by slowly.  The seconds have been monotonous.  Countless.  Like drops of rain in a storm that never ends.  And she has patiently waited.\n")));
+        styledLabel.textStyle = FontStyle.ITALIC;
+        page1a.story.controls.add(new Scribe(List.of(styledLabel)));
+        styledLabel = new Label("par1", new Texts(List.of("But now in the twenty-first year of the twenty-first century, her long wait is finally over.\n")));
+        styledLabel.textStyle = FontStyle.ITALIC;
+        page1a.story.controls.add(new Scribe(List.of(styledLabel)));
+        styledLabel = new Label("par1", new Texts(List.of("He has returned...")));
+        styledLabel.textStyle = FontStyle.ITALIC;
+        page1a.story.controls.add(new Scribe(List.of(styledLabel)));
+        styledLabel = new Label("par1", new Texts(List.of("...perhaps this time it will be different?")));
+        styledLabel.textStyle = FontStyle.ITALIC;
+        Scribe shmebulockExtraText = new Scribe(List.of(styledLabel));
+        shmebulockExtraText.condition = new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true);
+        page1a.story.controls.add(shmebulockExtraText);
+        page1a.story.controls.add(new Illustrate(new Image("mylee waiting image", "/assets/images/cat-storm-large.gif"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("1a", page1a);
         
         page1 = new Page();
         page1.previousPageName = "1a";
         page1.nextPageName = "2";
-        page1.story.contents.add("<stop-sound /assets/sounds/thunder.wav>");
-        page1.story.contents.add("<variable twin-with-symbol>: <quote>Ahh!!!  <variable player>!!!  Save <if condition=\"player=Shmebulock\" us><if condition=\"player!=Shmebulock\" me>!!!<quote>");
-        page1.story.contents.add("<br>");
-        page1.story.contents.add("<player-symbol> <variable player>: <quote><variable battle-cry><quote>");
-        page1.story.contents.add("<br>");
-        page1.story.contents.add("<variable twin-with-symbol>: <quote><variable player> he got <if condition=\"player=Shmebulock\" us><if condition=\"player!=Shmebulock\" me>!!!  A big black cat got <if condition=\"player=Shmebulock\" us><if condition=\"player!=Shmebulock\" me>!!!<quote>");
-        page1.story.contents.add("<br>");
-        page1.story.contents.add("You set down the game controller you were holding (and what a shame, you were about to beat the Ender Dragon) and run toward the sound of your <variable twin-voice> just in time to see the door to the leprechaun closet in the back bedroom slam shut.  You run to the closet door, open it, and what you see next takes your breath away...");
-        page1.story.contents.add("<second-page>");
-        page1.story.contents.add("<image mystery-door center /assets/images/mystery-door.jpg>");
+        page1.story.controls.add(new SoundStop("/assets/sounds/thunder.wav"));
+        page1.story.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of(new Variable("twin-with-symbol"), ": \"Ahh!!!  ", new Variable("player"), "!!!  Save ", new If("us", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "me"), "!!!\""))))));
+        page1.story.controls.add(new Scribe(List.of(new Label("par2", new Texts(List.of(new PlayerSymbol(), " ", new Variable("player"), ": \"", new Variable("battle-cry"), "\""))))));
+        page1.story.controls.add(new Scribe(List.of(new Label("par3", new Texts(List.of(new Variable("twin-with-symbol"), ": \"", new Variable("player"), " he got ", new If("us", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "me"), "!!!  A big black cat got ", new If("us", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "me"), "!!!\""))))));
+        page1.story.controls.add(new Scribe(List.of(new Label("par4", new Texts(List.of("You set down the game controller you were holding (and what a shame, you were about to beat the Ender Dragon) and run toward the sound of your ", new Variable("twin-voice"), " just in time to see the door to the leprechaun closet in the back bedroom slam shut.  You run to the closet door, open it, and what you see next takes your breath away..."))))));
+        page1.story.controls.add(new Illustrate(new Image("illustration image", "/assets/images/mystery-door.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("1", page1);
-        
+
         Page page2 = new Page();
         page2.previousPageName = "1";
         page2.nextPageName = "3";
-        page2.story.contents.add("Sticking your head into what was supposed to be a small closet you look around at what appears to be the surface of a cloud floating high above Pendleton, Indiana.  You wonder if this is perhaps a magic portal.");
-        page2.story.contents.add("<br>");
-        page2.story.contents.add("You cautiously tap the cloud with your hand and discover that it's firm enough to walk on.  You then oh so very carefully put one foot into the closet, lower your head, and step through the doorway so you can get a better look...");
-        page2.story.contents.add("<second-page>");
-        page2.story.contents.add("<image clouds center /assets/images/clouds.jpg>");
+        page2.story.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("Sticking your head into what was supposed to be a small closet you look around at what appears to be the surface of a cloud floating high above Pendleton, Indiana.  You wonder if this is perhaps a magic portal.\n"))))));
+        page2.story.controls.add(new Scribe(List.of(new Label("par2", new Texts(List.of("You cautiously tap the cloud with your hand and discover that it's firm enough to walk on.  You then oh so very carefully put one foot into the closet, lower your head, and step through the doorway so you can get a better look..."))))));
+        page2.story.controls.add(new Illustrate(new Image("illustration image", "/assets/images/clouds.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("2", page2);
+
+        // TODO - Continue refactoring
+
+        /*        
         
         Page page3 = new Page();
         page3.previousPageName = "2";
@@ -1241,6 +1174,8 @@ public class Application extends app.view.BaseView {
         page12.story.contents.add("<image mylee center /assets/images/mylee.jpg>");
         introScene.pages.put("12", page12);
 
+        */
+
         Act chapter1 = new Act();
         chapter1.firstSceneName = "Chapter";
         book.acts.put("Chapter 1", chapter1);
@@ -1287,7 +1222,7 @@ public class Application extends app.view.BaseView {
         page1.story.contents.add("<second-page>");
         page1.story.contents.add("<u>CHAPTER 1</u>");
         page1.story.contents.add("<br>");
-        page1.story.contents.add("A Dragon in the Kingdom");
+        page1.story.contents.add("The Dragon");
         page1.story.contents.add("<set-player-direction SOUTH>");
         page1.story.contents.add("<observed-scene-add MYLEE'S ELEVATOR>");
         chapterScene.pages.put("1", page1);

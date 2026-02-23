@@ -3,6 +3,7 @@ package quest.control;
 
 import static app.controller.BaseController.logger;
 import java.util.logging.Level;
+import quest.control_deprecated.BaseQuestControl;
 import quest.view.Quest;
 
 /**
@@ -11,8 +12,8 @@ import quest.view.Quest;
  */
 public class VariableSet extends BaseQuestControl {
     
-    public Object variable;
-    public Object value;
+    public final Object variable;
+    public final Object value;
     
     public VariableSet(Object variable, Object value) {
         this.variable = variable;

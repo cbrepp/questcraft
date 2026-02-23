@@ -3,6 +3,7 @@ package quest.control;
 
 import static app.controller.BaseController.logger;
 import java.util.logging.Level;
+import quest.control_deprecated.BaseQuestControl;
 import quest.view.Quest;
 
 /**
@@ -11,7 +12,7 @@ import quest.view.Quest;
  */
 public class PlayerSymbolSet extends BaseQuestControl {
     
-    public Object symbol;
+    public final Object symbol;
     
     public PlayerSymbolSet(Object symbol) {
         this.symbol = symbol;

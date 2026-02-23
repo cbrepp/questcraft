@@ -127,6 +127,7 @@ public class SceneMap extends app.view.BaseView implements EventListener {
                 
                 String sceneName = sortedScenes[x][y];
                 Group itemGroup = new VerticalGroup(sceneName);
+                itemGroup.name = "cell " + x + "" + y;
                 List<String> observedActScenes = this.quest.observedScenes.get(this.quest.currentAct);
                 if (sceneName == null) {
                     emptyCellCount++;   // TODO - This is ugly

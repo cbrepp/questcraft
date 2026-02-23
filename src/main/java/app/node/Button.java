@@ -9,6 +9,7 @@ import app.*;
 public class Button extends BaseNode {
     
     public Color backgroundColor; // Default (null) is system default
+    public Integer borderWidth; // Default (null) is no borders
     public EventListener eventListener;
     public Object eventName; // Default (null) is the button's name
     public Boolean isEnabled = true;

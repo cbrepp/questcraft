@@ -446,7 +446,7 @@ public class JavaFXApplication extends BaseController {
     
     @Override
     public void clearScreen(String viewName) {
-        System.out.println("JavaFXApplication: clearScreen : viewName=" + viewName); 
+        logger.log(Level.INFO, "Entered: viewName={0}", viewName); 
 
         if (this.namedFXNodes.get(viewName) != null) {
             // The pane's conent is named the same as the view
@@ -1267,23 +1267,44 @@ public class JavaFXApplication extends BaseController {
         };
         Platform.runLater(() -> {
             Alert alert = new Alert(type);
+            
+            String originalHeader = alert.getDialogPane().getHeaderText();
+            Node originalIcon = alert.getDialogPane().getGraphic();
+            
             alert.initOwner(this.delegateApp.primaryStage);
+            
             if (dialog.title != null) {
                 alert.setTitle(dialog.title + " - " + this.parentView.name);
             } else {
                 alert.setTitle(this.parentView.name);
             }
-            if (dialog.header != null) {
-                TextFlow header = this.stringToTextFlow(dialog.header, DEFAULT_FONT, new app.Color(0, 0, 0), DEFAULT_FONT_SIZE, FontStyle.BOLD, FontSmoothingType.LCD);
-                alert.getDialogPane().setHeader(header);
+
+            // The default header text and icon will be dorked if attempting to set a custom value
+            if ((dialog.emojis != null) || (dialog.header != null)) {
+                HBox customHeader = new HBox(15); // 15px spacing
+                customHeader.setPadding(new Insets(20));
+                customHeader.setAlignment(Pos.CENTER_LEFT);
+                if (dialog.emojis != null) {
+                    TextFlow graphicImage = this.stringToTextFlow(dialog.emojis, null, new app.Color(0, 0, 0), (int) Math.round(EMOJI_SHEET_SIZE), FontStyle.NORMAL, FontSmoothingType.LCD);
+                    customHeader.getChildren().add(graphicImage);
+                } else {
+                    if (originalIcon != null) {
+                        customHeader.getChildren().add(originalIcon);
+                    }
+                }
+                if (dialog.header != null) {
+                    TextFlow header = this.stringToTextFlow(dialog.header, null, new app.Color(0, 0, 0), (int) Math.round(EMOJI_SHEET_SIZE), FontStyle.BOLD, FontSmoothingType.LCD);
+                    customHeader.getChildren().add(header);
+                } else {
+                    alert.setHeaderText(originalHeader);
+                }
+                alert.getDialogPane().setHeader(customHeader);
             }
-            if (dialog.emojis != null) {
-                ImageView graphicImage = this.stringToEmoji(dialog.emojis, (int) Math.round(EMOJI_SHEET_SIZE));
-                alert.setGraphic(graphicImage);
-            }
+            
             if (dialog.text != null) {
                 alert.setContentText(dialog.text);
             }
+            
             alert.show();
         });
     }
@@ -1515,39 +1536,39 @@ public class JavaFXApplication extends BaseController {
         return scrollPane;
     }
     
-    public Pane newInputField(String viewName, app.node.InputField node, Pane fxBox, app.Color offsetColor) {
-        logger.log(Level.INFO, "Entered: viewName={0}, node={1}, fxBox={2}, offsetColor={3}", new Object[]{viewName, node, fxBox, offsetColor});
-    
-        if (fxBox == null) {
-            fxBox = (Pane) newGroup(viewName, node.group, fxBox, offsetColor);
-        } else {
-            fxBox.getChildren().clear();
+    public FlowPane newInputField(app.node.InputField node, FlowPane fxInputField) {
+        logger.log(Level.INFO, "Entered: node={0}, fxInputField={1}", new Object[]{node, fxInputField});
+        
+        if (fxInputField == null) {
+            fxInputField = new FlowPane();
         }
-
-        app.node.Field fieldNode = new app.node.Field(node.group.name + " field");
-        fieldNode.backgroundColor = node.childBackgroundColor;
-        fieldNode.initialValue = node.initialValue;
-        fieldNode.isEnabled = node.isEnabled;
-        fieldNode.isUpperCase = node.isUpperCase;
-        fieldNode.label = node.label;
-        fieldNode.length = node.length;
-        fieldNode.pixelSize = node.pixelSize;
-        fieldNode.textColor = node.textColor;
-        fieldNode.textFont = node.textFont;
-        this.addNode(viewName, node.group.name, fieldNode, null);
         
-        app.node.Button buttonNode = new app.node.Button(node.group.name + " button");
-        buttonNode.backgroundColor = node.childBackgroundColor;
-        buttonNode.eventListener = node.eventListener;
-        buttonNode.isEnabled = node.isEnabled;
-        buttonNode.isMultiUse = node.isMultiUse;
-        buttonNode.pixelSize = node.pixelSize;
-        buttonNode.text = node.buttonText;
-        buttonNode.textColor = node.textColor;
-        buttonNode.textFont = node.textFont;
-        this.addNode(viewName, node.group.name, buttonNode, null);
+        if (node.spacerPixels != null) {
+            fxInputField.setHgap(node.spacerPixels);
+            fxInputField.setVgap(node.spacerPixels);
+            fxInputField.setPadding(new Insets(node.spacerPixels));
+        }
         
-        return fxBox;
+        if (node.backgroundColor != null) {
+            Color fxBackgroundColor = Color.rgb(node.backgroundColor.red, node.backgroundColor.green, node.backgroundColor.blue);
+            BackgroundFill backgroundFill = new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY);
+            Background background = new Background(backgroundFill);
+            fxInputField.setBackground(background);
+        }
+        
+        // TODO - This is an interesting way to subscribe to the button click and raise the main event, passing the entered text
+        final FlowPane finalFxInputField = fxInputField;
+        node.internalEventListener = (String eventName, Object eventValue) -> {
+            String enteredText = "";
+            for (Node child : finalFxInputField.getChildren()) {
+                if (child instanceof TextField field) {
+                    enteredText = field.getText();
+                }
+            }
+            node.eventListener.onEvent(node.name, enteredText);
+        };
+        
+        return fxInputField;
     }
     
     public Region newSpacer(app.node.Spacer node, Region fxSpacer) {
@@ -1578,6 +1599,10 @@ public class JavaFXApplication extends BaseController {
         
         if (node.initialValue != null) {
             fxTextField.setText(node.initialValue);
+        }
+        
+        if (node.displayLength != null) {
+            fxTextField.setPrefColumnCount(node.displayLength);
         }
         
         TextFormatter<String> textFormatter = new TextFormatter<>(change -> {
@@ -1611,7 +1636,11 @@ public class JavaFXApplication extends BaseController {
         
         app.Color textColor;
         if (node.textColor == null) {
-            textColor = offsetColor;
+            if (node.backgroundColor != null) {
+                textColor = node.backgroundColor.getOffset();
+            } else {
+                textColor = offsetColor;
+            }
         } else {
             textColor = node.textColor;
         }
@@ -1632,6 +1661,10 @@ public class JavaFXApplication extends BaseController {
             fxTextField.setBackground(new Background(new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY)));
         } else {
             fxTextField.setBackground(Background.EMPTY); // Transparent        
+        }
+        
+        if ((node.borderWidth != null) && (node.borderWidth > 0)) {
+            fxTextField.setBorder(new Border(new BorderStroke(Color.rgb(offsetColor.red, offsetColor.green, offsetColor.blue), BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
         }
         
         return fxTextField;
@@ -1658,7 +1691,11 @@ public class JavaFXApplication extends BaseController {
         
         app.Color textColor;
         if (node.textColor == null) {
-            textColor = offsetColor;
+            if (node.backgroundColor != null) {
+                textColor = node.backgroundColor.getOffset();
+            } else {
+                textColor = app.Color.BLACK; // By default, light gray is the background color
+            }
         } else {
             textColor = node.textColor;
         }
@@ -1693,6 +1730,10 @@ public class JavaFXApplication extends BaseController {
         if (node.backgroundColor != null) {
             Color fxBackgroundColor = Color.rgb(node.backgroundColor.red, node.backgroundColor.green, node.backgroundColor.blue);
             fxButton.setBackground(new Background(new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY)));
+        }
+        
+        if ((node.borderWidth != null) && (node.borderWidth > 0)) {
+            fxButton.setBorder(new Border(new BorderStroke(Color.rgb(offsetColor.red, offsetColor.green, offsetColor.blue), BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
         }
         
         if (!isNew) {
@@ -2039,14 +2080,23 @@ public class JavaFXApplication extends BaseController {
     public void publishNode(String viewName, String parentName, BaseNode node, Layout layout, Node fxNode) {
         logger.log(Level.INFO, "Entered: viewName={0}, parentName={1}, node={2}, layout={3}, fxNode={4}", new Object[]{viewName, parentName, node, layout, fxNode});
         
+        if (node.name == null) {
+            logger.log(Level.SEVERE, "Node does not have a name!");
+            return;
+        }
+        
         // TODO - Probably need a default application-level background color
         // TODO - Maintain a class-level map of child name key to parent object and traverse that to get the real background color
         BaseView view = this.views.get(viewName);
         app.Color offsetColor = view.backgroundColor.getOffset();
         Node fxParent = this.namedFXNodes.get(viewName).get(parentName);
         if (fxParent == null) {
-            logger.log(Level.SEVERE, "FX parent with provided name not found");
-            return;
+            if (viewName.equals(parentName)) {
+                fxParent = this.tabContentMap.get(viewName);
+            } else {
+                logger.log(Level.SEVERE, "FX parent with provided name not found");
+                return;
+            }
         }
         BaseNode parent = this.namedNodes.get(viewName).get(parentName);
         Boolean isNew = (fxNode == null);
@@ -2088,7 +2138,14 @@ public class JavaFXApplication extends BaseController {
         } else if (node instanceof app.node.Field field) {
             fxNode = this.newField(field, (TextField) fxNode, offsetColor);
         } else if (node instanceof app.node.InputField inputField) {
-            fxNode = this.newInputField(viewName, inputField, (Pane) fxNode, offsetColor);
+            fxNode = this.newInputField(inputField, (FlowPane) fxNode);
+            FlowPane fxInputField = (FlowPane) fxNode;
+            if (node.scaleX != null) {
+                fxInputField.setPrefWidth(parentWidth * node.scaleX);
+            }
+            if (node.scaleY != null) {
+                fxInputField.setPrefHeight(parentHeight * node.scaleY);
+            }
         } else if (node instanceof app.node.Label label) {
             fxNode = this.newLabel(viewName, label, (TextFlow) fxNode, offsetColor, FontSmoothingType.LCD);
             TextFlow flow = (TextFlow) fxNode;

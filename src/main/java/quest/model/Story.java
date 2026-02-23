@@ -3,7 +3,8 @@ package quest.model;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import quest.control.BaseQuestControl;
+import quest.Condition;
+import quest.control_deprecated.BaseQuestControl;
 
 /**
  *
@@ -11,6 +12,7 @@ import quest.control.BaseQuestControl;
  */
 public class Story implements Serializable {
 
+    public Condition condition;
     public List<String> contents;
     public List<BaseQuestControl> controls;
     public Boolean isSpell;

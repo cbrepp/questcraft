@@ -1,5 +1,6 @@
 package quest.view;
 
+import quest.control_deprecated.BaseQuestControl;
 import app.controller.BaseController;
 import app.Color;
 import app.Font;
@@ -27,7 +28,6 @@ import java.util.Random;
 import java.util.logging.Level;
 import quest.model.Act;
 import quest.model.Book;
-import quest.control.*;
 import quest.model.InventoryItem;
 import quest.model.Page;
 import quest.model.Scene;
@@ -80,8 +80,6 @@ public class Quest extends app.view.BaseView {
     public int currentDisplayPage;
     public String currentPage;
     public String currentScene;
-    public Color defaultTextColor;
-    public FontStyle defaultTextStyle;
     public Pane illustrationContainer;
     public Boolean isGameOver;
     public Map<String, InventoryItem> inventory;
@@ -97,7 +95,6 @@ public class Quest extends app.view.BaseView {
     public String playerSymbol;
     public Integer playerX;
     public Integer playerY;
-    public Map<String, QuestControl> questControls;
     public Random random = new Random();
     public SpellBook spellBook;
     public ScrollingDocument storyDocument;
@@ -116,72 +113,6 @@ public class Quest extends app.view.BaseView {
         this.playerMP = 0;
         this.playerXP = 0;
         this.playerSymbol = "\uD83E\uDDD1\u200D\uD83E\uDDB0";
-        this.questControls = new HashMap<>();
-        this.questControls.put(ActGotoControl.NAME, new ActGotoControl(this));
-        this.questControls.put(AddViewControl.NAME, new AddViewControl(this));
-        this.questControls.put(AnimationInitControl.NAME, new AnimationInitControl(this));
-        this.questControls.put(BookAuthorControl.NAME, new BookAuthorControl(this));
-        this.questControls.put(BookFlipControl.NAME, new BookFlipControl(this));
-        this.questControls.put(BookLastUpdatedDateControl.NAME, new BookLastUpdatedDateControl(this));
-        this.questControls.put(BookTitleControl.NAME, new BookTitleControl(this));
-        this.questControls.put(BreakControl.NAME, new BreakControl(this));
-        this.questControls.put(ColorTextControl.NAME, new ColorTextControl(this));
-        this.questControls.put(ColorTextOffControl.NAME, new ColorTextOffControl(this));
-        this.questControls.put(DoubleQuoteControl.NAME, new DoubleQuoteControl(this));
-        this.questControls.put(GetInputControl.NAME, new GetInputControl(this));
-        this.questControls.put(GetValidatedInputControl.NAME, new GetValidatedInputControl(this));
-        this.questControls.put(GifControl.NAME, new GifControl(this));
-        this.questControls.put(IfControl.NAME, new IfControl(this));
-        this.questControls.put(ImageControl.NAME, new ImageControl(this));
-        this.questControls.put(InventoryAddControl.NAME, new InventoryAddControl(this));
-        this.questControls.put(InventoryControl.NAME, new InventoryControl(this));
-        this.questControls.put(InventoryHasControl.NAME, new InventoryHasControl(this));
-        this.questControls.put(InventoryRemoveControl.NAME, new InventoryRemoveControl(this));
-        this.questControls.put(ItalicsTextControl.NAME, new ItalicsTextControl(this));
-        this.questControls.put(ItalicsTextOffControl.NAME, new ItalicsTextOffControl(this));
-        this.questControls.put(LinkControl.NAME, new LinkControl(this));
-        this.questControls.put(MaskControl.NAME, new MaskControl(this));
-        this.questControls.put(MonsterShooterControl.NAME, new MonsterShooterControl(this));
-        this.questControls.put(MoveAheadControl.NAME, new MoveAheadControl(this));
-        this.questControls.put(MoveBackControl.NAME, new MoveBackControl(this));
-        this.questControls.put(NextSceneControl.NAME, new NextSceneControl(this));
-        this.questControls.put(ObservedSceneAddControl.NAME, new ObservedSceneAddControl(this));
-        this.questControls.put(OverlayControl.NAME, new OverlayControl(this));
-        this.questControls.put(PageGotoControl.NAME, new PageGotoControl(this));
-        this.questControls.put(PageRefreshControl.NAME, new PageRefreshControl(this));
-        this.questControls.put(PlayerDirectionControl.NAME, new PlayerDirectionControl(this));
-        this.questControls.put(PlayerHPChangeControl.NAME, new PlayerHPChangeControl(this));
-        this.questControls.put(PlayerHPControl.NAME, new PlayerHPControl(this));
-        this.questControls.put(PlayerMPChangeControl.NAME, new PlayerMPChangeControl(this));
-        this.questControls.put(PlayerMPControl.NAME, new PlayerMPControl(this));
-        this.questControls.put(PlayerSymbolControl.NAME, new PlayerSymbolControl(this));
-        this.questControls.put(PlayerSymbolSetControl.NAME, new PlayerSymbolSetControl(this));
-        this.questControls.put(PlayerXPChangeControl.NAME, new PlayerXPChangeControl(this));
-        this.questControls.put(PlayerXPControl.NAME, new PlayerXPControl(this));
-        this.questControls.put(RandomControl.NAME, new RandomControl(this));
-        this.questControls.put(RemoveControl.NAME, new RemoveControl(this));
-        this.questControls.put(SceneGotoControl.NAME, new SceneGotoControl(this));
-        this.questControls.put(SceneControl.NAME, new SceneControl(this));
-        this.questControls.put(SendToBackControl.NAME, new SendToBackControl(this));
-        this.questControls.put(SendToFrontControl.NAME, new SendToFrontControl(this));
-        this.questControls.put(SetFocusOnFirstPageControl.NAME, new SetFocusOnFirstPageControl(this));
-        this.questControls.put(SetFocusOnSecondPageControl.NAME, new SetFocusOnSecondPageControl(this));
-        this.questControls.put(SetMagicTextControl.NAME, new SetMagicTextControl(this));
-        this.questControls.put(SetPlayerDirectionControl.NAME, new SetPlayerDirectionControl(this));
-        this.questControls.put(SetTextColorControl.NAME, new SetTextColorControl(this));
-        this.questControls.put(SoundPlayControl.NAME, new SoundPlayControl(this));
-        this.questControls.put(SoundStopControl.NAME, new SoundStopControl(this));
-        this.questControls.put(SubpageDisplayControl.NAME, new SubpageDisplayControl(this));
-        this.questControls.put(TabSelectControl.NAME, new TabSelectControl(this));
-        this.questControls.put(TimerStartControl.NAME, new TimerStartControl(this));
-        this.questControls.put(TimerStopControl.NAME, new TimerStopControl(this));
-        this.questControls.put(TurnLeftControl.NAME, new TurnLeftControl(this));
-        this.questControls.put(TurnRightControl.NAME, new TurnRightControl(this));
-        this.questControls.put(UnderlineTextControl.NAME, new UnderlineTextControl(this));
-        this.questControls.put(UnderlineTextOffControl.NAME, new UnderlineTextOffControl(this));
-        this.questControls.put(VariableControl.NAME, new VariableControl(this));
-        this.questControls.put(VariableSetControl.NAME, new VariableSetControl(this));
-        this.questControls.put(VariableAddControl.NAME, new VariableAddControl(this));
         this.variables = new HashMap<>();
     }
     
@@ -271,12 +202,12 @@ public class Quest extends app.view.BaseView {
                     String subpageName = "INPUT " + key + "=" + eventValue;
                     Story subpage = getSubpage(subpageName, false);
                     if (subpage != null) {
-                        this.displayPagev2(subpage.controls, true);
+                        this.displayStory(subpage, true);
                     } else {
                         subpageName = "INPUT " + key;
                         subpage = getSubpage(subpageName, false);
                         if (subpage != null) {
-                            this.displayPagev2(subpage.controls, true);
+                            this.displayStory(subpage, true);
                         }
                     }
                 } else if (eventNameParts[0].equals(TIMER_EVENT_PREFIX)) {
@@ -284,14 +215,14 @@ public class Quest extends app.view.BaseView {
                     String subpageName = "TIMER " + key;
                     Story subpage = getSubpage(subpageName, false);
                     if (subpage != null) {
-                        this.displayPagev2(subpage.controls, true);
+                        this.displayStory(subpage, true);
                     }
                 } else if (eventNameParts[0].equals(LINK_EVENT_PREFIX)) {
                     String key = eventNameParts[1];
                     String subpageName = "LINK " + key;
                     Story subpage = getSubpage(subpageName, false);
                     if (subpage != null) {
-                        this.displayPagev2(subpage.controls, true);
+                        this.displayStory(subpage, true);
                     }
                 } else {
                     System.err.println("Quest: onEvent: Unsupported event");
@@ -390,7 +321,7 @@ public class Quest extends app.view.BaseView {
         
         // Handle any custom add event logic for the item
         if (item.onAdd != null) {
-            this.displayPagev2(item.onAdd.controls, true);
+            this.displayStory(item.onAdd, true);
         }
         
         this.publishEvent(NEW_INVENTORY_ITEM, inventoryItemName);
@@ -455,13 +386,11 @@ public class Quest extends app.view.BaseView {
         List<BaseQuestControl> pageControls;
         Story pageStory;
         if ((page == null) || (page.story == null)) {
-            pageControls = new ArrayList();
-            this.displayPagev2(pageControls, false);
+            this.displayStory(new Story(), false);
             return;
         }
         pageStory = page.story;
-        pageControls = pageStory.controls;
-        displayPagev2(pageControls, false);
+        displayStory(pageStory, false);
         
         // Next page button
         Boolean isNextPageDisplaying = false;
@@ -472,7 +401,7 @@ public class Quest extends app.view.BaseView {
             nextButton.pixelSize = DEFAULT_PIXEL_SIZE;
             nextButton.textColor = Color.BLACK;
             nextButton.text = "Next \uD83E\uDC62";
-            nextButton.textFont = Font.ROBOTO_BLACK;
+            //nextButton.textFont = Font.ROBOTO_BLACK;
             if (!page.noGlow) {
                 nextButton.effects.add(new Glow(Color.DARK_MAGENTA));
             }
@@ -489,7 +418,7 @@ public class Quest extends app.view.BaseView {
             previousButton.pixelSize = DEFAULT_PIXEL_SIZE;
             previousButton.textColor = Color.BLACK;
             previousButton.text = "\uD83E\uDC60 Previous";
-            previousButton.textFont = Font.ROBOTO_BLACK;
+            //previousButton.textFont = Font.ROBOTO_BLACK;
             if ((!isNextPageDisplaying) && (!page.noGlow)) {
                 previousButton.effects.add(new Glow(Color.DARK_MAGENTA));
             }
@@ -504,14 +433,21 @@ public class Quest extends app.view.BaseView {
             gameOverButton.pixelSize = DEFAULT_PIXEL_SIZE;
             gameOverButton.textColor = Color.BLACK;
             gameOverButton.text = "Game Over >";
-            gameOverButton.textFont = Font.ROBOTO_BLACK;
+            //gameOverButton.textFont = Font.ROBOTO_BLACK;
             gameOverButton.effects.add(new Glow(Color.DARK_MAGENTA));
             this.appController.addNode(this.name, this.name, gameOverButton, new Layout(new RelativeCoordinates(RIGHT_PAGE_ENDING_X, PAGE_ENDING_Y), HorizontalAlignment.RIGHT, VerticalAlignment.BOTTOM));
         }
     }
     
-    public void displayPagev2(List<BaseQuestControl> controls, Boolean isSubpage) {
-        logger.log(Level.INFO, "Entered: page={0}, isSubpage={1}", new Object[]{controls, isSubpage});
+    public void displayStory(Story story, Boolean isSubpage) {
+        logger.log(Level.INFO, "Entered: page={0}, isSubpage={1}", new Object[]{story, isSubpage});
+        
+        if (story.condition != null) {
+            if (!story.condition.evaluate()) {
+                logger.log(Level.INFO, "Condition for story not met!");
+                return;
+            }
+        }
         
         if (!isSubpage) {
             logger.log(Level.INFO, "Resetting page");
@@ -520,7 +456,7 @@ public class Quest extends app.view.BaseView {
             this.displayIllustrationContainer();
         }
         
-        for (BaseQuestControl control : controls) {
+        for (BaseQuestControl control : story.controls) {
             if (control.condition != null) {
                 logger.log(Level.INFO, "Evaluating condition for control {0}", control);
                 if (!control.condition.evaluate()) {
@@ -530,67 +466,6 @@ public class Quest extends app.view.BaseView {
             }
             logger.log(Level.INFO, "Executing control {0}", control);
             control.onExecute();
-        }
-    }
-    
-    public void displayPage(List<String> page, Boolean isSubpage) {
-        logger.log(Level.INFO, "Entered: page={0}, isSubpage={1}", new Object[]{page, isSubpage});
-        
-        if (!isSubpage) {
-            this.currentDisplayPage = FIRST_PAGE;
-            this.displayStoryContainer();
-            this.displayIllustrationContainer();
-            System.out.println("Quest: displayPage : Initialized textRow to 1");
-        }
-        
-        for (String pageLine : page) {
-            String storyText = "";
-            Boolean pageLineContainsText = false;
-            for (int i = 0; i < pageLine.length(); i++) {
-                char character = pageLine.charAt(i);
-                String newText = "" + character;
-                
-                if (character == '<') {
-                    String questControlName = null;
-                    String questControlTag = QuestControl.getTag(pageLine, i);
-                    if (questControlTag != null) {
-                        questControlName = QuestControl.getTagName(questControlTag, 0);
-                    }
-                    if (questControlName != null) {
-                        QuestControl control = this.questControls.get(questControlName);
-                        if (control == null) {
-                            // Unsupported tags are supported and should not throw an exception
-                            System.out.println("Quest: displayPage: Unsupported tag: ***" + questControlName + "***");
-                        } else {
-                            if ((control.unspoolStoryText) && (!storyText.equals(""))) {
-                                System.out.println("Quest: displayPage: Unspooling story text...");
-                                pageLineContainsText = true;
-                                //this.displayText(storyText, this.textColor, this.textStyle);
-                                storyText = "";
-                                newText = "";
-                            }
-                            System.out.println("Quest: displayPage: Executing tag " + questControlName);
-                            // TODO - If displaying an in-line control (like 'inventory'), need to display all of the text accumulated thus far
-                            newText = control.execute(questControlTag);
-                            i = i + questControlTag.length() - 1;
-                        }
-                    }
-                }
-                storyText = storyText + newText;
-                
-            }
-            
-            if (storyText.length() > 0) {
-                pageLineContainsText = true;
-                //this.displayStoryText(storyText, this.textColor, this.textStyle);
-            }
-            
-            if (pageLineContainsText) {
-                // Page lines that have no text but rather a quest control like <br> or <second-page> should not increment the text row.
-                // This requires that empty lines use <br>.
-                //this.displayStoryText("", currentTextColor, currentTextStyle);
-                System.out.println("Quest: displayPage: Done with page line and it had text so advanced text row");
-            }
         }
     }
     

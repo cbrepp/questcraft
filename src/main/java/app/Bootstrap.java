@@ -53,7 +53,7 @@ public class Bootstrap {
         // Initialize the splash view
         BaseView splashView = null;
         if (configSplashClass != null) {
-            logger.log(Level.INFO, "Intializing the splash view");
+            logger.log(Level.INFO, "Initializing the splash view for {0}", appName);
             splashView = (BaseView) Utility.instance(configSplashClass, appName);
             clazz = splashView.getClass();
             if (!BaseView.class.isAssignableFrom(clazz)) {
@@ -63,7 +63,7 @@ public class Bootstrap {
         }
 
         // Initialize the main application view
-        logger.log(Level.INFO, "Intializing the main view");
+        logger.log(Level.INFO, "Initializing the main view for {0}", appName);
         BaseView appView = (BaseView) Utility.instance(configAppClass, appName);
         clazz = appView.getClass();
         if (!BaseView.class.isAssignableFrom(clazz)) {
@@ -85,17 +85,7 @@ public class Bootstrap {
     
     public static String getAppName(String appClassName) {
         logger.log(Level.INFO, "Entered: appClassName={0}", appClassName);
-        
-        String appName = "";
-        
-        Class<?> appClass;
-        try {
-            appClass = Class.forName(appClassName);
-            String className = appClass.getSimpleName();
-        } catch (ClassNotFoundException e) {
-            logger.log(Level.SEVERE, "A critical error occurred", e);
-        }
-
+        String appName = appClassName.substring(appClassName.lastIndexOf('.') + 1);
         return appName;
     }
     

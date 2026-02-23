@@ -21,4 +21,9 @@ public class Alert extends BaseDialog {
         super(title);
     }
     
+    public Alert (String title, String text) {
+        super(title);
+        this.text = text;
+    }
+    
 }

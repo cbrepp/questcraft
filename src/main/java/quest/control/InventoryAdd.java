@@ -5,6 +5,7 @@ import app.Layout;
 import static app.controller.BaseController.logger;
 import app.node.BaseNode;
 import java.util.logging.Level;
+import quest.control_deprecated.BaseQuestControl;
 import quest.view.Quest;
 
 /**

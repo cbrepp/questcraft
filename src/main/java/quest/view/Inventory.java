@@ -7,6 +7,7 @@ import app.HorizontalAlignment;
 import app.Icon;
 import app.Layout;
 import app.VerticalAlignment;
+import app.dialog.Alert;
 import app.node.Grid;
 import app.node.Group;
 import app.node.Label;
@@ -62,8 +63,13 @@ public class Inventory extends app.view.BaseView implements EventListener {
             }
             if (item.onSelect != null) {
                 System.out.println("Inventory: onEvent: Executing story");
-                this.quest.displayPage(item.onSelect.contents, true);
+                this.quest.displayStory(item.onSelect, true);
             } else {
+                Alert alert = new Alert(this.name, item.description);
+                alert.icon = Icon.INFORMATION;
+                alert.emojis = String.join(" ", item.emojis);
+                alert.header = eventName;
+                this.appController.newDialog(alert);
                 //this.quest.appController.displayMessageBox(title, item.description, Icon.INFORMATION, item.emojis);
             }
         }

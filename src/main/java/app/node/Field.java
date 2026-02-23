@@ -9,6 +9,8 @@ import app.*;
 public class Field extends BaseNode {
     
     public Color backgroundColor; // Default (null) is transparent
+    public Integer borderWidth = 1; // Default is a 1 pixel border
+    public Integer displayLength;
     public EventListener eventListener;
     public String eventName;
     public String initialValue;
