@@ -80,6 +80,7 @@ public class Quest extends app.view.BaseView {
     public int currentDisplayPage;
     public String currentPage;
     public String currentScene;
+    public HighScores highScoresView;
     public Pane illustrationContainer;
     public Boolean isGameOver;
     public Map<String, InventoryItem> inventory;
@@ -766,7 +767,9 @@ public class Quest extends app.view.BaseView {
 
         if (this.playerXP < 0) {
             this.playerXP = 0;
-        }       
+        }
+        
+        this.highScoresView.refreshScoreLabel();
     }
     
     public void startAct(String actName) {

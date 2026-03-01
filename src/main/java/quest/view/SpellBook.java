@@ -58,7 +58,7 @@ public class SpellBook extends app.view.BaseView {
                         int randomResponseIndex = (int) (Math.random() * responses.length);
                         String randomResponse = responses[randomResponseIndex];
                         Alert alert = new Alert(this.name, "You wait... and all you get is a snap, crackle, and pop.  Seems like it should be a thing but it isn't.  Perhaps you're trying the right spell at the wrong time?");
-                        alert.icon = Icon.CANCEL;
+                        alert.icon = Icon.QUESTION;
                         alert.header = randomResponse;
                         this.appController.newDialog(alert);
                         return;
@@ -84,7 +84,7 @@ public class SpellBook extends app.view.BaseView {
                     int randomResponseIndex = (int) (Math.random() * responses.length);
                     String randomResponse = responses[randomResponseIndex];
                     Alert alert = new Alert(this.name, "You hear the crackle and spark of magic.  The spell has been written!  The fresh words on the page emit a purple glow.");
-                    alert.icon = Icon.INFORMATION;
+                    alert.icon = Icon.WORKING;
                     alert.header = randomResponse;
                     this.appController.newDialog(alert);
                     logger.log(Level.INFO, "Executing spell '{0}'", spellName);

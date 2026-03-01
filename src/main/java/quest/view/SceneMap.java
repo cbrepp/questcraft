@@ -113,6 +113,7 @@ public class SceneMap extends app.view.BaseView implements EventListener {
                     if (y == 0) {
                         // The last column is reserved for the compass
                         Group itemGroup = new VerticalGroup(COMPASS);
+                        itemGroup.borderWidth = 0;
                         Image imageControl = new Image(COMPASS + " image");
                         imageControl.file = "/assets/images/compass-small.png";
                         itemGroup.nodes.add(imageControl);
@@ -120,6 +121,7 @@ public class SceneMap extends app.view.BaseView implements EventListener {
                     } else {
                         emptyCellCount++;   // TODO - This is ugly
                         Group itemGroup = new VerticalGroup("EMPTY SCENE " + emptyCellCount);
+                        itemGroup.borderWidth = 0;
                         gridControl.cells.add(itemGroup);
                     }
                     continue;
@@ -127,6 +129,7 @@ public class SceneMap extends app.view.BaseView implements EventListener {
                 
                 String sceneName = sortedScenes[x][y];
                 Group itemGroup = new VerticalGroup(sceneName);
+                itemGroup.borderWidth = 0;
                 itemGroup.name = "cell " + x + "" + y;
                 List<String> observedActScenes = this.quest.observedScenes.get(this.quest.currentAct);
                 if (sceneName == null) {

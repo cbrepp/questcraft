@@ -214,6 +214,9 @@ public class Questcraft extends app.view.BaseView {
                 if (questBook.inventory != null) {
                     Quest.quest.inventoryView = this.inventory;
                 }
+                if (questBook.highScores != null) {
+                    Quest.quest.highScoresView = this.highScores;
+                }
                 this.appController.addView(Quest.quest);
                 if (questBook.inventory != null) {
                     this.inventory.quest = Quest.quest;

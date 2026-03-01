@@ -1266,11 +1266,7 @@ public class JavaFXApplication extends BaseController {
             default -> AlertType.INFORMATION;
         };
         Platform.runLater(() -> {
-            Alert alert = new Alert(type);
-            
-            String originalHeader = alert.getDialogPane().getHeaderText();
-            Node originalIcon = alert.getDialogPane().getGraphic();
-            
+            Alert alert = new Alert(type);            
             alert.initOwner(this.delegateApp.primaryStage);
             
             if (dialog.title != null) {
@@ -1279,33 +1275,39 @@ public class JavaFXApplication extends BaseController {
                 alert.setTitle(this.parentView.name);
             }
 
-            // The default header text and icon will be dorked if attempting to set a custom value
-            if ((dialog.emojis != null) || (dialog.header != null)) {
-                HBox customHeader = new HBox(15); // 15px spacing
-                customHeader.setPadding(new Insets(20));
-                customHeader.setAlignment(Pos.CENTER_LEFT);
-                if (dialog.emojis != null) {
-                    TextFlow graphicImage = this.stringToTextFlow(dialog.emojis, null, new app.Color(0, 0, 0), (int) Math.round(EMOJI_SHEET_SIZE), FontStyle.NORMAL, FontSmoothingType.LCD);
-                    customHeader.getChildren().add(graphicImage);
-                } else {
-                    if (originalIcon != null) {
-                        customHeader.getChildren().add(originalIcon);
-                    }
-                }
-                if (dialog.header != null) {
-                    TextFlow header = this.stringToTextFlow(dialog.header, null, new app.Color(0, 0, 0), (int) Math.round(EMOJI_SHEET_SIZE), FontStyle.BOLD, FontSmoothingType.LCD);
-                    customHeader.getChildren().add(header);
-                } else {
-                    alert.setHeaderText(originalHeader);
-                }
-                alert.getDialogPane().setHeader(customHeader);
+            HBox customHeader = new HBox(10); // 10px spacing
+            customHeader.setPadding(new Insets(20));
+            customHeader.setAlignment(Pos.CENTER_LEFT);
+            String emojis = dialog.emojis;
+            if (emojis == null) {
+                emojis = switch (dialog.icon) {
+                    case Icon.CANCEL -> "\uD83D\uDEAB"; // No Entry
+                    case Icon.ERROR -> "\uD83D\uDEA8"; // Police Car Light
+                    case Icon.INFORMATION -> "\uD83D\uDCA1"; // Light Bulb.  Alternate would be "\uD83D\uDEC8" (Circled Information Source).
+                    case Icon.QUESTION -> "\uD83E\uDD14"; // Thinking Face.  Alternate would be Red Question Mark.
+                    case Icon.SEARCH -> "\uD83D\uDD0D"; // Left-Pointing Magnifying Glass
+                    case Icon.WARNING -> "\u26A0"; // Warning Sign
+                    case Icon.WORKING -> "\uD83D\uDE80"; // Rocket
+                    default -> "\uD83D\uDCA1"; // Light Bulb
+                };
             }
+            TextFlow emojiFlow = this.stringToTextFlow(emojis, null, new app.Color(0, 0, 0), (int) Math.round(EMOJI_SHEET_SIZE), FontStyle.NORMAL, FontSmoothingType.LCD);
+            customHeader.getChildren().add(emojiFlow);
+
+            String header = dialog.header;
+            if (header == null) {
+                header = dialog.icon.name();
+            }
+            TextFlow headerFlow = this.stringToTextFlow(header, null, new app.Color(0, 0, 0), (int) Math.round(EMOJI_SHEET_SIZE / 2), FontStyle.BOLD, FontSmoothingType.LCD);
+            customHeader.getChildren().add(headerFlow);
+
+            alert.getDialogPane().setHeader(customHeader);
             
             if (dialog.text != null) {
                 alert.setContentText(dialog.text);
             }
             
-            alert.show();
+            alert.showAndWait();
         });
     }
     
