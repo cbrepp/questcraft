@@ -65,6 +65,7 @@ import quest.model.Page;
 import quest.model.Scene;
 import quest.model.Story;
 import quest.text.If;
+import quest.text.LineSeparator;
 import quest.text.PlayerSymbol;
 import quest.text.VariableExists;
 
@@ -81,11 +82,11 @@ public class Application extends app.view.BaseView {
     public final static String CREATE_EVENT = "create";
     public final static String DISPLAY_BUTTONS_TIMER = "display buttons";
     public final static String FILE_EVENT = "file";
-    public final static String DOUBLE_LEFT_ARROW = "\u2190\n\u2190"; // Unicode emoticon for left arrow (x2)
+    public final static String DOUBLE_LEFT_ARROW = "\u2190" + System.lineSeparator() + "\u2190"; // Unicode emoticon for left arrow (x2)
     public final static String MONO_FONT = Font.ROBOTO_MONO;
     public final static String NORMAL_FONT = Font.ROBOTO;
     public final static String OPTIONS_EVENT = "options";
-    public final static String DOUBLE_RIGHT_ARROW = "\u2192\n\u2192"; // Unicode emoticon for right arrow (x2)
+    public final static String DOUBLE_RIGHT_ARROW = "\u2192" + System.lineSeparator() + "\u2192"; // Unicode emoticon for right arrow (x2)
     public final static String SELECT_EVENT = "select";
     public final static String TITLE_FONT = Font.MINECRAFT;
     public final static String QUIT_EVENT = "quit";
@@ -200,7 +201,7 @@ public class Application extends app.view.BaseView {
                 // Display "Now Playing" info
                 this.appController.removeNode(this.name, "now playing");
                 Label nowPlayingLabel = new Label("now playing");
-                nowPlayingLabel.text = "Now Playing...\n" + this.bookFile.title + "\n" + "by " + this.bookFile.author + "\n" + this.bookFile.updateDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.getDefault()));
+                nowPlayingLabel.text = "Now Playing..." + System.lineSeparator() + this.bookFile.title + System.lineSeparator() + "by " + this.bookFile.author + System.lineSeparator() + this.bookFile.updateDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.getDefault()));
                 nowPlayingLabel.pixelSize = 26.0;
                 nowPlayingLabel.textColor = Color.DARK_MAGENTA;
                 nowPlayingLabel.textFont = NORMAL_FONT;
@@ -738,29 +739,28 @@ public class Application extends app.view.BaseView {
         
         Page page1 = new Page();
         List<Object> dragonArt = List.of(
-                "                             ___, ____--'\n",
-                "                        _,-.'_,-'      (\n",
-                "                     ,-' _.-''....____(\n",
-                "           ,))_     /  ,'\\ `'-.     (          /\\\n",
-                "   __ ,+..a`  \\(_   ) /   \\    `'-..(         /  \\\n",
-                "   )`-;...,_   \\(_ ) /     \\  ('''    ;'^^`\\ <./\\.>\n",
-                "       ,_   )   |( )/   ,./^``_..._  < /^^\\ \\_.))\n",
-                "      `=;; (    (/_')-- -'^^`      ^^-.`_.-` >-'\n",
-                "      `=\\ (                             _,./\n",
-                "        ,\\`(                         )^^^\n",
-                "          ``;         __-'^^\\       /\n",
-                "            / _>---^^^   `\\..`-.    ``'.\n",
-                "           / /               / /``'`; /\n",
-                "          / /          ,-=='-`=-'  / /\n",
-                "    ,-=='-`=-.               ,-=='-`=-.",
-                "\n\n",
+                "                             ___, ____--'", new LineSeparator(),
+                "                        _,-.'_,-'      (", new LineSeparator(),
+                "                     ,-' _.-''....____(", new LineSeparator(),
+                "           ,))_     /  ,'\\ `'-.     (          /\\", new LineSeparator(),
+                "   __ ,+..a`  \\(_   ) /   \\    `'-..(         /  \\", new LineSeparator(),
+                "   )`-;...,_   \\(_ ) /     \\  ('''    ;'^^`\\ <./\\.>", new LineSeparator(),
+                "       ,_   )   |( )/   ,./^``_..._  < /^^\\ \\_.))", new LineSeparator(),
+                "      `=;; (    (/_')-- -'^^`      ^^-.`_.-` >-'", new LineSeparator(),
+                "      `=\\ (                             _,./", new LineSeparator(),
+                "        ,\\`(                         )^^^", new LineSeparator(),
+                "          ``;         __-'^^\\       /", new LineSeparator(),
+                "            / _>---^^^   `\\..`-.    ``'.", new LineSeparator(),
+                "           / /               / /``'`; /", new LineSeparator(),
+                "          / /          ,-=='-`=-'  / /", new LineSeparator(),
+                "    ,-=='-`=-.               ,-=='-`=-.", new LineSeparator(),
+                new LineSeparator(),
                 "              T W I N   Q U E S T");
         Label dragonLabel = new Label("par1", new Texts(dragonArt));
         dragonLabel.textColor = Color.DARK_MAGENTA;
         dragonLabel.textStyle = FontStyle.BOLD;
         page1.story.controls.add(new Scribe(List.of(dragonLabel))); 
-        page1.story.controls.add(new Scribe(List.of(new Label("par2", new Texts(List.of("  **************************************************"))))));
-        page1.story.controls.add(new Scribe(List.of(new Label("par3", new Texts(List.of("  ", new BookTitle(), "\n", "  by ", new BookAuthor(), "\n", "  Last Updated: ", new BookLastUpdatedDate()))))));
+        page1.story.controls.add(new Scribe(List.of(new Label("par3", new Texts(List.of("  ", new BookTitle(), new LineSeparator(), "  by ", new BookAuthor(), new LineSeparator(), "  Last Updated: ", new BookLastUpdatedDate()))))));
         page1.story.controls.add(new Illustrate(new Image("title image", "/assets/images/title-page.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
 
         titlePage.pages.put("1", page1);
@@ -795,7 +795,7 @@ public class Application extends app.view.BaseView {
         input.effectsButtons.put("Greyson", effectList);
         input.effectsButtons.put("Zara", effectList);
         Story inputSubpage = new Story();
-        inputSubpage.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("Select Player:\n"))), input)));
+        inputSubpage.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("Select Player:", new LineSeparator()))), input)));
         page1.subpages.put("input", inputSubpage);
 
         glowEffect = new Glow(Color.DARK_MAGENTA);
@@ -806,7 +806,7 @@ public class Application extends app.view.BaseView {
         input.effectsButtons.put("Zara", effectList);
         input.effectsButtons.put("Shmebulock", effectList);
         inputSubpage = new Story();
-        inputSubpage.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("Select Player:\n"))), input)));
+        inputSubpage.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("Select Player:", new LineSeparator()))), input)));
         page1.subpages.put("SHMEBULOCK input", inputSubpage);
         
         Story playerGreysonSubpage = new Story();
@@ -885,7 +885,7 @@ public class Application extends app.view.BaseView {
         input.effectsButtons.put("Normal", effectList);
         input.effectsButtons.put("Hard", effectList);
         inputSubpage = new Story();
-        inputSubpage.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("Select Difficulty:\n"))), input)));
+        inputSubpage.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("Select Difficulty:", new LineSeparator()))), input)));
         inputSubpage.controls.add(new Illustrate(new Image("select difficulty image", "/assets/images/difficulty.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         page1.subpages.put("input", inputSubpage);
         
@@ -895,7 +895,7 @@ public class Application extends app.view.BaseView {
         input = new ValidatedVariablePrompt("difficulty", List.of("Magical"));
         input.effectsButtons.put("Magical", effectList);
         inputSubpage = new Story();
-        inputSubpage.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("Select Difficulty:\n"))), input)));
+        inputSubpage.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("Select Difficulty:", new LineSeparator()))), input)));
         inputSubpage.controls.add(new Illustrate(new Image("select difficulty image", "/assets/images/difficulty-magical.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         page1.subpages.put("SHMEBULOCK input", inputSubpage);
         
@@ -920,20 +920,20 @@ public class Application extends app.view.BaseView {
         Page page1a = new Page();
         page1a.nextPageName = "1";
         page1a.story.controls.add(new SoundPlay("/assets/sounds/thunder.wav", true));
-        Label styledLabel = new Label("par1", new Texts(List.of("Time has passed has passed by slowly.  The seconds have been monotonous.  Countless.  Like drops of rain in a storm that never ends.  And she has patiently waited.\n")));
+        Label styledLabel = new Label("par1", new Texts(List.of("Time has passed has passed by slowly.  The seconds have been monotonous.  Countless.  Like drops of rain in a storm that never ends.  And she has patiently waited.", new LineSeparator(),
+                new LineSeparator(),
+                "But now in the twenty-first year of the twenty-first century, her long wait is finally over.", new LineSeparator(),
+                new LineSeparator(),
+                "He has returned...")));
         styledLabel.textStyle = FontStyle.ITALIC;
         page1a.story.controls.add(new Scribe(List.of(styledLabel)));
-        styledLabel = new Label("par1", new Texts(List.of("But now in the twenty-first year of the twenty-first century, her long wait is finally over.\n")));
-        styledLabel.textStyle = FontStyle.ITALIC;
-        page1a.story.controls.add(new Scribe(List.of(styledLabel)));
-        styledLabel = new Label("par1", new Texts(List.of("He has returned...")));
-        styledLabel.textStyle = FontStyle.ITALIC;
-        page1a.story.controls.add(new Scribe(List.of(styledLabel)));
+        
         styledLabel = new Label("par1", new Texts(List.of("...perhaps this time it will be different?")));
         styledLabel.textStyle = FontStyle.ITALIC;
         Scribe shmebulockExtraText = new Scribe(List.of(styledLabel));
         shmebulockExtraText.condition = new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true);
         page1a.story.controls.add(shmebulockExtraText);
+        
         page1a.story.controls.add(new Illustrate(new Image("mylee waiting image", "/assets/images/cat-storm-large.gif"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("1a", page1a);
         
@@ -941,39 +941,40 @@ public class Application extends app.view.BaseView {
         page1.previousPageName = "1a";
         page1.nextPageName = "2";
         page1.story.controls.add(new SoundStop("/assets/sounds/thunder.wav"));
-        page1.story.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of(new Variable("twin-with-symbol"), ": \"Ahh!!!  ", new Variable("player"), "!!!  Save ", new If("us", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "me"), "!!!\""))))));
-        page1.story.controls.add(new Scribe(List.of(new Label("par2", new Texts(List.of(new PlayerSymbol(), " ", new Variable("player"), ": \"", new Variable("battle-cry"), "\""))))));
-        page1.story.controls.add(new Scribe(List.of(new Label("par3", new Texts(List.of(new Variable("twin-with-symbol"), ": \"", new Variable("player"), " he got ", new If("us", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "me"), "!!!  A big black cat got ", new If("us", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "me"), "!!!\""))))));
-        page1.story.controls.add(new Scribe(List.of(new Label("par4", new Texts(List.of("You set down the game controller you were holding (and what a shame, you were about to beat the Ender Dragon) and run toward the sound of your ", new Variable("twin-voice"), " just in time to see the door to the leprechaun closet in the back bedroom slam shut.  You run to the closet door, open it, and what you see next takes your breath away..."))))));
+        page1.story.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of(new Variable("twin-with-symbol"), ": \"Ahh!!!  ", new Variable("player"), "!!!  Save ", new If("us", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "me"), "!!!\"", new LineSeparator(),
+                new LineSeparator(),
+                new PlayerSymbol(), " ", new Variable("player"), ": \"", new Variable("battle-cry"), "\"", new LineSeparator(),
+                new LineSeparator(),
+                new Variable("twin-with-symbol"), ": \"", new Variable("player"), " he got ", new If("us", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "me"), "!!!  A big black cat got ", new If("us", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "me"), "!!!\"", new LineSeparator(),
+                "You set down the game controller you were holding (and what a shame, you were about to beat the Ender Dragon) and run toward the sound of your ", new Variable("twin-voice"), " just in time to see the door to the leprechaun closet in the back bedroom slam shut.  You run to the closet door, open it, and what you see next takes your breath away..."))))));
         page1.story.controls.add(new Illustrate(new Image("illustration image", "/assets/images/mystery-door.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("1", page1);
 
         Page page2 = new Page();
         page2.previousPageName = "1";
         page2.nextPageName = "3";
-        page2.story.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("Sticking your head into what was supposed to be a small closet you look around at what appears to be the surface of a cloud floating high above Pendleton, Indiana.  You wonder if this is perhaps a magic portal.\n"))))));
-        page2.story.controls.add(new Scribe(List.of(new Label("par2", new Texts(List.of("You cautiously tap the cloud with your hand and discover that it's firm enough to walk on.  You then oh so very carefully put one foot into the closet, lower your head, and step through the doorway so you can get a better look..."))))));
+        page2.story.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("Sticking your head into what was supposed to be a small closet you look around at what appears to be the surface of a cloud floating high above Pendleton, Indiana.  You wonder if this is perhaps a magic portal.", new LineSeparator(),
+                new LineSeparator(),
+                "You cautiously tap the cloud with your hand and discover that it's firm enough to walk on.  You then oh so very carefully put one foot into the closet, lower your head, and step through the doorway so you can get a better look..."))))));
         page2.story.controls.add(new Illustrate(new Image("illustration image", "/assets/images/clouds.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("2", page2);
-
-        // TODO - Continue refactoring
-
-        /*        
         
         Page page3 = new Page();
         page3.previousPageName = "2";
         page3.nextPageName = "4";
-        page3.story.contents.add("You are now standing on the surface of a cloud floating high up in the sky.  You look around and see nothing but the large poofy white cloud, the blue sky, the bright yellow sun... and... what appears to be elevator doors in the middle of the cloud.");
-        page3.story.contents.add("<br>");
-        page3.story.contents.add("Anxiety and fear grip you.  But you have no choice.  You must save <variable twin>.  And so...");
-        page3.story.contents.add("<br>");
-        page3.story.contents.add("You press the elevator button to open the door.  And... you step inside...");
-        page3.story.contents.add("<second-page>");
-        page3.story.contents.add("<image clouds center /assets/images/clouds.jpg>");
-        page3.story.contents.add("<second-page>");
-        page3.story.contents.add("<br><br><br><br><br><br><br><br><br><br><br>");
-        page3.story.contents.add("<image elevator-doors center /assets/images/elevator-doors.png>");
+        page3.story.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("You are now standing on the surface of a cloud floating high up in the sky.  You look around and see nothing but the large poofy white cloud, the blue sky, the bright yellow sun... and... what appears to be elevator doors in the middle of the cloud.", new LineSeparator(),
+                new LineSeparator(),
+                "Anxiety and fear grip you.  But you have no choice.  You must save ", new Variable("twin"), ".  And so...", new LineSeparator(),
+                new LineSeparator(),
+                "You press the elevator button to open the door.  And... you step inside..."))))));
+        page3.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/clouds.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        page3.story.controls.add(new Illustrate(new Image("illustration image 2", "/assets/images/elevator-doors.png"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("3", page3);
+
+        // TODO - Continue refactoring
+
+        /*        
+       
         
         Page page4 = new Page();
         page4.previousPageName = "3";

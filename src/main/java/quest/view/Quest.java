@@ -99,6 +99,7 @@ public class Quest extends app.view.BaseView {
     public Random random = new Random();
     public SpellBook spellBook;
     public ScrollingDocument storyDocument;
+    public Integer storySectionCount = 0;
     public Map<String, String> variables;
 
     public Quest(String name) {
@@ -501,6 +502,8 @@ public class Quest extends app.view.BaseView {
         if (this.storyDocument != null) {
             this.appController.removeNode(this.name, Area.STORY.name());
         }
+        
+        this.storySectionCount = 0;
         
         Double documentX;
         Double documentY = 0.09;

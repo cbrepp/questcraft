@@ -123,8 +123,11 @@ import app.view.Animation;
 import javafx.animation.Interpolator;
 import javafx.animation.TranslateTransition;
 import javafx.beans.binding.DoubleBinding;
+import javafx.geometry.NodeOrientation;
+import javafx.geometry.Orientation;
 import javafx.scene.Group;
 import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.Separator;
 import javafx.scene.layout.Region;
 import javafx.scene.text.FontSmoothingType;
 
@@ -1568,22 +1571,29 @@ public class JavaFXApplication extends BaseController {
                 }
             }
             node.eventListener.onEvent(node.name, enteredText);
+            
+            // Clear the entered text
+            for (Node child : finalFxInputField.getChildren()) {
+                if (child instanceof TextField field) {
+                    field.clear();
+                }
+            }
         };
         
         return fxInputField;
     }
     
-    public Region newSpacer(app.node.Spacer node, Region fxSpacer) {
-        logger.log(Level.INFO, "Entered: node={0}, fxSpacer={1}", new Object[]{node, fxSpacer});
-        if (fxSpacer == null) {
-            fxSpacer = new Region();
+    public Region newSeparator(app.node.Separator node, Separator fxSeparator) {
+        logger.log(Level.INFO, "Entered: node={0}, fxSpacer={1}", new Object[]{node, fxSeparator});
+        if (fxSeparator == null) {
+            fxSeparator = new Separator();
         }
-        if (node.height == null) {
-            fxSpacer.setPrefHeight(DEFAULT_PIXEL_SIZE);
+        if (node.orientation == app.node.Separator.Orientation.HORIZONTAL) {
+            fxSeparator.setOrientation(Orientation.HORIZONTAL);
         } else {
-            fxSpacer.setPrefHeight(node.height);
+            fxSeparator.setOrientation(Orientation.VERTICAL);
         }
-        return fxSpacer;
+        return fxSeparator;
     }
     
     public TextField newField(app.node.Field node, TextField fxTextField, app.Color offsetColor) {
@@ -2237,15 +2247,17 @@ public class JavaFXApplication extends BaseController {
             if (node.scaleY != null) {
                 fxRectangle.setHeight(parentHeight * node.scaleY);
             }
-        } else if (node instanceof app.node.Spacer spacer) {
-            // TODO - Instance a new Region
-            fxNode = this.newSpacer(spacer, (Region) fxNode);
-            Region fxSpacer = (Region) fxNode;
-            if (node.scaleX != null) {
-                fxSpacer.setPrefWidth(parentWidth * node.scaleX);
-            }
-            if (node.scaleY != null) {
-                fxSpacer.setPrefHeight(parentHeight * node.scaleY);
+        } else if (node instanceof app.node.Separator separator) {
+            fxNode = this.newSeparator(separator, (Separator) fxNode);
+            Separator fxSeparator = (Separator) fxNode;
+            if (isNew) {
+                if (fxParent instanceof Pane fxParentPane) {
+                    if (((app.node.Separator) node).orientation == app.node.Separator.Orientation.HORIZONTAL) {
+                        fxSeparator.prefWidthProperty().bind(fxParentPane.widthProperty());
+                    } else {
+                        fxSeparator.prefHeightProperty().bind(fxParentPane.heightProperty());
+                    }
+                }
             }
         } else {
             Class<?> nodeClass = node.getClass();

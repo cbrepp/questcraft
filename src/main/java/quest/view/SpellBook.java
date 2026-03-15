@@ -52,7 +52,7 @@ public class SpellBook extends app.view.BaseView {
                         this.appController.newDialog(alert);
                         return;
                     }
-                    if (!spell.condition.evaluate()) {
+                    if ((spell.condition != null) && (!spell.condition.evaluate()) ){
                         logger.log(Level.INFO, "Spell's condition failed");
                         String[] responses = {"Almost?", "Just missing that certain something.", "Very nearly worked."};
                         int randomResponseIndex = (int) (Math.random() * responses.length);
