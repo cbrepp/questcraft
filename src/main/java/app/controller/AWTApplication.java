@@ -233,4 +233,8 @@ public class AWTApplication extends BaseController {
         throw new UnsupportedOperationException("Not supported.");
     }
     
+    @Override
+    public app.Color getDefaultFontColor() {
+        throw new UnsupportedOperationException("Not supported.");
+    }
 }

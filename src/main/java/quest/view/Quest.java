@@ -8,6 +8,7 @@ import app.FontStyle;
 import app.HorizontalAlignment;
 import app.Layout;
 import app.RelativeCoordinates;
+import app.TextDecoration;
 import app.VerticalAlignment;
 import static app.controller.BaseController.DEFAULT_PIXEL_SIZE;
 import static app.controller.BaseController.logger;
@@ -97,6 +98,7 @@ public class Quest extends app.view.BaseView {
     public Integer playerX;
     public Integer playerY;
     public Random random = new Random();
+    public Map<String, Story> registeredSpells;
     public SpellBook spellBook;
     public ScrollingDocument storyDocument;
     public Integer storySectionCount = 0;
@@ -106,16 +108,17 @@ public class Quest extends app.view.BaseView {
         super(name);
         
         this.backgroundImage = "/assets/images/book.png";
-        this.backgroundColor = new Color(255, 255, 255);
+        this.backgroundColor = new Color(255, 255, 255, 1.0);
         this.emojis.add("\uD83D\uDCD6"); // "open book" Unicode emoji
-        this.inventory = new LinkedHashMap<>();
+        this.inventory = new LinkedHashMap();
         this.isGameOver = false;
         this.observedScenes = new HashMap();
         this.playerHP = 100;
         this.playerMP = 0;
         this.playerXP = 0;
         this.playerSymbol = "\uD83E\uDDD1\u200D\uD83E\uDDB0";
-        this.variables = new HashMap<>();
+        this.registeredSpells = new HashMap();
+        this.variables = new HashMap();
     }
     
     @Override
@@ -360,20 +363,16 @@ public class Quest extends app.view.BaseView {
                 chapterX = LEFT_PAGE_STARTING_X;
                 chapterHorizontalAlignment = HorizontalAlignment.LEFT;
             }
-            Label titleLabel = new Label("title");        
-            titleLabel.text = this.book.title;
-            titleLabel.pixelSize = DEFAULT_PIXEL_SIZE;
-            titleLabel.textColor = Color.BLACK;
-            titleLabel.textFont = Font.ROBOTO_MONO;
-            titleLabel.textStyle = FontStyle.BOLD;
+            
+            TextDecoration decoration = new TextDecoration();
+            decoration.pixelSize = DEFAULT_PIXEL_SIZE;
+            decoration.color = Color.BLACK;
+            decoration.font = Font.ROBOTO_MONO;
+            decoration.style = FontStyle.BOLD;
+            Label titleLabel = new Label("title", this.book.title, decoration);
             this.appController.addNode(this.name, this.name, titleLabel, new Layout(new RelativeCoordinates(titleX, titleY), titleHorizontalAlignment, VerticalAlignment.TOP));
 
-            Label chapterLabel = new Label("chapter");        
-            chapterLabel.text = this.currentAct;
-            chapterLabel.pixelSize = DEFAULT_PIXEL_SIZE;
-            chapterLabel.textColor = Color.BLACK;
-            chapterLabel.textFont = Font.ROBOTO_MONO;
-            chapterLabel.textStyle = FontStyle.BOLD;
+            Label chapterLabel = new Label("chapter", this.currentAct, decoration);
             this.appController.addNode(this.name, this.name, chapterLabel, new Layout(new RelativeCoordinates(chapterX, chapterY), chapterHorizontalAlignment, VerticalAlignment.TOP));
         }
         
@@ -646,6 +645,19 @@ public class Quest extends app.view.BaseView {
         System.out.println("Quest: getSubpage: Did NOT find the subpage: page=" + this.currentPage + ", scene=" + this.currentScene + ", act=" + this.currentAct);
         
         return null;
+    }
+    
+    public void registerSpell(String name, Story spell) {
+        logger.log(Level.INFO, "Entered: name={0}, cost={1}");
+        
+        if (this.registeredSpells.containsKey(name)) {
+            logger.log(Level.INFO, "Already registered!");
+            return;
+        }
+        
+        this.registeredSpells.put(name, spell);
+        this.spellBook.appController.clearScreen(this.spellBook.name);
+        this.spellBook.render();
     }
     
     public void setPlayerDirection(String direction) {

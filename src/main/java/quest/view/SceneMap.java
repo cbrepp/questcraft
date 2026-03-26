@@ -29,7 +29,7 @@ public class SceneMap extends app.view.BaseView implements EventListener {
     public SceneMap(String name) {
         super(name);
         this.addTextArea = false;   // The text area would interfere with this view's grid layout, so prevent it here
-        this.backgroundColor = new Color(255, 255, 255);
+        this.backgroundColor = new Color(255, 255, 255, 1.0);
         this.backgroundImage = "/assets/images/map.jpg";
         this.emojis.add(EMOJI); 
     }
@@ -141,12 +141,10 @@ public class SceneMap extends app.view.BaseView implements EventListener {
                     itemGroup.backgroundColor = scene.color;
                     Label labelControl;
                     if ((observedActScenes.isEmpty()) || (!observedActScenes.contains(sceneName))) {
-                        labelControl = new Label(sceneName + " label");
-                        labelControl.text = "?";
+                        labelControl = new Label(sceneName + " label", "?");
                         System.out.println("SceneMap: render: Adding unobserved scene to " + x + ", " + y);
                     } else {
-                        labelControl = new Label(sceneName + " label");
-                        labelControl.text = sceneName;
+                        labelControl = new Label(sceneName + " label", sceneName);
                         System.out.println("SceneMap: render: Adding " + sceneName + " to " + x + ", " + y);
                     }
                     itemGroup.nodes.add(labelControl);
@@ -159,16 +157,14 @@ public class SceneMap extends app.view.BaseView implements EventListener {
                         case Quest.DIRECTION_SOUTH -> playerSymbol += " " + "\u2B07";
                         case Quest.DIRECTION_WEST -> playerSymbol += " " + "\u2B05";
                     }
-                    Label labelControl = new Label("player");
-                    labelControl.text = playerSymbol;
+                    Label labelControl = new Label("player", playerSymbol);
                     itemGroup.nodes.add(labelControl);
                     System.out.println("SceneMap: render: Added " + playerSymbol + " to " + x + ", " + y);
                 }
                 if (sceneName != null) {
                     Scene scene = act.scenes.get(sceneName);
                     if ((scene != null) && (scene.symbol != null) && (observedActScenes.contains(sceneName))) {
-                        Label labelControl2 = new Label(sceneName + " symbol");
-                        labelControl2.text = scene.symbol;
+                        Label labelControl2 = new Label(sceneName + " symbol", scene.symbol);
                         itemGroup.nodes.add(labelControl2);
                         System.out.println("SceneMap: render: Added " + scene.symbol + " to " + x + ", " + y);
                     }

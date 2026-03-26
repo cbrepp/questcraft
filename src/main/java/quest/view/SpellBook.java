@@ -2,16 +2,22 @@ package quest.view;
 
 import app.controller.BaseController;
 import app.Color;
+import app.Font;
+import app.FontStyle;
 import app.HorizontalAlignment;
 import app.Icon;
 import app.Layout;
 import app.RelativeCoordinates;
+import app.TextDecoration;
 import app.VerticalAlignment;
+import static app.controller.BaseController.DEFAULT_PIXEL_SIZE;
 import static app.controller.BaseController.logger;
 import app.dialog.Alert;
 import app.node.InputField;
+import app.node.Label;
 import app.node.effect.Glow;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import quest.model.Story;
 
@@ -27,7 +33,7 @@ public class SpellBook extends app.view.BaseView {
     
     public SpellBook(String name) {
         super(name);
-        this.backgroundColor = new Color(0, 0, 0);
+        this.backgroundColor = new Color(0, 0, 0, 1.0);
         this.backgroundImage = "/assets/images/spell-book.jpg";
         this.emojis.add(EMOJI);
     }
@@ -97,9 +103,19 @@ public class SpellBook extends app.view.BaseView {
     
     @Override
     public void onLoad(BaseController appController) {
-        logger.log(Level.INFO, "Entered: appController={0}", appController);        
+        logger.log(Level.INFO, "Entered: appController={0}", appController);
+        this.appController = appController;
+        this.render();
+    }
+    
+    public void render() {
+        // Back up the current default text color
+        app.Color defaultTextColor = this.appController.getDefaultFontColor();
+        this.appController.setDefaultFontColor(null);
+        
+        // Prompt for spells in the upper left-hand corner
         InputField field = new InputField(CAST_SPELL);
-        field.buttonBackgroundColor = Color.DARK_MAGENTA;
+        field.buttonBackgroundColor = Color.DARKEST_MAGENTA;
         field.buttonBorderWidth = 1;
         field.buttonText = "Cast Spell";
         field.eventListener = this;
@@ -109,8 +125,30 @@ public class SpellBook extends app.view.BaseView {
         field.length = 50;
         field.fieldDisplayLength = 25;
         field.buttonEffects = List.of(new Glow(Color.DARK_MAGENTA));
-        appController.addNode(this.name, this.name, field, new Layout(new RelativeCoordinates(0.05, 0.05), HorizontalAlignment.LEFT, VerticalAlignment.TOP));
-        this.appController = appController;
+        this.appController.addNode(this.name, this.name, field, new Layout(new RelativeCoordinates(0.05, 0.05), HorizontalAlignment.LEFT, VerticalAlignment.TOP));
+        
+        // Display learned spells on the far right
+        int learnedSpellsCount = 0;
+        String learnedSpellsText = "Learned Spells:\n";
+        for (Map.Entry<String, Story> entry : Quest.quest.registeredSpells.entrySet()) {
+            learnedSpellsText += "\n" + entry.getKey() + " (requires " + entry.getValue().mpCost + "mp)";
+            learnedSpellsCount++;
+        }
+        
+        if (learnedSpellsCount == 0) {
+            learnedSpellsText = "No learned spells!";
+        }
+        
+        TextDecoration decoration = new TextDecoration();
+        decoration.style = FontStyle.BOLD;
+        Label learnedSpellsLabel = new Label("learned spells", learnedSpellsText, decoration);
+        learnedSpellsLabel.backgroundColor = new Color(Color.DARKEST_MAGENTA.red, Color.DARKEST_MAGENTA.green, Color.DARKEST_MAGENTA.blue, 0.75);
+        learnedSpellsLabel.borderColor = Color.DARKEST_MAGENTA;
+        learnedSpellsLabel.borderWidth = 1;
+        this.appController.addNode(this.name, this.name, learnedSpellsLabel, new Layout(new RelativeCoordinates(0.95, 0.05), HorizontalAlignment.RIGHT, VerticalAlignment.TOP));
+        
+        // Restore the current default text color
+        this.appController.setDefaultFontColor(defaultTextColor);
     }
 
 }

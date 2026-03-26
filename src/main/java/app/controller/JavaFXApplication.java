@@ -13,6 +13,7 @@ import app.Icon;
 import app.Layout;
 import app.RelativeBounds;
 import app.RelativeCoordinates;
+import app.TextDecoration;
 import app.VerticalAlignment;
 import static app.VerticalAlignment.BOTTOM;
 import static app.VerticalAlignment.CENTER;
@@ -123,8 +124,8 @@ import app.view.Animation;
 import javafx.animation.Interpolator;
 import javafx.animation.TranslateTransition;
 import javafx.beans.binding.DoubleBinding;
-import javafx.geometry.NodeOrientation;
 import javafx.geometry.Orientation;
+import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Separator;
@@ -139,7 +140,7 @@ public class JavaFXApplication extends BaseController {
     
     public static final int DEFAULT_BUTTON_FONT_SIZE = 10;
     public static final String DEFAULT_FONT = app.Font.ROBOTO_MONO;
-    public static final int DEFAULT_FONT_SIZE = 16;
+    public static final double DEFAULT_FONT_SIZE = 16.0;
     public static final boolean IS_JPRO = (System.getProperty("jpro.version") != null);
     public static List<String> TIMER_EVENTS = new ArrayList();
     
@@ -365,7 +366,7 @@ public class JavaFXApplication extends BaseController {
         // TODO - Stop all sounds
     }
     
-    public static double adjustFontSizeForDPI(int fontSize) {
+    public static double adjustFontSizeForDPI(double fontSize) {
         Screen screen = Screen.getPrimary();
         double dpi = screen.getDpi();
         double scaleFactor = dpi / 96.0;    // Standard DPI is typically 96.0, so this calculates the scaling factor
@@ -633,7 +634,9 @@ public class JavaFXApplication extends BaseController {
         tab.setText(view.name);
         if (!view.emojis.isEmpty()) {
             String emojiString = String.join(" ", view.emojis);
-            TextFlow emojis = stringToTextFlow(emojiString, null, null, DEFAULT_FONT_SIZE, null, FontSmoothingType.LCD);
+            TextDecoration decoration = new TextDecoration();
+            decoration.pixelSize = DEFAULT_FONT_SIZE;
+            TextFlow emojis = stringToTextFlow(emojiString, decoration, FontSmoothingType.LCD);
             tab.setGraphic(emojis);
         }
     }
@@ -730,7 +733,7 @@ public class JavaFXApplication extends BaseController {
             content.setPrefSize(dimensions.x, dimensions.y);
         } else if (view.backgroundColor != null) {
             System.out.println("JavaFXApplication: addView: name=" + view.name + ", using background color " + view.backgroundColor);
-            Color backgroundColor = Color.rgb(view.backgroundColor.red, view.backgroundColor.green, view.backgroundColor.blue);
+            Color backgroundColor = getFxColor(view.backgroundColor);
             BackgroundFill backgroundFill = new BackgroundFill(backgroundColor, CornerRadii.EMPTY, Insets.EMPTY);
             background = new Background(backgroundFill);
             content.setBackground(background);    
@@ -1294,14 +1297,22 @@ public class JavaFXApplication extends BaseController {
                     default -> "\uD83D\uDCA1"; // Light Bulb
                 };
             }
-            TextFlow emojiFlow = this.stringToTextFlow(emojis, null, new app.Color(0, 0, 0), (int) Math.round(EMOJI_SHEET_SIZE), FontStyle.NORMAL, FontSmoothingType.LCD);
+            TextDecoration decoration = new TextDecoration();
+            decoration.color = new app.Color(0, 0, 0, 1.0);
+            decoration.pixelSize = EMOJI_SHEET_SIZE;
+            decoration.style = FontStyle.NORMAL;
+            TextFlow emojiFlow = this.stringToTextFlow(emojis, decoration, FontSmoothingType.LCD);
             customHeader.getChildren().add(emojiFlow);
 
             String header = dialog.header;
             if (header == null) {
                 header = dialog.icon.name();
             }
-            TextFlow headerFlow = this.stringToTextFlow(header, null, new app.Color(0, 0, 0), (int) Math.round(EMOJI_SHEET_SIZE / 2), FontStyle.BOLD, FontSmoothingType.LCD);
+            decoration = new TextDecoration();
+            decoration.color = new app.Color(0, 0, 0, 1.0);
+            decoration.pixelSize = EMOJI_SHEET_SIZE / 2;
+            decoration.style = FontStyle.BOLD;
+            TextFlow headerFlow = this.stringToTextFlow(header, decoration, FontSmoothingType.LCD);
             customHeader.getChildren().add(headerFlow);
 
             alert.getDialogPane().setHeader(customHeader);
@@ -1361,7 +1372,7 @@ public class JavaFXApplication extends BaseController {
             } else {
                 vbox = (VBox) fxNode;
             }
-            vbox.setBorder(new Border(new BorderStroke(Color.rgb(offsetColor.red, offsetColor.green, offsetColor.blue), BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
+            vbox.setBorder(new Border(new BorderStroke(getFxColor(offsetColor), BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
             vbox.setAlignment(Pos.CENTER);
             vbox.setFillWidth(false); // Allow children to stay at their preferred widths and be centered 
             fxNode = vbox;
@@ -1372,7 +1383,7 @@ public class JavaFXApplication extends BaseController {
             } else {
                 hbox = (HBox) fxNode;
             }
-            hbox.setBorder(new Border(new BorderStroke(Color.rgb(offsetColor.red, offsetColor.green, offsetColor.blue), BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
+            hbox.setBorder(new Border(new BorderStroke(getFxColor(offsetColor), BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
             hbox.setAlignment(Pos.CENTER);
             fxNode = hbox;
         } else if (groupClass.equals(app.node.Document.class)) {
@@ -1390,7 +1401,7 @@ public class JavaFXApplication extends BaseController {
         if (node.backgroundColor == null) {
             fxNode.setBackground(Background.EMPTY);
         } else {
-            Color fxBackgroundColor = Color.rgb(node.backgroundColor.red, node.backgroundColor.green, node.backgroundColor.blue);
+            Color fxBackgroundColor = getFxColor(node.backgroundColor);
             fxNode.setBackground(new Background(new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY)));
         }
         this.namedFXNodes.get(viewName).put(node.name, fxNode);
@@ -1412,7 +1423,7 @@ public class JavaFXApplication extends BaseController {
         if (node.backgroundColor == null) {
             fxBackgroundColor = Color.TRANSPARENT;
         } else {
-            fxBackgroundColor = Color.rgb(node.backgroundColor.red, node.backgroundColor.green, node.backgroundColor.blue);
+            fxBackgroundColor = getFxColor(node.backgroundColor);
         }
         fxPane.setBackground(new Background(new BackgroundFill(
             fxBackgroundColor,
@@ -1423,7 +1434,7 @@ public class JavaFXApplication extends BaseController {
         fxPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
         fxPane.setCache(false);
         if (node.borderWidth != null) {
-            fxPane.setBorder(new Border(new BorderStroke(Color.rgb(offsetColor.red, offsetColor.green, offsetColor.blue), BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
+            fxPane.setBorder(new Border(new BorderStroke(getFxColor(offsetColor), BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
         }
         
         return fxPane;
@@ -1468,7 +1479,7 @@ public class JavaFXApplication extends BaseController {
         if (node.backgroundColor == null) {
             fxBackgroundColor = Color.TRANSPARENT;
         } else {
-            fxBackgroundColor = Color.rgb(node.backgroundColor.red, node.backgroundColor.green, node.backgroundColor.blue);
+            fxBackgroundColor = getFxColor(node.backgroundColor);
         }
         scrollPane.setBackground(new Background(new BackgroundFill(
             fxBackgroundColor,
@@ -1525,7 +1536,7 @@ public class JavaFXApplication extends BaseController {
         if (node.backgroundColor == null) {
             fxBackgroundColor = Color.TRANSPARENT;
         } else {
-            fxBackgroundColor = Color.rgb(node.backgroundColor.red, node.backgroundColor.green, node.backgroundColor.blue);
+            fxBackgroundColor = getFxColor(node.backgroundColor);
         }
         scrollPane.setBackground(new Background(new BackgroundFill(
             fxBackgroundColor,
@@ -1555,7 +1566,7 @@ public class JavaFXApplication extends BaseController {
         }
         
         if (node.backgroundColor != null) {
-            Color fxBackgroundColor = Color.rgb(node.backgroundColor.red, node.backgroundColor.green, node.backgroundColor.blue);
+            Color fxBackgroundColor = getFxColor(node.backgroundColor);
             BackgroundFill backgroundFill = new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY);
             Background background = new Background(backgroundFill);
             fxInputField.setBackground(background);
@@ -1657,26 +1668,31 @@ public class JavaFXApplication extends BaseController {
             textColor = node.textColor;
         }
         
-        int pixelSize;
+        double pixelSize;
         if (node.pixelSize == null) {
-            pixelSize = (int) Math.round(DEFAULT_PIXEL_SIZE);
+            pixelSize = DEFAULT_PIXEL_SIZE;
         } else {
-            pixelSize = (int) Math.round(node.pixelSize);
+            pixelSize = node.pixelSize;
         }
         
-        Text fieldText = stringToText("temp", fontName, textColor, pixelSize, node.textStyle, FontSmoothingType.LCD); // Allow stringToText to parse the font style
+        TextDecoration decoration = new TextDecoration();
+        decoration.font = fontName;
+        decoration.color = textColor;
+        decoration.pixelSize = pixelSize;
+        decoration.style = node.textStyle;
+        Text fieldText = stringToText("temp", decoration, FontSmoothingType.LCD); // Allow stringToText to parse the font style
         fxTextField.setFont(fieldText.getFont());
         fxTextField.setStyle("-fx-text-fill: rgb(" + textColor.red + ", " + textColor.green + ", " + textColor.blue + ");");                
          
         if (node.backgroundColor != null) {
-            Color fxBackgroundColor = Color.rgb(node.backgroundColor.red, node.backgroundColor.green, node.backgroundColor.blue);
+            Color fxBackgroundColor = getFxColor(node.backgroundColor);
             fxTextField.setBackground(new Background(new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY)));
         } else {
             fxTextField.setBackground(Background.EMPTY); // Transparent        
         }
         
         if ((node.borderWidth != null) && (node.borderWidth > 0)) {
-            fxTextField.setBorder(new Border(new BorderStroke(Color.rgb(offsetColor.red, offsetColor.green, offsetColor.blue), BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
+            fxTextField.setBorder(new Border(new BorderStroke(getFxColor(offsetColor), BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
         }
         
         return fxTextField;
@@ -1712,11 +1728,11 @@ public class JavaFXApplication extends BaseController {
             textColor = node.textColor;
         }
         
-        int pixelSize;
+        double pixelSize;
         if (node.pixelSize == null) {
-            pixelSize = (int) Math.round(DEFAULT_PIXEL_SIZE);
+            pixelSize = DEFAULT_PIXEL_SIZE;
         } else {
-            pixelSize = (int) Math.round(node.pixelSize);
+            pixelSize = node.pixelSize;
         }
         
         // Configure the font style based on whether the button is enabled
@@ -1735,17 +1751,22 @@ public class JavaFXApplication extends BaseController {
         }
         fxButton.setAlignment(Pos.CENTER);
         String buttonText = node.text.toString();
-        TextFlow textFlow = this.stringToTextFlow(buttonText, font, textColor, pixelSize, fontStyle, FontSmoothingType.LCD);
+        TextDecoration decoration = new TextDecoration();
+        decoration.font = font;
+        decoration.color = textColor;
+        decoration.pixelSize = pixelSize;
+        decoration.style = fontStyle;
+        TextFlow textFlow = this.stringToTextFlow(buttonText, decoration, FontSmoothingType.LCD);
         textFlow.setTextAlignment(TextAlignment.CENTER);
         fxButton.setGraphic(textFlow);
         
         if (node.backgroundColor != null) {
-            Color fxBackgroundColor = Color.rgb(node.backgroundColor.red, node.backgroundColor.green, node.backgroundColor.blue);
+            Color fxBackgroundColor = getFxColor(node.backgroundColor);
             fxButton.setBackground(new Background(new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY)));
         }
         
         if ((node.borderWidth != null) && (node.borderWidth > 0)) {
-            fxButton.setBorder(new Border(new BorderStroke(Color.rgb(offsetColor.red, offsetColor.green, offsetColor.blue), BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
+            fxButton.setBorder(new Border(new BorderStroke(getFxColor(offsetColor), BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
         }
         
         if (!isNew) {
@@ -1815,63 +1836,77 @@ public class JavaFXApplication extends BaseController {
         this.defaultFontColor = fontColor;
     }
     
+    @Override
+    public app.Color getDefaultFontColor() {
+        logger.log(Level.INFO, "Entered");
+        app.Color fontColor = this.defaultFontColor;
+        return fontColor;
+    }
+    
     public TextFlow newLabel(String viewName, app.node.Label node, TextFlow fxLabel, app.Color offsetColor, FontSmoothingType fst) {
         logger.log(Level.INFO, "Entered: viewName={0}, node={1}, fxLabel={2}, offsetColor={3}, fst={4}", new Object[]{viewName, node, fxLabel, offsetColor, fst});
         
-        String font;
-        if (node.textFont == null) {
-            font = DEFAULT_FONT;
-        } else {
-            font = node.textFont;
-        }
+        fxLabel = new TextFlow(); // TODO - Support updating
         
-        app.Color textColor;
-        if (node.textColor == null) {
-            if (this.defaultFontColor != null) {
-                textColor = this.defaultFontColor;
-            } else {
-                textColor = offsetColor;
+        for (app.Text text : node.texts) {
+            if (text.decoration == null) {
+                text.decoration = new TextDecoration();
             }
-        } else {
-            textColor = node.textColor;
-        }
-        
-        int pixelSize;
-        if (node.pixelSize == null) {
-            pixelSize = (int) Math.round(DEFAULT_PIXEL_SIZE);
-        } else {
-            pixelSize = (int) Math.round(node.pixelSize);
-        }
-        
-        app.FontStyle fontStyle;
-        if (node.textStyle == null) {
-            logger.log(Level.INFO, "Text style not set, defaulting to normal");
-            fontStyle = app.FontStyle.NORMAL;
-        } else {
-            logger.log(Level.INFO, "Text style set to {0}", node.textStyle);
-            fontStyle = node.textStyle;
-        }
-        
-        // Use a graphic instead of text to support formatted text
-        if (fxLabel == null) {
-            fxLabel = this.stringToTextFlow(node.text.toString(), font, textColor, pixelSize, fontStyle, fst);
-        } else {
-            // TODO - Update the values that are passed to stringToTextFlow
+            
+            if (text.decoration.font == null) {
+                text.decoration.font = DEFAULT_FONT;
+            }
+
+            if (text.decoration.color == null) {
+                if (this.defaultFontColor != null) {
+                    text.decoration.color = this.defaultFontColor;
+                } else {
+                    text.decoration.color = offsetColor;
+                }
+            }
+
+            if (text.decoration.pixelSize == null) {
+                text.decoration.pixelSize = DEFAULT_PIXEL_SIZE;
+            }
+
+            if (text.decoration.style == null) {
+                logger.log(Level.INFO, "Text style not set, defaulting to normal");
+                text.decoration.style = app.FontStyle.NORMAL;
+            }
+
+            TextFlow fxTempLabel = this.stringToTextFlow(text.text.toString(), text.decoration, fst);
+            fxLabel.getChildren().addAll(fxTempLabel.getChildren());
         }
         
         // TODO - Only set the following values if they're changing
         if (node.backgroundColor != null) {
-            Color fxBackgroundColor = Color.rgb(node.backgroundColor.red, node.backgroundColor.green, node.backgroundColor.blue);
+            Color fxBackgroundColor = getFxColor(node.backgroundColor);
             fxLabel.setBackground(new Background(new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY)));
         } else {
             fxLabel.setBackground(Background.EMPTY); // Transparent        
         }
         
         if (node.borderWidth != null) {
-            fxLabel.setBorder(new Border(new BorderStroke(Color.rgb(offsetColor.red, offsetColor.green, offsetColor.blue), BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
+            Color fxBorderColor;
+            if (node.borderColor != null) {
+                fxBorderColor = getFxColor(node.borderColor);
+            } else {
+                fxBorderColor = getFxColor(offsetColor);
+            }
+            fxLabel.setBorder(new Border(new BorderStroke(fxBorderColor, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
         }
         
         return fxLabel;
+    }
+    
+    public static Color getFxColor(app.Color color) {
+        Color fxColor;
+        if (color.opacity < 1.0) {
+            fxColor = Color.rgb(color.red, color.green, color.blue, color.opacity);
+        } else {
+            fxColor = Color.rgb(color.red, color.green, color.blue);
+        }
+        return fxColor;
     }
     
     public VBox newScrollingLabel(String viewName, app.node.Label node, VBox fxTextBox, app.Color offsetColor) {
@@ -1912,14 +1947,14 @@ public class JavaFXApplication extends BaseController {
         
         // TODO - Only set the following values if they're changing
         if (node.backgroundColor != null) {
-            Color fxBackgroundColor = Color.rgb(node.backgroundColor.red, node.backgroundColor.green, node.backgroundColor.blue);
+            Color fxBackgroundColor = getFxColor(node.backgroundColor);
             fxDocument.setBackground(new Background(new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY)));
         } else {
             fxDocument.setBackground(Background.EMPTY); // Transparent        
         }
         
         if (node.borderWidth > 0) {
-            fxDocument.setBorder(new Border(new BorderStroke(Color.rgb(offsetColor.red, offsetColor.green, offsetColor.blue), BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
+            fxDocument.setBorder(new Border(new BorderStroke(getFxColor(offsetColor), BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
         }
         
         return fxDocument;
@@ -2013,7 +2048,10 @@ public class JavaFXApplication extends BaseController {
         }
         
         fxHyperlink.setDisable(!node.isEnabled);
-                
+        
+        fxHyperlink.setPadding(Insets.EMPTY);
+        fxHyperlink.setBorder(Border.EMPTY);
+        
         String font;
         if (node.textFont == null) {
             font = DEFAULT_FONT;
@@ -2028,11 +2066,11 @@ public class JavaFXApplication extends BaseController {
             textColor = node.textColor;
         }
         
-        int pixelSize;
+        double pixelSize;
         if (node.pixelSize == null) {
-            pixelSize = (int) Math.round(DEFAULT_PIXEL_SIZE);
+            pixelSize = DEFAULT_PIXEL_SIZE;
         } else {
-            pixelSize = (int) Math.round(node.pixelSize);
+            pixelSize = node.pixelSize;
         }
         
         // Configure the font style based on whether the link is enabled
@@ -2044,10 +2082,16 @@ public class JavaFXApplication extends BaseController {
         }
         
         // Use a graphic instead of text to support formatted text
-        fxHyperlink.setGraphic(this.stringToTextFlow(node.text, font, textColor, pixelSize, fontStyle, FontSmoothingType.LCD));
+        String textString = node.text.toString();
+        TextDecoration decoration = new TextDecoration();
+        decoration.font = font;
+        decoration.color = textColor;
+        decoration.pixelSize = pixelSize;
+        decoration.style = fontStyle;
+        fxHyperlink.setGraphic(this.stringToTextFlow(textString, decoration, FontSmoothingType.LCD));
         
         if (node.backgroundColor != null) {
-            Color fxBackgroundColor = Color.rgb(node.backgroundColor.red, node.backgroundColor.green, node.backgroundColor.blue);
+            Color fxBackgroundColor = getFxColor(node.backgroundColor);
             fxHyperlink.setBackground(new Background(new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY)));
         } else {
             fxHyperlink.setBackground(Background.EMPTY); // Transparent        
@@ -2433,7 +2477,7 @@ public class JavaFXApplication extends BaseController {
         
         BaseView view = this.views.get(viewName);
         app.Color genericOffsetColor = view.backgroundColor.getOffset();
-        Color offsetColor = Color.rgb(genericOffsetColor.red, genericOffsetColor.green, genericOffsetColor.blue);
+        Color offsetColor = getFxColor(genericOffsetColor);
         Pane tabContent = this.tabContentMap.get(viewName);
         
         GridPane gridContent = new GridPane();
@@ -2447,7 +2491,7 @@ public class JavaFXApplication extends BaseController {
             gridContent.setBackground(Background.EMPTY); // Transparent
         } else {
             System.out.println("JavaFXApplication: displayGrid: Fill color " + grid.backgroundColor);
-            Color backgroundColor = Color.rgb(view.backgroundColor.red, view.backgroundColor.green, view.backgroundColor.blue);
+            Color backgroundColor = getFxColor(view.backgroundColor);
             BackgroundFill backgroundFill = new BackgroundFill(backgroundColor, CornerRadii.EMPTY, Insets.EMPTY);
             Background background = new Background(backgroundFill);
             gridContent.setBackground(background);
@@ -2525,7 +2569,7 @@ public class JavaFXApplication extends BaseController {
             if (cellGroup.backgroundColor == null) {
                 cell.setBackground(Background.EMPTY); // Transparent
             } else {
-                BackgroundFill cellFill = new BackgroundFill(Color.rgb(cellGroup.backgroundColor.red, cellGroup.backgroundColor.green, cellGroup.backgroundColor.blue), CornerRadii.EMPTY, Insets.EMPTY);
+                BackgroundFill cellFill = new BackgroundFill(getFxColor(cellGroup.backgroundColor), CornerRadii.EMPTY, Insets.EMPTY);
                 Background background = new Background(cellFill);
                 cell.setBackground(background);
             }
@@ -2621,19 +2665,23 @@ public class JavaFXApplication extends BaseController {
         this.addView(view, false, index, true);
     }
     
-    public Text stringToText(String string, String fontName, app.Color fontColor, Integer fontSize, app.FontStyle fontStyle, FontSmoothingType fst) {
-        logger.log(Level.INFO, "Entered: string={0}, fontName={1}, fontColor={2}, fontSize={3}, fontStyle={4}, fst={5}", new Object[]{string, fontName, fontColor, fontSize, fontStyle, fst});
+    public Text stringToText(String string, TextDecoration decoration, FontSmoothingType fst) {
+        logger.log(Level.FINE, "Entered: string={0}, decoration={1}, fst={2}", new Object[]{string, decoration, fst});
         
         Text text = new Text(string);
         
+        if (decoration == null) {
+            decoration = new TextDecoration();
+        }
+        
         // Configure the font
-        if (fontStyle == null) {
-            fontStyle = FontStyle.NORMAL;
+        if (decoration.style == null) {
+            decoration.style = FontStyle.NORMAL;
         }
         
         FontPosture fxStyle = null;
         FontWeight fxWeight = FontWeight.NORMAL;
-        switch (fontStyle) {
+        switch (decoration.style) {
             case FontStyle.NORMAL -> fxWeight = FontWeight.NORMAL;
             case FontStyle.BOLD -> fxWeight = FontWeight.BOLD;
             case FontStyle.ITALIC -> fxStyle = FontPosture.ITALIC;
@@ -2648,15 +2696,24 @@ public class JavaFXApplication extends BaseController {
                 text.setUnderline(true);
             }
             case FontStyle.UNDERLINE_LINK -> {
-                // TODO - Not supported, needs styling
                 fxWeight = FontWeight.BOLD;
                 text.setUnderline(true);
-                app.Color offsetColor = fontColor.getOffset();
+                app.Color offsetColor = decoration.color.getOffset();
                 if (offsetColor.equals(app.Color.BLACK)) {
-                    fontColor = app.Color.HYPERLINK_LIGHT_BLUE;
+                    decoration.color = app.Color.HYPERLINK_LIGHT_BLUE;
+                    text.setOnMouseEntered(e -> text.setFill(getFxColor(app.Color.HYPERLINK_BLUE)));
+                    text.setOnMouseExited(e -> text.setFill(getFxColor(app.Color.HYPERLINK_LIGHT_BLUE)));
                 } else {
-                    fontColor = app.Color.HYPERLINK_BLUE;
+                    decoration.color = app.Color.HYPERLINK_BLUE;
+                    text.setOnMouseEntered(e -> text.setFill(getFxColor(app.Color.HYPERLINK_LIGHT_BLUE)));
+                    text.setOnMouseExited(e -> text.setFill(getFxColor(app.Color.HYPERLINK_BLUE)));
                 }
+                text.setCursor(Cursor.HAND);
+                TextDecoration finalDecoration = decoration;
+                text.setOnMouseClicked(e -> {
+                    logger.log(Level.INFO, "Link selected: text={0}", string);
+                    finalDecoration.eventListener.onEvent(string, null);
+                });
             }
             case FontStyle.UNDERLINE_SINGLE -> {
                 fxWeight = FontWeight.NORMAL;
@@ -2674,38 +2731,41 @@ public class JavaFXApplication extends BaseController {
         }
         
         // Configure the text font
-        if (fontName == null) {
-            fontName = Font.getDefault().getName();
-            logger.log(Level.FINE, "Using default font", fontName);
+        if (decoration.font == null) {
+            decoration.font = Font.getDefault().getName();
+            logger.log(Level.FINE, "Using default font", decoration.font);
         } else {
             // Load all font files for the font family if not already loaded.
             // The font size is required for loading a font but subsequent calls can use any size once loaded.
-            if (!fontFamiliesLoaded.contains(fontName)) {
-                List<String> fontFiles = app.Font.getFontFiles(fontName);
+            if (!fontFamiliesLoaded.contains(decoration.font)) {
+                List<String> fontFiles = app.Font.getFontFiles(decoration.font);
                 for (String fontFileName : fontFiles) {
                     logger.log(Level.FINE, "Loading font file", fontFileName);
-                    Font.loadFont(getClass().getResourceAsStream(fontFileName), fontSize);
+                    Font.loadFont(getClass().getResourceAsStream(fontFileName), decoration.pixelSize);
                 }
                 if (!fontFiles.isEmpty()) {
-                    fontFamiliesLoaded.add(fontName);
+                    fontFamiliesLoaded.add(decoration.font);
                 } else {
-                    logger.log(Level.WARNING, "Unsupported font family, using default", new Object[]{fontName, Font.getDefault().getName()});
-                    fontName = Font.getDefault().getName();
+                    logger.log(Level.WARNING, "Unsupported font family, using default", new Object[]{decoration.font, Font.getDefault().getName()});
+                    decoration.font = Font.getDefault().getName();
                 }
             }
         }
         
         // Adjust for DPI
-        double newFontSize = adjustFontSizeForDPI(fontSize);
+        if(decoration.pixelSize == null) {
+            decoration.pixelSize = DEFAULT_FONT_SIZE;
+        }
+        double newFontSize = adjustFontSizeForDPI(decoration.pixelSize);
         Font font;
         if (fxStyle != null) {
-            font = Font.font(fontName, fxStyle, newFontSize);
+            font = Font.font(decoration.font, fxStyle, newFontSize);
         } else {
-            font = Font.font(fontName, fxWeight, newFontSize);
+            font = Font.font(decoration.font, fxWeight, newFontSize);
         }
         text.setFont(font);
-        if (fontColor != null) {
-            text.setFill(Color.rgb(fontColor.red, fontColor.green, fontColor.blue));
+        if (decoration.color != null) {
+            text.setFill(getFxColor(decoration.color));
         }
         
         text.setFontSmoothingType(fst);
@@ -2765,7 +2825,7 @@ public class JavaFXApplication extends BaseController {
         return unifiedValue;
     }
     
-    public ImageView stringToEmoji(String string, Integer fontSize) {        
+    public ImageView stringToEmoji(String string, double fontSize) {        
         if (!isEmoji(string)) {
             return null;
         }
@@ -2798,7 +2858,9 @@ public class JavaFXApplication extends BaseController {
         return emojiView;
     }
     
-    public TextFlow stringToTextFlow(String string, String fontName, app.Color fontColor, Integer fontSize, app.FontStyle fontStyle, FontSmoothingType fst) {
+    public TextFlow stringToTextFlow(String string, TextDecoration decoration, FontSmoothingType fst) {
+        logger.log(Level.FINE, "Entered: string={0}, decoration={1}, fst={2}", new Object[]{string, decoration, fst});
+        
         if ((string == null) || (string.isEmpty())) {
             return new TextFlow();
         }
@@ -2816,14 +2878,14 @@ public class JavaFXApplication extends BaseController {
             if (isEmoji) {
                 // Add and reset accumulated normal text
                 if (!nonEmojiText.isEmpty()) {
-                    Text textNode = stringToText(nonEmojiText, fontName, fontColor, fontSize, fontStyle, fst);
+                    Text textNode = stringToText(nonEmojiText, decoration, fst);
                     textFlow.getChildren().add(textNode);
                     nonEmojiText = "";
                 }
                 
                 // Emoji - Add an ImageView
                 System.out.println("JavaFXApplication: stringToTextFlow: Handling emoji: " + cluster);
-                ImageView emojiView = this.stringToEmoji(cluster, fontSize);
+                ImageView emojiView = this.stringToEmoji(cluster, decoration.pixelSize);
                 textFlow.getChildren().add(emojiView);
             } else {
                 // Normal text - Accumulate character(s)
@@ -2832,7 +2894,7 @@ public class JavaFXApplication extends BaseController {
         }
         
         if (!nonEmojiText.isEmpty()) {
-            Text textNode = stringToText(nonEmojiText, fontName, fontColor, fontSize, fontStyle, fst);
+            Text textNode = stringToText(nonEmojiText, decoration, fst);
             textFlow.getChildren().add(textNode);
         }
 
@@ -2969,7 +3031,7 @@ public class JavaFXApplication extends BaseController {
         }
         
         if (node.backgroundColor != null) {
-            Color fxBackgroundColor = Color.rgb(node.backgroundColor.red, node.backgroundColor.green, node.backgroundColor.blue);
+            Color fxBackgroundColor = getFxColor(node.backgroundColor);
             BackgroundFill backgroundFill = new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY);
             Background background = new Background(backgroundFill);
             fxButtonGroup.setBackground(background);
@@ -3554,7 +3616,7 @@ public class JavaFXApplication extends BaseController {
         
         DropShadow glow = new DropShadow();
         glow.setRadius(20);
-        glow.setColor(Color.rgb(sprite.glowColor.red, sprite.glowColor.green, sprite.glowColor.blue));
+        glow.setColor(getFxColor(sprite.glowColor));
         glow.setSpread(0.5);
         glow.setOffsetX(0);
         glow.setOffsetY(0);

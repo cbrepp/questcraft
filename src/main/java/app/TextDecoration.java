@@ -1,0 +1,17 @@
+package app;
+
+import java.io.Serializable;
+
+/**
+ *
+ * @author repp
+ */
+public class TextDecoration implements Serializable {
+    
+    public Double pixelSize; // Default is app controller's default pixel size
+    public Color color; // Default (null) is either black or white depending on which color would best offset the background
+    public EventListener eventListener;
+    public String font; // Default (null) is the app controller's default font
+    public FontStyle style; // Default (null) is normal
+    
+}

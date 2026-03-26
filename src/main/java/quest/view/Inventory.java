@@ -6,6 +6,7 @@ import app.EventListener;
 import app.HorizontalAlignment;
 import app.Icon;
 import app.Layout;
+import app.TextDecoration;
 import app.VerticalAlignment;
 import app.dialog.Alert;
 import app.node.Grid;
@@ -128,9 +129,9 @@ public class Inventory extends app.view.BaseView implements EventListener {
             
             InventoryItem bookItem = this.quest.book.inventory.get(key);
 
-            Label emojiControl = new Label(key + " emojis");
-            emojiControl.text = String.join(" ", bookItem.emojis);
-            emojiControl.pixelSize = BaseController.EMOJI_SHEET_SIZE;
+            TextDecoration decoration = new TextDecoration();
+            decoration.pixelSize = BaseController.EMOJI_SHEET_SIZE;
+            Label emojiControl = new Label(key + " emojis", String.join(" ", bookItem.emojis), decoration);
             itemGroup.nodes.add(emojiControl);
 
             Link linkControl = new Link(key);
@@ -149,8 +150,7 @@ public class Inventory extends app.view.BaseView implements EventListener {
 
                 linkControl.isEnabled = true;
 
-                Label countControl = new Label(key + " count");
-                countControl.text = "x" + questItem.quantity;
+                Label countControl = new Label(key + " count", "x" + questItem.quantity);
                 itemGroup.nodes.add(countControl);
             } else {
                 System.out.println("Inventory: render: Item NOT in quest inventory: " + key);

@@ -95,5 +95,5 @@ public abstract class BaseController {
     public abstract void refreshView(String viewName);
     public abstract void loadEmojiData();
     public abstract void setDefaultFontColor(app.Color fontColor);
-
+    public abstract app.Color getDefaultFontColor();
 }

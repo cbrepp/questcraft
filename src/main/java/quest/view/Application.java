@@ -8,6 +8,7 @@ import app.FontStyle;
 import app.HorizontalAlignment;
 import app.Layout;
 import app.RelativeCoordinates;
+import app.TextDecoration;
 import app.VerticalAlignment;
 import static app.controller.BaseController.NODE_TRANSITIONED_EVENT;
 import static app.controller.BaseController.logger;
@@ -44,12 +45,14 @@ import quest.control_deprecated.DefaultTextColorSet;
 import quest.control.Illustrate;
 import quest.control.InventoryAdd;
 import quest.control.InventoryRemove;
+import quest.control.PageGoto;
 import quest.control.PageRefresh;
 import quest.control.Scribe;
 import quest.control.PlayerSymbolSet;
 import quest.control.SceneDisplay;
 import quest.control.SoundPlay;
 import quest.control.SoundStop;
+import quest.control.SpellRegister;
 import quest.control.SubpageDisplay;
 import quest.control.TabSelect;
 import quest.text.Texts;
@@ -107,7 +110,7 @@ public class Application extends app.view.BaseView {
     
     public Application(String name) {
         super(name);
-        this.backgroundColor = new Color(255, 255, 255);
+        this.backgroundColor = new Color(255, 255, 255, 1.0);
         this.backgroundImage = "/assets/images/app.jpg";
         this.emojis.add("\uD83D\uDCDA"); // "books" Unicode emoji
     }
@@ -156,11 +159,11 @@ public class Application extends app.view.BaseView {
                 if (this.changelogButton.text.equals(DOUBLE_LEFT_ARROW)) {
                     // Display the changelog in a scrolling region centered on the right with a spacer separating it from the quit button.
                     // Event NODE_TRANSITIONED_EVENT will be raised when the event is complete.
-                    this.changelogLabel = new ScrollingLabel(CHANGELOG_LABEL);
-                    this.changelogLabel.text = this.changelog;
-                    this.changelogLabel.pixelSize = 10.0;
-                    this.changelogLabel.textColor = Color.BLACK;
-                    this.changelogLabel.textFont = MONO_FONT;
+                    TextDecoration decoration = new TextDecoration();
+                    decoration.pixelSize = 10.0;
+                    decoration.color = Color.BLACK;
+                    decoration.font = MONO_FONT;
+                    this.changelogLabel = new ScrollingLabel(CHANGELOG_LABEL, this.changelog, decoration);
                     this.changelogLabel.scaleX = this.changelogButton.getBounds().coordinates.x - (this.quitButton.getBounds().coordinates.x + this.quitButton.getBounds().width) - 0.02; // Space between the right edge of the button and the right edge of the changelog button (with .04 padding)
                     this.changelogLabel.scaleY = CHANGELOG_HEIGHT;
                     this.changelogTransition = new SlideTransition(SlideTransition.Path.FROM_RIGHT, this); // Slide the label from the right
@@ -200,12 +203,13 @@ public class Application extends app.view.BaseView {
 
                 // Display "Now Playing" info
                 this.appController.removeNode(this.name, "now playing");
-                Label nowPlayingLabel = new Label("now playing");
-                nowPlayingLabel.text = "Now Playing..." + System.lineSeparator() + this.bookFile.title + System.lineSeparator() + "by " + this.bookFile.author + System.lineSeparator() + this.bookFile.updateDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.getDefault()));
-                nowPlayingLabel.pixelSize = 26.0;
-                nowPlayingLabel.textColor = Color.DARK_MAGENTA;
-                nowPlayingLabel.textFont = NORMAL_FONT;
-                nowPlayingLabel.textStyle = FontStyle.BOLD;
+                Object text = "Now Playing..." + System.lineSeparator() + this.bookFile.title + System.lineSeparator() + "by " + this.bookFile.author + System.lineSeparator() + this.bookFile.updateDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.getDefault()));
+                TextDecoration decoration = new TextDecoration();
+                decoration.pixelSize = 26.0;
+                decoration.color = Color.DARKEST_MAGENTA;
+                decoration.font = NORMAL_FONT;
+                decoration.style = FontStyle.BOLD;
+                Label nowPlayingLabel = new Label("now playing", text, decoration);
                 nowPlayingLabel.backgroundColor = Color.WHITE;
                 this.appController.addNode(this.name, this.name, nowPlayingLabel, new Layout(new RelativeCoordinates(0.0, (this.quitButton.getBounds().coordinates.y + (this.quitButton.getBounds().height * 4))), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
 
@@ -237,28 +241,28 @@ public class Application extends app.view.BaseView {
         spiderAnimation.file = "/assets/images/spider.gif";
         this.appController.addNode(this.name, this.name, spiderAnimation, new Layout(new RelativeCoordinates(1.0, 0.0), HorizontalAlignment.RIGHT, VerticalAlignment.TOP));
         
-        this.titleLabel = new Label("title");
-        titleLabel.text = "QUESTCRAFT";
-        titleLabel.pixelSize = 86.0;
-        titleLabel.textColor = Color.SHADOW;
-        titleLabel.textFont = TITLE_FONT;
-        titleLabel.textStyle = FontStyle.BOLD;
+        TextDecoration decoration = new TextDecoration();
+        decoration.pixelSize = 86.0;
+        decoration.color = Color.SHADOW;
+        decoration.font = TITLE_FONT;
+        decoration.style = FontStyle.BOLD;
+        this.titleLabel = new Label("title", "QUESTCRAFT", decoration);
         this.appController.addNode(this.name, this.name, this.titleLabel, new Layout(new RelativeCoordinates(0.0, 0.13), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
         
-        Label subtitleLabel = new Label("subtitle");        
-        subtitleLabel.text = "- JAVA  EDITION -";
-        subtitleLabel.pixelSize = 38.0;
-        subtitleLabel.textColor = Color.SHADOW;
-        subtitleLabel.textFont = TITLE_FONT;
-        subtitleLabel.textStyle = FontStyle.BOLD;
+        decoration = new TextDecoration();
+        decoration.pixelSize = 38.0;
+        decoration.color = Color.SHADOW;
+        decoration.font = TITLE_FONT;
+        decoration.style = FontStyle.BOLD;
+        Label subtitleLabel = new Label("subtitle", "- JAVA  EDITION -", decoration);
         this.appController.addNode(this.name, this.name, subtitleLabel, new Layout(new RelativeCoordinates(0.0, 0.24), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
 
-        Label flavorTextLabel = new Label("flavor");        
-        flavorTextLabel.text = this.flavorText;
-        flavorTextLabel.pixelSize = 16.0;
-        flavorTextLabel.textColor = Color.DARK_MAGENTA;
-        flavorTextLabel.textFont = TITLE_FONT;
-        flavorTextLabel.textStyle = FontStyle.ITALIC;
+        decoration = new TextDecoration();
+        decoration.pixelSize = 16.0;
+        decoration.color = Color.DARKEST_MAGENTA;
+        decoration.font = TITLE_FONT;
+        decoration.style = FontStyle.ITALIC;
+        Label flavorTextLabel = new Label("flavor", this.flavorText, decoration);
         this.appController.addNode(this.name, this.name, flavorTextLabel, new Layout(new RelativeCoordinates(0.0, 0.31), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
         
         if (this.changelog != null) {
@@ -266,11 +270,11 @@ public class Application extends app.view.BaseView {
             if (currentVersion != null) {
                 currentVersion = " " + currentVersion + " "; // Pad with spaces
                 // Display the current version in the lower left-hand corner
-                Label versionLabel = new Label("version");
-                versionLabel.text = currentVersion;
-                versionLabel.pixelSize = 14.0;
-                versionLabel.textColor = Color.SHADOW;
-                versionLabel.textFont = NORMAL_FONT;
+                decoration = new TextDecoration();
+                decoration.pixelSize = 14.0;
+                decoration.color = Color.SHADOW;
+                decoration.font = NORMAL_FONT;
+                Label versionLabel = new Label("version", currentVersion, decoration);
                 versionLabel.backgroundColor = Color.WHITE;
                 this.appController.addNode(this.name, this.name, versionLabel, new Layout(new RelativeCoordinates(0.01, 0.99), HorizontalAlignment.LEFT, VerticalAlignment.BOTTOM));
             }
@@ -286,12 +290,12 @@ public class Application extends app.view.BaseView {
             this.appController.addNode(this.name, this.name, this.changelogButton, new Layout(new RelativeCoordinates(1.0, 0.0), HorizontalAlignment.RIGHT, VerticalAlignment.CENTER));
         }
 
-        Label comingSoonLabel = new Label("coming soon");        
-        comingSoonLabel.text = "Coming soon... TWIN QUEST: DoW Chapter 2";
-        comingSoonLabel.pixelSize = 14.0;
-        comingSoonLabel.textColor = Color.SHADOW;
-        comingSoonLabel.textFont = NORMAL_FONT;
-        comingSoonLabel.textStyle = FontStyle.ITALIC;
+        decoration = new TextDecoration();
+        decoration.pixelSize = 14.0;
+        decoration.color = Color.SHADOW;
+        decoration.font = NORMAL_FONT;
+        decoration.style = FontStyle.ITALIC;
+        Label comingSoonLabel = new Label("coming soon", "Coming soon... TWIN QUEST: DoW Chapter 2", decoration);
         this.appController.addNode(this.name, this.name, comingSoonLabel, new Layout(new RelativeCoordinates(0.99, 0.99), HorizontalAlignment.RIGHT, VerticalAlignment.BOTTOM));
         
         this.appController.setTimer(DISPLAY_BUTTONS_TIMER, 0.5, this);
@@ -449,9 +453,9 @@ public class Application extends app.view.BaseView {
         page1.story.contents.add("<color 0+0+0>");
         page1.story.contents.add("<first-page>It all started on a <variable adjective-1> and <variable weather> afternoon.  <variable brothers-name> was <variable verb-ing> under the <variable furniture>, when he noticed a strange glimmer.  His sister, <variable sisters-name>, came to investigate.  They looked closely and saw a swirling, magical portal!");
         page1.story.contents.add("<br>");
-        page1.story.contents.add("<quote><variable exclamation>!<quote> they both shouted.  <variable brothers-name>, feeling brave, reached for it.  Suddenly, they were sucked through the portal, and they landed with a thud in a world filled with <variable plural-noun>.  The air smelled of <variable adjective-2> flowers and the sky was a bright <variable color>.");
+        page1.story.contents.add("\"<variable exclamation>!\" they both shouted.  <variable brothers-name>, feeling brave, reached for it.  Suddenly, they were sucked through the portal, and they landed with a thud in a world filled with <variable plural-noun>.  The air smelled of <variable adjective-2> flowers and the sky was a bright <variable color>.");
         page1.story.contents.add("<second-page>");
-        page1.story.contents.add("<quote>We're in a magical realm!<quote> <variable sisters-name> said, looking at the glowing <variable mythical-object> that floated above a nearby pond. But their wonder quickly turned to alarm. A group of <variable number> <variable plural-noun> were blocking their way.");
+        page1.story.contents.add("\"We're in a magical realm!\" <variable sisters-name> said, looking at the glowing <variable mythical-object> that floated above a nearby pond. But their wonder quickly turned to alarm. A group of <variable number> <variable plural-noun> were blocking their way.");
         page1.story.contents.add("<br>");
         page1.story.contents.add("The siblings remembered the secret instructions their grandmother had given them: to always behave <variable adverb>. So instead of fighting, they <variable past-tense-verb> a song, and the <variable plural-noun> were so surprised they let the children pass. With their wits and kindness, <variable brothers-name> and <variable sisters-name> found their way home, just in time for a <variable adjective-3> dinner.");
         page1.story.contents.add("</color>");
@@ -492,19 +496,19 @@ public class Application extends app.view.BaseView {
         comedyQuest.scenes.put("Quest", quest);
         page1 = new Page();
         page1.story.contents.add("<color 0+0+0>");
-        page1.story.contents.add("<first-page>The siblings <variable brothers-name> and <variable sisters-name> stumbled through a shimmering rainbow mist and found themselves in the magical realm of Jumbledoor.  All around them, tiny, mischievous <variable magical-creatures> were <variable verb>.  <quote>What are they doing?<quote> <variable sisters-name> asked.  One of the creatures ran up to them and asked, <quote>Why did the wizard cross the road?<quote>");
+        page1.story.contents.add("<first-page>The siblings <variable brothers-name> and <variable sisters-name> stumbled through a shimmering rainbow mist and found themselves in the magical realm of Jumbledoor.  All around them, tiny, mischievous <variable magical-creatures> were <variable verb>.  \"What are they doing?\" <variable sisters-name> asked.  One of the creatures ran up to them and asked, \"Why did the wizard cross the road?\"");
         page1.story.contents.add("<br>");
-        page1.story.contents.add("<variable brothers-name> shrugged, <quote>I don't know, why?<quote>");
+        page1.story.contents.add("<variable brothers-name> shrugged, \"I don't know, why?\"");
         page1.story.contents.add("<br>");
-        page1.story.contents.add("<quote>To get to the <variable adjective-1> side!<quote> the creature squeaked, then exploded into a puff of <variable food>.");
+        page1.story.contents.add("\"To get to the <variable adjective-1> side!\" the creature squeaked, then exploded into a puff of <variable food>.");
         page1.story.contents.add("<br>");
-        page1.story.contents.add("Feeling very <variable adjective-2>, they continued on their quest to find the legendary <variable noun-singular>.  They had just passed a talking <variable furniture> when another voice was heard.  <quote>What do you call a magical bear with no teeth?<quote>");
+        page1.story.contents.add("Feeling very <variable adjective-2>, they continued on their quest to find the legendary <variable noun-singular>.  They had just passed a talking <variable furniture> when another voice was heard.  \"What do you call a magical bear with no teeth?\"");
         page1.story.contents.add("<second-page>");
-        page1.story.contents.add("<quote><variable exclamation>!<quote> shouted <variable sisters-name>.  <quote>This place is full of comedians!<quote>");
+        page1.story.contents.add("\"<variable exclamation>!\" shouted <variable sisters-name>.  \"This place is full of comedians!\"");
         page1.story.contents.add("<br>");
-        page1.story.contents.add("<quote>I don't know, what?<quote> she asked.");
+        page1.story.contents.add("\"I don't know, what?\" she asked.");
         page1.story.contents.add("<br>");
-        page1.story.contents.add("<quote>A gummy bear!<quote> shouted the <variable number> <variable magical-creatures>.");
+        page1.story.contents.add("\"A gummy bear!\" shouted the <variable number> <variable magical-creatures>.");
         page1.story.contents.add("<br>");
         page1.story.contents.add("The siblings burst out laughing and continued their journey <variable adverb>, realizing that even in a magical land, a good joke can be the best kind of magic.");
         page1.story.contents.add("</color>");
@@ -548,11 +552,11 @@ public class Application extends app.view.BaseView {
         page1.story.contents.add("<color 0+0+0>");
         page1.story.contents.add("<first-page>On a <variable adjective-1> night, <variable brothers-name> and <variable sisters-name> snuck into an abandoned carnival.  The ferris wheel <variable verb> slowly in the wind, and a rusty calliope played a <variable adjective-2> tune.  They had heard stories of the carnival's past: how all the clowns disappeared <variable adverb> many years ago.");
         page1.story.contents.add("<br>");
-        page1.story.contents.add("As they walked past the <variable color> ticket booth, they heard a terrifying giggle.  A large <variable scary-character> appeared from the shadows, his face painted with a creepy smile.  <quote>Want some <variable bug>?<quote> he asked, holding out a dirty bag.  The children ran away screaming, their <variable body-part> pounding in their chests.");
+        page1.story.contents.add("As they walked past the <variable color> ticket booth, they heard a terrifying giggle.  A large <variable scary-character> appeared from the shadows, his face painted with a creepy smile.  \"Want some <variable bug>?\" he asked, holding out a dirty bag.  The children ran away screaming, their <variable body-part> pounding in their chests.");
         page1.story.contents.add("<br>");
         page1.story.contents.add("They found refuge in a funhouse, but the mirrors distorted their reflections in horrible ways.  A <variable number>-legged clown walked out of a mirrored wall, offering them a <variable food>.  The clowns weren't disappearing; they were multiplying!");
         page1.story.contents.add("<second-page>");
-        page1.story.contents.add("<quote><variable exclamation>!<quote> <variable brothers-name> yelled, <quote>This place is a trap!<quote>");
+        page1.story.contents.add("\"<variable exclamation>!\" <variable brothers-name> yelled, \"This place is a trap!\"");
         page1.story.contents.add("<br>");
         page1.story.contents.add("They ran out of the funhouse and found their way back out of the carnival.  The music had stopped, and all the creepy clowns were gone.  The <variable adjective-2> siblings went home, promising each other never to return to the Creepy Clown Carnival.");
         page1.story.contents.add("</color>");
@@ -756,9 +760,10 @@ public class Application extends app.view.BaseView {
                 "    ,-=='-`=-.               ,-=='-`=-.", new LineSeparator(),
                 new LineSeparator(),
                 "              T W I N   Q U E S T");
-        Label dragonLabel = new Label("par1", new Texts(dragonArt));
-        dragonLabel.textColor = Color.DARK_MAGENTA;
-        dragonLabel.textStyle = FontStyle.BOLD;
+        TextDecoration decoration = new TextDecoration();
+        decoration.color = Color.DARKEST_MAGENTA;
+        decoration.style = FontStyle.BOLD;
+        Label dragonLabel = new Label("par1", new Texts(dragonArt), decoration);
         page1.story.controls.add(new Scribe(List.of(dragonLabel))); 
         page1.story.controls.add(new Scribe(List.of(new Label("par3", new Texts(List.of("  ", new BookTitle(), new LineSeparator(), "  by ", new BookAuthor(), new LineSeparator(), "  Last Updated: ", new BookLastUpdatedDate()))))));
         page1.story.controls.add(new Illustrate(new Image("title image", "/assets/images/title-page.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
@@ -811,7 +816,7 @@ public class Application extends app.view.BaseView {
         
         Story playerGreysonSubpage = new Story();
         playerGreysonSubpage.controls.add(new PlayerSymbolSet("\uD83E\uDDD2"));
-        playerGreysonSubpage.controls.add(new VariableSet("twin", "Zara>"));
+        playerGreysonSubpage.controls.add(new VariableSet("twin", "Zara"));
         playerGreysonSubpage.controls.add(new VariableSet("twin-with-symbol", "\uD83D\uDC67 Zara"));
         playerGreysonSubpage.controls.add(new VariableSet("battle-cry", "I don't know if I can, but I will try!!!"));
         playerGreysonSubpage.controls.add(new VariableSet("twin-voice", "twin's voice"));
@@ -842,7 +847,7 @@ public class Application extends app.view.BaseView {
         page1.subpages.put("INPUT player=Zara", playerZaraSubpage);
         
         Story playerShmebulockSubpage = new Story();
-        playerShmebulockSubpage.controls.add(new PlayerSymbolSet("\uD83C\uDF85>"));
+        playerShmebulockSubpage.controls.add(new PlayerSymbolSet("\uD83C\uDF85"));
         playerShmebulockSubpage.controls.add(new VariableSet("twin", "Greyson and Zara"));
         playerShmebulockSubpage.controls.add(new VariableSet("twin-with-symbol", "\uD83E\uDDD2 Greyson and \uD83D\uDC67 Zara"));
         playerShmebulockSubpage.controls.add(new VariableSet("battle-cry", "SHMEBULOCK!!!"));
@@ -851,7 +856,7 @@ public class Application extends app.view.BaseView {
         playerShmebulockSubpage.controls.add(new VariableSet("mylee-fandom", "But I wish I could.  You gnomes are just fascinating!"));
         playerShmebulockSubpage.controls.add(new VariableSet("mylee-reaction", "Fascinating"));
         playerShmebulockSubpage.controls.add(new VariableSet("twin-was", "friends were"));
-        playerShmebulockSubpage.controls.add(new DefaultTextColorSet(Color.DARK_MAGENTA));
+        playerShmebulockSubpage.controls.add(new DefaultTextColorSet(Color.DARKEST_MAGENTA));
         playerShmebulockSubpage.controls.add(new VariableSet("why-is-that", "SHMEBULOCK?"));
         playerShmebulockSubpage.controls.add(new VariableSet("eat-twin", "SHMEBULOCK?!"));
         playerShmebulockSubpage.controls.add(new VariableSet("thats-horrible", "SHMEBULOCK!!!"));
@@ -920,16 +925,16 @@ public class Application extends app.view.BaseView {
         Page page1a = new Page();
         page1a.nextPageName = "1";
         page1a.story.controls.add(new SoundPlay("/assets/sounds/thunder.wav", true));
+        decoration = new TextDecoration();
+        decoration.style = FontStyle.ITALIC;
         Label styledLabel = new Label("par1", new Texts(List.of("Time has passed has passed by slowly.  The seconds have been monotonous.  Countless.  Like drops of rain in a storm that never ends.  And she has patiently waited.", new LineSeparator(),
                 new LineSeparator(),
                 "But now in the twenty-first year of the twenty-first century, her long wait is finally over.", new LineSeparator(),
                 new LineSeparator(),
-                "He has returned...")));
-        styledLabel.textStyle = FontStyle.ITALIC;
+                "He has returned...")), decoration);
         page1a.story.controls.add(new Scribe(List.of(styledLabel)));
         
-        styledLabel = new Label("par1", new Texts(List.of("...perhaps this time it will be different?")));
-        styledLabel.textStyle = FontStyle.ITALIC;
+        styledLabel = new Label("par1", new Texts(List.of("...perhaps this time it will be different?")), decoration);
         Scribe shmebulockExtraText = new Scribe(List.of(styledLabel));
         shmebulockExtraText.condition = new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true);
         page1a.story.controls.add(shmebulockExtraText);
@@ -946,6 +951,7 @@ public class Application extends app.view.BaseView {
                 new PlayerSymbol(), " ", new Variable("player"), ": \"", new Variable("battle-cry"), "\"", new LineSeparator(),
                 new LineSeparator(),
                 new Variable("twin-with-symbol"), ": \"", new Variable("player"), " he got ", new If("us", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "me"), "!!!  A big black cat got ", new If("us", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "me"), "!!!\"", new LineSeparator(),
+                new LineSeparator(),
                 "You set down the game controller you were holding (and what a shame, you were about to beat the Ender Dragon) and run toward the sound of your ", new Variable("twin-voice"), " just in time to see the door to the leprechaun closet in the back bedroom slam shut.  You run to the closet door, open it, and what you see next takes your breath away..."))))));
         page1.story.controls.add(new Illustrate(new Image("illustration image", "/assets/images/mystery-door.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("1", page1);
@@ -970,213 +976,217 @@ public class Application extends app.view.BaseView {
         page3.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/clouds.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         page3.story.controls.add(new Illustrate(new Image("illustration image 2", "/assets/images/elevator-doors.png"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("3", page3);
-
-        // TODO - Continue refactoring
-
-        /*        
-       
         
         Page page4 = new Page();
         page4.previousPageName = "3";
         page4.nextPageName = "5";
         page4.hidePreviousButton = true;
-        page4.story.contents.add("<stop-sound>");
-        page4.story.contents.add("<play-sound /assets/sounds/elevator-open.mp3 false>");
-        page4.story.contents.add("<play-sound /assets/sounds/elevator.wav false>");
-        page4.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Oh hey, <variable player-mylee-nickname>.<quote>");
-        page4.story.contents.add("<br>");
-        page4.story.contents.add("You're confused for a moment.  Inside the elevator there's a cat perched up on a shelf by the main elevator switch.  Is a cat operating this elevator?  And... did that cat just talk???");
-        page4.story.contents.add("<br>");
-        page4.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>You're wondering if I just talked even though I'm a cat.  And the answer is 'yes'.  Yes I did.<quote>");
-        page4.story.contents.add("<br>");
-        page4.story.contents.add("Wait, what?  Can this talking cat read your mind?");
-        page4.story.contents.add("<br>");
-        page4.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>And you're probably wondering now if I can read your mind.  The answer to that is... no.  <variable mylee-fandom><quote>");
-        page4.story.contents.add("<br>");
-        page4.story.contents.add("<variable mylee-reaction> is right.");
-        page4.story.contents.add("<br>");
-        page4.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Enough talk, <variable player-mylee-nickname>.  You look confused.  How about you ask me some questions.<quote>");
-        page4.story.contents.add("<second-page>");
-        page4.story.contents.add("<image mylee center /assets/images/mylee.jpg>");
+        page4.story.controls.add(new SoundStop(""));
+        page4.story.controls.add(new SoundPlay("/assets/sounds/elevator-open.mp3", false));
+        page4.story.controls.add(new SoundPlay("/assets/sounds/elevator.wav", false));
+        page4.story.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("\uD83D\uDC08\u200D\u2B1B MYLEE: \"Oh hey, ", new Variable("player-mylee-nickname"), ".\"", new LineSeparator(),
+                new LineSeparator(),
+                "You're confused for a moment.  Inside the elevator there's a cat perched up on a shelf by the main elevator switch.  Is a cat operating this elevator?  And... did that cat just talk???", new LineSeparator(),
+                new LineSeparator(),
+                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"You're wondering if I just talked even though I'm a cat.  And the answer is 'yes'.  Yes I did.\"", new LineSeparator(),
+                new LineSeparator(),
+                "Wait, what?  Can this talking cat read your mind?", new LineSeparator(),
+                new LineSeparator(),
+                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"And you're probably wondering now if I can read your mind.  The answer to that is... no.  ", new Variable("mylee-fandom"), "\"", new LineSeparator(),
+                new LineSeparator(),
+                new Variable("mylee-reaction"), " is right.", new LineSeparator(),
+                new LineSeparator(),
+                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"Enough talk, ", new Variable("player-mylee-nickname"), ".  You look confused.  How about you ask me some questions.\""))))));
+        page4.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/mylee.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("4", page4);
         
+        effectList = new ArrayList();
+        effectList.add(new Glow(Color.DARK_MAGENTA));
+        ValidatedVariablePrompt twinPut = new ValidatedVariablePrompt("mylee-prompt", List.of("Who are you?", "Where is my twin?", "Who is Big Chung?", "What's with this book I have?", "And this map?", "What is this elevator?", "I'm good."));
+        twinPut.effectsButtons.put("I'm good.", effectList);
+        input = new ValidatedVariablePrompt("mylee-prompt", List.of("SHMEBULOCK?", "SHMEBULOCK??", "SHMEBULOCK???", "SHMEBULOCK????", "SHMEBULOCK?????", "SHMEBULOCK??????", "SHMEBULOCK."));
+        input.effectsButtons.put("SHMEBULOCK.", effectList);
+
         Page page5 = new Page();
         page5.previousPageName = "4";
         page5.hideNextButton = true;
         page5.noGlow = true;
-        page5.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>You look like you're new to this so I'll help you out.  See those buttons below?  They're giving you some choices.  Pick one.  You can learn about this game before you begin your quest.<quote>");
-        page5.story.contents.add("<br>");
-        page5.story.contents.add("<subpage-display condition=\"player=Shmebulock\" SHMEBULOCK input>");
-        page5.story.contents.add("<subpage-display condition=\"player!=Shmebulock\" input>");
-        page5.story.contents.add("<second-page>");
-        page5.story.contents.add("<image mylee center /assets/images/mylee.jpg>");
+        page5.story.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("\uD83D\uDC08\u200D\u2B1B MYLEE: \"You look like you're new to this so I'll help you out.  See those buttons below?  They're giving you some choices.  Pick one.  You can learn about this game before you begin your quest.\"", new LineSeparator()))))));
+        page5.story.controls.add(new Scribe(List.of(input), new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true)));
+        page5.story.controls.add(new Scribe(List.of(twinPut), new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", false)));
+        page5.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/mylee.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("5", page5);
-        inputSubpage = new Story();
-        inputSubpage.contents.add("<get-validated-input mylee-prompt Who are you?+Where is my twin?+Who is Big Chung?+What's with this book I have?+And this map?+What is this elevator?+*I'm good.>");
-        page5.subpages.put("input", inputSubpage);
-        Story inputWithShmebulockSubpage = new Story();
-        inputWithShmebulockSubpage.contents.add("<get-validated-input mylee-prompt SHMEBULOCK?+SHMEBULOCK??+SHMEBULOCK???+SHMEBULOCK????+SHMEBULOCK?????+SHMEBULOCK??????+*SHMEBULOCK.>");
-        page5.subpages.put("SHMEBULOCK input", inputWithShmebulockSubpage);
+        
         Story whoAreYouSubpage = new Story();
-        whoAreYouSubpage.contents.add("<goto-page 6>");
+        whoAreYouSubpage.controls.add(new PageGoto("6"));
         page5.subpages.put("INPUT mylee-prompt=Who are you?", whoAreYouSubpage);
         Story whereIsTwinSubpage = new Story();
-        whereIsTwinSubpage.contents.add("<goto-page 7>");
+        whereIsTwinSubpage.controls.add(new PageGoto("7"));
         page5.subpages.put("INPUT mylee-prompt=Where is my twin?", whereIsTwinSubpage);
         Story whoIsChungSubpage = new Story();
-        whoIsChungSubpage.contents.add("<goto-page 8>");
+        whoIsChungSubpage.controls.add(new PageGoto("8"));
         page5.subpages.put("INPUT mylee-prompt=Who is Big Chung?", whoIsChungSubpage);
         Story whatsWithSpellbookSubpage = new Story();
-        whatsWithSpellbookSubpage.contents.add("<goto-page 9>");
+        whatsWithSpellbookSubpage.controls.add(new PageGoto("9"));
         page5.subpages.put("INPUT mylee-prompt=What's with this book I have?", whatsWithSpellbookSubpage);
         Story andThisMapSubpage = new Story();
-        andThisMapSubpage.contents.add("<goto-page 10>");
+        andThisMapSubpage.controls.add(new PageGoto("10"));
         page5.subpages.put("INPUT mylee-prompt=And this map?", andThisMapSubpage);
         Story whatIsThisElevatorSubpage = new Story();
-        whatIsThisElevatorSubpage.contents.add("<goto-page 11>");
+        whatIsThisElevatorSubpage.controls.add(new PageGoto("11"));
         page5.subpages.put("INPUT mylee-prompt=What is this elevator?", whatIsThisElevatorSubpage);
         Story imGoodSubpage = new Story();
-        imGoodSubpage.contents.add("<goto-page 12>");
+        imGoodSubpage.controls.add(new PageGoto("12"));
         page5.subpages.put("INPUT mylee-prompt=I'm good.", imGoodSubpage);
         Story schmebulock1Subpage = new Story();
-        schmebulock1Subpage.contents.add("<goto-page 6>");
+        schmebulock1Subpage.controls.add(new PageGoto("6"));
         page5.subpages.put("INPUT mylee-prompt=SHMEBULOCK?", schmebulock1Subpage);
         Story schmebulock2Subpage = new Story();
-        schmebulock2Subpage.contents.add("<goto-page 7>");
+        schmebulock2Subpage.controls.add(new PageGoto("7"));
         page5.subpages.put("INPUT mylee-prompt=SHMEBULOCK??", schmebulock2Subpage);
         Story schmebulock3Subpage = new Story();
-        schmebulock3Subpage.contents.add("<goto-page 8>");
+        schmebulock3Subpage.controls.add(new PageGoto("8"));
         page5.subpages.put("INPUT mylee-prompt=SHMEBULOCK???", schmebulock3Subpage);
         Story schmebulock4Subpage = new Story();
-        schmebulock4Subpage.contents.add("<goto-page 9>");
+        schmebulock4Subpage.controls.add(new PageGoto("9"));
         page5.subpages.put("INPUT mylee-prompt=SHMEBULOCK????", schmebulock4Subpage);
         Story schmebulock5Subpage = new Story();
-        schmebulock5Subpage.contents.add("<goto-page 10>");
+        schmebulock5Subpage.controls.add(new PageGoto("10"));
         page5.subpages.put("INPUT mylee-prompt=SHMEBULOCK?????", schmebulock5Subpage);
         Story schmebulock6Subpage = new Story();
-        schmebulock6Subpage.contents.add("<goto-page 11>");
+        schmebulock6Subpage.controls.add(new PageGoto("11"));
         page5.subpages.put("INPUT mylee-prompt=SHMEBULOCK??????", schmebulock6Subpage);
         Story schmebulock7Subpage = new Story();
-        schmebulock7Subpage.contents.add("<goto-page 12>");
+        schmebulock7Subpage.controls.add(new PageGoto("12"));
         page5.subpages.put("INPUT mylee-prompt=SHMEBULOCK.", schmebulock7Subpage);
         
         Page page6 = new Page();
         page6.previousPageName = "5";
         page6.hideNextButton = true;
-        page6.story.contents.add("<player-symbol> YOU: <quote><variable mylee-prompt><quote>");
-        page6.story.contents.add("<br>");
-        page6.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>I'm Mylee Marie!<quote>");
-        page6.story.contents.add("<br>");
-        page6.story.contents.add("<player-symbol> YOU: <quote><if condition=\"player=Shmebulock\" SHMEBULOCK?><if condition=\"player!=Shmebulock\" And... ?><quote>");
-        page6.story.contents.add("<br>");
-        page6.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote><if condition=\"player=Shmebulock\" And I'm magical just like you.><if condition=\"player!=Shmebulock\" And that's all you need to know for now.><quote>");
-        page6.story.contents.add("<br>");
-        page6.story.contents.add("...");
-        page6.story.contents.add("<br>");
-        page6.story.contents.add("You wait a moment for Mylee to say more but she doesn't.  Okay... at least you got her name.  Perhaps it's time to ask another question?");
-        page6.story.contents.add("<second-page>");
-        page6.story.contents.add("<image mylee center /assets/images/mylee.jpg>");
+        page6.story.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of(new PlayerSymbol(), " YOU: \"", new Variable("mylee-prompt"), "\"", new LineSeparator(),
+                new LineSeparator(),
+                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"I'm Mylee Marie!\"", new LineSeparator(),
+                new LineSeparator(),
+                new PlayerSymbol(), " YOU: \"", new If("SHMEBULOCK?", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "And... ?"), "\"", new LineSeparator(),
+                new LineSeparator(),
+                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"", new If("And I'm magical just like you.", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true)), "\"", new LineSeparator(),
+                new LineSeparator(),
+                "...", new LineSeparator(),
+                new LineSeparator(),
+                "You wait a moment for Mylee to say more but she doesn't.  Okay... at least you got her name.  Perhaps it's time to ask another question?"))))));
+        page6.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/mylee.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("6", page6);
         
         Page page7 = new Page();
         page7.previousPageName = "5";
         page7.hideNextButton = true;
-        page7.story.contents.add("<player-symbol> YOU: <quote><variable mylee-prompt><quote>");
-        page7.story.contents.add("<br>");
-        page7.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Oh you poor <variable player-mylee-nickname>.  I'm afraid your <variable twin-was> captured by my younger brother, Big Chung.  It is a shame.<quote>");
-        page7.story.contents.add("<br>");
-        page7.story.contents.add("<player-symbol> YOU: <quote><variable why-is-that><quote>");
-        page7.story.contents.add("<br>");
-        page7.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>You'd have to understand my brother to know why that is...<quote>");
-        page7.story.contents.add("<second-page>");
-        page7.story.contents.add("<image mylee center /assets/images/mylee.jpg>");
+        page7.story.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of(new PlayerSymbol(), " YOU: \"", new Variable("mylee-prompt"), "\"", new LineSeparator(),
+                new LineSeparator(),
+                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"Oh you poor ", new Variable("player-mylee-nickname"), ".  I'm afraid your ", new Variable("twin-was"), " captured by my younger brother, Big Chung.  It is a shame.\"", new LineSeparator(),
+                new LineSeparator(),
+                new PlayerSymbol(), " YOU: \"", new Variable("why-is-that"), "\"", new LineSeparator(),
+                new LineSeparator(),
+                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"You'd have to understand my brother to know why that is...\""))))));
+        page7.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/mylee.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("7", page7);
-        
+
         Page page8 = new Page();
         page8.previousPageName = "5";
         page8.hideNextButton = true;
-        page8.story.contents.add("<player-symbol> YOU: <quote><variable mylee-prompt><quote>");
-        page8.story.contents.add("<br>");
-        page8.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Oh he's quite the cat!  His appetite is as big as they come.  Some day he may eat the whole world.  (He's done it before.)  But for now it seems like he's settled on <variable twin>.<quote>");
-        page8.story.contents.add("<br>");
-        page8.story.contents.add("<player-symbol> YOU: <quote><variable eat-twin><quote>");
-        page8.story.contents.add("<br>");
-        page8.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Perhaps.  But you might have some time.  He just ate an entire Red Lobster restaurant for breakfast this morning so he might be full.  I bet <variable twin> will be an appetizer for later.<quote>");
-        page8.story.contents.add("<br>");
-        page8.story.contents.add("<player-symbol> YOU: <quote><variable thats-horrible><quote>");
-        page8.story.contents.add("<br>");
-        page8.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Don't I know it, <variable player-mylee-nickname>.  But he's my younger brother so we need to stop him in a way that doesn't hurt him.  Were I to fight him directly... well, let's just say he wouldn't walk away from that!  That's why I need you to help me.  You're clever, but, not exactly a tough cat like me...<quote>");
-        page8.story.contents.add("<second-page>");
-        page8.story.contents.add("<image mylee center /assets/images/mylee.jpg>");
+        page8.story.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of(new PlayerSymbol(), " YOU: \"", new Variable("mylee-prompt"), "\"", new LineSeparator(),
+                new LineSeparator(),
+                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"Oh he's quite the cat!  His appetite is as big as they come.  Some day he may eat the whole world.  (He's done it before.)  But for now it seems like he's settled on ", new Variable("twin"), ".\"", new LineSeparator(),
+                new LineSeparator(),
+                new PlayerSymbol(), " YOU: \"", new Variable("eat-twin"), "\"", new LineSeparator(),
+                new LineSeparator(),
+                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"Perhaps.  But you might have some time.  He just ate an entire Red Lobster restaurant for breakfast this morning so he might be full.  I bet ", new Variable("twin"), " will be an appetizer for later.\"", new LineSeparator(),
+                new LineSeparator(),
+                new PlayerSymbol(), " YOU: \"", new Variable("thats-horrible"), "\"", new LineSeparator(),
+                new LineSeparator(),
+                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"Don't I know it, ", new Variable("player-mylee-nickname"), ".  But he's my younger brother so we need to stop him in a way that doesn't hurt him.  Were I to fight him directly... well, let's just say he wouldn't walk away from that!  That's why I need you to help me.  You're clever, but, not exactly a tough cat like me...\""))))));
+        page8.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/mylee.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("8", page8);
+        
+        // TODO - Now that FLIP BOOK (requires 0MP) is looking nice as in-line bold text, add new app.Text properties so a mock link can be created and presented in-line
+        // TODO - Clean up this code to flow nicely
         
         Page page9 = new Page();
         page9.previousPageName = "5";
         page9.hideNextButton = true;
-        page9.story.contents.add("<player-symbol> YOU: <quote><variable mylee-prompt><quote>");
-        page9.story.contents.add("<br>");
-        page9.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>That <inventory Spell Book> tab up above?  Every brave soul that takes on a quest is equipped with one of those.  Any spell that you write into the book will be cast with the book's magic.<quote>");
-        page9.story.contents.add("<br>");
-        page9.story.contents.add("<player-symbol> YOU: <quote><if condition=\"player=Shmebulock\" SHMEBULOCK.><if condition=\"player!=Shmebulock\" So I can cast spells and stuff?><quote>");
-        page9.story.contents.add("<br>");
-        page9.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote><if condition=\"player=Shmebulock\" I know you can already cast spells.  But with this magical book, you'll be able to magnify your power and cast spells that affect the very fabric of reality.><if condition=\"player!=Shmebulock\" With the book, yes.  But you need to learn some spells first before you can write them into the book.>  Tell you what, before each level I'll share with you a magic spell.  As your quest progresses, so will the spells that you know.<quote>");
-        page9.story.contents.add("<br>");
-        page9.story.contents.add("<player-symbol> YOU: <quote><if condition=\"player=Shmebulock\" SHMEBULOCK!><if condition=\"player!=Shmebulock\" That sounds cool!><quote>");
-        page9.story.contents.add("<br>");
-        page9.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Indeed.  You'll find me to be quite helpful by the time you get to the end of your quest.  Here's your first spell... 'FLIP BOOK' (requires 0MP).  Go to the <inventory Spell Book> and try it out!  This one isn't very powerful but there's no limit to the number of times you can cast it.<quote>");
-        page9.story.contents.add("<second-page>");
-        page9.story.contents.add("<image mylee center /assets/images/mylee.jpg>");
+        page9.story.controls.add(new SpellRegister("FLIP BOOK", book.subpages.get("FLIP BOOK")));
+        app.Text text1 = new app.Text(new Texts(List.of(new PlayerSymbol(), " YOU: \"", new Variable("mylee-prompt"), "\"", new LineSeparator(),
+                new LineSeparator(),
+                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"I think you mean that tab up above that looks like this... ")));
+        app.Text text2 = new quest.text.InventoryItem("Spell Book");
+        app.Text text3 = new app.Text(new Texts(List.of(".  Every brave soul that takes on a quest is equipped with one of these.  Any spell that you write into the book will be cast with the book's magic.\"", new LineSeparator(),
+                new LineSeparator(),
+                new PlayerSymbol(), " YOU: \"", new If("SHMEBULOCK.", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "So I can cast spells and stuff?"), "\"", new LineSeparator(),
+                new LineSeparator(),
+                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"", new If("I know you can already cast spells.  But with this magical book, you'll be able to magnify your power and cast spells that affect the very fabric of reality.\"", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "With the book, yes.  But you need to learn some spells first before you can write them into the book."), "  Tell you what, before each level I'll share with you a magic spell.  As your quest progresses, so will the spells that you know.\"", new LineSeparator(),
+                new LineSeparator(),
+                new PlayerSymbol(), " YOU: \"", new If("SHMEBULOCK!", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "That sounds cool!"), "\"", new LineSeparator(),
+                new LineSeparator(),
+                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"Indeed.  You'll find me to be quite helpful by the time you get to the end of your quest.  Here's your first spell... ")));
+        decoration = new TextDecoration();
+        decoration.style = FontStyle.BOLD;
+        decoration = new TextDecoration();
+        decoration.style = FontStyle.BOLD;
+        app.Text text4 = new app.Text(new Texts(List.of("FLIP BOOK (requires 0MP)")), decoration);
+        app.Text text5 = new app.Text(new Texts(List.of(".  Go to the Spell Book and try it out!  This one isn't very powerful but there's no limit to the number of times you can cast it.\"")));        
+        page9.story.controls.add(new Scribe(List.of(new Label("par1", List.of(text1, text2, text3, text4, text5)))));
+        page9.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/mylee.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("9", page9);
-        
+
+        /*
         Page page10 = new Page();
         page10.previousPageName = "5";
         page10.hideNextButton = true;
-        page10.story.contents.add("<player-symbol> YOU: <quote><variable mylee-prompt><quote>");
-        page10.story.contents.add("<br>");
-        page10.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>That <inventory Map> tab up above?  It's another essential item for your quest.  Every location for the current level will be shown.  But only the locations that you've actually seen will have any information.<quote>");
-        page10.story.contents.add("<br>");
-        page10.story.contents.add("<player-symbol> YOU: <quote><if condition=\"player=Shmebulock\" SHMEBULOCK?><if condition=\"player!=Shmebulock\" So it will show me what's out there... but not everything until I've done some exploring?><quote>");
-        page10.story.contents.add("<br>");
-        page10.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Precisely.  More or less it's so you don't get lost.  But you may find some additional value to it.<quote>");
-        page10.story.contents.add("<br>");
-        page10.story.contents.add("<player-symbol> YOU: <quote><if condition=\"player=Shmebulock\" SHMEBULOCK?><if condition=\"player!=Shmebulock\" Is there anything else I need to know?><quote>");
-        page10.story.contents.add("<br>");
-        page10.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>It would certainly help to look before you leap!  Think carefully before entering a new location that looks like it could be dangerous.<quote>");
-        page10.story.contents.add("<second-page>");
-        page10.story.contents.add("<image mylee center /assets/images/mylee.jpg>");
+        page10.story.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of(new PlayerSymbol(), " YOU: \"", new Variable("mylee-prompt"), "\"", new LineSeparator(),
+                new LineSeparator(),
+                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"That "))), new quest.node.InventoryItem("map item", "Map"), new Label("par2", new Texts(List.of(" tab up above?  It's another essential item for your quest.  Every location for the current level will be shown.  But only the locations that you've actually seen will have any information.\"", new LineSeparator(),
+                new LineSeparator(),
+                new PlayerSymbol(), " YOU: \"", new If("SHMEBULOCK?", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "So it will show me what's out there... but not everything until I've done some exploring?"), "\"", new LineSeparator(),
+                new LineSeparator(),
+                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"Precisely.  More or less it's so you don't get lost.  But you may find some additional value to it.\"", new LineSeparator(),
+                new LineSeparator(),
+                new PlayerSymbol(), " YOU: \"", new If("SHMEBULOCK?", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "Is there anything else I need to know?"), "\"", new LineSeparator(),
+                new LineSeparator(),
+                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"It would certainly help to look before you leap!  Think carefully before entering a new location that looks like it could be dangerous.\""))))));
+        page10.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/mylee.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("10", page10);
-        
+
         Page page11 = new Page();
         page11.previousPageName = "5";
         page11.hideNextButton = true;
-        page11.story.contents.add("<player-symbol> YOU: <quote><variable mylee-prompt><quote>");
-        page11.story.contents.add("<br>");
-        page11.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>This is my elevator!  And I'm quite proud of it.  It's solar-powered and emits zero greenhouse gases.<quote>");
-        page11.story.contents.add("<br>");
-        page11.story.contents.add("<player-symbol> YOU: <quote><if condition=\"player=Shmebulock\" SHMEBULOCK?><if condition=\"player!=Shmebulock\" But I mean, what does it do?  Where does it go?><quote>");
-        page11.story.contents.add("<br>");
-        page11.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Beyond these elevator doors lies a magical world.  If you want to save <variable twin>, gain some experience out there and then come back.  If you bring me some <inventory Gold> I'll take you to the next level.  There are seven levels in all and Level 7 is where Big Chung hangs out.  But be careful!  Even though the first level is the easiest, a creature named Night Owl and a fierce Dragon both like <inventory Gold>.  If you remove any from their level they might come after you.  Slay that Dragon if you can and ask my friend Gianni for help with that Night Owl problem.  Oh and don't you dare try to fight Night Owl in a dark place.  He'll swoop down on you before you have a chance to defend yourself!<quote>");
-        page11.story.contents.add("<br>");
-        page11.story.contents.add("<player-symbol> YOU: <quote><if condition=\"player=Shmebulock\" SHMEBULOCK?><if condition=\"player!=Shmebulock\" So this is going to be dangerous?><quote>");
-        page11.story.contents.add("<br>");
-        page11.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Very!  But if you keep your wits about you then a <if condition=\"player=Shmebulock\" magical one><if condition=\"player!=Shmebulock\" clever kid> like yourself should do just fine.<quote>");
-        page11.story.contents.add("<second-page>");
-        page11.story.contents.add("<image mylee center /assets/images/mylee.jpg>");
+        page11.story.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of(new PlayerSymbol(), " YOU: \"", new Variable("mylee-prompt"), "\"", new LineSeparator(),
+                new LineSeparator(),
+                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"This is my elevator!  And I'm quite proud of it.  It's solar-powered and emits zero greenhouse gases.\"", new LineSeparator(),
+                new LineSeparator(),
+                new PlayerSymbol(), " YOU: \"", new If("SHMEBULOCK?", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "But I mean, what does it do?  Where does it go?"), "\"", new LineSeparator(),
+                new LineSeparator(),
+                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"Beyond these elevator doors lies a magical world.  If you want to save ", new Variable("twin"), ", gain some experience out there and then come back.  If you bring me some "))), new quest.node.InventoryItem("gold item", "Gold"), new Label("par2", new Texts(List.of(" I'll take you to the next level.  There are seven levels in all and Level 7 is where Big Chung hangs out.  But be careful!  Even though the first level is the easiest, a creature named Night Owl and a fierce Dragon both like "))), new quest.node.InventoryItem("gold item 2", "Map"), new Label("par3", new Texts(List.of(".  If you remove any from their level they might come after you.  Slay that Dragon if you can and ask my friend Gianni for help with that Night Owl problem.  Oh and don't you dare try to fight Night Owl in a dark place.  He'll swoop down on you before you have a chance to defend yourself!\"", new LineSeparator(),
+                new LineSeparator(),
+                new PlayerSymbol(), " YOU: \"", new If("SHMEBULOCK?", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "So this is going to be dangerous?"), "\"", new LineSeparator(),
+                new LineSeparator(),
+                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"Very!  But if you keep your wits about you then a ", new If("magical one", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "clever kid"), " like yourself should do just fine.\""))))));
+        page11.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/mylee.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("11", page11);
         
         Page page12 = new Page();
         page12.previousPageName = "5";
-        page12.story.contents.add("<player-symbol> YOU: <quote><variable mylee-prompt><quote>");
-        page12.story.contents.add("<br>");
-        page12.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Nothing else, huh.  I'll open the magic elevator doors for you.  Just march on out and start exploring the first level.  Remember: Don't die.  And... bring me back some <inventory Gold>!!!<quote>");
-        page12.story.contents.add("<br>");
-        page12.story.contents.add("Mylee flips the elevator switch and the doors open.  You walk out and find that you're no longer on the cloud...");
-        page12.story.contents.add("<second-page>");
-        page12.story.contents.add("<image mylee center /assets/images/mylee.jpg>");
+        page12.story.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of(new PlayerSymbol(), " YOU: \"", new Variable("mylee-prompt"), "\"", new LineSeparator(),
+                new LineSeparator(),
+                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"Nothing else, huh.  I'll open the magic elevator doors for you.  Just march on out and start exploring the first level.  Remember: Don't die.  And... bring me back some "))), new quest.node.InventoryItem("gold item", "Gold"), new Label("par2", new Texts(List.of("!!!\"", new LineSeparator(),
+                new LineSeparator(),
+                "Mylee flips the elevator switch and the doors open.  You walk out and find that you're no longer on the cloud..."))))));
+        page12.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/mylee.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("12", page12);
-
         */
+        
+        // TODO - Continue refactoring        
 
+
+        /*
         Act chapter1 = new Act();
         chapter1.firstSceneName = "Chapter";
         book.acts.put("Chapter 1", chapter1);
@@ -1251,7 +1261,7 @@ public class Application extends app.view.BaseView {
         noGoldSubpage.contents.add("<color 0+0+0>");
         noGoldSubpage.contents.add("You return to the elevator and what you see surprises you...");
         noGoldSubpage.contents.add("<br>");
-        noGoldSubpage.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Hey!  I'm trying to take a bath!  Off with you <variable player-mylee-nickname>!!!  And don't you come back until you have some <inventory Gold>!<quote>");
+        noGoldSubpage.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: \"Hey!  I'm trying to take a bath!  Off with you ", new Variable("player-mylee-nickname"), "!!!  And don't you come back until you have some <inventory Gold>!\"");
         noGoldSubpage.contents.add("<br>");
         noGoldSubpage.contents.add("So this elevator has a sink?  Does she live here?");
         noGoldSubpage.contents.add("<br>");
@@ -1271,9 +1281,9 @@ public class Application extends app.view.BaseView {
         dragonAttackSubpage.contents.add("<br>");
         dragonAttackSubpage.contents.add("However, Mylee does NOT look happy.");
         dragonAttackSubpage.contents.add("<br>");
-        dragonAttackSubpage.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Please tell me you took care of the Dragon before coming back here with that gold!!!<quote>");
+        dragonAttackSubpage.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: \"Please tell me you took care of the Dragon before coming back here with that gold!!!\"");
         dragonAttackSubpage.contents.add("<br>");
-        dragonAttackSubpage.contents.add("<player-symbol> YOU: <quote>Oh, right.  Yeah about that...<quote>");
+        dragonAttackSubpage.contents.add(new PlayerSymbol(), " YOU: \"Oh, right.  Yeah about that...\"");
         dragonAttackSubpage.contents.add("<br>");
         dragonAttackSubpage.contents.add("You turn towards the elevator doors where a loud banging sound is coming from the outside.  It seems that something wants in and it's going to break through.");
         dragonAttackSubpage.contents.add("<br></color");
@@ -1306,9 +1316,9 @@ public class Application extends app.view.BaseView {
         nightOwlAttackSubpage.contents.add("<br>");
         nightOwlAttackSubpage.contents.add("However, Mylee does NOT look happy.");
         nightOwlAttackSubpage.contents.add("<br>");
-        nightOwlAttackSubpage.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Please tell me you found a long-range weapon before coming back here with that gold!!!<quote>");
+        nightOwlAttackSubpage.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: \"Please tell me you found a long-range weapon before coming back here with that gold!!!\"");
         nightOwlAttackSubpage.contents.add("<br>");
-        nightOwlAttackSubpage.contents.add("<player-symbol> YOU: <quote>Oh, right.  Yeah I knew I was forgetting something...<quote>");
+        nightOwlAttackSubpage.contents.add(new PlayerSymbol(), " YOU: \"Oh, right.  Yeah I knew I was forgetting something...\"");
         nightOwlAttackSubpage.contents.add("<br>");
         nightOwlAttackSubpage.contents.add("You turn towards the elevator doors where a loud banging sound is coming from the outside.  It seems that something wants in and it's going to break through.");
         nightOwlAttackSubpage.contents.add("<br></color");
@@ -1336,11 +1346,11 @@ public class Application extends app.view.BaseView {
         nightOwlMinigameSubpage.contents.add("<br>");
         nightOwlMinigameSubpage.contents.add("However, Mylee does NOT look happy.");
         nightOwlMinigameSubpage.contents.add("<br>");
-        nightOwlMinigameSubpage.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Please tell me you found a long-range weapon before coming back here with that gold!!!<quote>");
+        nightOwlMinigameSubpage.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: \"Please tell me you found a long-range weapon before coming back here with that gold!!!\"");
         nightOwlMinigameSubpage.contents.add("<br>");
-        nightOwlMinigameSubpage.contents.add("<player-symbol> YOU: <quote>Of course!  Gianni gave me this rather impressive <inventory condition=\"player=Greyson\" Greyson's Great Bow><inventory condition=\"player=Zara\" Cat-apult><inventory condition=\"player=Shmebulock\" Faery Launcher>.<quote>");
+        nightOwlMinigameSubpage.contents.add(new PlayerSymbol(), " YOU: \"Of course!  Gianni gave me this rather impressive <inventory condition=\"player=Greyson\" Greyson's Great Bow><inventory condition=\"player=Zara\" Cat-apult><inventory condition=\"player=Shmebulock\" Faery Launcher>.\"");
         nightOwlMinigameSubpage.contents.add("<br>");
-        nightOwlMinigameSubpage.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Good because I can sense that my brother is coming down the stairwell.  You take care of the beast that's on the other side of those doors and I'll take care of Big Chung.<quote>");
+        nightOwlMinigameSubpage.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: \"Good because I can sense that my brother is coming down the stairwell.  You take care of the beast that's on the other side of those doors and I'll take care of Big Chung.\"");
         nightOwlMinigameSubpage.contents.add("<br>");
         nightOwlMinigameSubpage.contents.add("There are two things to worry about?  You turn towards the elevator doors where a loud banging sound is coming from the outside.  It seems that something wants in and it's going to break through unless you do something.");
         nightOwlMinigameSubpage.contents.add("<br>");
@@ -1368,7 +1378,7 @@ public class Application extends app.view.BaseView {
         nightOwlMinigamePage.story.contents.add("<if condition=\"variable minigame-display!=true\" WEAKNESSES: Long-range attacks>");
         nightOwlMinigamePage.story.contents.add("<br condition=\"variable minigame-display!=true\">");
         nightOwlMinigamePage.story.contents.add("<image condition=\"variable minigame-display!=true\" night-owl-sketch center /assets/images/night-owl-sketch.png>");
-        nightOwlMinigamePage.story.contents.add("<first-page><color 0+0+0>\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Remember the name of this boss.  If you fail to defeat it, you can cast its name as a spell to fight it again.<quote>");
+        nightOwlMinigamePage.story.contents.add("<first-page><color 0+0+0>\uD83D\uDC08\u200D\u2B1B MYLEE: \"Remember the name of this boss.  If you fail to defeat it, you can cast its name as a spell to fight it again.\"");
         nightOwlMinigamePage.story.contents.add("<br>");
         nightOwlMinigamePage.story.contents.add("You open the elevator doors and wave your weapon in the face of none other than Night Owl himself.  Night Owl sees immediately that you have a weapon worthy of battle and flies up into the sky to begin an aerial assault.");
         nightOwlMinigamePage.story.contents.add("<br>");
@@ -1476,20 +1486,20 @@ public class Application extends app.view.BaseView {
         backToElevatorPage.story.contents.add("<color 0+0+0>");
         backToElevatorPage.story.contents.add("Back in the elevator you find a panic-stricken Mylee.");
         backToElevatorPage.story.contents.add("<br>");
-        backToElevatorPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Quick!  We need to get out of here!<quote>");
+        backToElevatorPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: \"Quick!  We need to get out of here!\"");
         backToElevatorPage.story.contents.add("<br>");
-        backToElevatorPage.story.contents.add("<player-symbol> YOU: <quote>Why?  Is Big Chung coming after us?<quote>");
+        backToElevatorPage.story.contents.add(new PlayerSymbol(), " YOU: \"Why?  Is Big Chung coming after us?\"");
         backToElevatorPage.story.contents.add("<br>");
-        backToElevatorPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>No, but in order to distract him while you battled Night Owl I... may have lectured him on his weight.  And because I told him that he needs to go on a <i>light diet</i>, he's now busy devouring all light in the seven kingdoms!<quote>");
-        backToElevatorPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: he's now busy devouring all light in the seven kingdoms!<quote>");
+        backToElevatorPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: \"No, but in order to distract him while you battled Night Owl I... may have lectured him on his weight.  And because I told him that he needs to go on a <i>light diet</i>, he's now busy devouring all light in the seven kingdoms!\"");
+        backToElevatorPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: he's now busy devouring all light in the seven kingdoms!\"");
         backToElevatorPage.story.contents.add("<br>");
-        backToElevatorPage.story.contents.add("<player-symbol> YOU: <quote>So because he took you literally he now... eating <i>light</i>?<quote>");
+        backToElevatorPage.story.contents.add(new PlayerSymbol(), " YOU: \"So because he took you literally he now... eating <i>light</i>?\"");
         backToElevatorPage.story.contents.add("<br>");
-        backToElevatorPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Yes!  And at an alarming speed!<quote>");
+        backToElevatorPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: \"Yes!  And at an alarming speed!\"");
         backToElevatorPage.story.contents.add("<br>");
-        backToElevatorPage.story.contents.add("<player-symbol> YOU: <quote>What does that even mean?<quote>");
+        backToElevatorPage.story.contents.add(new PlayerSymbol(), " YOU: \"What does that even mean?\"");
         backToElevatorPage.story.contents.add("<br>");
-        backToElevatorPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>It means that my solar-powered elevator that we're both in is about to run out of energy!!!<quote>");
+        backToElevatorPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: \"It means that my solar-powered elevator that we're both in is about to run out of energy!!!\"");
         backToElevatorPage.story.contents.add("<br>");
         backToElevatorPage.story.contents.add("</color>");
         myleesElevator.pages.put("Back To Elevator", backToElevatorPage);
@@ -1514,11 +1524,11 @@ public class Application extends app.view.BaseView {
         giveMyleeHerDuePage.story.contents.add("<image mylee left /assets/images/mylee.jpg>");
         giveMyleeHerDuePage.story.contents.add("<first-page><subpage-display Scene Header><timer-stop lights-off><timer-stop lights-on><remove lights-out><overlay lights-out 0+0+0 false><send-to-front next-page><timer-start 0.75 lights-on>");
         giveMyleeHerDuePage.story.contents.add("<color 0+0+0>");
-        giveMyleeHerDuePage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Umm... aren't you forgetting to give me something?<quote>");
+        giveMyleeHerDuePage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: \"Umm... aren't you forgetting to give me something?\"");
         giveMyleeHerDuePage.story.contents.add("<br>");
-        giveMyleeHerDuePage.story.contents.add("<player-symbol> YOU: <quote>I thought we were in a hurry?<quote>");
+        giveMyleeHerDuePage.story.contents.add(new PlayerSymbol(), " YOU: \"I thought we were in a hurry?\"");
         giveMyleeHerDuePage.story.contents.add("<br>");
-        giveMyleeHerDuePage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>We are, but this elevator isn't going anywhere until you give me your gold!<quote>");
+        giveMyleeHerDuePage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: \"We are, but this elevator isn't going anywhere until you give me your gold!\"");
         giveMyleeHerDuePage.story.contents.add("<br>");
         giveMyleeHerDuePage.story.contents.add("<get-validated-input align=left action *Give Mylee Gold>");
         giveMyleeHerDuePage.story.contents.add("</color>");
@@ -1549,19 +1559,19 @@ public class Application extends app.view.BaseView {
         elevatorGoesUpPage.story.contents.add("<image mylee left /assets/images/mylee.jpg>");
         elevatorGoesUpPage.story.contents.add("<first-page><subpage-display Scene Header><play-sound /assets/sounds/elevator.wav true><timer-stop lights-off><timer-stop lights-on><remove lights-out><overlay lights-out 0+0+0 false><send-to-front next-page><timer-start 0.5 lights-on>");
         elevatorGoesUpPage.story.contents.add("<color 0+0+0>");
-        elevatorGoesUpPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Thank you!  Keep your human hands and feet inside the elevator at all times.  We're going up to the Second Kingdom!<quote>");
+        elevatorGoesUpPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: \"Thank you!  Keep your human hands and feet inside the elevator at all times.  We're going up to the Second Kingdom!\"");
         elevatorGoesUpPage.story.contents.add("<br>");
-        elevatorGoesUpPage.story.contents.add("<player-symbol> YOU: <quote>The Second Kingdom?  Is that where <variable twin> is?<quote>");
+        elevatorGoesUpPage.story.contents.add(new PlayerSymbol(), " YOU: \"The Second Kingdom?  Is that where ", new Variable("twin"), " is?\"");
         elevatorGoesUpPage.story.contents.add("<br>");
-        elevatorGoesUpPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Maybe.  We're going to have to check them all.<quote>");
+        elevatorGoesUpPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: \"Maybe.  We're going to have to check them all.\"");
         elevatorGoesUpPage.story.contents.add("<br>");
-        elevatorGoesUpPage.story.contents.add("<player-symbol> YOU: <quote>What's the Second Kingdom like?<quote>");
+        elevatorGoesUpPage.story.contents.add(new PlayerSymbol(), " YOU: \"What's the Second Kingdom like?\"");
         elevatorGoesUpPage.story.contents.add("<br>");
-        elevatorGoesUpPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Oh you know.  It's a bit more modern.  Cars.  Spaceships.  And the whole place is run by chickens.<quote>");
+        elevatorGoesUpPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: \"Oh you know.  It's a bit more modern.  Cars.  Spaceships.  And the whole place is run by chickens.\"");
         elevatorGoesUpPage.story.contents.add("<br>");
-        elevatorGoesUpPage.story.contents.add("<player-symbol> YOU: <quote>Chickens???<quote>");
+        elevatorGoesUpPage.story.contents.add(new PlayerSymbol(), " YOU: \"Chickens???\"");
         elevatorGoesUpPage.story.contents.add("<br>");
-        elevatorGoesUpPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Oh yes... tasty, tasty chickens!<quote>");
+        elevatorGoesUpPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: \"Oh yes... tasty, tasty chickens!\"");
         elevatorGoesUpPage.story.contents.add("</color>");
         myleesElevator.pages.put("Elevator Goes Up", elevatorGoesUpPage);
         
@@ -1585,19 +1595,19 @@ public class Application extends app.view.BaseView {
         getMeWhiteMeatChickenPage.story.contents.add("<image mylee left /assets/images/mylee.jpg>");
         getMeWhiteMeatChickenPage.story.contents.add("<first-page><subpage-display Scene Header><stop-sound><play-sound /assets/sounds/elevator-open.mp3 false><timer-stop lights-off><timer-stop lights-on><remove lights-out><overlay lights-out 0+0+0 false><send-to-front next-page><timer-start 0.25 lights-on>");
         getMeWhiteMeatChickenPage.story.contents.add("<color 0+0+0>");
-        getMeWhiteMeatChickenPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>And... we're here!  Get out!<quote>");
+        getMeWhiteMeatChickenPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: \"And... we're here!  Get out!\"");
         getMeWhiteMeatChickenPage.story.contents.add("<br>");
-        getMeWhiteMeatChickenPage.story.contents.add("<player-symbol> YOU: <quote>But what do I do?<quote>");
+        getMeWhiteMeatChickenPage.story.contents.add(new PlayerSymbol(), " YOU: \"But what do I do?\"");
         getMeWhiteMeatChickenPage.story.contents.add("<br>");
-        getMeWhiteMeatChickenPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Go looking for <variable twin>!<quote>");
+        getMeWhiteMeatChickenPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: \"Go looking for ", new Variable("twin"), "!\"");
         getMeWhiteMeatChickenPage.story.contents.add("<br>");
-        getMeWhiteMeatChickenPage.story.contents.add("<player-symbol> YOU: <quote>Anything I need to know first?<quote>");
+        getMeWhiteMeatChickenPage.story.contents.add(new PlayerSymbol(), " YOU: \"Anything I need to know first?\"");
         getMeWhiteMeatChickenPage.story.contents.add("<br>");
-        getMeWhiteMeatChickenPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>Of course!  First, thanks to the lack light, this elevator is about to die and go plummeting back down the elevator shaft!<quote>");
+        getMeWhiteMeatChickenPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: \"Of course!  First, thanks to the lack light, this elevator is about to die and go plummeting back down the elevator shaft!\"");
         getMeWhiteMeatChickenPage.story.contents.add("<br>");
-        getMeWhiteMeatChickenPage.story.contents.add("<player-symbol> YOU: <quote>Oh no!!!<quote>");
+        getMeWhiteMeatChickenPage.story.contents.add(new PlayerSymbol(), " YOU: \"Oh no!!!\"");
         getMeWhiteMeatChickenPage.story.contents.add("<br>");
-        getMeWhiteMeatChickenPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: <quote>But don't worry, you can find me again if you get help from a certain, fluffy friend.  And if you want my continued help... get me some white meat chicken!!!<quote>");
+        getMeWhiteMeatChickenPage.story.contents.add("\uD83D\uDC08\u200D\u2B1B MYLEE: \"But don't worry, you can find me again if you get help from a certain, fluffy friend.  And if you want my continued help... get me some white meat chicken!!!\"");
         getMeWhiteMeatChickenPage.story.contents.add("<br>");
         getMeWhiteMeatChickenPage.story.contents.add("<get-validated-input align=left action *Leave Elevator>");
         getMeWhiteMeatChickenPage.story.contents.add("</color>");
@@ -1923,7 +1933,7 @@ public class Application extends app.view.BaseView {
         openDoorPage.story.contents.add("<get-input password 14 true true true false Enter password here>");
         toadstoolCircle.pages.put("Open Door", openDoorPage);
         Story spokeRightPasswordSubpage = new Story();
-        spokeRightPasswordSubpage.contents.add("<play-sound /assets/sounds/magic.mp3 false><player-symbol> YOU: <quote><variable password><quote>");
+        spokeRightPasswordSubpage.contents.add("<play-sound /assets/sounds/magic.mp3 false><player-symbol> YOU: \"<variable password>\"");
         spokeRightPasswordSubpage.contents.add("<br>");
         spokeRightPasswordSubpage.contents.add("A purple mist rises off the ground and the door opens.");
         spokeRightPasswordSubpage.contents.add("<br>");
@@ -1932,7 +1942,7 @@ public class Application extends app.view.BaseView {
         spokeRightPasswordSubpage.contents.add("</color>");
         openDoorPage.subpages.put("INPUT password=SHMEBULOCK", spokeRightPasswordSubpage);
         Story spokeWrongPasswordSubpage = new Story();
-        spokeWrongPasswordSubpage.contents.add("<player-symbol> YOU: <quote><mask * password><quote>");
+        spokeWrongPasswordSubpage.contents.add(new PlayerSymbol(), " YOU: \"<mask * password>\"");
         spokeWrongPasswordSubpage.contents.add("<br>");
         spokeWrongPasswordSubpage.contents.add("You attempt to speak the password but no sounds come out of your mouth.");
         spokeWrongPasswordSubpage.contents.add("<br>");
@@ -1991,7 +2001,7 @@ public class Application extends app.view.BaseView {
         speakNamePage.story.contents.add("<get-input name 12 true true true false Enter name here>");
         toadstoolCircle.pages.put("Speak Name", speakNamePage);
         Story spokeRightNameSubpage = new Story();
-        spokeRightNameSubpage.contents.add("<play-sound /assets/sounds/magic.mp3 false><player-symbol> YOU: <quote><variable name><quote>");
+        spokeRightNameSubpage.contents.add("<play-sound /assets/sounds/magic.mp3 false><player-symbol> YOU: \"<variable name>\"");
         spokeRightNameSubpage.contents.add("<br>");
         spokeRightNameSubpage.contents.add("A purple mist rises off the ground... perhaps some magical creature is manifesting?");
         spokeRightNameSubpage.contents.add("<br>");
@@ -2000,7 +2010,7 @@ public class Application extends app.view.BaseView {
         spokeRightNameSubpage.contents.add("</color>");
         speakNamePage.subpages.put("INPUT name=SHMEBULOCK", spokeRightNameSubpage);
         Story spokeWrongNameSubpage = new Story();
-        spokeWrongNameSubpage.contents.add("<player-symbol> YOU: <quote><variable name><quote>");
+        spokeWrongNameSubpage.contents.add(new PlayerSymbol(), " YOU: \"<variable name>\"");
         spokeWrongNameSubpage.contents.add("<br>");
         spokeWrongNameSubpage.contents.add("You wait... and wait some more.  But nothing happens!");
         spokeWrongNameSubpage.contents.add("<br>");
@@ -2032,7 +2042,7 @@ public class Application extends app.view.BaseView {
         shmebulockPage.story.contents.add("          (__)`(__)");
         shmebulockPage.story.contents.add("<set-magic-text false>");
         shmebulockPage.story.contents.add("<first-page><color 184+115+51>");
-        shmebulockPage.story.contents.add("\uD83C\uDF85 MAGIC GNOME: <quote>SHMEBULOCK!  SHMEBULOCK... SHMEBULOCK.  SHMEBULOCK?  SHMEBULOCK, SHMEBULOCK.  SHME... BU... LOCK!<quote>");
+        shmebulockPage.story.contents.add("\uD83C\uDF85 MAGIC GNOME: \"SHMEBULOCK!  SHMEBULOCK... SHMEBULOCK.  SHMEBULOCK?  SHMEBULOCK, SHMEBULOCK.  SHME... BU... LOCK!\"");
         shmebulockPage.story.contents.add("<br>");
         shmebulockPage.story.contents.add("<subpage-display condition=\"inventory-has Ring of Taming=true\" Glow Ring Of Taming>");
         shmebulockPage.story.contents.add("<subpage-display condition=\"inventory-has Ring of Taming!=true\" Gain Ring Of Taming>");
@@ -2293,7 +2303,7 @@ public class Application extends app.view.BaseView {
         skiLodgePage.story.contents.add("<br>");
         skiLodgePage.story.contents.add("The fluffy cat sets aside his noble spanish guitar and speaks...");
         skiLodgePage.story.contents.add("<br>");
-        skiLodgePage.story.contents.add("\uD83D\uDE38 PROFESSOR FLUFF: <quote>I challenge you to a riddle!<quote></color>");
+        skiLodgePage.story.contents.add("\uD83D\uDE38 PROFESSOR FLUFF: \"I challenge you to a riddle!\"</color>");
         skiLodgePage.story.contents.add("<br>");
         skiLodgePage.story.contents.add("<get-validated-input condition=\"inventory-has Ring of Taming!=true\" action !Tame Fluff+Accept Challenge><get-validated-input condition=\"inventory-has Ring of Taming=true\" action Tame Fluff+Accept Challenge>");
         skiLodgePage.story.contents.add("<subpage-display Second Page>");
@@ -2397,19 +2407,19 @@ public class Application extends app.view.BaseView {
         acceptChallengePage.subpages.put("Second Page", skiLodgeSecondPageSubpage);
         
         Story nonMagicalRiddleSubpage = new Story();
-        nonMagicalRiddleSubpage.contents.add("\uD83D\uDE38 PROFESSOR FLUFF: <quote>Answer me this, and a magical name I will give to you.<quote>");
+        nonMagicalRiddleSubpage.contents.add("\uD83D\uDE38 PROFESSOR FLUFF: \"Answer me this, and a magical name I will give to you.\"");
         nonMagicalRiddleSubpage.contents.add("<br>");
-        nonMagicalRiddleSubpage.contents.add("<player-symbol> YOU: <quote>...<quote>");
+        nonMagicalRiddleSubpage.contents.add(new PlayerSymbol(), " YOU: \"...\"");
         nonMagicalRiddleSubpage.contents.add("<br>");
-        nonMagicalRiddleSubpage.contents.add("\uD83D\uDE38 PROFESSOR FLUFF: <quote><i>What is blue... and is also the sky?</i><quote>");
+        nonMagicalRiddleSubpage.contents.add("\uD83D\uDE38 PROFESSOR FLUFF: \"<i>What is blue... and is also the sky?</i>\"");
         acceptChallengePage.subpages.put("Non-Magical Riddle", nonMagicalRiddleSubpage);
         
         Story magicalRiddleSubpage = new Story();
-        magicalRiddleSubpage.contents.add("\uD83D\uDE38 PROFESSOR FLUFF: <quote>Answer me this, and a great secret about this world I will bestow upon you.  And this great secret... shall lead to an even greater treasure!<quote>");
+        magicalRiddleSubpage.contents.add("\uD83D\uDE38 PROFESSOR FLUFF: \"Answer me this, and a great secret about this world I will bestow upon you.  And this great secret... shall lead to an even greater treasure!\"");
         magicalRiddleSubpage.contents.add("<br>");
-        magicalRiddleSubpage.contents.add("<player-symbol> YOU: <quote>...<quote>");
+        magicalRiddleSubpage.contents.add(new PlayerSymbol(), " YOU: \"...\"");
         magicalRiddleSubpage.contents.add("<br>");
-        magicalRiddleSubpage.contents.add("\uD83D\uDE38 PROFESSOR FLUFF: <quote><i>This thing all things devours: Birds, beasts, trees, flowers; Gnaws iron, bites steel; Grinds hard stones to meal; Slays king, ruins town, And beats high mountain down.</i><quote>");
+        magicalRiddleSubpage.contents.add("\uD83D\uDE38 PROFESSOR FLUFF: \"<i>This thing all things devours: Birds, beasts, trees, flowers; Gnaws iron, bites steel; Grinds hard stones to meal; Slays king, ruins town, And beats high mountain down.</i>\"");
         acceptChallengePage.subpages.put("Magical Riddle", magicalRiddleSubpage);
         
         Story theSkyAnswerSubpage = new Story();
@@ -2435,40 +2445,40 @@ public class Application extends app.view.BaseView {
         wrongMagicalAnswerSubpage.contents.add("<subpage-display Wrong Magical Answer>");
         acceptChallengePage.subpages.put("INPUT magical-answer", wrongMagicalAnswerSubpage);
         wrongMagicalAnswerSubpage = new Story();
-        wrongMagicalAnswerSubpage.contents.add("<player-symbol> YOU: <quote><variable condition=\"inventory-has Ancient Spell=true\" magical-answer><mask condition=\"inventory-has Ancient Spell!=true\" * magical-answer><quote>");
+        wrongMagicalAnswerSubpage.contents.add(new PlayerSymbol(), " YOU: \"<variable condition=\"inventory-has Ancient Spell=true\" magical-answer><mask condition=\"inventory-has Ancient Spell!=true\" * magical-answer>\"");
         wrongMagicalAnswerSubpage.contents.add("<br>");
-        wrongMagicalAnswerSubpage.contents.add("\uD83D\uDE38 PROFESSOR FLUFF: <quote>Aha!  It appears that I have bested you!  That answer is INCORRECT.  No one is as clever as I!<quote>");
+        wrongMagicalAnswerSubpage.contents.add("\uD83D\uDE38 PROFESSOR FLUFF: \"Aha!  It appears that I have bested you!  That answer is INCORRECT.  No one is as clever as I!\"");
         acceptChallengePage.subpages.put("Wrong Magical Answer", wrongMagicalAnswerSubpage);
         wrongAnswerSubpage = new Story();
         wrongAnswerSubpage.contents.add("<br>");
-        wrongAnswerSubpage.contents.add("<player-symbol> YOU: <quote><variable answer><quote>");
+        wrongAnswerSubpage.contents.add(new PlayerSymbol(), " YOU: \"<variable answer>\"");
         wrongAnswerSubpage.contents.add("<br>");
-        wrongAnswerSubpage.contents.add("\uD83D\uDE38 PROFESSOR FLUFF: <quote>Aha!  It appears that I have bested you!  That answer is INCORRECT.  No one is as clever as I!<quote>");
+        wrongAnswerSubpage.contents.add("\uD83D\uDE38 PROFESSOR FLUFF: \"Aha!  It appears that I have bested you!  That answer is INCORRECT.  No one is as clever as I!\"");
         acceptChallengePage.subpages.put("Wrong Answer", wrongAnswerSubpage);
         Story correctAnswerSubpage = new Story();
         correctAnswerSubpage.contents.add("<br>");
-        correctAnswerSubpage.contents.add("<play-sound /assets/sounds/fluff.wav false><player-symbol> YOU: <quote><variable answer><quote>");
+        correctAnswerSubpage.contents.add("<play-sound /assets/sounds/fluff.wav false><player-symbol> YOU: \"<variable answer>\"");
         correctAnswerSubpage.contents.add("<br>");
-        correctAnswerSubpage.contents.add("\uD83D\uDE38 PROFESSOR FLUFF: <quote>Yes!  That is most correct!  Alas, you have bested me... and that was my finest riddle!  Very well then.  A deal is a deal.  The magical name you seek is... SHMEBULOCK.<quote>");
+        correctAnswerSubpage.contents.add("\uD83D\uDE38 PROFESSOR FLUFF: \"Yes!  That is most correct!  Alas, you have bested me... and that was my finest riddle!  Very well then.  A deal is a deal.  The magical name you seek is... SHMEBULOCK.\"");
         acceptChallengePage.subpages.put("Correct Answer", correctAnswerSubpage);
 
         // TODO - Need to echo back the answer, but for now there's not enough room.  This could be refactored to be multiple pages.
         Page correctMagicalAnswerPage = new Page();
         correctMagicalAnswerPage.previousPageName = "Enter Ski Lodge";
         correctMagicalAnswerPage.story.contents.add("<first-page><color 0+0+0><play-sound /assets/sounds/fluff.wav false>");
-        correctMagicalAnswerPage.story.contents.add("\uD83D\uDE38 PROFESSOR FLUFF: <quote>Yes!  That is most correct!  Alas, you have bested me... though that perhaps was <i>not</i> my finest riddle!  Very well then.  A deal is a deal.");
+        correctMagicalAnswerPage.story.contents.add("\uD83D\uDE38 PROFESSOR FLUFF: \"Yes!  That is most correct!  Alas, you have bested me... though that perhaps was <i>not</i> my finest riddle!  Very well then.  A deal is a deal.");
         correctMagicalAnswerPage.story.contents.add("<br>");
         correctMagicalAnswerPage.story.contents.add("You see, this world is a very interesting place.  Very interesting indeed.  Time exists separately in seven levels.  Each level is in fact the same level as those above and below it... but... they exist in a different time.  Mylee knows this.  That's why she lives in an elevator along the outside of this world... so she can travel between different times and never age.");
         correctMagicalAnswerPage.story.contents.add("<br>");
-        correctMagicalAnswerPage.story.contents.add("And therein lies the secret... Mylee's brother also knows this!  But he does not travel through the elevator.  He travels... through <i>the stairwell</i>.  What is this <i>the stairwell</i> you ask?  It is the seemingly vacant space that exists on either side of the elevator.  Anyone can access it.  The trick is simply to face it while holding a <inventory Golden Bunny>, cast the spell 'DOWN THE RABBIT HOLE' (requires 25MP), and a doorway will appear.<quote>");
+        correctMagicalAnswerPage.story.contents.add("And therein lies the secret... Mylee's brother also knows this!  But he does not travel through the elevator.  He travels... through <i>the stairwell</i>.  What is this <i>the stairwell</i> you ask?  It is the seemingly vacant space that exists on either side of the elevator.  Anyone can access it.  The trick is simply to face it while holding a <inventory Golden Bunny>, cast the spell 'DOWN THE RABBIT HOLE' (requires 25MP), and a doorway will appear.\"");
         correctMagicalAnswerPage.story.contents.add("<br>");
-        correctMagicalAnswerPage.story.contents.add("<player-symbol> YOU: <quote>A <inventory Golden Bunny>?  So does that mean Big Chung has a <inventory Golden Bunny>?<quote>");
+        correctMagicalAnswerPage.story.contents.add(new PlayerSymbol(), " YOU: \"A <inventory Golden Bunny>?  So does that mean Big Chung has a <inventory Golden Bunny>?\"");
         correctMagicalAnswerPage.story.contents.add("<br>");
-        correctMagicalAnswerPage.story.contents.add("\uD83D\uDE38 PROFESSOR FLUFF: <quote>No... not exactly.  Though he has certainly eaten more than his fair share of those cute bunnies and thus wields their powerful magic.<quote>");
+        correctMagicalAnswerPage.story.contents.add("\uD83D\uDE38 PROFESSOR FLUFF: \"No... not exactly.  Though he has certainly eaten more than his fair share of those cute bunnies and thus wields their powerful magic.\"");
         correctMagicalAnswerPage.story.contents.add("<br>");
-        correctMagicalAnswerPage.story.contents.add("<player-symbol> YOU: How sad!");
+        correctMagicalAnswerPage.story.contents.add(new PlayerSymbol(), " YOU: How sad!");
         correctMagicalAnswerPage.story.contents.add("<br>");
-        correctMagicalAnswerPage.story.contents.add("\uD83D\uDE38 PROFESSOR FLUFF: <quote>Indeed!<quote></color>");
+        correctMagicalAnswerPage.story.contents.add("\uD83D\uDE38 PROFESSOR FLUFF: \"Indeed!\"</color>");
         correctMagicalAnswerPage.story.contents.add("<second-page>");
         correctMagicalAnswerPage.story.contents.add("<image fluff2 center /assets/images/fluff2.jpg>");
         mountFluff.pages.put("Correct Magical Answer", correctMagicalAnswerPage);
@@ -3149,6 +3159,7 @@ public class Application extends app.view.BaseView {
         mainPage.story.contents.add("TODO");
         mainPage.story.contents.add("<subpage-display Navigation Footer>");
         pickleball.pages.put("main", mainPage);
+        */
         
         // TODO - Review vector images of car profiles (ie, https://pixabay.com/vectors/automobile-car-gs-1300464/).
         // Add a cropped image of a chicken over the car to make it look like the chicken is driving (ie, https://pixabay.com/vectors/chicken-poultry-hen-barn-farm-40898/).

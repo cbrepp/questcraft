@@ -7,6 +7,7 @@ import app.FontStyle;
 import app.HorizontalAlignment;
 import app.Layout;
 import app.RelativeCoordinates;
+import app.TextDecoration;
 import app.VerticalAlignment;
 import static app.controller.BaseController.logger;
 import app.node.Label;
@@ -28,12 +29,13 @@ public class HighScores extends app.view.BaseView {
     
     public HighScores(String name) {
         super(name);
-        this.backgroundColor = new Color(255, 255, 255);
+        this.backgroundColor = new Color(255, 255, 255, 1.0);
         this.emojis.add("\uD83C\uDFC6"); // "trophy" Unicode emoji
-        this.scoreLabel = new Label("high scores label");
-        this.scoreLabel.pixelSize = 16.0;
-        this.scoreLabel.textFont = Font.ROBOTO_MONO;
-        this.scoreLabel.textStyle = FontStyle.BOLD;
+        TextDecoration decoration = new TextDecoration();
+        decoration.pixelSize = 16.0;
+        decoration.font = Font.ROBOTO_MONO;
+        decoration.style = FontStyle.BOLD;
+        this.scoreLabel = new Label("high scores label", null, decoration);
     }
     
     @Override
@@ -62,7 +64,7 @@ public class HighScores extends app.view.BaseView {
         }
         text += "\n\nYour score: " + Quest.quest.getPlayerXP();
         
-        this.scoreLabel.text = text;
+        this.scoreLabel.texts.get(0).text = text;
         
         if (this.scoreLabel.getBounds() == null) {
             this.appController.addNode(this.name, this.name, scoreLabel, new Layout(new RelativeCoordinates(0.05, 0.05), HorizontalAlignment.LEFT, VerticalAlignment.TOP));

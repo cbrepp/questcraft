@@ -31,7 +31,7 @@ public class MonsterShooterControl extends QuestControl implements Animation, Ev
     public static Double ANIMATION_DELAY = 0.1;
     public static String BACKGROUND_NAME = "background";
     public static Double COLLISION_EXPIRATION = 2.0;
-    public static Color COLOR_RED = new Color(255, 0, 0);
+    public static Color COLOR_RED = new Color(255, 0, 0, 1.0);
     public static String CONTINUE_BUTTON_NAME = "continue control";
     public static String DIFFICULTY_EASY = "easy";
     public static String DIFFICULTY_NORMAL = "normal";

@@ -32,7 +32,7 @@ public class OverlayControl extends QuestControl {
         int red = Integer.parseInt(colorParts[0]);
         int green = Integer.parseInt(colorParts[1]);
         int blue = Integer.parseInt(colorParts[2]);
-        Color color = new Color(red, green, blue);
+        Color color = new Color(red, green, blue, 1.0);
         
         // TODO - Support positional overlays
         /*

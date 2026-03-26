@@ -8,6 +8,7 @@ import app.node.Separator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+import quest.Condition;
 import quest.control_deprecated.BaseQuestControl;
 import quest.view.Quest;
 
@@ -26,6 +27,11 @@ public class Scribe extends BaseQuestControl {
     
     public Scribe(List nodes) {
         this.nodes = nodes;
+    }
+    
+    public Scribe(List nodes, Condition condition) {
+        this(nodes);
+        this.condition = condition;
     }
 
     public void init() {

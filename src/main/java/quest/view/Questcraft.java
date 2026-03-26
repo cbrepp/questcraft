@@ -171,7 +171,7 @@ public class Questcraft extends app.view.BaseView {
     public Questcraft(String name) {
         super(name);
         this.addTextArea = false;
-        this.backgroundColor = new Color(255, 255, 255);
+        this.backgroundColor = new Color(255, 255, 255, 1.0);
         this.backgroundImage = "/assets/images/book.png";
         Quest.quest = null;
         this.craftingTable = null;

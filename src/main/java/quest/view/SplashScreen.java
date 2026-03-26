@@ -2,7 +2,6 @@ package quest.view;
 
 import app.controller.BaseController;
 import app.Color;
-import app.FontStyle;
 
 /**
  *
@@ -22,7 +21,7 @@ public class SplashScreen extends app.view.BaseView {
     public void onLoad(BaseController appController) {
         System.out.println("SplashScreen: onLoad");
         this.appController = appController;
-        Color black = new Color(0, 0, 0);
+        Color black = new Color(0, 0, 0, 1.0);
         //appController.displayText(this.name, "Wayne Chung Enterprises", 7, 2, black, FontStyle.BOLD);
         //appController.displayText(this.name, "presents", 9, 9, black, FontStyle.BOLD);
         this.appController.playSound("/assets/sounds/wayne-chung.wav", false);
