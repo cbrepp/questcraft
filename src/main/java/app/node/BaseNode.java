@@ -1,7 +1,8 @@
 package app.node;
 
 import app.*;
-import static app.controller.BaseController.NODE_PUBLISHED_EVENT;
+import app.color.RGBColor;
+import app.controller.BaseController;
 import static app.controller.BaseController.logger;
 import app.node.effect.BaseEffect;
 import java.io.Serializable;
@@ -29,10 +30,12 @@ public abstract class BaseNode implements EventListener, Serializable {
         return this.bounds;
     }
     
+    public abstract RGBColor getColor();
+    
     @Override
     public void onEvent(String eventName, Object eventValue) {
         logger.log(Level.INFO, "Entered: eventName={0}, eventValue={1}", new Object[]{eventName, eventValue});
-        if (eventName.equals(NODE_PUBLISHED_EVENT)) {
+        if (eventName.equals(BaseController.NODE_PUBLISHED_EVENT)) {
             RelativeBounds bounds = (RelativeBounds) eventValue;
             this.bounds = bounds;
         }

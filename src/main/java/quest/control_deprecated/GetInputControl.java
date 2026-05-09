@@ -1,7 +1,7 @@
 
 package quest.control_deprecated;
 
-import app.Color;
+import app.color.Color;
 import app.EventListener;
 import app.FontStyle;
 import app.Layout;

@@ -2,7 +2,7 @@ package quest.view;
 
 import quest.control_deprecated.BaseQuestControl;
 import app.controller.BaseController;
-import app.Color;
+import app.color.Color;
 import app.Font;
 import app.FontStyle;
 import app.HorizontalAlignment;
@@ -262,7 +262,8 @@ public class Quest extends app.view.BaseView {
             }
             appController.setTimer(LOADING_COMPLETE, 3, this);
             if (this.book.preloadEmojisDuringAnimation) {
-                this.appController.loadEmojiData();
+                // TODO - This isn't a thing
+                //this.appController.loadEmojiData();
             }
         }
         

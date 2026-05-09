@@ -1,6 +1,7 @@
 package app.node;
 
 import app.*;
+import app.color.RGBColor;
 import static app.controller.BaseController.logger;
 import app.node.effect.BaseEffect;
 import java.util.ArrayList;
@@ -15,8 +16,8 @@ import java.util.logging.Level;
  */
 public class ButtonGroup extends BaseNode implements BaseCompositeNode {
     
-    public Color backgroundColor; // Default (null) is system default
-    public Color buttonBackgroundColor; // Default (null) is system default
+    public RGBColor backgroundColor; // Default (null) is system default
+    public RGBColor buttonBackgroundColor; // Default (null) is system default
     public Map<Object, List<BaseEffect>> effectsButtons;
     public EventListener eventListener;
     public Boolean isEnabled = true;
@@ -26,7 +27,7 @@ public class ButtonGroup extends BaseNode implements BaseCompositeNode {
     public Double pixelSize; // Default is app controller's default pixel size
     public Integer spacerPixels = 10; // Default is 10 pixels separating the buttons horizontally and vertically
     public List<Object> text; // toString() will be invoked on each object to derive text
-    public Color textColor; // Default (null) is either black or white depending on which color would best offset the background
+    public RGBColor textColor; // Default (null) is either black or white depending on which color would best offset the background
     public String textFont; // Default is the app controller's default font
     
     public ButtonGroup (String name) {
@@ -40,6 +41,11 @@ public class ButtonGroup extends BaseNode implements BaseCompositeNode {
     public ButtonGroup (String name, List<Object> text) {
         this(name);
         this.text = text;
+    }
+    
+    @Override
+    public RGBColor getColor() {
+        return this.backgroundColor;
     }
     
     @Override

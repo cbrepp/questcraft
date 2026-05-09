@@ -1,7 +1,7 @@
 package quest.view;
 
 import app.controller.BaseController;
-import app.Color;
+import app.color.Color;
 
 /**
  *

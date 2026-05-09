@@ -1,36 +1,56 @@
 package app.view;
 
-import app.Color;
 import app.EventListener;
+import app.color.RGBColor;
 import app.controller.BaseController;
+import static app.controller.BaseController.logger;
+import app.node.Pane;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  *
  * @author repp
  */
-public class BaseView implements EventListener {
+public class BaseView extends Pane implements EventListener {
     
     public Boolean addTextArea;
-    public Color backgroundColor;
     public String backgroundImage;
     public String className;
     public List<String> emojis;
     public String iconFileName;
     public Boolean isSplash;
-    public String name;
     public int timeoutSeconds;
     public LinkedHashMap<String, List<BaseView>> eventListenerMap;
     
     public BaseView(String name) {
+        super(name);
         this.addTextArea = true;
+        this.borderWidth = 0;
         this.emojis = new ArrayList();
         this.eventListenerMap = new LinkedHashMap<>();
         this.isSplash = false;
-        this.name = name;
         this.timeoutSeconds = 0;
+    }
+    
+    @Override
+    public RGBColor getColor() {
+        RGBColor backgroundColor = this.backgroundColor;
+        if (backgroundColor == null) {
+            return backgroundColor;
+        }
+        if (!backgroundColor.isClosed()) {
+            logger.log(Level.WARNING, "Background color can not be open!  color={0}", new Object[]{backgroundColor});
+            return null;
+        }
+        return backgroundColor;
+    }
+    
+    @Override
+    public void onEvent(String eventName, Object eventValue) {
+        System.out.println("ApplicationView: onEvent: Unimplemented: eventName=" + eventName + ", eventValue=" + eventValue);
     }
     
     public void addListener(String eventName, BaseView listener) {
@@ -45,11 +65,6 @@ public class BaseView implements EventListener {
     
     public void onDisplay(BaseController appController) {
         System.out.println("ApplicationView: onDisplay: Unimplemented");
-    }
-    
-    @Override
-    public void onEvent(String eventName, Object eventValue) {
-        System.out.println("ApplicationView: onEvent: Unimplemented: eventName=" + eventName + ", eventValue=" + eventValue);
     }
     
     public void onLoad(BaseController appController) {

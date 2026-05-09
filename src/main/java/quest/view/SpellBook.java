@@ -1,8 +1,7 @@
 package quest.view;
 
 import app.controller.BaseController;
-import app.Color;
-import app.Font;
+import app.color.Color;
 import app.FontStyle;
 import app.HorizontalAlignment;
 import app.Icon;
@@ -10,7 +9,8 @@ import app.Layout;
 import app.RelativeCoordinates;
 import app.TextDecoration;
 import app.VerticalAlignment;
-import static app.controller.BaseController.DEFAULT_PIXEL_SIZE;
+import app.color.OffsetColor;
+import app.color.RGBColor;
 import static app.controller.BaseController.logger;
 import app.dialog.Alert;
 import app.node.InputField;
@@ -33,7 +33,7 @@ public class SpellBook extends app.view.BaseView {
     
     public SpellBook(String name) {
         super(name);
-        this.backgroundColor = new Color(0, 0, 0, 1.0);
+        this.backgroundColor = Color.BLACK;
         this.backgroundImage = "/assets/images/spell-book.jpg";
         this.emojis.add(EMOJI);
     }
@@ -109,13 +109,13 @@ public class SpellBook extends app.view.BaseView {
     }
     
     public void render() {
-        // Back up the current default text color
-        app.Color defaultTextColor = this.appController.getDefaultFontColor();
-        this.appController.setDefaultFontColor(null);
-        
+        RGBColor magicColor = new OffsetColor(Color.MODERN_MAGENTA, Color.DARKEST_MAGENTA);
+        RGBColor fadedMagicColor = new OffsetColor(Color.MODERN_MAGENTA, Color.DARKEST_MAGENTA, 0.75);
+        RGBColor magicAccentColor = new OffsetColor(Color.NEON_MAGENTA, Color.DARK_MAGENTA);
+
         // Prompt for spells in the upper left-hand corner
         InputField field = new InputField(CAST_SPELL);
-        field.buttonBackgroundColor = Color.DARKEST_MAGENTA;
+        field.buttonBackgroundColor = magicColor;
         field.buttonBorderWidth = 1;
         field.buttonText = "Cast Spell";
         field.eventListener = this;
@@ -124,7 +124,7 @@ public class SpellBook extends app.view.BaseView {
         field.label = "Enter spell here";
         field.length = 50;
         field.fieldDisplayLength = 25;
-        field.buttonEffects = List.of(new Glow(Color.DARK_MAGENTA));
+        field.buttonEffects = List.of(new Glow(magicAccentColor));
         this.appController.addNode(this.name, this.name, field, new Layout(new RelativeCoordinates(0.05, 0.05), HorizontalAlignment.LEFT, VerticalAlignment.TOP));
         
         // Display learned spells on the far right
@@ -142,13 +142,10 @@ public class SpellBook extends app.view.BaseView {
         TextDecoration decoration = new TextDecoration();
         decoration.style = FontStyle.BOLD;
         Label learnedSpellsLabel = new Label("learned spells", learnedSpellsText, decoration);
-        learnedSpellsLabel.backgroundColor = new Color(Color.DARKEST_MAGENTA.red, Color.DARKEST_MAGENTA.green, Color.DARKEST_MAGENTA.blue, 0.75);
-        learnedSpellsLabel.borderColor = Color.DARKEST_MAGENTA;
+        learnedSpellsLabel.backgroundColor = fadedMagicColor;
+        learnedSpellsLabel.borderColor = magicAccentColor;
         learnedSpellsLabel.borderWidth = 1;
         this.appController.addNode(this.name, this.name, learnedSpellsLabel, new Layout(new RelativeCoordinates(0.95, 0.05), HorizontalAlignment.RIGHT, VerticalAlignment.TOP));
-        
-        // Restore the current default text color
-        this.appController.setDefaultFontColor(defaultTextColor);
     }
 
 }

@@ -1,6 +1,7 @@
 package app.node;
 
 import app.*;
+import app.color.RGBColor;
 import static app.controller.BaseController.logger;
 import app.node.effect.BaseEffect;
 import java.util.ArrayList;
@@ -13,13 +14,13 @@ import java.util.logging.Level;
  */
 public class InputField extends BaseNode implements BaseCompositeNode {
     
-    public Color backgroundColor; // Default (null) is system default
+    public RGBColor backgroundColor; // Default (null) is system default
     public List<BaseEffect> buttonEffects;
-    public Color buttonBackgroundColor; // Default (null) is typically light gray
+    public RGBColor buttonBackgroundColor; // Default (null) is typically light gray
     public Integer buttonBorderWidth; // Default (null) is no borders
     public Object buttonText;
     public EventListener eventListener;
-    public Color fieldBackgroundColor; // Default (null) is transparent
+    public RGBColor fieldBackgroundColor; // Default (null) is transparent
     public Integer fieldBorderWidth = 1; // Default is a 1 pixel border
     public Integer fieldDisplayLength;
     public List<BaseEffect> fieldEffects;
@@ -34,11 +35,16 @@ public class InputField extends BaseNode implements BaseCompositeNode {
     public Integer length; // Default (null) is system default
     public Double pixelSize; // Default is app controller's default pixel size
     public Integer spacerPixels = 10; // Default is 10 pixels separating the buttons horizontally and vertically
-    public Color textColor; // Default (null) is either black or white depending on which color would best offset the background
+    public RGBColor textColor; // Default (null) is either black or white depending on which color would best offset the background
     public String textFont; // Default is the app controller's default font   
 
     public InputField (String name) {
         super(name);
+    }
+    
+    @Override
+    public RGBColor getColor() {
+        return this.backgroundColor;
     }
     
     @Override

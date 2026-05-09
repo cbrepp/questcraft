@@ -1,7 +1,7 @@
 package quest.view;
 
 import app.controller.BaseController;
-import app.Color;
+import app.color.Color;
 import app.EventListener;
 import app.HorizontalAlignment;
 import app.Layout;
@@ -100,7 +100,7 @@ public class SceneMap extends app.view.BaseView implements EventListener {
         }
         
         // Populate the grid cells using the sorted cells
-        Grid gridControl = new Grid(this.name);
+        Grid gridControl = new Grid("scene map grid");
         gridControl.borderPadding = 0;
         gridControl.columns = mapWidth + 1;
         gridControl.listener = this;
@@ -173,7 +173,8 @@ public class SceneMap extends app.view.BaseView implements EventListener {
             }
         }
         
-        this.appController.displayGrid(this.name, gridControl, new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
+        this.appController.addNode(this.name, this.name, gridControl, new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
+        //this.appController.displayGrid(this.name, gridControl, new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
     }
 
 }

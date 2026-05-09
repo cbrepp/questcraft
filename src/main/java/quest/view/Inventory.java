@@ -1,16 +1,18 @@
 package quest.view;
 
 import app.controller.BaseController;
-import app.Color;
+import app.color.Color;
 import app.EventListener;
 import app.HorizontalAlignment;
 import app.Icon;
 import app.Layout;
+import app.RelativeCoordinates;
 import app.TextDecoration;
 import app.VerticalAlignment;
 import app.dialog.Alert;
 import app.node.Grid;
 import app.node.Group;
+import app.node.Image;
 import app.node.Label;
 import app.node.Link;
 import app.node.VerticalGroup;
@@ -116,7 +118,7 @@ public class Inventory extends app.view.BaseView implements EventListener {
             activateInventory = Boolean.valueOf(this.quest.variables.get("activate-inventory").toLowerCase());
         }
         
-        Grid gridControl = new Grid(this.name);
+        Grid gridControl = new Grid("inventory grid");
         gridControl.borderPadding = 5;
         gridControl.cornerRadii = 10; // Rounded corners
         gridControl.columns = 0;
@@ -162,7 +164,8 @@ public class Inventory extends app.view.BaseView implements EventListener {
             gridControl.cells.add(itemGroup);
         }
         
-        appController.displayGrid(this.name, gridControl, new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
+        this.appController.addNode(this.name, this.name, gridControl, new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
+        //appController.displayGrid(this.name, gridControl, new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
     }
 
 }

@@ -2,7 +2,7 @@ package quest.view;
 
 import app.Changelog;
 import app.controller.BaseController;
-import app.Color;
+import app.color.Color;
 import app.Font;
 import app.FontStyle;
 import app.HorizontalAlignment;
@@ -10,6 +10,8 @@ import app.Layout;
 import app.RelativeCoordinates;
 import app.TextDecoration;
 import app.VerticalAlignment;
+import app.color.OffsetColor;
+import app.color.RGBColor;
 import static app.controller.BaseController.NODE_TRANSITIONED_EVENT;
 import static app.controller.BaseController.logger;
 import app.dialog.Alert;
@@ -41,7 +43,7 @@ import quest.text.BookLastUpdatedDate;
 import quest.text.BookTitle;
 import quest.Condition;
 import quest.control.BookFlip;
-import quest.control_deprecated.DefaultTextColorSet;
+import quest.control.DefaultTextDecorationSet;
 import quest.control.Illustrate;
 import quest.control.InventoryAdd;
 import quest.control.InventoryRemove;
@@ -86,6 +88,8 @@ public class Application extends app.view.BaseView {
     public final static String DISPLAY_BUTTONS_TIMER = "display buttons";
     public final static String FILE_EVENT = "file";
     public final static String DOUBLE_LEFT_ARROW = "\u2190" + System.lineSeparator() + "\u2190"; // Unicode emoticon for left arrow (x2)
+    public final static RGBColor MAGIC_COLOR = new OffsetColor(Color.MODERN_MAGENTA, Color.DARKEST_MAGENTA);
+    public final static RGBColor MAGIC_ACCENT_COLOR = new OffsetColor(Color.NEON_MAGENTA, Color.DARK_MAGENTA);
     public final static String MONO_FONT = Font.ROBOTO_MONO;
     public final static String NORMAL_FONT = Font.ROBOTO;
     public final static String OPTIONS_EVENT = "options";
@@ -139,19 +143,19 @@ public class Application extends app.view.BaseView {
                     }
                 } else if (eventValue.equals(QUIT_EVENT)) {
                     this.quitButton.effects.clear();
-                    this.quitButton.effects.add(new Glow(Color.DARK_MAGENTA));
+                    this.quitButton.effects.add(new Glow(MAGIC_ACCENT_COLOR));
                     this.appController.changeNode(this.name, this.quitButton, null);
                 } else if (eventValue.equals(CREATE_EVENT)) {
                     this.createButton.effects.clear();
-                    this.createButton.effects.add(new Glow(Color.DARK_MAGENTA));
+                    this.createButton.effects.add(new Glow(MAGIC_ACCENT_COLOR));
                     this.appController.changeNode(this.name, this.createButton, null);
                 } else if (eventValue.equals(OPTIONS_EVENT)) {
                     this.optionsButton.effects.clear();
-                    this.optionsButton.effects.add(new Glow(Color.DARK_MAGENTA));
+                    this.optionsButton.effects.add(new Glow(MAGIC_ACCENT_COLOR));
                     this.appController.changeNode(this.name, this.optionsButton, null);
                 } else if (eventValue.equals(SELECT_EVENT)) {
                     this.selectButton.effects.clear();
-                    this.selectButton.effects.add(new Glow(Color.DARK_MAGENTA));
+                    this.selectButton.effects.add(new Glow(MAGIC_ACCENT_COLOR));
                     this.appController.changeNode(this.name, this.selectButton, null);
                 }
             }
@@ -206,7 +210,7 @@ public class Application extends app.view.BaseView {
                 Object text = "Now Playing..." + System.lineSeparator() + this.bookFile.title + System.lineSeparator() + "by " + this.bookFile.author + System.lineSeparator() + this.bookFile.updateDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.getDefault()));
                 TextDecoration decoration = new TextDecoration();
                 decoration.pixelSize = 26.0;
-                decoration.color = Color.DARKEST_MAGENTA;
+                decoration.color = MAGIC_COLOR;
                 decoration.font = NORMAL_FONT;
                 decoration.style = FontStyle.BOLD;
                 Label nowPlayingLabel = new Label("now playing", text, decoration);
@@ -259,7 +263,7 @@ public class Application extends app.view.BaseView {
 
         decoration = new TextDecoration();
         decoration.pixelSize = 16.0;
-        decoration.color = Color.DARKEST_MAGENTA;
+        decoration.color = MAGIC_COLOR;
         decoration.font = TITLE_FONT;
         decoration.style = FontStyle.ITALIC;
         Label flavorTextLabel = new Label("flavor", this.flavorText, decoration);
@@ -761,7 +765,7 @@ public class Application extends app.view.BaseView {
                 new LineSeparator(),
                 "              T W I N   Q U E S T");
         TextDecoration decoration = new TextDecoration();
-        decoration.color = Color.DARKEST_MAGENTA;
+        decoration.color = MAGIC_COLOR;
         decoration.style = FontStyle.BOLD;
         Label dragonLabel = new Label("par1", new Texts(dragonArt), decoration);
         page1.story.controls.add(new Scribe(List.of(dragonLabel))); 
@@ -793,7 +797,7 @@ public class Application extends app.view.BaseView {
         shmebulockCheatSubpage.controls.add(new PageRefresh());
         page1.subpages.put("SHMEBULOCK", shmebulockCheatSubpage);
 
-        Glow glowEffect = new Glow(Color.DARK_MAGENTA);
+        Glow glowEffect = new Glow(MAGIC_ACCENT_COLOR);
         List<BaseEffect> effectList = new ArrayList();
         effectList.add(glowEffect);
         ValidatedVariablePrompt input = new ValidatedVariablePrompt("player", List.of("Zara", "Greyson"));
@@ -803,7 +807,7 @@ public class Application extends app.view.BaseView {
         inputSubpage.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("Select Player:", new LineSeparator()))), input)));
         page1.subpages.put("input", inputSubpage);
 
-        glowEffect = new Glow(Color.DARK_MAGENTA);
+        glowEffect = new Glow(MAGIC_ACCENT_COLOR);
         effectList = new ArrayList();
         effectList.add(glowEffect);
         input = new ValidatedVariablePrompt("player", List.of("Zara", "Greyson", "Shmebulock"));
@@ -856,7 +860,9 @@ public class Application extends app.view.BaseView {
         playerShmebulockSubpage.controls.add(new VariableSet("mylee-fandom", "But I wish I could.  You gnomes are just fascinating!"));
         playerShmebulockSubpage.controls.add(new VariableSet("mylee-reaction", "Fascinating"));
         playerShmebulockSubpage.controls.add(new VariableSet("twin-was", "friends were"));
-        playerShmebulockSubpage.controls.add(new DefaultTextColorSet(Color.DARKEST_MAGENTA));
+        TextDecoration defTextDecoration = new TextDecoration();
+        defTextDecoration.color = MAGIC_COLOR;
+        playerShmebulockSubpage.controls.add(new DefaultTextDecorationSet(defTextDecoration));
         playerShmebulockSubpage.controls.add(new VariableSet("why-is-that", "SHMEBULOCK?"));
         playerShmebulockSubpage.controls.add(new VariableSet("eat-twin", "SHMEBULOCK?!"));
         playerShmebulockSubpage.controls.add(new VariableSet("thats-horrible", "SHMEBULOCK!!!"));
@@ -882,7 +888,7 @@ public class Application extends app.view.BaseView {
         subpage.condition = new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", false);
         page1.story.controls.add(subpage);
         
-        glowEffect = new Glow(Color.DARK_MAGENTA);
+        glowEffect = new Glow(MAGIC_ACCENT_COLOR);
         effectList = new ArrayList();
         effectList.add(glowEffect);
         input = new ValidatedVariablePrompt("difficulty", List.of("Easy", "Normal", "Hard"));
@@ -894,7 +900,7 @@ public class Application extends app.view.BaseView {
         inputSubpage.controls.add(new Illustrate(new Image("select difficulty image", "/assets/images/difficulty.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         page1.subpages.put("input", inputSubpage);
         
-        glowEffect = new Glow(Color.DARK_MAGENTA);
+        glowEffect = new Glow(MAGIC_ACCENT_COLOR);
         effectList = new ArrayList();
         effectList.add(glowEffect);
         input = new ValidatedVariablePrompt("difficulty", List.of("Magical"));
@@ -1001,7 +1007,7 @@ public class Application extends app.view.BaseView {
         introScene.pages.put("4", page4);
         
         effectList = new ArrayList();
-        effectList.add(new Glow(Color.DARK_MAGENTA));
+        effectList.add(new Glow(MAGIC_ACCENT_COLOR));
         ValidatedVariablePrompt twinPut = new ValidatedVariablePrompt("mylee-prompt", List.of("Who are you?", "Where is my twin?", "Who is Big Chung?", "What's with this book I have?", "And this map?", "What is this elevator?", "I'm good."));
         twinPut.effectsButtons.put("I'm good.", effectList);
         input = new ValidatedVariablePrompt("mylee-prompt", List.of("SHMEBULOCK?", "SHMEBULOCK??", "SHMEBULOCK???", "SHMEBULOCK????", "SHMEBULOCK?????", "SHMEBULOCK??????", "SHMEBULOCK."));
@@ -1129,8 +1135,7 @@ public class Application extends app.view.BaseView {
                 "\uD83D\uDC08\u200D\u2B1B MYLEE: \"Indeed.  You'll find me to be quite helpful by the time you get to the end of your quest.  Here's your first spell... ")));
         decoration = new TextDecoration();
         decoration.style = FontStyle.BOLD;
-        decoration = new TextDecoration();
-        decoration.style = FontStyle.BOLD;
+        decoration.color = MAGIC_COLOR;
         app.Text text4 = new app.Text(new Texts(List.of("FLIP BOOK (requires 0MP)")), decoration);
         app.Text text5 = new app.Text(new Texts(List.of(".  Go to the Spell Book and try it out!  This one isn't very powerful but there's no limit to the number of times you can cast it.\"")));        
         page9.story.controls.add(new Scribe(List.of(new Label("par1", List.of(text1, text2, text3, text4, text5)))));

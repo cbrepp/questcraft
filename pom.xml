@@ -85,7 +85,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.1.0</version>
                 <configuration>
-                    <mainClass>app.Bootstrap</mainClass>
+                    <mainClass>app.controller.Bootstrap</mainClass>
                 </configuration>
             </plugin>
             <plugin>

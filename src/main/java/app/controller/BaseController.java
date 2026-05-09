@@ -20,6 +20,8 @@ import app.view.BaseView;
 import app.Coordinates;
 import app.EventListener;
 import app.Layout;
+import app.TextDecoration;
+import app.color.Color;
 import app.dialog.BaseDialog;
 import app.node.BaseNode;
 import java.util.List;
@@ -32,8 +34,9 @@ import app.view.Animation;
  */
 public abstract class BaseController {
 
+    public static Color DEFAULT_COLOR = Color.WHITE;
     public static final Double DEFAULT_PIXEL_SIZE = 14.0;
-    public static final String EMOJI_SHEET = "/assets/images/sheet_google_64.png";
+    public static final String EMOJI_SHEET_FILE = "/assets/images/sheet_google_64.png";
     public static final String EMOJI_SHEET_JSON = "/assets/json/emoji.json";
     public static final Double EMOJI_SHEET_SIZE = 64.0;
     public static final String NAME_PROPERTY = "NAME";
@@ -63,7 +66,7 @@ public abstract class BaseController {
     //public abstract void displayText(String viewName, String text, Integer row, Integer column);
     //public abstract void displayText(String viewName, String text, Integer row, Integer column, Color color);
     //public abstract void displayText(String viewName, String text, Integer row, Integer column, Color color, int style);
-    public abstract void displayGrid(String viewName, app.node.Grid grid, Layout layout);
+    //public abstract void displayGrid(String viewName, app.node.Grid grid, Layout layout);
     public abstract void changeNode(String viewName, BaseNode node, Layout layout);
     public abstract void addNode(String viewName, String parentName, BaseNode node, Layout layout);
     public abstract void newDialog(BaseDialog dialog);
@@ -93,7 +96,7 @@ public abstract class BaseController {
     public abstract void sendToFront(String viewName, String name);
     public abstract void sendToBack(String viewName, String name);
     public abstract void refreshView(String viewName);
-    public abstract void loadEmojiData();
-    public abstract void setDefaultFontColor(app.Color fontColor);
-    public abstract app.Color getDefaultFontColor();
+    public abstract void setDefaultTextDecoration(String viewName, TextDecoration textDecoration);
+    public abstract TextDecoration getDefaultTextDecoration(String viewName);
+    
 }

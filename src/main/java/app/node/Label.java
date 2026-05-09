@@ -1,6 +1,7 @@
 package app.node;
 
 import app.*;
+import app.color.RGBColor;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,8 +11,9 @@ import java.util.List;
  */
 public class Label extends BaseNode {
     
-    public Color backgroundColor; // Default (null) is transparent
-    public Color borderColor; // Default (null) is either black or white depending on which color would best offset the background
+    public AntiAliasMethod antiAliasMethod; // Default (null) is text
+    public RGBColor backgroundColor; // Default (null) is transparent
+    public RGBColor borderColor; // Default (null) is either black or white depending on which color would best offset the background
     public Integer borderWidth; // Default (null) is no borders
     public List<Text> texts; // toString() is invoked on each Text object's text property to get the actual string value, allowing for dynamic text
 
@@ -32,6 +34,11 @@ public class Label extends BaseNode {
     
     public Label (String name) {
         this(name, null);
+    }
+    
+    @Override
+    public RGBColor getColor() {
+        return this.backgroundColor;
     }
     
 }

@@ -1,7 +1,7 @@
 
 package quest.control_deprecated;
 
-import app.Color;
+import app.color.Color;
 import app.EventListener;
 import app.Coordinates;
 import app.HorizontalAlignment;
@@ -690,7 +690,7 @@ public class MonsterShooterControl extends QuestControl implements Animation, Ev
         //this.quest.appController.displayFloatingText(Questcraft.QUEST, LABEL_MONSTER_HP, "Monster HP: " + String.valueOf(this.monsterHP), this.row, this.column + 34, null, null, null, 12, null, "RobotoMono-Medium");
 
         // Initialize the animation
-        this.quest.appController.addAnimation(Questcraft.QUEST, name, this.row + 2, this.column, backgroundImageFileName, imageFiles, ANIMATION_DELAY, this);
+        //this.quest.appController.addAnimation(Questcraft.QUEST, name, this.row + 2, this.column, backgroundImageFileName, imageFiles, ANIMATION_DELAY, this);
         
         // Display the buttons used to control the animation
         List<String> valueList = new ArrayList<>(Arrays.asList("&left; Move Left+&up; Launch+&right; Move Right+Pause".split("\\+")));

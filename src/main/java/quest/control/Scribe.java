@@ -25,11 +25,11 @@ public class Scribe extends BaseQuestControl {
         this.init();
     }
     
-    public Scribe(List nodes) {
+    public Scribe(List<BaseNode> nodes) {
         this.nodes = nodes;
     }
     
-    public Scribe(List nodes, Condition condition) {
+    public Scribe(List<BaseNode> nodes, Condition condition) {
         this(nodes);
         this.condition = condition;
     }

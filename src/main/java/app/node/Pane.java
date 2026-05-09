@@ -1,6 +1,6 @@
 package app.node;
 
-import app.*;
+import app.color.RGBColor;
 
 /**
  *
@@ -8,11 +8,16 @@ import app.*;
  */
 public class Pane extends BaseNode {
     
-    public Color backgroundColor; // Default (null) is transparent
+    public RGBColor backgroundColor; // Default (null) is transparent
     public Integer borderWidth = 1; // Default (1) is thin borders
 
     public Pane (String name) {
         super(name);
+    }
+    
+    @Override
+    public RGBColor getColor() {
+        return this.backgroundColor;
     }
     
 }

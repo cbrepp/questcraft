@@ -1,6 +1,6 @@
 package quest.model;
 
-import app.Color;
+import app.color.Color;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;

@@ -1,6 +1,6 @@
 package app.node.effect;
 
-import app.Color;
+import app.color.RGBColor;
 
 /**
  *
@@ -8,9 +8,9 @@ import app.Color;
  */
 public class Glow extends BaseEffect {
     
-    public Color color; // Default (null) is the offset color
+    public RGBColor color; // Default (null) is the offset color
     
-    public Glow(Color color) {
+    public Glow(RGBColor color) {
         this.color = color;
     }
     

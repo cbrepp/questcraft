@@ -1,10 +1,11 @@
 package app.controller;
 
-import app.Bootstrap;
 import app.view.BaseView;
 import app.Coordinates;
 import app.EventListener;
 import app.Layout;
+import app.TextDecoration;
+import app.color.RGBColor;
 import app.controller.desktop.SoundController;
 import app.dialog.BaseDialog;
 import app.node.BaseNode;
@@ -164,7 +165,7 @@ public class SWTApplication extends BaseController {
         final SWTApplication thisController = this;
         tabFolder = new CTabFolder(composite, SWT.BORDER);
         if (view.backgroundColor != null) {
-            tabFolder.setBackground(new Color(this.display, view.backgroundColor.red, view.backgroundColor.green, view.backgroundColor.blue));
+            tabFolder.setBackground(new Color(this.display, view.backgroundColor.getRed(), view.backgroundColor.getGreen(), view.backgroundColor.getBlue()));
         }
         tabFolder.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -415,7 +416,7 @@ public class SWTApplication extends BaseController {
             this.tabItemViewMap.put(tab, view);
             composite = new Composite(this.tabFolder, SWT.NONE);
             if (view.backgroundColor != null) {
-                composite.setBackground(new Color(this.display, view.backgroundColor.red, view.backgroundColor.green, view.backgroundColor.blue));
+                composite.setBackground(new Color(this.display, view.backgroundColor.getRed(), view.backgroundColor.getGreen(), view.backgroundColor.getBlue()));
             }
             composite.setLayout(null);
             
@@ -474,14 +475,14 @@ public class SWTApplication extends BaseController {
         }
         
         // Set the text area's background color and image
-        app.Color imageColor = view.backgroundColor;
+        RGBColor imageColor = view.backgroundColor;
         if (imageColor == null) {
             imageColor = this.parentView.backgroundColor;
         }
         if (imageColor == null) {
-            imageColor = new app.Color(0, 0, 0, 1.0);
+            imageColor = new app.color.Color(0, 0, 0, 1.0);
         }
-        control.setBackground(new Color(this.display, imageColor.red, imageColor.green, imageColor.blue));
+        control.setBackground(new Color(this.display, imageColor.getRed(), imageColor.getGreen(), imageColor.getBlue()));
         if (view.backgroundImage != null) {
             final Image backgroundImage = loadImage(view.backgroundImage);
             control.setBackgroundImage(backgroundImage);
@@ -496,11 +497,6 @@ public class SWTApplication extends BaseController {
         if (!isRefresh) {
             view.onLoad(this);
         }
-    }
-    
-    @Override
-    public void loadEmojiData() {
-        System.out.println("SWTApplication: loadEmojiData: Deferring emoji handling to OS");
     }
     
     public void cleanShell() {
@@ -791,11 +787,11 @@ public class SWTApplication extends BaseController {
     }
     */
     
+    /*
+        
     @Override
     public void displayGrid(String viewName, app.node.Grid grid, Layout layout) {
         System.out.println("SWTApplication: displayGrid: viewName=" + viewName + ", grid=" + grid);
-        
-        /*
         
         StyledText textArea = this.tabStyledTextMap.get(viewName);
         Composite composite = this.tabCompositeMap.get(viewName);
@@ -930,8 +926,8 @@ public class SWTApplication extends BaseController {
         }
 
         composite.pack();
-        */
     }
+    */
     
     public Button newButton(String viewName, String name, String text, Integer row, Integer column, Integer endRow, Integer endColumn, Boolean isMonospace, String fontName, Boolean glow, EventListener listener) {
         System.out.println("SWTApplication: newButton: viewName=" + viewName + ", name=" + name + ", text=" + text + ", row=" + row + ", column=" + column + ", endRow=" + endRow + ", endColumn=" + endColumn + ", isMonospace=" + isMonospace + ", fontName=" + fontName + ", glow=" + glow);
@@ -1602,13 +1598,13 @@ public class SWTApplication extends BaseController {
     }
     
     @Override
-    public void addAnimation(String viewName, String name, int row, int column, String backgroundImageFileName, List<String> imageFiles, double animationDelay, Animation listener) {
-        System.out.println("SWTApplication: addAnimation: viewName=" + viewName + ", name=" + name + ", row=" + row + ", column=" + column + ", backgroundImageFileName=" + backgroundImageFileName + ", sprite count=" + imageFiles.size() + ", animationDelay=" + animationDelay + ", listener=" + listener);
+    public void addAnimation(String viewName, String name, int row, int startColumn, String backgroundImageFileName, List<String> imageFiles, double animationDelay, Animation listener) {
+        System.out.println("SWTApplication: addAnimation: viewName=" + viewName + ", name=" + name + ", row=" + row + ", column=" + startColumn + ", backgroundImageFileName=" + backgroundImageFileName + ", sprite count=" + imageFiles.size() + ", animationDelay=" + animationDelay + ", listener=" + listener);
         
         Composite composite = this.tabCompositeMap.get(viewName);
         StyledText textArea = this.tabStyledTextMap.get(viewName);
         
-        Point topLeft = this.convertToCoordinates(row - 2, column);
+        Point topLeft = this.convertToCoordinates(row - 2, startColumn);
         Image backgroundImage = this.loadImage(backgroundImageFileName);
         Rectangle backgroundImageBounds = backgroundImage.getBounds();
         Coordinates widthAndHeight = this.getDimensions(backgroundImageFileName);
@@ -1684,7 +1680,7 @@ public class SWTApplication extends BaseController {
                 int height = spriteImage.getBounds().height;
                 
                 if (sprite.glowColor != null) {
-                    Color glowColor = new Color(this.display, sprite.glowColor.red, sprite.glowColor.green, sprite.glowColor.blue);
+                    Color glowColor = new Color(this.display, sprite.glowColor.getRed(), sprite.glowColor.getGreen(), sprite.glowColor.getBlue());
                     int shadowOffset = 5; // How far the glow extends
                     int glowAlpha = 150; // Transparency of the glow (0 to 255)
                     gc.setAlpha(glowAlpha);
@@ -1989,12 +1985,13 @@ public class SWTApplication extends BaseController {
     }
     
     @Override
-    public void setDefaultFontColor(app.Color fontColor) {
+    public void setDefaultTextDecoration(String viewName, TextDecoration textDecoration) {
         throw new UnsupportedOperationException("Not supported.");
     }
 
     @Override
-    public app.Color getDefaultFontColor() {
+    public TextDecoration getDefaultTextDecoration(String viewName) {
         throw new UnsupportedOperationException("Not supported.");
     }
+
 }

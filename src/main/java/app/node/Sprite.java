@@ -1,6 +1,6 @@
 package app.node;
 
-import app.*;
+import app.color.RGBColor;
 import java.util.List;
 
 /**
@@ -10,7 +10,7 @@ import java.util.List;
 public class Sprite extends BaseNode {
     
     public List<Sprite> collisionSprites;
-    public Color glowColor;
+    public RGBColor glowColor;
     public String imageFile;
     public Double imageScale;
     public String name;
@@ -37,5 +37,11 @@ public class Sprite extends BaseNode {
     }
     */
     
+    @Override
+    public RGBColor getColor() {
+        return null;
+    }
+    
     public void onCollision(Sprite collidingSprite) {}
+    
 }

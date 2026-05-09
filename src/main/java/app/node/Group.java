@@ -1,6 +1,6 @@
 package app.node;
 
-import app.*;
+import app.color.RGBColor;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,7 +10,7 @@ import java.util.List;
  */
 public abstract class Group extends BaseNode {
     
-    public Color backgroundColor; // Default (null) is transparent
+    public RGBColor backgroundColor; // Default (null) is transparent
     public int borderWidth = 1; // Default (1) is thin borders
     public List<BaseNode> nodes = new ArrayList();
 

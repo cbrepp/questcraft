@@ -1,6 +1,6 @@
-package app;
+package app.controller;
 
-import app.controller.BaseController;
+import app.Utility;
 import static app.controller.BaseController.logger;
 import app.view.BaseView;
 import java.io.IOException;
@@ -33,6 +33,8 @@ public class Bootstrap {
             logger.log(Level.SEVERE, "Unable to load the properties file");
             return;
         }
+        
+        // TODO - Set the default color using app.properties value app.color
         
         // Instance the application controller
         String guiProperty = props.getProperty("app.gui");

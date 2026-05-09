@@ -1,7 +1,7 @@
 
 package quest.control_deprecated;
 
-import app.Color;
+import app.color.Color;
 import app.HorizontalAlignment;
 import app.Layout;
 import app.RelativeCoordinates;

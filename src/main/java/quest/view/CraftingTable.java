@@ -2,7 +2,7 @@ package quest.view;
 
 import app.controller.BaseController;
 import app.view.BaseView;
-import app.Color;
+import app.color.Color;
 import app.Font;
 import app.FontStyle;
 import app.HorizontalAlignment;

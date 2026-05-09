@@ -1,6 +1,7 @@
 package app.node;
 
 import app.*;
+import app.color.RGBColor;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,7 +11,7 @@ import java.util.List;
  */
 public class Grid extends BaseNode {
     
-    public Color backgroundColor; // Default (null) is transparent
+    public RGBColor backgroundColor; // Default (null) is transparent
     public int borderPadding = 0; // Default (0px) is no padding outside the border of each cell
     public int borderWidth = 1; // Default (1px) is thin borders
     public List<Group> cells = new ArrayList();
@@ -22,6 +23,11 @@ public class Grid extends BaseNode {
 
     public Grid (String name) {
         super(name);
+    }
+    
+    @Override
+    public RGBColor getColor() {
+        return this.backgroundColor;
     }
     
 }

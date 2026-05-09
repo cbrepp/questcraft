@@ -1,10 +1,10 @@
 package app.controller;
 
-import app.Bootstrap;
 import app.view.BaseView;
 import app.Coordinates;
 import app.EventListener;
 import app.Layout;
+import app.TextDecoration;
 import app.controller.desktop.SoundController;
 import app.dialog.BaseDialog;
 import app.node.BaseNode;
@@ -94,11 +94,6 @@ public class AWTApplication extends BaseController {
     }
     
     @Override
-    public void loadEmojiData() {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-    
-    @Override
     public void selectTab(String viewName) {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -110,11 +105,6 @@ public class AWTApplication extends BaseController {
     
     @Override
     public void removeTab(String viewName) {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-    
-    @Override
-    public void displayGrid(String viewName, app.node.Grid grid, Layout layout) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
@@ -179,11 +169,6 @@ public class AWTApplication extends BaseController {
     }
     
     @Override
-    public void addAnimation(String viewName, String name, int row, int startColumn, String backgroundImageFileName, List<String> imageFiles, double animationDelay, Animation listener) {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-    
-    @Override
     public void playSound(String fileName, Boolean isLoop) {
         System.out.println("SWTApplication: playSound: fileName=" + fileName + ", isLoop=" + isLoop);
         this.soundController.playSound(fileName, isLoop);
@@ -229,12 +214,17 @@ public class AWTApplication extends BaseController {
     }
     
     @Override
-    public void setDefaultFontColor(app.Color fontColor) {
+    public void setDefaultTextDecoration(String viewName, TextDecoration textDecoration) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
     @Override
-    public app.Color getDefaultFontColor() {
+    public TextDecoration getDefaultTextDecoration(String viewName) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+
+    @Override
+    public void addAnimation(String viewName, String name, int row, int startColumn, String backgroundImageFileName, List<String> imageFiles, double animationDelay, Animation listener) {
         throw new UnsupportedOperationException("Not supported.");
     }
 }
