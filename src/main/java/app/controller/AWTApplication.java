@@ -10,6 +10,7 @@ import app.dialog.BaseDialog;
 import app.node.BaseNode;
 import java.util.List;
 import app.view.Animation;
+import app.view.BaseSplashView;
 
 /**
  *
@@ -44,7 +45,7 @@ public class AWTApplication extends BaseController {
     }
 
     @Override
-    public void open(BaseView splashView, BaseView mainView) {
+    public void open(BaseSplashView splashView, BaseView mainView) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
@@ -84,7 +85,7 @@ public class AWTApplication extends BaseController {
     }
     
     @Override
-    public void addView(BaseView view, Boolean isParent, int index, Boolean isRefresh) {
+    public void addView(BaseView view, int index, Boolean isRefresh) {
         throw new UnsupportedOperationException("Not supported.");
     }
     
@@ -109,11 +110,6 @@ public class AWTApplication extends BaseController {
     }
     
     @Override
-    public int displayGif(String viewName, String fileName, int row, int column) {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-    
-    @Override
     public void setTimer(String name, double seconds, EventListener listener) {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -123,39 +119,9 @@ public class AWTApplication extends BaseController {
         throw new UnsupportedOperationException("Not supported.");
     }
     
-    @Override
     public Coordinates getDimensions(String imageFileName) {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-    
-    @Override
-    public int getTextColumns() {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-    
-    @Override
-    public int getTextRows() {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-    
-    @Override
-    public int getColumns(String fileName) {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-    
-    @Override
-    public int getRows(String fileName) {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-    
-    @Override
-    public int getButtonColumns(String buttonText) {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-    
-    @Override
-    public int getButtonRows() {
-        throw new UnsupportedOperationException("Not supported.");
+        // TODO
+        return null;
     }
     
     @Override
@@ -227,4 +193,5 @@ public class AWTApplication extends BaseController {
     public void addAnimation(String viewName, String name, int row, int startColumn, String backgroundImageFileName, List<String> imageFiles, double animationDelay, Animation listener) {
         throw new UnsupportedOperationException("Not supported.");
     }
+    
 }

@@ -591,7 +591,8 @@ public class MonsterShooterControl extends QuestControl implements Animation, Ev
         System.out.println("MonsterShooterControl: onExecute: difficulty=" + this.difficulty);
 
         // Calculate and cache the dimensions of each image
-        Coordinates backgroundDimensions = this.quest.appController.getDimensions(backgroundImageFileName);
+        // TODO
+        Coordinates backgroundDimensions = null; //this.quest.appController.getDimensions(backgroundImageFileName);
         this.dimensionsMap.put(BACKGROUND_NAME, backgroundDimensions);
         this.dimensionsMap.put(PLAYER_NAME, this.getScaledDimensions(this.playerFacingLeftImageFileName, backgroundDimensions.y, 0.2));
         this.dimensionsMap.put(PLAYER_MISSILE_CHUNGUS_NAME, this.getScaledDimensions(this.missileLeftImageFileName, backgroundDimensions.y, 0.2));
@@ -695,15 +696,16 @@ public class MonsterShooterControl extends QuestControl implements Animation, Ev
         // Display the buttons used to control the animation
         List<String> valueList = new ArrayList<>(Arrays.asList("&left; Move Left+&up; Launch+&right; Move Right+Pause".split("\\+")));
         //int buttonRow = this.quest.buttonRow;
-        int endColumn;
-        endColumn = this.column + this.quest.appController.getColumns(backgroundImageFileName);
+        //int endColumn;
+        //endColumn = this.column + this.quest.appController.getColumns(backgroundImageFileName);
         //this.quest.appController.displayValidatedInputField(this.quest.name, ANIMATION_CONTROLS_NAME, valueList, buttonRow, this.column, endColumn, new Layout(HorizontalAlignment.LEFT, VerticalAlignment.CENTER), this, true);
         
         return "";
     }
     
     public Coordinates getScaledDimensions(String imageFileName, int relativeHeight, Double scale) {
-        Coordinates dimensions = this.quest.appController.getDimensions(imageFileName);
+        // TODO
+        Coordinates dimensions = null; //this.quest.appController.getDimensions(imageFileName);
         double originalY = dimensions.y;
         double y = ((double) relativeHeight * scale);
         double x = ((double) dimensions.x * (y / originalY));

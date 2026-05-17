@@ -299,7 +299,7 @@ public class Application extends app.view.BaseView {
         decoration.color = Color.SHADOW;
         decoration.font = NORMAL_FONT;
         decoration.style = FontStyle.ITALIC;
-        Label comingSoonLabel = new Label("coming soon", "Coming soon... TWIN QUEST: DoW Chapter 2", decoration);
+        Label comingSoonLabel = new Label("coming soon", "Coming soon... TWIN QUEST: DOW Chapter 2", decoration);
         this.appController.addNode(this.name, this.name, comingSoonLabel, new Layout(new RelativeCoordinates(0.99, 0.99), HorizontalAlignment.RIGHT, VerticalAlignment.BOTTOM));
         
         this.appController.setTimer(DISPLAY_BUTTONS_TIMER, 0.5, this);

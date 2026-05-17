@@ -6,7 +6,10 @@ import app.node.BaseDecoratedNode;
 import app.node.BaseNode;
 import java.util.logging.Level;
 import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
+import javafx.stage.Stage;
 
 /**
  *
@@ -20,12 +23,17 @@ public abstract class BaseJavaFXNode extends BaseDecoratedNode {
     
     public void scaleNode(Node controllerNode) {
         if ((controllerNode != null) && (this.parent != null) && (controllerNode instanceof Region region)) {
-            Node fxParentNode = (Node) this.parent.controllerNode;
+            Object fxParentNode = this.parent.controllerNode;
             double parentWidth;
             double parentHeight;
             if ((fxParentNode != null) && (fxParentNode instanceof Region parentRegion)) {
                 parentWidth = parentRegion.getPrefWidth();
                 parentHeight = parentRegion.getPrefHeight();
+            } else if ((fxParentNode != null) && (fxParentNode instanceof Stage parentStage)) {
+                Scene scene = parentStage.getScene();
+                Pane pane = (Pane) scene.getRoot();
+                parentWidth = pane.getPrefWidth();
+                parentHeight = pane.getPrefHeight();
             } else {
                 if (fxParentNode == null) {
                     logger.log(Level.SEVERE, "Parent has not been defined");

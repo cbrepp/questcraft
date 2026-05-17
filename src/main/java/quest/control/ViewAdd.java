@@ -34,13 +34,13 @@ public class ViewAdd extends BaseQuestControl {
                     Quest.quest.map.quest = Quest.quest;
                     Integer inventoryIndex = Quest.quest.appController.getTabIndex(Questcraft.INVENTORY);
                     Integer mapIndex = inventoryIndex + 1;
-                    Quest.quest.appController.addView(Quest.quest.map, false, mapIndex, false);
+                    Quest.quest.appController.addView(Quest.quest.map, mapIndex, false);
             }
             case Quest.SPELL_BOOK -> {
                     Quest.quest.spellBook = new SpellBook(Quest.SPELL_BOOK);
                     Integer mapIndex = Quest.quest.appController.getTabIndex(Quest.MAP);
                     Integer spellBookIndex = mapIndex + 1;
-                    Quest.quest.appController.addView(Quest.quest.spellBook, false, spellBookIndex, false);
+                    Quest.quest.appController.addView(Quest.quest.spellBook, spellBookIndex, false);
             }
             default -> logger.log(Level.SEVERE, "Unsupported view '{0}'", viewNameString);
         }

@@ -17,7 +17,6 @@ import app.VerticalAlignment;
 import static app.VerticalAlignment.BOTTOM;
 import static app.VerticalAlignment.CENTER;
 import static app.VerticalAlignment.TOP;
-import app.color.OffsetColor;
 import app.color.RGBColor;
 import static app.controller.BaseController.NODE_TRANSITIONED_EVENT;
 import static app.controller.BaseController.logger;
@@ -35,11 +34,13 @@ import app.controller.javafx.node.JavaFXLabel;
 import app.controller.javafx.node.JavaFXLink;
 import app.node.BaseDecoratedNode;
 import app.controller.javafx.node.JavaFXPane;
+import app.controller.javafx.node.JavaFXPrimaryStage;
 import app.controller.javafx.node.JavaFXRectangle;
 import app.controller.javafx.node.JavaFXScrollingDocument;
 import app.controller.javafx.node.JavaFXScrollingLabel;
 import app.controller.javafx.node.JavaFXScrollingPane;
 import app.controller.javafx.node.JavaFXSeparator;
+import app.controller.javafx.node.JavaFXSplashStage;
 import app.controller.javafx.node.JavaFXVerticalGroup;
 import app.dialog.BaseDialog;
 import app.node.BaseCompositeNode;
@@ -55,7 +56,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -86,7 +86,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
-import javafx.scene.control.Hyperlink;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -96,17 +95,11 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.BackgroundImage;
-import javafx.scene.layout.BackgroundPosition;
-import javafx.scene.layout.BackgroundRepeat;
-import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.text.Text;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
@@ -131,12 +124,9 @@ import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderStroke;
 import javafx.scene.layout.BorderStrokeStyle;
 import javafx.scene.layout.BorderWidths;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer.Status;
@@ -144,6 +134,8 @@ import javafx.scene.text.TextFlow;
 import javax.imageio.metadata.IIOMetadata;
 import org.w3c.dom.NamedNodeMap;
 import app.view.Animation;
+import app.view.BaseSplashView;
+import java.util.Collections;
 import javafx.animation.Interpolator;
 import javafx.animation.TranslateTransition;
 import javafx.beans.binding.DoubleBinding;
@@ -152,15 +144,20 @@ import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Separator;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundPosition;
+import javafx.scene.layout.BackgroundRepeat;
+import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.Region;
 import javafx.scene.text.FontSmoothingType;
+import javafx.stage.Stage;
 
 /**
  *
  * @author repp
  */
 public class JavaFXApplication extends BaseController {
-    
+
     public static final int DEFAULT_BUTTON_FONT_SIZE = 10;
     public static final String DEFAULT_FONT = app.Font.ROBOTO_MONO;
     public static final double DEFAULT_FONT_SIZE = 18.0;
@@ -169,57 +166,46 @@ public class JavaFXApplication extends BaseController {
     public static Image EMOJI_SHEET;
     public static final boolean IS_JPRO = (System.getProperty("jpro.version") != null);
     public static List<String> TIMER_EVENTS = new ArrayList();
-    
+
     public DelegateApplication delegateApp;
     public final Lock audioLock = new ReentrantLock();
-    public Font buttonFont;
-    public int buttonFontHeight = 0;
-    public int buttonFontWidth = 0;
     public Map<String, TextDecoration> defaultTextDecorations = new HashMap();
-    public String emptyBook;
-    public int fontHeight = 0;
     public static List<String> fontFamiliesLoaded = new ArrayList();
-    public int fontWidth = 0;
     public Map<Object, EventHandler<KeyEvent>> keyBindings = new HashMap();
     public BaseView lastSelectedView;
     public HashMap<String, List<MediaPlayer>> mediaPlayers = new HashMap();
-    public Font monospaceFont;
     public Map<String, Map<String, BaseDecoratedNode>> namedDecoratedNodes; // view name -> node name -> FX node decorator
     public Map<String, Map<String, Layout>> nodeLayouts; // view name -> node name -> layout
+    public JavaFXPrimaryStage parentDecoratedNode;
     public BaseView parentView;
-    public Coordinates primaryDimensions;
     public Scene primaryScene;
-    public BaseView splashView;
+    public BaseSplashView splashView;
     public HashMap<String, Pane> tabContentMap;
     public TabPane tabFolder;
     public HashMap<String, Integer> tabIndexMap;
     public HashMap<String, Tab> tabItemMap;
     public HashMap<Tab, BaseView> tabItemViewMap;
-    public int textColumns = 0;
-    public int textRows = 0;
     public HashMap<String, BaseView> views;
-    
+
     /**
-     * The implementation of this method is a work-around to inheritance not being fully implemented in java
-     * for static methods.  While child classes can inherit a static method from a parent class, there is no
-     * way to know within the inherited method for which class it is being executed.  Also, there is no good
-     * way to know within any static method what the name of the current class is without using a Throwable.
+     * The implementation of this method is a work-around to inheritance not being fully implemented in java for static methods. While child classes can inherit a static method from a parent class, there is no way to know within the inherited method for which class it is being executed. Also, there is no good way to know within any static method what the name of the current class is without using a Throwable.
      */
     public static void main(String[] args) {
+        logger.log(Level.INFO, "Entered");
         if (args.length == 0) {
             args = new String[1];
             args[0] = new Throwable().getStackTrace()[0].getClassName();
         }
         Bootstrap.main(args);
     }
-    
+
     @Override
-    public void open(BaseView splashView, BaseView mainView) {
-        System.out.println("JavaFXApplication: open");
-        
+    public void open(BaseSplashView splashView, BaseView mainView) {
+        logger.log(Level.INFO, "Entered");
+
         this.splashView = splashView;
         this.parentView = mainView;
-        
+
         // The static launching of the JavaFX app will invoke start() on the Application which will invoke setDelegate()
         // in this object to allow a reference of the app to be stored and used for future UI operations
         DelegateApplication.main(new String[1]);
@@ -227,20 +213,46 @@ public class JavaFXApplication extends BaseController {
 
     @Override
     public void setDelegate(Object delegate) {
-        System.out.println("JavaFXApplication: setDelegate");
+        logger.log(Level.INFO, "Entered");
+
+        this.delegateApp = (DelegateApplication) delegate;
         
-        this.delegateApp = (DelegateApplication)delegate;
+        /*
+            Splash:
+            Stage
+                Scene
+                    Pane - parent view
+
+            Primary:
+            Stage
+                Scene
+                    TabPane - parent view
+                        Tab
+                            ScrollPane (for scrolling with decreased application window size)
+                                StackPane (for bindings and layout for the zoom group)
+                                    Group (for zooming with increased application window size)
+                                        Pane - child view
+        */
         
         if (this.splashView != null) {
-            this.displayStage(splashView);
+            // TODO - We really need a decorated view for the stage's scene's pane
+            JavaFXSplashStage decoratedSplashStage = new JavaFXSplashStage(this.splashView, this.splashView.name, this);
+            decoratedSplashStage.configure();
+            this.namedDecoratedNodes = new HashMap();
+            this.namedDecoratedNodes.put(this.splashView.name, new HashMap());
+            this.nodeLayouts = new HashMap();
+            this.nodeLayouts.put(this.splashView.name, new HashMap());
+            this.registerNode(this.splashView.name, decoratedSplashStage, null, null);
+            this.splashView.onLoad(this);
+            this.splashView.onDisplay(this);
         } else {
-            showPrimaryStage();
+            this.showPrimaryStage();
         }
     }
-    
+
     @Override
     public void close() {
-        System.out.println("JavaFXApplication: close");
+        logger.log(Level.INFO, "Entered");
         Platform.exit();    // Gracefully stop all processes in the JavaFX application
         if (IS_JPRO) {
             logger.log(Level.INFO, "System exit intentionally skipped for JPro environment");
@@ -248,64 +260,17 @@ public class JavaFXApplication extends BaseController {
             System.exit(0);     // Stop any remaining framework processes, including background processes
         }
     }
-    
-    public void displayStage(BaseView view) {
-        System.out.println("JavaFXApplication: displayStage: view=" + view.name);
-        
-        Stage splashStage = new Stage();
-        splashStage.initStyle(StageStyle.TRANSPARENT);
-        
-        // Load an image for the splash screen
-        Image splashImage = new Image(view.backgroundImage);
-        ImageView splashImageView = new ImageView(splashImage);
-        
-        StackPane splashLayout = new StackPane(splashImageView);
-        Scene splashScene = new Scene(splashLayout);
-        
-        splashStage.setScene(splashScene);
-        splashStage.show();
 
-        // Set a timer to close the splash screen after 5 seconds
-        new Thread(() -> {
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-                System.err.println(e);
-            }
-            // Close the splash screen and show the main application
-            Platform.runLater(() -> {
-                splashStage.close();
-                showPrimaryStage();
-            });
-        }).start();
-    }
-    
-    private void showPrimaryStage() {        
-        showPrimaryStageFull();
-    }
-    
-    public void showPrimaryStageFull() {
-        System.out.println("JavaFXApplication: showPrimaryStage: view=" + this.parentView.name);
+    public void showPrimaryStage() {
+        logger.log(Level.INFO, "Entered");
         
-        // Set the application title
-        this.delegateApp.primaryStage.setTitle(this.parentView.name);
-
-        // Size the application dimensions        
-        this.primaryDimensions = getDimensions(this.parentView.backgroundImage);
-        
-        // Set the application icon
-        if (this.parentView.iconFileName != null) {
-            Image iconImage = loadImage(this.parentView.iconFileName);
-            this.delegateApp.primaryStage.getIcons().add(iconImage);
-        }
-        
-        // Initialize the application's tab folder and set it as the application's primary scene
-        this.tabFolder = new TabPane();
-        VBox.setVgrow(this.tabFolder, Priority.ALWAYS);
-        //this.tabFolder.setPrefSize(dimensions.x, dimensions.y);
+        this.parentDecoratedNode = new JavaFXPrimaryStage(this.parentView, this.parentView.name, this);
+        this.parentDecoratedNode.configure();
+        this.primaryScene = ((Stage) this.parentDecoratedNode.controllerNode).getScene();
+        this.tabFolder = (TabPane) this.primaryScene.getRoot();
         this.tabFolder.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
             String selectedTabTitle = newTab.getText();
-            System.out.println("JavaFXApplication: showPrimaryStage: Selected tab " + selectedTabTitle);
+            logger.log(Level.INFO, "Selected tab {0}", selectedTabTitle);
             BaseView selectedView = this.tabItemViewMap.get(newTab);
             if (selectedView != null) {
                 selectedView.onSelected(this);
@@ -316,365 +281,55 @@ public class JavaFXApplication extends BaseController {
                 }
             }
         });
-        //this.tabFolder.setMinSize(800, 600);
-
-        //this.primaryScene = new Scene(this.tabFolder, dimensions.x, dimensions.y);
-        /*
-        this.primaryScene = new Scene(scrollPane, dimensions.x, dimensions.y);
-        final String CSS = 
-            ".html-editor .tool-bar { " +
-            "    -fx-max-height: 0; " +
-            "    -fx-pref-height: 0; " +
-            "    -fx-min-height: 0; " +
-            "    -fx-padding: 0; " +
-            "    -fx-border-width: 0; " +
-            "    -fx-opacity: 0; " +
-            "    visibility: hidden; " +
-            "}";
-        this.primaryScene.getStylesheets().add("data:text/css," + CSS);
-        */
-        //this.primaryScene = new Scene(this.tabFolder, 800, 600);
-        this.primaryScene = new Scene(this.tabFolder);
-        this.delegateApp.primaryStage.setScene(primaryScene);
-
-        // Share important state with the other instance methods
         this.tabContentMap = new HashMap<>();
-        //this.tabEditorMap = new HashMap<>();
-        //this.tabEditorTextMap = new HashMap<>();
-
         this.tabIndexMap = new HashMap<>();
         this.tabItemMap = new HashMap<>();
         this.tabItemViewMap = new HashMap<>();
         this.views = new HashMap();
         this.namedDecoratedNodes = new HashMap();
         this.nodeLayouts = new HashMap();
-            
-        // Init a font for all text areas and buttons to use
-        this.monospaceFont = Font.font("Consolas", FontWeight.NORMAL, adjustFontSizeForDPI(DEFAULT_FONT_SIZE));
-        this.buttonFont = Font.font("Consolas", FontWeight.NORMAL, adjustFontSizeForDPI(DEFAULT_BUTTON_FONT_SIZE));
-        
-        // Calculate the height and width of the fonts
-        Text textNode = new Text("W");
-        textNode.setFont(this.monospaceFont);
-        Bounds bounds = textNode.getLayoutBounds();
-        this.fontWidth = (int) bounds.getWidth();
-        this.fontHeight = (int) bounds.getHeight();
-        Text buttonTextNode = new Text("W");
-        buttonTextNode.setFont(this.buttonFont);
-        Bounds buttonBounds = textNode.getLayoutBounds();
-        this.buttonFontWidth = (int) buttonBounds.getWidth();
-        this.buttonFontHeight = (int) buttonBounds.getHeight();
-
-        // Calculate the textual height and width of a possible text area
-        this.textColumns = ((int) this.primaryDimensions.x / this.fontWidth) + 1;
-        this.textRows = ((int) this.primaryDimensions.y / this.fontHeight) + 1;
-        StringBuilder sb = new StringBuilder();
-        for (int j = 0; j < this.textRows; j++) {
-            for (int i = 0; i < this.textColumns; i++) {
-                    sb.append(' ');
-            }
-            sb.append('\n');
-        }
-        this.emptyBook = sb.toString();
-        
-        this.addView(this.parentView, true);
-        
-        this.delegateApp.primaryStage.show();
-        
+        this.parentView.onLoad(this);
         this.parentView.onDisplay(this);
-        
-        // TODO - Stop all sounds
     }
-    
-    public static double adjustFontSizeForDPI(double fontSize) {
-        return fontSize;
-        // TODO - Make this an app option.  Scaling for DPI creates a more predictable font size, however, clarity is often lost with the adjustment,
-        // especially with emojis.
-        /*
-        Screen screen = Screen.getPrimary();
-        double dpi = screen.getDpi();
-        double scaleFactor = dpi / 96.0;    // Standard DPI is typically 96.0, so this calculates the scaling factor
-        double newFontSize = fontSize * scaleFactor;
-        newFontSize = Math.round(newFontSize);
-        return newFontSize;
-        */
-    }
-    
-    public void addView(BaseView view, Boolean isParent) {
+
+    @Override
+    public void addView(BaseView view) {
         Integer index = this.tabIndexMap.get(view.name);
         if (index == null) {
             index = this.tabIndexMap.size();
         }
-        this.addView(view, isParent, index, false);
+        this.addView(view, index, false);
     }
     
     @Override
-    public void displayView(BaseView view) {
-        System.out.println("JavaFXApplication: displayView: Displaying application view: " + view.name);
-        
-        int tabIndex = this.tabIndexMap.get(view.name);
-        System.out.println("JavaFXApplication: displayTab: Tab index=" + tabIndex);
-        
-        if (this.tabFolder != null) {
-            this.tabFolder.getSelectionModel().select(tabIndex);
-        }
-        
-        view.onDisplay(this);
-    }
-    
-    @Override
-    public void displayView(String viewName) {
-        System.out.println("JavaFXApplication: displayView: Displaying application view: " + viewName);
-        
-        BaseView view = views.get(viewName);
-        if (view == null) {
-            System.out.println("JavaFXApplication: displayView: View does not exist!");
-            return;
-        }
-        
-        this.displayView(view);
-    }
-    
-    /*
-    @Override
-    public void displayOverlay(String viewName, String name, app.Color color, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, Integer transparency, Boolean invert) {
-        System.out.println("JavaFXApplication: displayOverlay: viewName=" + viewName + ", name=" + name + ", color=" + color + ", startRow=" + startRow + ", startColumn=" + startColumn + ", endRow=" + endRow + ", endColumn=" + endColumn + ", transparency=" + transparency + ", invert=" + invert);
-        
-        Pane content = this.tabContentMap.get(viewName);
-        
-        Rectangle overlay;
-        if (startRow == null) {
-            transparency = 128;
-            overlay = new Rectangle();
-            overlay.widthProperty().bind(content.widthProperty());
-            overlay.heightProperty().bind(content.heightProperty());
-        } else {
-            Coordinates topLeftCoordinates;
-            Coordinates bottomRightCoordinates;
-            topLeftCoordinates = this.convertToCoordinates(startRow, startColumn);
-            bottomRightCoordinates = this.convertToCoordinates(endRow, endColumn);
-            int width = bottomRightCoordinates.x - topLeftCoordinates.x;
-            int height = bottomRightCoordinates.y - topLeftCoordinates.y;
-            overlay = new Rectangle(topLeftCoordinates.x, topLeftCoordinates.y, width, height);
-        }
+    public void addView(BaseView view, int index, Boolean isRefresh) {
+        logger.log(Level.INFO, "JavaFXApplication: addView: name={0}, index={1}, isRefresh={2}", new Object[]{view.name, index, isRefresh});
 
-        double opacityPercent = (1.0 - ((double)transparency / 255.0)); // Transparency is 0-255
-        System.out.println("JavaFXApplication: displayOverlay: Converted opacity percent to " + opacityPercent);
-        
-        if (invert) {
-            // TODO - This just doesn't work
-            overlay.setFill(Color.BLACK); // Using black gives the strongest inversion effect
-            overlay.setOpacity(1.0);
-            overlay.setBlendMode(BlendMode.DIFFERENCE);
-        } else {
-            overlay.setFill(new Color((color.red + 1) / 255, (color.green + 1) / 255, (color.blue + 1) / 255, opacityPercent));
-        }
-        content.getChildren().add(overlay);
-        this.namedFXNodes.get(viewName).put(name, overlay);
-    }
-    */
-    
-    @Override
-    public void clearScreen(String viewName) {
-        logger.log(Level.INFO, "Entered: viewName={0}", viewName);
-        
-        if (this.namedDecoratedNodes.get(viewName) != null) {
-            // The pane's conent is named the same as the view
-            this.namedDecoratedNodes.get(viewName).keySet().removeIf(key -> !key.equals(viewName));
-        }
-        
-        Pane content = this.tabContentMap.get(viewName);
-        
-        if (content != null) {
-            //content.getChildren().removeIf(node -> node != editor);
-            content.getChildren().clear();
-        }
-        
-        // Remove all bindings
-        this.primaryScene.getAccelerators().clear();
-        for (EventHandler<KeyEvent> eventHandler : this.keyBindings.values()) {
-            this.primaryScene.removeEventFilter(KeyEvent.KEY_PRESSED, eventHandler);
-        }
-        this.keyBindings.clear();
-    }
-    
-    @Override
-    public void removeNode(String viewName, String nodeName) {
-        logger.log(Level.INFO, "Entered: viewName={0}, nodeName={1}", new Object[]{viewName, nodeName});
-        
-        BaseDecoratedNode decoratedNode = this.namedDecoratedNodes.get(viewName).get(nodeName);
-        if (decoratedNode == null) {
-            logger.log(Level.WARNING, "FX node decorator could NOT be found");
-            return;
-        }
-        
-        // Capture the parent name before the registry gets cleaned up
-        String parentName = decoratedNode.parent.node.name;
-        
-        Layout nodeLayout = this.nodeLayouts.get(viewName).get(nodeName);
-        this.removeFXNode(viewName, decoratedNode);
-        
-        BaseNode node = decoratedNode.node;
-        Node fxNode = (Node) decoratedNode.controllerNode;
-
-        if (!node.effects.isEmpty()) {
-            this.removeEffects(viewName, parentName, node, nodeLayout, fxNode);
-        }
-    }
-    
-    public void removeFXNode(String viewName, BaseDecoratedNode decoratedNode) {
-        logger.log(Level.INFO, "Entered: viewName={0}, decoratedNode={1}", new Object[]{viewName, decoratedNode});
-        
-        String parentName = decoratedNode.parent.node.name;
-        BaseDecoratedNode decoratedParentNode = this.namedDecoratedNodes.get(viewName).get(parentName);
-        Object fxParentNode = decoratedParentNode.controllerNode;
-        Node fxNode = (Node) decoratedNode.controllerNode;
-        
-        // TODO - This is ugly.  Parent nodes do not have a base type (Parent) with a public getChildren() method so each parent class needs to be handled.
-        Class<?> parentControlClass = fxParentNode.getClass();
-        if (parentControlClass.equals(Pane.class)) {
-            Pane pane = (Pane) fxParentNode;
-            pane.getChildren().remove(fxNode);
-            pane.layout();
-        } else if (parentControlClass.equals(StackPane.class)) {
-            StackPane pane = (StackPane) fxParentNode;
-            pane.getChildren().remove(fxNode);
-            pane.layout();
-        } else if (parentControlClass.equals(HBox.class)) {
-            HBox box = (HBox) fxParentNode;
-            box.getChildren().remove(fxNode);
-            box.layout();
-        } else if (parentControlClass.equals(VBox.class)) {
-            VBox box = (VBox) fxParentNode;
-            box.getChildren().remove(fxNode);
-            box.layout();         
-        } else {
-            logger.log(Level.SEVERE, "Parent does not have a supported class: {0}", parentControlClass.getSimpleName());
-            return;
-        }
-
-        String nodeName = decoratedNode.node.name;
-        this.deregisterNode(viewName, nodeName);
-
-        // If the control is a button with a key binding remove the event filter from the scene
-        if (this.keyBindings.containsKey(fxNode)) {
-            this.primaryScene.removeEventFilter(KeyEvent.KEY_PRESSED, this.keyBindings.get(fxNode));
-            this.keyBindings.remove(fxNode);
-        }
-    }
-    
-    @Override
-    public void addDesigner(String viewName) {
-        throw new UnsupportedOperationException("Not supported.");
-    }
-    
-    @Override
-    public void selectTab(String viewName) {
-        System.out.println("JavaFXApplication: selectTab: viewName=" + viewName);
-        
-        Integer index = this.getTabIndex(viewName);
-        if (index == null) {
-            System.err.println("JavaFXApplication: selectTab: The view does not have a tab!");
-            return;
-        }
-        
-        System.out.println("JavaFXApplication: selectTab: Setting tab selection to index " + index);
-        SingleSelectionModel<Tab> selectionModel = this.tabFolder.getSelectionModel();
-        selectionModel.select(index);
-    }
-    
-    @Override
-    public void refreshTabLabel(String viewName) {
-        System.out.println("JavaFXApplication: refreshTabLabel: viewName=" + viewName);
-        BaseView view = this.views.get(viewName);
-        if (view == null) {
-            System.out.println("JavaFXApplication: refreshTabLabel: View not found");
-            return;
-        }
-        Tab tab = this.tabItemMap.get(viewName);
-        if (tab == null) {
-            System.out.println("JavaFXApplication: refreshTabLabel: Tab not found for view");
-            return;
-        }
-        this.setTabLabel(tab, view);
-    }
-    
-    @Override
-    public void removeTab(String viewName) {
-        System.out.println("JavaFXApplication: removeTab: viewName=" + viewName);
-        
-        this.clearScreen(viewName);
-        
-        if (!tabItemMap.containsKey(viewName)) {
-            return;
-        }
-        
-        // *** Dispose of the UI objects ***
-        Tab tab = this.tabItemMap.get(viewName);
-        this.tabFolder.getTabs().remove(tab);
-        
-        this.tabItemViewMap.remove(tab);
-
-        this.tabItemMap.remove(viewName);
-        
-        this.namedDecoratedNodes.remove(viewName);
-        
-        // Remove all references to the view
-        if ((this.lastSelectedView != null) && (this.lastSelectedView.name.equals(viewName))) {
-            this.lastSelectedView = null;
-        }
-        
-        // Shift all indices to the right left by 1
-        int tabIndex = tabIndexMap.get(viewName);
-        tabIndexMap.remove(viewName);
-        for (String tabViewName : this.tabIndexMap.keySet()) {
-            int currentIndex = this.tabIndexMap.get(tabViewName);
-            if (currentIndex > tabIndex) {
-                currentIndex--;
-                this.tabIndexMap.put(tabViewName, currentIndex);
-            }
-        }
-
-        this.views.remove(viewName);
-    }
-    
-    @Override
-    public Integer getTabIndex(String viewName) {
-        System.out.println("JavaFXApplication: getTabIndex: viewName=" + viewName);
-        Integer index = this.tabIndexMap.get(viewName);
-        return index;
-    }
-    
-    @Override
-    public void addView(BaseView view) {
-        this.addView(view, false);
-    }
-    
-    public void setTabLabel(Tab tab, BaseView view) {
-        System.out.println("JavaFXApplication: setTabLabel: tab=" + tab + ", view=" + view);
-        tab.setText(view.name);
-        if (!view.emojis.isEmpty()) {
-            String emojiString = String.join(" ", view.emojis);
-            TextDecoration decoration = new TextDecoration();
-            decoration.pixelSize = DEFAULT_FONT_SIZE;
-            TextFlow emojis = stringToTextFlow(emojiString, DEFAULT_OFFSET_COLOR, decoration, FontSmoothingType.LCD);
-            tab.setGraphic(emojis);
-        }
-    }
-    
-    @Override
-    public void addView(BaseView view, Boolean isParent, int index, Boolean isRefresh) {
-        System.out.println("JavaFXApplication: addView: name=" + view.name + ", isParent=" + isParent + ", index=" + index + ", isRefresh=" + isRefresh);
-
-        BaseDecoratedNode decoratedContent = new JavaFXPane(view, null, view.name, this);
+        BaseDecoratedNode decoratedContent = new JavaFXPane(view, this.parentDecoratedNode, view.name, this);
         decoratedContent.configure(); // TODO - Need constructor for JavaFXPane that handles a view and takes care of the complex config seen below
         Pane content = (Pane) decoratedContent.controllerNode;
-        content.setMinSize(this.primaryDimensions.x, this.primaryDimensions.y);
+        
+        Coordinates imageDimensions;
+        if (view.backgroundImage != null) {
+            imageDimensions = getDimensions(view.backgroundImage);
+        } else {
+            imageDimensions = getDimensions(this.parentView.backgroundImage);
+        }
+        content.setMinSize(imageDimensions.x, imageDimensions.y);
         content.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         content.setSnapToPixel(true);
-        //content.setPrefSize(this.primaryDimensions.x, this.primaryDimensions.y);
-        ScrollPane scrollPane = new ScrollPane(content);
+        
+        // Configure automatic zooming.  A StackPane is used for bindings and layout.  A Group is used for scaling.
+        Group zoomGroup = new Group(content);
+        StackPane contentHolder = new StackPane(zoomGroup);
+        
+        double zoomFactor = 1.0; 
+        zoomGroup.setScaleX(zoomFactor);
+        zoomGroup.setScaleY(zoomFactor);
+        
+        ScrollPane scrollPane = new ScrollPane(contentHolder);
         scrollPane.setSnapToPixel(true);
+        // Fix blurry text and images during zoom by disabling JavaFX's internal bitmap caching mechanism for the visible area
         scrollPane.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null) {
                 newScene.windowProperty().addListener((obsW, oldW, newW) -> {
@@ -686,40 +341,11 @@ public class JavaFXApplication extends BaseController {
                 });
             }
         });
-        //scrollPane.setContent(this.tabFolder);
-        
-        // Configure automatic zooming
-        Group zoomGroup = new Group(content);
-        StackPane contentHolder = new StackPane(zoomGroup);
-        scrollPane.setContent(contentHolder);
-        
-        double zoomFactor = 1.0; 
-        zoomGroup.setScaleX(zoomFactor);
-        zoomGroup.setScaleY(zoomFactor);
-        
+                
         scrollPane.setHbarPolicy(ScrollBarPolicy.AS_NEEDED);
         scrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
-        //scrollPane.setPrefViewportWidth(dimensions.x);
-        //scrollPane.setPrefViewportHeight(dimensions.y);
         scrollPane.setFitToWidth(false);
         scrollPane.setFitToHeight(false);
-
-        if (isParent) {
-            // Not supported at this time
-            if (!isRefresh) {
-                view.onLoad(this);
-            }
-            return;
-        }
-        
-        // Create a new tab
-        Tab tab = new Tab();
-        this.setTabLabel(tab, view);
-        tab.setClosable(false);
-        this.tabFolder.getTabs().add(index, tab);
-        tab.setContent(scrollPane);
-        this.tabItemMap.put(view.name, tab);
-        this.tabItemViewMap.put(tab, view);
         
         // Configure the background
         Coordinates dimensions = new Coordinates(1280, 793);
@@ -727,7 +353,6 @@ public class JavaFXApplication extends BaseController {
         if (view.backgroundImage != null) {
             System.out.println("JavaFXApplication: addView: name=" + view.name + ", using background image " + view.backgroundImage);
             Image image = loadImage(view.backgroundImage);
-            Coordinates imageDimensions = this.getDimensions(view.backgroundImage);
             dimensions.x = imageDimensions.x;
             dimensions.y = imageDimensions.y;
 
@@ -741,9 +366,9 @@ public class JavaFXApplication extends BaseController {
             
             Color backgroundColor;
             if (view.backgroundColor != null) {
-                backgroundColor = Color.rgb(view.backgroundColor.getRed(), view.backgroundColor.getGreen(), view.backgroundColor.getBlue(), view.backgroundColor.getOpacity());
+                backgroundColor = getFxColor(view.backgroundColor);
             } else {
-                backgroundColor = Color.BLACK;
+                backgroundColor = Color.TRANSPARENT;
             }
             BackgroundFill backgroundFill = new BackgroundFill(
                 backgroundColor, // The color to use
@@ -789,6 +414,15 @@ public class JavaFXApplication extends BaseController {
         contentHolder.minHeightProperty().bind(Bindings.createDoubleBinding(
             () -> scrollPane.getViewportBounds().getHeight(), scrollPane.viewportBoundsProperty()));
 
+        // Create a new tab
+        Tab tab = new Tab();
+        JavaFXApplication.setTabLabel(tab, view);
+        tab.setClosable(false);
+        this.tabFolder.getTabs().add(index, tab);
+        tab.setContent(scrollPane);
+        this.tabItemMap.put(view.name, tab);
+        this.tabItemViewMap.put(tab, view);
+
         // Track the tab position of each view.  (Inserting a new view shifts all of the other views to the right.)
         HashMap<String, Integer> indicesToAdd = new HashMap();
         Iterator<String> iterator = this.tabIndexMap.keySet().iterator();
@@ -814,17 +448,285 @@ public class JavaFXApplication extends BaseController {
             this.namedDecoratedNodes.get(view.name).put(view.name, decoratedContent);
             this.nodeLayouts.put(view.name, new HashMap());
         }
-        
+
         // Add overlay pane AFTER HTMLEditor as StackPane displays its contents back-to-front
         //Pane overlayPane = new Pane();
         //content.getChildren().add(overlayPane);
         this.tabContentMap.put(view.name, content);
-        
+
         if (!isRefresh) {
             view.onLoad(this);
         }
     }
     
+    public static double adjustFontSizeForDPI(double fontSize) {
+        return fontSize;
+        // TODO - Make this an app option.  Scaling for DPI creates a more predictable font size, however, clarity is often lost with the adjustment,
+        // especially with emojis.
+        /*
+        Screen screen = Screen.getPrimary();
+        double dpi = screen.getDpi();
+        double scaleFactor = dpi / 96.0;    // Standard DPI is typically 96.0, so this calculates the scaling factor
+        double newFontSize = fontSize * scaleFactor;
+        newFontSize = Math.round(newFontSize);
+        return newFontSize;
+         */
+    }
+    
+    @Override
+    public void displayView(BaseView view) {
+        System.out.println("JavaFXApplication: displayView: Displaying application view: " + view.name);
+
+        int tabIndex = this.tabIndexMap.get(view.name);
+        System.out.println("JavaFXApplication: displayTab: Tab index=" + tabIndex);
+
+        if (this.tabFolder != null) {
+            this.tabFolder.getSelectionModel().select(tabIndex);
+        }
+
+        view.onDisplay(this);
+    }
+
+    @Override
+    public void displayView(String viewName) {
+        System.out.println("JavaFXApplication: displayView: Displaying application view: " + viewName);
+
+        BaseView view = views.get(viewName);
+        if (view == null) {
+            System.out.println("JavaFXApplication: displayView: View does not exist!");
+            return;
+        }
+
+        this.displayView(view);
+    }
+
+    /*
+    @Override
+    public void displayOverlay(String viewName, String name, app.Color color, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, Integer transparency, Boolean invert) {
+        System.out.println("JavaFXApplication: displayOverlay: viewName=" + viewName + ", name=" + name + ", color=" + color + ", startRow=" + startRow + ", startColumn=" + startColumn + ", endRow=" + endRow + ", endColumn=" + endColumn + ", transparency=" + transparency + ", invert=" + invert);
+        
+        Pane content = this.tabContentMap.get(viewName);
+        
+        Rectangle overlay;
+        if (startRow == null) {
+            transparency = 128;
+            overlay = new Rectangle();
+            overlay.widthProperty().bind(content.widthProperty());
+            overlay.heightProperty().bind(content.heightProperty());
+        } else {
+            Coordinates topLeftCoordinates;
+            Coordinates bottomRightCoordinates;
+            topLeftCoordinates = this.convertToCoordinates(startRow, startColumn);
+            bottomRightCoordinates = this.convertToCoordinates(endRow, endColumn);
+            int width = bottomRightCoordinates.x - topLeftCoordinates.x;
+            int height = bottomRightCoordinates.y - topLeftCoordinates.y;
+            overlay = new Rectangle(topLeftCoordinates.x, topLeftCoordinates.y, width, height);
+        }
+
+        double opacityPercent = (1.0 - ((double)transparency / 255.0)); // Transparency is 0-255
+        System.out.println("JavaFXApplication: displayOverlay: Converted opacity percent to " + opacityPercent);
+        
+        if (invert) {
+            // TODO - This just doesn't work
+            overlay.setFill(Color.BLACK); // Using black gives the strongest inversion effect
+            overlay.setOpacity(1.0);
+            overlay.setBlendMode(BlendMode.DIFFERENCE);
+        } else {
+            overlay.setFill(new Color((color.red + 1) / 255, (color.green + 1) / 255, (color.blue + 1) / 255, opacityPercent));
+        }
+        content.getChildren().add(overlay);
+        this.namedFXNodes.get(viewName).put(name, overlay);
+    }
+     */
+    @Override
+    public void clearScreen(String viewName) {
+        logger.log(Level.INFO, "Entered: viewName={0}", viewName);
+
+        if (this.namedDecoratedNodes.get(viewName) != null) {
+            // The pane's conent is named the same as the view
+            this.namedDecoratedNodes.get(viewName).keySet().removeIf(key -> !key.equals(viewName));
+        }
+
+        Pane content = this.tabContentMap.get(viewName);
+
+        if (content != null) {
+            //content.getChildren().removeIf(node -> node != editor);
+            content.getChildren().clear();
+        }
+
+        // Remove all bindings
+        this.primaryScene.getAccelerators().clear();
+        for (EventHandler<KeyEvent> eventHandler : this.keyBindings.values()) {
+            this.primaryScene.removeEventFilter(KeyEvent.KEY_PRESSED, eventHandler);
+        }
+        this.keyBindings.clear();
+    }
+
+    @Override
+    public void removeNode(String viewName, String nodeName) {
+        logger.log(Level.INFO, "Entered: viewName={0}, nodeName={1}", new Object[]{viewName, nodeName});
+
+        BaseDecoratedNode decoratedNode = this.namedDecoratedNodes.get(viewName).get(nodeName);
+        if (decoratedNode == null) {
+            logger.log(Level.WARNING, "FX node decorator could NOT be found");
+            return;
+        }
+
+        // Capture the parent name before the registry gets cleaned up
+        String parentName = decoratedNode.parent.node.name;
+
+        Layout nodeLayout = this.nodeLayouts.get(viewName).get(nodeName);
+        this.removeFXNode(viewName, decoratedNode);
+
+        BaseNode node = decoratedNode.node;
+        Node fxNode = (Node) decoratedNode.controllerNode;
+
+        if (!node.effects.isEmpty()) {
+            this.removeEffects(viewName, parentName, node, nodeLayout, fxNode);
+        }
+    }
+
+    public void removeFXNode(String viewName, BaseDecoratedNode decoratedNode) {
+        logger.log(Level.INFO, "Entered: viewName={0}, decoratedNode={1}", new Object[]{viewName, decoratedNode});
+
+        String parentName = decoratedNode.parent.node.name;
+        BaseDecoratedNode decoratedParentNode = this.namedDecoratedNodes.get(viewName).get(parentName);
+        Object fxParentNode = decoratedParentNode.controllerNode;
+        Node fxNode = (Node) decoratedNode.controllerNode;
+
+        // TODO - This is ugly.  Parent nodes do not have a base type (Parent) with a public getChildren() method so each parent class needs to be handled.
+        Class<?> parentControlClass = fxParentNode.getClass();
+        if (parentControlClass.equals(Pane.class)) {
+            Pane pane = (Pane) fxParentNode;
+            pane.getChildren().remove(fxNode);
+            pane.layout();
+        } else if (parentControlClass.equals(StackPane.class)) {
+            StackPane pane = (StackPane) fxParentNode;
+            pane.getChildren().remove(fxNode);
+            pane.layout();
+        } else if (parentControlClass.equals(HBox.class)) {
+            HBox box = (HBox) fxParentNode;
+            box.getChildren().remove(fxNode);
+            box.layout();
+        } else if (parentControlClass.equals(VBox.class)) {
+            VBox box = (VBox) fxParentNode;
+            box.getChildren().remove(fxNode);
+            box.layout();
+        } else if (parentControlClass.equals(Stage.class)) {
+            Stage stage = (Stage) fxParentNode;
+            Scene scene = stage.getScene();
+            Pane pane = (Pane) scene.getRoot();
+            pane.getChildren().remove(fxNode);
+            pane.layout();
+        } else {
+            logger.log(Level.SEVERE, "Parent does not have a supported class: {0}", parentControlClass.getSimpleName());
+            return;
+        }
+
+        String nodeName = decoratedNode.node.name;
+        this.deregisterNode(viewName, nodeName);
+
+        // If the control is a button with a key binding remove the event filter from the scene
+        if (this.keyBindings.containsKey(fxNode)) {
+            this.primaryScene.removeEventFilter(KeyEvent.KEY_PRESSED, this.keyBindings.get(fxNode));
+            this.keyBindings.remove(fxNode);
+        }
+    }
+
+    @Override
+    public void addDesigner(String viewName) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+
+    @Override
+    public void selectTab(String viewName) {
+        System.out.println("JavaFXApplication: selectTab: viewName=" + viewName);
+
+        Integer index = this.getTabIndex(viewName);
+        if (index == null) {
+            System.err.println("JavaFXApplication: selectTab: The view does not have a tab!");
+            return;
+        }
+
+        System.out.println("JavaFXApplication: selectTab: Setting tab selection to index " + index);
+        SingleSelectionModel<Tab> selectionModel = this.tabFolder.getSelectionModel();
+        selectionModel.select(index);
+    }
+
+    @Override
+    public void refreshTabLabel(String viewName) {
+        System.out.println("JavaFXApplication: refreshTabLabel: viewName=" + viewName);
+        BaseView view = this.views.get(viewName);
+        if (view == null) {
+            System.out.println("JavaFXApplication: refreshTabLabel: View not found");
+            return;
+        }
+        Tab tab = this.tabItemMap.get(viewName);
+        if (tab == null) {
+            System.out.println("JavaFXApplication: refreshTabLabel: Tab not found for view");
+            return;
+        }
+        this.setTabLabel(tab, view);
+    }
+
+    @Override
+    public void removeTab(String viewName) {
+        System.out.println("JavaFXApplication: removeTab: viewName=" + viewName);
+
+        this.clearScreen(viewName);
+
+        if (!tabItemMap.containsKey(viewName)) {
+            return;
+        }
+
+        // *** Dispose of the UI objects ***
+        Tab tab = this.tabItemMap.get(viewName);
+        this.tabFolder.getTabs().remove(tab);
+
+        this.tabItemViewMap.remove(tab);
+
+        this.tabItemMap.remove(viewName);
+
+        this.namedDecoratedNodes.remove(viewName);
+
+        // Remove all references to the view
+        if ((this.lastSelectedView != null) && (this.lastSelectedView.name.equals(viewName))) {
+            this.lastSelectedView = null;
+        }
+
+        // Shift all indices to the right left by 1
+        int tabIndex = tabIndexMap.get(viewName);
+        tabIndexMap.remove(viewName);
+        for (String tabViewName : this.tabIndexMap.keySet()) {
+            int currentIndex = this.tabIndexMap.get(tabViewName);
+            if (currentIndex > tabIndex) {
+                currentIndex--;
+                this.tabIndexMap.put(tabViewName, currentIndex);
+            }
+        }
+
+        this.views.remove(viewName);
+    }
+
+    @Override
+    public Integer getTabIndex(String viewName) {
+        System.out.println("JavaFXApplication: getTabIndex: viewName=" + viewName);
+        Integer index = this.tabIndexMap.get(viewName);
+        return index;
+    }
+
+    public static void setTabLabel(Tab tab, BaseView view) {
+        logger.log(Level.INFO, "Entered: tab={0}, view={1}", new Object[]{tab, view});
+        tab.setText(view.name);
+        if (!view.emojis.isEmpty()) {
+            String emojiString = String.join(" ", view.emojis);
+            TextDecoration decoration = new TextDecoration();
+            decoration.pixelSize = DEFAULT_FONT_SIZE;
+            TextFlow emojis = stringToTextFlow(emojiString, DEFAULT_OFFSET_COLOR, decoration, FontSmoothingType.LCD);
+            tab.setGraphic(emojis);
+        }
+    }
+
     /*
     @Override
     public void displayMessageBox(String title, String text, int level, List<String> emojis) {
@@ -851,9 +753,8 @@ public class JavaFXApplication extends BaseController {
             alert.show();
         });
     }
-    */
-    
-    /*
+     */
+ /*
     @Override
     public void displayText(String viewName, String text, Integer row, Integer column) {
         System.out.println("JavaFXApplication: displayText: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column);
@@ -871,9 +772,8 @@ public class JavaFXApplication extends BaseController {
         System.out.println("JavaFXApplication: displayText: viewName=" + viewName + ", text=" + text + ", row=" + row + ", column=" + column + ", color=" + color + ", style=" + style);
         this.displayFloatingText(viewName, null, text, row, column, null, null, color, DEFAULT_FONT_SIZE, style, DEFAULT_FONT); // Previously, "Consolas"
     }
-    */
-    
-    /*
+     */
+ /*
     @Override
     public void displayLink(String viewName, String name, String linkText, int row, int column, int length, EventListener listener) {
         System.out.println("JavaFXApplication: displayLink: viewName=" + viewName + ", name=" + name + ", linkText=" + linkText + ",row=" + row + ", column=" + column + ", length=" + length);
@@ -896,16 +796,15 @@ public class JavaFXApplication extends BaseController {
         
         content.getChildren().add(hyperlink);
     }
-    */
-    
+     */
     public static void positionNode(Pane fxParent, BaseNode node, Layout layout, Node fxNode) {
         logger.log(Level.INFO, "Entered: fxParent={0}, node={1}, layout={2}, fxNode={3}", new Object[]{fxParent, node, layout, fxNode});
-        
+
         if (layout == null) {
             logger.log(Level.INFO, "No layout, node will be managed by parent");
             return;
         }
-        
+
         double positionX;
         if (layout.position == null) {
             positionX = 0;
@@ -914,7 +813,7 @@ public class JavaFXApplication extends BaseController {
         }
         double nodeWidth = fxNode.prefWidth(-1);
         double parentWidth = fxParent.getPrefWidth();
-        Double x = calculateNodeX(layout.horizontalAlignment, positionX, parentWidth, nodeWidth);        
+        Double x = calculateNodeX(layout.horizontalAlignment, positionX, parentWidth, nodeWidth);
         if (x != null) {
             // Prevent placing the child node directly on the right edge of the parent node to prevent issues
             if ((nodeWidth < parentWidth - 1) && ((x + nodeWidth) >= parentWidth - 1)) {
@@ -923,7 +822,7 @@ public class JavaFXApplication extends BaseController {
             }
             fxNode.setLayoutX(Math.rint(x));
         }
-        
+
         double positionY;
         if (layout.position == null) {
             positionY = 0;
@@ -932,7 +831,7 @@ public class JavaFXApplication extends BaseController {
         }
         double nodeHeight = fxNode.prefHeight(-1);
         double parentHeight = fxParent.getPrefHeight();
-        Double y = calculateNodeY(layout.verticalAlignment, positionY, parentHeight, nodeHeight);    
+        Double y = calculateNodeY(layout.verticalAlignment, positionY, parentHeight, nodeHeight);
         if (y != null) {
             // Prevent placing the child node directly on the bottom edge of the parent node to prevent issues
             if ((nodeHeight < parentHeight - 1) && ((y + nodeHeight) >= parentHeight - 1)) {
@@ -941,13 +840,13 @@ public class JavaFXApplication extends BaseController {
             }
             fxNode.setLayoutY(Math.rint(y));
         }
-            
-        logger.log(Level.INFO, "Calculated coordinates ({0}, {1}) for parent width {2} and height {3} and node width {4} and height {5}", new Object[]{x, y, fxParent.getPrefWidth(), fxParent.getPrefHeight(), fxNode.getBoundsInLocal().getWidth(), fxNode.getBoundsInLocal().getHeight()});        
+
+        logger.log(Level.INFO, "Calculated coordinates ({0}, {1}) for parent width {2} and height {3} and node width {4} and height {5}", new Object[]{x, y, fxParent.getPrefWidth(), fxParent.getPrefHeight(), fxNode.getBoundsInLocal().getWidth(), fxNode.getBoundsInLocal().getHeight()});
     }
-    
+
     public static Double calculateNodeX(HorizontalAlignment alignment, double relativeX, double parentWidth, double nodeWidth) {
         logger.log(Level.INFO, "Entered: alignment={0}, relativeX={1}, parentWidth={2}, nodeWidth={3}", new Object[]{alignment, relativeX, parentWidth, nodeWidth});
-        
+
         Double x = null;
         if (alignment == null) {
             logger.log(Level.WARNING, "Horizontal alignment was not specified");
@@ -964,13 +863,13 @@ public class JavaFXApplication extends BaseController {
                 }
             }
         }
-        
+
         return x;
     }
-    
+
     public static Double calculateNodeY(VerticalAlignment alignment, double relativeY, double parentHeight, double nodeHeight) {
         logger.log(Level.INFO, "Entered: alignment={0}, relativeY={1}, parentHeight={2}, nodeHeight={3}", new Object[]{alignment, relativeY, parentHeight, nodeHeight});
-        
+
         Double y = null;
         if (alignment == null) {
             logger.log(Level.WARNING, "Vertical alignment was not specified");
@@ -987,10 +886,10 @@ public class JavaFXApplication extends BaseController {
                 }
             }
         }
-        
+
         return y;
     }
-    
+
     /*
     @Override
     public void displayButton(String viewName, String name, String text, Integer row, Integer column, Integer endRow, Integer endColumn, Boolean isMonospace, String fontName, Boolean glow, EventListener listener) {
@@ -1058,23 +957,22 @@ public class JavaFXApplication extends BaseController {
         
         return button;
     }
-    */
-    
+     */
     public app.node.BaseDecoratedNode addEffects(String viewName, String parentName, app.node.BaseDecoratedNode decoratedNode, Layout layout) {
         logger.log(Level.INFO, "Entered: viewName={0}, parentName={1}, decoratedNode={2}, layout={3},", new Object[]{viewName, parentName, decoratedNode, layout});
-        
+
         app.node.BaseNode node = decoratedNode.node;
         Node originalFxNode = (Node) decoratedNode.controllerNode;
-        
+
         if ((node.effects == null) || (node.effects.isEmpty())) {
             logger.log(Level.INFO, "No effects, nothing to do");
             return decoratedNode;
         }
-        
+
         BaseDecoratedNode fxDecoratedWrapperNode = null;
         for (BaseEffect effect : node.effects) {
             logger.log(Level.INFO, "Adding effect: class={0}", effect.getClass().getSimpleName());
-            
+
             switch (effect) {
                 case app.node.effect.Glow glowEffect -> {
                     this.addGlow(originalFxNode, glowEffect);
@@ -1099,7 +997,7 @@ public class JavaFXApplication extends BaseController {
                         decoratedNode.configure();
                         Pane fxWrapperNode = (Pane) fxDecoratedWrapperNode.controllerNode;
                         fxWrapperNode.getChildren().add(originalFxNode);
-                        
+
                         Rectangle clip = new Rectangle();
                         clip.widthProperty().bind(fxWrapperNode.widthProperty());
                         clip.heightProperty().bind(fxWrapperNode.heightProperty());
@@ -1120,84 +1018,87 @@ public class JavaFXApplication extends BaseController {
                         TranslateTransition slide = new TranslateTransition(Duration.seconds(transitionEffect.duration), originalFxNode);
                         if (transitionEffect.path == null) {
                             logger.log(Level.WARNING, "Unsupported transition path");
-                        } else switch (transitionEffect.path) {
-                            case FROM_LEFT -> {
-                                // Increase the wrapper's width by the intended x-coordinate for the child node so the wrapper can stretch to the left edge of the parent
-                                double parentWidth = fxParent.getPrefWidth();
-                                Double nodeX = calculateNodeX(layout.horizontalAlignment, layout.position.x, parentWidth, nodeWidth);
-                                double wrapperWidth = nodeWidth + nodeX;
-                                fxWrapperNode.setPrefWidth(wrapperWidth);
-                                // Anchor the wrapper to the left edge of the parent
-                                layout.position = new RelativeCoordinates(0.0, layout.position.y);
-                                layout.horizontalAlignment = HorizontalAlignment.LEFT;
-                                if (transitionEffect.getStage() == SlideTransition.Stage.ENTERING) {
-                                    originalFxNode.setTranslateX(-nodeWidth);
-                                    slide.setFromX(-nodeWidth);
-                                    slide.setToX(wrapperWidth - nodeWidth);
-                                } else if (transitionEffect.getStage() == SlideTransition.Stage.EXITING) {
-                                    originalFxNode.setTranslateX(wrapperWidth - nodeWidth);
-                                    slide.setFromX(wrapperWidth - nodeWidth);
-                                    slide.setToX(-nodeWidth);
+                        } else {
+                            switch (transitionEffect.path) {
+                                case FROM_LEFT -> {
+                                    // Increase the wrapper's width by the intended x-coordinate for the child node so the wrapper can stretch to the left edge of the parent
+                                    double parentWidth = fxParent.getPrefWidth();
+                                    Double nodeX = calculateNodeX(layout.horizontalAlignment, layout.position.x, parentWidth, nodeWidth);
+                                    double wrapperWidth = nodeWidth + nodeX;
+                                    fxWrapperNode.setPrefWidth(wrapperWidth);
+                                    // Anchor the wrapper to the left edge of the parent
+                                    layout.position = new RelativeCoordinates(0.0, layout.position.y);
+                                    layout.horizontalAlignment = HorizontalAlignment.LEFT;
+                                    if (transitionEffect.getStage() == SlideTransition.Stage.ENTERING) {
+                                        originalFxNode.setTranslateX(-nodeWidth);
+                                        slide.setFromX(-nodeWidth);
+                                        slide.setToX(wrapperWidth - nodeWidth);
+                                    } else if (transitionEffect.getStage() == SlideTransition.Stage.EXITING) {
+                                        originalFxNode.setTranslateX(wrapperWidth - nodeWidth);
+                                        slide.setFromX(wrapperWidth - nodeWidth);
+                                        slide.setToX(-nodeWidth);
+                                    }
                                 }
-                            }
-                            case FROM_RIGHT -> {
-                                // Increase the wrapper's width to the difference between the parent's width and the intended x-coordinate for the child node so the wrapper can stretch to the right edge of the parent
-                                double parentWidth = fxParent.getPrefWidth();
-                                Double nodeX = calculateNodeX(layout.horizontalAlignment, layout.position.x, parentWidth, nodeWidth);
-                                double wrapperWidth = parentWidth - nodeX;
-                                fxWrapperNode.setPrefWidth(wrapperWidth);
-                                // Anchor the wrapper to the right edge of the parent
-                                layout.position = new RelativeCoordinates(1.0, layout.position.y);
-                                layout.horizontalAlignment = HorizontalAlignment.RIGHT;
-                                if (transitionEffect.getStage() == SlideTransition.Stage.ENTERING) {
-                                    originalFxNode.setTranslateX(wrapperWidth);
-                                    slide.setFromX(wrapperWidth);
-                                    slide.setToX(0);
-                                } else if (transitionEffect.getStage() == SlideTransition.Stage.EXITING) {
-                                    originalFxNode.setTranslateX(0);
-                                    slide.setFromX(0);
-                                    slide.setToX(wrapperWidth);
+                                case FROM_RIGHT -> {
+                                    // Increase the wrapper's width to the difference between the parent's width and the intended x-coordinate for the child node so the wrapper can stretch to the right edge of the parent
+                                    double parentWidth = fxParent.getPrefWidth();
+                                    Double nodeX = calculateNodeX(layout.horizontalAlignment, layout.position.x, parentWidth, nodeWidth);
+                                    double wrapperWidth = parentWidth - nodeX;
+                                    fxWrapperNode.setPrefWidth(wrapperWidth);
+                                    // Anchor the wrapper to the right edge of the parent
+                                    layout.position = new RelativeCoordinates(1.0, layout.position.y);
+                                    layout.horizontalAlignment = HorizontalAlignment.RIGHT;
+                                    if (transitionEffect.getStage() == SlideTransition.Stage.ENTERING) {
+                                        originalFxNode.setTranslateX(wrapperWidth);
+                                        slide.setFromX(wrapperWidth);
+                                        slide.setToX(0);
+                                    } else if (transitionEffect.getStage() == SlideTransition.Stage.EXITING) {
+                                        originalFxNode.setTranslateX(0);
+                                        slide.setFromX(0);
+                                        slide.setToX(wrapperWidth);
+                                    }
                                 }
-                            }
-                            case FROM_TOP -> {
-                                // Increase the wrapper's height by the intended y-coordinate for the child node so the wrapper can stretch to the top edge of the parent
-                                double parentHeight = fxParent.getPrefHeight();
-                                Double nodeY = calculateNodeY(layout.verticalAlignment, layout.position.y, parentHeight, nodeHeight);
-                                double wrapperHeight = nodeHeight + nodeY;
-                                fxWrapperNode.setPrefHeight(wrapperHeight);
-                                // Anchor the wrapper to the top edge of the parent
-                                layout.position = new RelativeCoordinates(layout.position.x, 0.0);
-                                layout.verticalAlignment = VerticalAlignment.TOP;
-                                if (transitionEffect.getStage() == SlideTransition.Stage.ENTERING) {
-                                    originalFxNode.setTranslateY(-nodeHeight);
-                                    slide.setFromY(-nodeHeight);
-                                    slide.setToY(wrapperHeight - nodeHeight);
-                                } else if (transitionEffect.getStage() == SlideTransition.Stage.EXITING) {
-                                    originalFxNode.setTranslateY(wrapperHeight - nodeHeight);
-                                    slide.setFromY(wrapperHeight - nodeHeight);
-                                    slide.setToY(-nodeHeight);
+                                case FROM_TOP -> {
+                                    // Increase the wrapper's height by the intended y-coordinate for the child node so the wrapper can stretch to the top edge of the parent
+                                    double parentHeight = fxParent.getPrefHeight();
+                                    Double nodeY = calculateNodeY(layout.verticalAlignment, layout.position.y, parentHeight, nodeHeight);
+                                    double wrapperHeight = nodeHeight + nodeY;
+                                    fxWrapperNode.setPrefHeight(wrapperHeight);
+                                    // Anchor the wrapper to the top edge of the parent
+                                    layout.position = new RelativeCoordinates(layout.position.x, 0.0);
+                                    layout.verticalAlignment = VerticalAlignment.TOP;
+                                    if (transitionEffect.getStage() == SlideTransition.Stage.ENTERING) {
+                                        originalFxNode.setTranslateY(-nodeHeight);
+                                        slide.setFromY(-nodeHeight);
+                                        slide.setToY(wrapperHeight - nodeHeight);
+                                    } else if (transitionEffect.getStage() == SlideTransition.Stage.EXITING) {
+                                        originalFxNode.setTranslateY(wrapperHeight - nodeHeight);
+                                        slide.setFromY(wrapperHeight - nodeHeight);
+                                        slide.setToY(-nodeHeight);
+                                    }
                                 }
-                            }
-                            case FROM_BOTTOM -> {
-                                // Increase the wrapper's height to the difference between the parent's height and the intended y-coordinate for the child node so the wrapper can stretch to the bottom edge of the parent
-                                double parentHeight = fxParent.getPrefHeight();
-                                Double nodeY = calculateNodeY(layout.verticalAlignment, layout.position.y, parentHeight, nodeHeight);
-                                double wrapperHeight = parentHeight - nodeY;
-                                fxWrapperNode.setPrefHeight(wrapperHeight);
-                                // Anchor the wrapper to the bottom edge of the parent
-                                layout.position = new RelativeCoordinates(layout.position.x, 1.0);
-                                layout.verticalAlignment = VerticalAlignment.BOTTOM;
-                                if (transitionEffect.getStage() == SlideTransition.Stage.ENTERING) {
-                                    originalFxNode.setTranslateY(wrapperHeight);
-                                    slide.setFromY(wrapperHeight);
-                                    slide.setToY(0);
-                                } else if (transitionEffect.getStage() == SlideTransition.Stage.EXITING) {
-                                    originalFxNode.setTranslateY(0);
-                                    slide.setFromY(0);
-                                    slide.setToY(wrapperHeight);
+                                case FROM_BOTTOM -> {
+                                    // Increase the wrapper's height to the difference between the parent's height and the intended y-coordinate for the child node so the wrapper can stretch to the bottom edge of the parent
+                                    double parentHeight = fxParent.getPrefHeight();
+                                    Double nodeY = calculateNodeY(layout.verticalAlignment, layout.position.y, parentHeight, nodeHeight);
+                                    double wrapperHeight = parentHeight - nodeY;
+                                    fxWrapperNode.setPrefHeight(wrapperHeight);
+                                    // Anchor the wrapper to the bottom edge of the parent
+                                    layout.position = new RelativeCoordinates(layout.position.x, 1.0);
+                                    layout.verticalAlignment = VerticalAlignment.BOTTOM;
+                                    if (transitionEffect.getStage() == SlideTransition.Stage.ENTERING) {
+                                        originalFxNode.setTranslateY(wrapperHeight);
+                                        slide.setFromY(wrapperHeight);
+                                        slide.setToY(0);
+                                    } else if (transitionEffect.getStage() == SlideTransition.Stage.EXITING) {
+                                        originalFxNode.setTranslateY(0);
+                                        slide.setFromY(0);
+                                        slide.setToY(wrapperHeight);
+                                    }
                                 }
+                                default ->
+                                    logger.log(Level.WARNING, "Unsupported transition path");
                             }
-                            default -> logger.log(Level.WARNING, "Unsupported transition path");
                         }
                         slide.setInterpolator(Interpolator.EASE_OUT);
                         final app.node.BaseDecoratedNode finalFxDecoratedWrapperNode = fxDecoratedWrapperNode;
@@ -1224,22 +1125,22 @@ public class JavaFXApplication extends BaseController {
                 }
             }
         }
-        
+
         if (fxDecoratedWrapperNode != null) {
             return fxDecoratedWrapperNode;
         }
-        
+
         return decoratedNode;
     }
-    
+
     public void removeEffects(String viewName, String parentName, BaseNode node, Layout layout, Node fxNode) {
         logger.log(Level.INFO, "Entered: viewName={0}, parentName={1}, node={2}, layout={3}, fxNode={4}", new Object[]{viewName, parentName, node, layout, fxNode});
-        
+
         if ((node.effects == null) || (node.effects.isEmpty())) {
             logger.log(Level.INFO, "No effects, nothing to do");
             return;
         }
-        
+
         for (BaseEffect effect : node.effects) {
             Class<?> effectClass = effect.getClass();
             if (effectClass.equals(app.node.effect.SlideTransition.class)) {
@@ -1255,7 +1156,7 @@ public class JavaFXApplication extends BaseController {
             }
         }
     }
-    
+
     public void addGlow(Node fxNode, Glow effect) {
         logger.log(Level.INFO, "Entered: fxNode={0}, glowEffect={1}", new Object[]{fxNode, effect});
         RGBColor glowColor;
@@ -1270,36 +1171,40 @@ public class JavaFXApplication extends BaseController {
         fxNode.setOnMouseEntered(e -> fxNode.setStyle(hoverStyle));
         fxNode.setOnMouseExited(e -> fxNode.setStyle(defaultStyle));
     }
-    
+
     @Override
     public void newDialog(BaseDialog dialog) {
         logger.log(Level.INFO, "Entered: dialog={0}", dialog);
-        
+
         Class<?> dialogClass = dialog.getClass();
-                
+
         // TODO - Move each dialog to its own separate handler method
         if (dialogClass.equals(app.dialog.FileSelection.class)) {
             newFileSelection((app.dialog.FileSelection) dialog);
         } else if (dialogClass.equals(app.dialog.Alert.class)) {
-            newAlert((app.dialog.Alert) dialog);            
+            newAlert((app.dialog.Alert) dialog);
         } else {
             logger.log(Level.SEVERE, "Class is not a supported dialog class: {0}", dialogClass.getSimpleName());
         }
     }
-    
+
     public void newAlert(app.dialog.Alert dialog) {
         logger.log(Level.INFO, "Entered: dialog={0}", dialog);
-        
+
         AlertType type = switch (dialog.icon) {
-            case Icon.INFORMATION -> AlertType.INFORMATION;
-            case Icon.WARNING -> AlertType.WARNING;
-            case Icon.ERROR -> AlertType.ERROR;
-            default -> AlertType.INFORMATION;
+            case Icon.INFORMATION ->
+                AlertType.INFORMATION;
+            case Icon.WARNING ->
+                AlertType.WARNING;
+            case Icon.ERROR ->
+                AlertType.ERROR;
+            default ->
+                AlertType.INFORMATION;
         };
         Platform.runLater(() -> {
-            Alert alert = new Alert(type);            
+            Alert alert = new Alert(type);
             alert.initOwner(this.delegateApp.primaryStage);
-            
+
             if (dialog.title != null) {
                 alert.setTitle(dialog.title + " - " + this.parentView.name);
             } else {
@@ -1312,14 +1217,22 @@ public class JavaFXApplication extends BaseController {
             String emojis = dialog.emojis;
             if (emojis == null) {
                 emojis = switch (dialog.icon) {
-                    case Icon.CANCEL -> "\uD83D\uDEAB"; // No Entry
-                    case Icon.ERROR -> "\uD83D\uDEA8"; // Police Car Light
-                    case Icon.INFORMATION -> "\uD83D\uDCA1"; // Light Bulb.  Alternate would be "\uD83D\uDEC8" (Circled Information Source).
-                    case Icon.QUESTION -> "\uD83E\uDD14"; // Thinking Face.  Alternate would be Red Question Mark.
-                    case Icon.SEARCH -> "\uD83D\uDD0D"; // Left-Pointing Magnifying Glass
-                    case Icon.WARNING -> "\u26A0"; // Warning Sign
-                    case Icon.WORKING -> "\uD83D\uDE80"; // Rocket
-                    default -> "\uD83D\uDCA1"; // Light Bulb
+                    case Icon.CANCEL ->
+                        "\uD83D\uDEAB"; // No Entry
+                    case Icon.ERROR ->
+                        "\uD83D\uDEA8"; // Police Car Light
+                    case Icon.INFORMATION ->
+                        "\uD83D\uDCA1"; // Light Bulb.  Alternate would be "\uD83D\uDEC8" (Circled Information Source).
+                    case Icon.QUESTION ->
+                        "\uD83E\uDD14"; // Thinking Face.  Alternate would be Red Question Mark.
+                    case Icon.SEARCH ->
+                        "\uD83D\uDD0D"; // Left-Pointing Magnifying Glass
+                    case Icon.WARNING ->
+                        "\u26A0"; // Warning Sign
+                    case Icon.WORKING ->
+                        "\uD83D\uDE80"; // Rocket
+                    default ->
+                        "\uD83D\uDCA1"; // Light Bulb
                 };
             }
             TextDecoration decoration = new TextDecoration();
@@ -1341,28 +1254,28 @@ public class JavaFXApplication extends BaseController {
             customHeader.getChildren().add(headerFlow);
 
             alert.getDialogPane().setHeader(customHeader);
-            
+
             if (dialog.text != null) {
                 alert.setContentText(dialog.text);
             }
-            
+
             alert.showAndWait();
         });
     }
-    
+
     public void newFileSelection(app.dialog.FileSelection dialog) {
         logger.log(Level.INFO, "Entered: dialog={0}", dialog);
-        
+
         FileChooser fileChooser = new FileChooser();
-        
+
         if (dialog.title != null) {
             fileChooser.setTitle(dialog.title);
         }
-        
+
         if (dialog.initialFolder != null) {
             fileChooser.setInitialDirectory(new File(dialog.initialFolder));
         }
-        
+
         if ((dialog.extensionFilters != null) && (!dialog.extensionFilters.isEmpty())) {
             for (String filter : dialog.extensionFilters) {
                 FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter(filter, filter);
@@ -1370,7 +1283,7 @@ public class JavaFXApplication extends BaseController {
             }
             fileChooser.setInitialDirectory(new File(dialog.initialFolder));
         }
-        
+
         File selectedFile = fileChooser.showOpenDialog(this.delegateApp.primaryStage);
 
         if (selectedFile != null) {
@@ -1381,14 +1294,14 @@ public class JavaFXApplication extends BaseController {
             logger.log(Level.INFO, "No file was selected");
         }
     }
-    
+
     public Node newGroup(String viewName, app.node.Group node, Pane fxNode, RGBColor offsetColor) {
         logger.log(Level.INFO, "Entered: viewName={0}, node={1}, fxNode={2}, offsetColor={3}", new Object[]{viewName, node, fxNode, offsetColor});
-        
+
         if (fxNode != null) {
             fxNode.getChildren().clear();
         }
-        
+
         Class<?> groupClass = node.getClass();
         if (groupClass.equals(app.node.VerticalGroup.class)) {
             VBox vbox;
@@ -1429,13 +1342,13 @@ public class JavaFXApplication extends BaseController {
             Color fxBackgroundColor = getFxColor(node.backgroundColor);
             fxNode.setBackground(new Background(new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY)));
         }
-        
+
         return fxNode;
     }
-    
+
     public Pane newPane(String viewName, app.node.Pane node, Pane fxPane, RGBColor offsetColor) {
         logger.log(Level.INFO, "Entered: viewName={0}, node={1}, fxTextBox={2}, offsetColor={3}", new Object[]{viewName, node, fxPane, offsetColor});
-        
+
         if (fxPane == null) {
             fxPane = new Pane();
             fxPane.setSnapToPixel(true);
@@ -1450,9 +1363,9 @@ public class JavaFXApplication extends BaseController {
             fxBackgroundColor = getFxColor(node.backgroundColor);
         }
         fxPane.setBackground(new Background(new BackgroundFill(
-            fxBackgroundColor,
-            CornerRadii.EMPTY, 
-            Insets.EMPTY      // To prevent blurry text
+                fxBackgroundColor,
+                CornerRadii.EMPTY,
+                Insets.EMPTY // To prevent blurry text
         )));
         fxPane.setPadding(Insets.EMPTY);
         fxPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
@@ -1460,13 +1373,13 @@ public class JavaFXApplication extends BaseController {
         if (node.borderWidth != null) {
             fxPane.setBorder(new Border(new BorderStroke(getFxColor(offsetColor), BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
         }
-        
+
         return fxPane;
     }
-    
+
     public ScrollPane newScrollingPane(String viewName, app.node.ScrollingPane node, ScrollPane scrollPane, RGBColor offsetColor) {
         logger.log(Level.INFO, "Entered: viewName={0}, node={1}, fxTextBox={2}, offsetColor={3}", new Object[]{viewName, node, scrollPane, offsetColor});
-        
+
         Pane fxPane;
         if (scrollPane != null) {
             fxPane = (Pane) scrollPane.getContent();
@@ -1478,7 +1391,7 @@ public class JavaFXApplication extends BaseController {
             scrollPane = new ScrollPane();
             scrollPane.setContent(fxPane);
             scrollPane.setSnapToPixel(true);
-            
+
             // Disable the view port's cache once it's ready
             final ScrollPane finalScrollPane = scrollPane;
             scrollPane.sceneProperty().addListener((obs, oldScene, newScene) -> {
@@ -1506,22 +1419,22 @@ public class JavaFXApplication extends BaseController {
             fxBackgroundColor = getFxColor(node.backgroundColor);
         }
         scrollPane.setBackground(new Background(new BackgroundFill(
-            fxBackgroundColor,
-            CornerRadii.EMPTY, 
-            Insets.EMPTY      // To prevent blurry text
+                fxBackgroundColor,
+                CornerRadii.EMPTY,
+                Insets.EMPTY // To prevent blurry text
         )));
         scrollPane.setPadding(Insets.EMPTY);
         scrollPane.getStyleClass().add("edge-to-edge"); // Removes the border
         scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
         scrollPane.setCache(false);
         fxPane.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE); // Fill the scroll pane.  The scroll pane will be scaled as needed.
-        
+
         return scrollPane;
     }
-    
+
     public ScrollPane newScrollingDocument(String viewName, app.node.ScrollingDocument node, ScrollPane scrollPane, RGBColor offsetColor) {
         logger.log(Level.INFO, "Entered: viewName={0}, node={1}, fxTextBox={2}, offsetColor={3}", new Object[]{viewName, node, scrollPane, offsetColor});
-        
+
         TextFlow fxDocument;
         if (scrollPane != null) {
             fxDocument = (TextFlow) scrollPane.getContent();
@@ -1535,7 +1448,7 @@ public class JavaFXApplication extends BaseController {
             scrollPane = new ScrollPane();
             scrollPane.setContent(fxDocument);
             scrollPane.setSnapToPixel(true);
-            
+
             // Disable the view port's cache once it's ready
             final ScrollPane finalScrollPane = scrollPane;
             scrollPane.sceneProperty().addListener((obs, oldScene, newScene) -> {
@@ -1563,39 +1476,39 @@ public class JavaFXApplication extends BaseController {
             fxBackgroundColor = getFxColor(node.backgroundColor);
         }
         scrollPane.setBackground(new Background(new BackgroundFill(
-            fxBackgroundColor,
-            CornerRadii.EMPTY, 
-            Insets.EMPTY      // To prevent blurry text
+                fxBackgroundColor,
+                CornerRadii.EMPTY,
+                Insets.EMPTY // To prevent blurry text
         )));
         scrollPane.setPadding(Insets.EMPTY);
         scrollPane.getStyleClass().add("edge-to-edge"); // Removes the border
         scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
         scrollPane.setCache(false);
         fxDocument.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE); // Fill the scroll pane.  The scroll pane will be scaled as needed.
-        
+
         return scrollPane;
     }
-    
+
     public FlowPane newInputField(app.node.InputField node, FlowPane fxInputField, RGBColor offsetColor) {
         logger.log(Level.INFO, "Entered: node={0}, fxInputField={1}, offsetColor={2}", new Object[]{node, fxInputField, offsetColor});
-        
+
         if (fxInputField == null) {
             fxInputField = new FlowPane();
         }
-        
+
         if (node.spacerPixels != null) {
             fxInputField.setHgap(node.spacerPixels);
             fxInputField.setVgap(node.spacerPixels);
             fxInputField.setPadding(new Insets(node.spacerPixels));
         }
-        
+
         if (node.backgroundColor != null) {
             Color fxBackgroundColor = getFxColor(node.backgroundColor);
             BackgroundFill backgroundFill = new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY);
             Background background = new Background(backgroundFill);
             fxInputField.setBackground(background);
         }
-        
+
         // TODO - This is an interesting way to subscribe to the button click and raise the main event, passing the entered text
         final FlowPane finalFxInputField = fxInputField;
         node.internalEventListener = (String eventName, Object eventValue) -> {
@@ -1606,7 +1519,7 @@ public class JavaFXApplication extends BaseController {
                 }
             }
             node.eventListener.onEvent(node.name, enteredText);
-            
+
             // Clear the entered text
             for (Node child : finalFxInputField.getChildren()) {
                 if (child instanceof TextField field) {
@@ -1614,10 +1527,10 @@ public class JavaFXApplication extends BaseController {
                 }
             }
         };
-        
+
         return fxInputField;
     }
-    
+
     public Region newSeparator(app.node.Separator node, Separator fxSeparator) {
         logger.log(Level.INFO, "Entered: node={0}, fxSpacer={1}", new Object[]{node, fxSeparator});
         if (fxSeparator == null) {
@@ -1630,28 +1543,28 @@ public class JavaFXApplication extends BaseController {
         }
         return fxSeparator;
     }
-    
+
     public TextField newField(app.node.Field node, TextField fxTextField, RGBColor offsetColor) {
         logger.log(Level.INFO, "Entered: node={0}, fxTextField={1}, offsetColor={2}", new Object[]{node, fxTextField, offsetColor});
-        
+
         if (fxTextField == null) {
             fxTextField = new TextField();
         }
-        
+
         fxTextField.setDisable(!node.isEnabled);
-        
+
         if (node.label != null) {
             fxTextField.setPromptText(node.label);
         }
-        
+
         if (node.initialValue != null) {
             fxTextField.setText(node.initialValue);
         }
-        
+
         if (node.displayLength != null) {
             fxTextField.setPrefColumnCount(node.displayLength);
         }
-        
+
         TextFormatter<String> textFormatter = new TextFormatter<>(change -> {
             if (node.isUpperCase) {
                 // Apply the uppercase conversion to the new text
@@ -1662,39 +1575,39 @@ public class JavaFXApplication extends BaseController {
             if ((node.length != null) && (change.getControlNewText().length() > node.length)) {
                 return null; // Reject the change
             }
-            
+
             if (node.eventListener != null) {
                 // Raise an event for each entered character
                 String currentText = change.getControlNewText();
                 logger.log(Level.INFO, "Text entered: name={0}, text={1}", new Object[]{node.name, currentText});
                 node.eventListener.onEvent(node.eventName, currentText);
             }
-            
+
             return change; // Accept the change
         });
         fxTextField.setTextFormatter(textFormatter);
-        
+
         String fontName;
         if (node.textFont == null) {
             fontName = DEFAULT_FONT;
         } else {
             fontName = node.textFont;
         }
-        
+
         app.color.RGBColor textColor;
         if (node.textColor == null) {
             textColor = offsetColor;
         } else {
             textColor = node.textColor;
         }
-        
+
         double pixelSize;
         if (node.pixelSize == null) {
             pixelSize = DEFAULT_PIXEL_SIZE;
         } else {
             pixelSize = node.pixelSize;
         }
-        
+
         TextDecoration decoration = new TextDecoration();
         decoration.font = fontName;
         decoration.color = textColor;
@@ -1702,41 +1615,41 @@ public class JavaFXApplication extends BaseController {
         decoration.style = node.textStyle;
         Text fieldText = stringToText("temp", offsetColor, decoration, FontSmoothingType.LCD); // Allow stringToText to parse the font style
         fxTextField.setFont(fieldText.getFont());
-        fxTextField.setStyle("-fx-text-fill: rgb(" + textColor.getRed() + ", " + textColor.getGreen() + ", " + textColor.getBlue() + ");");                
-         
+        fxTextField.setStyle("-fx-text-fill: rgb(" + textColor.getRed() + ", " + textColor.getGreen() + ", " + textColor.getBlue() + ");");
+
         if (node.backgroundColor != null) {
             Color fxBackgroundColor = getFxColor(node.backgroundColor);
             fxTextField.setBackground(new Background(new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY)));
         } else {
             fxTextField.setBackground(Background.EMPTY); // Transparent        
         }
-        
+
         if ((node.borderWidth != null) && (node.borderWidth > 0)) {
             fxTextField.setBorder(new Border(new BorderStroke(getFxColor(offsetColor), BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
         }
-        
+
         return fxTextField;
     }
-    
+
     public Button newButton(app.node.Button node, Button fxButton, RGBColor offsetColor) {
         logger.log(Level.INFO, "Entered: node={0}, fxButton={1}, offsetColor={2}", new Object[]{node, fxButton, offsetColor});
-        
+
         Boolean isNew = true;
         if (fxButton == null) {
             fxButton = new Button();
         } else {
             isNew = false;
         }
-        
+
         fxButton.setDisable(!node.isEnabled);
-                
+
         String font;
         if (node.textFont == null) {
             font = DEFAULT_FONT;
         } else {
             font = node.textFont;
         }
-        
+
         app.color.RGBColor textColor;
         if (node.textColor == null) {
             if (node.backgroundColor != null) {
@@ -1747,14 +1660,14 @@ public class JavaFXApplication extends BaseController {
         } else {
             textColor = node.textColor;
         }
-        
+
         double pixelSize;
         if (node.pixelSize == null) {
             pixelSize = DEFAULT_PIXEL_SIZE;
         } else {
             pixelSize = node.pixelSize;
         }
-        
+
         // Configure the font style based on whether the button is enabled
         FontStyle fontStyle;
         if (node.isEnabled) {
@@ -1762,7 +1675,7 @@ public class JavaFXApplication extends BaseController {
         } else {
             fontStyle = FontStyle.ITALIC;
         }
-        
+
         // Use a graphic instead of text to support formatted text
         fxButton.setContentDisplay(ContentDisplay.CENTER);
         if (node.scaleY != null) {
@@ -1779,31 +1692,38 @@ public class JavaFXApplication extends BaseController {
         TextFlow textFlow = JavaFXApplication.stringToTextFlow(buttonText, offsetColor, decoration, FontSmoothingType.LCD);
         textFlow.setTextAlignment(TextAlignment.CENTER);
         fxButton.setGraphic(textFlow);
-        
+
         if (node.backgroundColor != null) {
             Color fxBackgroundColor = getFxColor(node.backgroundColor);
             fxButton.setBackground(new Background(new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY)));
         }
-        
+
         if ((node.borderWidth != null) && (node.borderWidth > 0)) {
             fxButton.setBorder(new Border(new BorderStroke(getFxColor(offsetColor), BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
         }
-        
+
         if (!isNew) {
             return fxButton;
         }
-        
+
         if (node.keyBinding != null) {
             KeyCode keyBinding = null;
-            if (null != node.keyBinding) switch (node.keyBinding) {
-                case UP -> keyBinding = KeyCode.UP;
-                case DOWN -> keyBinding = KeyCode.DOWN;
-                case LEFT -> keyBinding = KeyCode.LEFT;
-                case RIGHT -> keyBinding = KeyCode.RIGHT;
-                default -> { logger.log(Level.WARNING, "Unsupported key binding {0}", node.keyBinding);
+            if (null != node.keyBinding) {
+                switch (node.keyBinding) {
+                    case UP ->
+                        keyBinding = KeyCode.UP;
+                    case DOWN ->
+                        keyBinding = KeyCode.DOWN;
+                    case LEFT ->
+                        keyBinding = KeyCode.LEFT;
+                    case RIGHT ->
+                        keyBinding = KeyCode.RIGHT;
+                    default -> {
+                        logger.log(Level.WARNING, "Unsupported key binding {0}", node.keyBinding);
+                    }
                 }
             }
-            
+
             if (keyBinding != null) {
                 final KeyCode finalKeyBinding = keyBinding;
                 final Button finalFxButton = fxButton;
@@ -1817,14 +1737,14 @@ public class JavaFXApplication extends BaseController {
                 this.keyBindings.put(fxButton, keyHandler);
             }
         }
-        
+
         String eventName;
         if (node.eventName == null) {
             eventName = node.name;
         } else {
             eventName = node.eventName.toString();
         }
-        
+
         final Button fxButtonFinal = fxButton;
         if (node.eventListener != null) {
             fxButton.setOnAction(e -> {
@@ -1835,45 +1755,45 @@ public class JavaFXApplication extends BaseController {
                 node.eventListener.onEvent(eventName, node.text);
             });
         }
-        
+
         if (node.scaleY == null) {
             // Fix the height of the button scaling beyond control.  This may be an issue caused by the scroll pane.
             fxButton.prefHeightProperty().bind(
-                Bindings.createDoubleBinding(
-                    () -> textFlow.prefHeight(fxButtonFinal.getWidth()) + 10, // +10 for button padding
-                    fxButton.widthProperty(), 
-                    textFlow.widthProperty()
-                )
+                    Bindings.createDoubleBinding(
+                            () -> textFlow.prefHeight(fxButtonFinal.getWidth()) + 10, // +10 for button padding
+                            fxButton.widthProperty(),
+                            textFlow.widthProperty()
+                    )
             );
         }
-        
+
         return fxButton;
     }
-    
+
     @Override
     public void setDefaultTextDecoration(String viewName, TextDecoration textDecoration) {
         logger.log(Level.INFO, "Entered: viewName={0}, textDecoration={1}", new Object[]{viewName, textDecoration});
         this.defaultTextDecorations.put(viewName, textDecoration);
     }
-    
+
     @Override
     public TextDecoration getDefaultTextDecoration(String viewName) {
         logger.log(Level.INFO, "Entered: viewName={0}", viewName);
         TextDecoration textDecoration = this.defaultTextDecorations.get(viewName);
         return textDecoration;
     }
-    
+
     public TextFlow newLabel(String viewName, app.node.Label node, TextFlow fxLabel, RGBColor offsetColor, FontSmoothingType fst) {
         logger.log(Level.INFO, "Entered: viewName={0}, node={1}, fxLabel={2}, offsetColor={3}, fst={4}", new Object[]{viewName, node, fxLabel, offsetColor, fst});
-        
+
         fxLabel = new TextFlow(); // TODO - Support updating
         TextDecoration defaultTextDecoration = this.defaultTextDecorations.get(viewName);
-        
+
         for (app.Text text : node.texts) {
             if (text.decoration == null) {
                 text.decoration = new TextDecoration();
             }
-            
+
             if (text.decoration.font == null) {
                 if ((defaultTextDecoration != null) && (defaultTextDecoration.font != null)) {
                     text.decoration.font = defaultTextDecoration.font;
@@ -1909,7 +1829,7 @@ public class JavaFXApplication extends BaseController {
             TextFlow fxTempLabel = this.stringToTextFlow(text.text.toString(), offsetColor, text.decoration, fst);
             fxLabel.getChildren().addAll(fxTempLabel.getChildren());
         }
-        
+
         // TODO - Only set the following values if they're changing
         if (node.backgroundColor != null) {
             Color fxBackgroundColor = getFxColor(node.backgroundColor);
@@ -1917,7 +1837,7 @@ public class JavaFXApplication extends BaseController {
         } else {
             fxLabel.setBackground(Background.EMPTY); // Transparent        
         }
-        
+
         if (node.borderWidth != null) {
             Color fxBorderColor;
             if (node.borderColor != null) {
@@ -1927,10 +1847,10 @@ public class JavaFXApplication extends BaseController {
             }
             fxLabel.setBorder(new Border(new BorderStroke(fxBorderColor, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
         }
-        
+
         return fxLabel;
     }
-    
+
     public static Color getFxColor(RGBColor color) {
         logger.log(Level.INFO, "Entered: color class={0}, color={1}", new Object[]{color.getClass(), color});
         Color fxColor;
@@ -1941,18 +1861,18 @@ public class JavaFXApplication extends BaseController {
         }
         return fxColor;
     }
-    
+
     public VBox newScrollingLabel(String viewName, app.node.Label node, VBox fxTextBox, RGBColor offsetColor) {
         logger.log(Level.INFO, "Entered: node={0}, offsetColor={1}", new Object[]{node, offsetColor});
-        
+
         // Text boxes (like Strings) are immutable
         if (fxTextBox != null) {
             fxTextBox.getChildren().clear();
             this.removeNode(viewName, node.name);
         }
-        
+
         TextFlow label = newLabel(viewName, node, null, offsetColor, FontSmoothingType.GRAY); // Needed because scroll pane's dork with FontSmoothingType.LCD
-        
+
         // Allow text to be scrolled if needed
         label.setCache(false);
         ScrollPane scrollPane = new ScrollPane(label);
@@ -1967,17 +1887,17 @@ public class JavaFXApplication extends BaseController {
         scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
         scrollPane.setCache(false);
         label.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE); // Fill the scroll pane.  The scroll pane will be scaled as needed.
-        
+
         return fxTextBox;
     }
-    
+
     public TextFlow newDocument(String viewName, app.node.Document node, TextFlow fxDocument, RGBColor offsetColor) {
         logger.log(Level.INFO, "Entered: viewName={0}, node={1}, fxLabel={2}, offsetColor={3}", new Object[]{viewName, node, fxDocument, offsetColor});
-        
+
         if (fxDocument == null) {
             fxDocument = new TextFlow();
         }
-        
+
         // TODO - Only set the following values if they're changing
         if (node.backgroundColor != null) {
             Color fxBackgroundColor = getFxColor(node.backgroundColor);
@@ -1985,33 +1905,33 @@ public class JavaFXApplication extends BaseController {
         } else {
             fxDocument.setBackground(Background.EMPTY); // Transparent        
         }
-        
+
         if (node.borderWidth > 0) {
             fxDocument.setBorder(new Border(new BorderStroke(getFxColor(offsetColor), BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
         }
-        
+
         return fxDocument;
     }
-    
+
     public Rectangle newRectangle(app.node.Rectangle node, Rectangle fxRectangle, RGBColor offsetColor) {
         logger.log(Level.INFO, "Entered: node={0}, fxRectangle={1}, offsetColor={2}", new Object[]{node, fxRectangle, offsetColor});
-        
+
         if (fxRectangle == null) {
             fxRectangle = new Rectangle();
         }
-        
+
         if (node.color == null) {
             fxRectangle.setFill(Color.rgb(offsetColor.getRed(), offsetColor.getGreen(), offsetColor.getBlue(), node.opacity));
         } else {
             fxRectangle.setFill(Color.rgb(node.color.getRed(), node.color.getGreen(), node.color.getBlue(), node.opacity));
         }
-        
+
         return fxRectangle;
     }
-    
+
     public ImageView newImage(app.node.Image node, ImageView fxImageView) {
         logger.log(Level.INFO, "Entered: node={0}, fxImageView={1}", new Object[]{node, fxImageView});
-        
+
         if (fxImageView == null) {
             final Image image = loadImage(node.file);
             fxImageView = new ImageView(image);
@@ -2069,18 +1989,18 @@ public class JavaFXApplication extends BaseController {
             // Add and play the image
             timeline.play(); // TODO - Probably needs to happen after the image has been added to its parent
         }
-        
+
         return fxImageView;
     }
-    
+
     public BaseDecoratedNode newDecoratedNode(app.node.BaseNode node, BaseDecoratedNode decoratedParentNode, String viewName) {
         logger.log(Level.INFO, "Entered: node={0}, decoratedParentNode={1}, offsetColor={2}, viewName={3}", new Object[]{node, decoratedParentNode, viewName});
-        
+
         if ((node == null) || (decoratedParentNode == null)) {
             logger.log(Level.SEVERE, "Entered: Null value was provided");
             return null;
         }
-        
+
         BaseDecoratedNode decoratedNode;
         switch (node) {
             case app.node.Link link -> {
@@ -2165,10 +2085,10 @@ public class JavaFXApplication extends BaseController {
                 return null;
             }
         }
-        
+
         return decoratedNode;
     }
-    
+
     @Override
     public void changeNode(String viewName, BaseNode node, Layout layout) {
         logger.log(Level.INFO, "Entered: viewName={0}, node={1}, layout={2}", new Object[]{viewName, node, layout});
@@ -2189,27 +2109,27 @@ public class JavaFXApplication extends BaseController {
         }
         this.publishNode(viewName, parentName, node, layout, fxNode);
     }
-    
+
     @Override
     public void addNode(String viewName, String parentName, BaseNode node, Layout layout) {
         logger.log(Level.INFO, "Entered: viewName={0}, parentName={1}, node={2}, layout={3}", new Object[]{viewName, parentName, node, layout});
-        this.publishNode(viewName, parentName, node,layout, null);
+        this.publishNode(viewName, parentName, node, layout, null);
     }
-    
+
     public void publishNode(String viewName, String parentName, BaseNode node, Layout layout, Node fxNode) {
         logger.log(Level.INFO, "Entered: viewName={0}, parentName={1}, node={2}, layout={3}, fxNode={4}", new Object[]{viewName, parentName, node, layout, fxNode});
-        
+
         if (node.name == null) {
             logger.log(Level.SEVERE, "Node does not have a name!");
             return;
         }
-        
+
         BaseDecoratedNode decoratedParentNode = this.namedDecoratedNodes.get(viewName).get(parentName);
         if (decoratedParentNode == null) {
             logger.log(Level.SEVERE, "Parent node does not exist for the view");
             return;
         }
-        
+
         // TODO - The view should be stored in namedDecoratedNodes
         Object fxParent = decoratedParentNode.controllerNode;
         if (fxParent == null) {
@@ -2222,21 +2142,25 @@ public class JavaFXApplication extends BaseController {
         }
         BaseNode parent = decoratedParentNode.node;
         Boolean isNew = (fxNode == null);
-        
+
         // TODO - This is ugly.  Parent nodes do not have a base type with public getPrefWidth() and getPrefHeight() methods so each parent class needs to be handled.
         double parentWidth;
         double parentHeight;
         if (fxParent instanceof Region region) {
             parentWidth = region.getPrefWidth();
             parentHeight = region.getPrefHeight();
+        } else if (fxParent instanceof Stage stage) {
+            Scene scene = stage.getScene();
+            Pane pane = (Pane) scene.getRoot();
+            parentWidth = pane.getWidth();
+            parentHeight = pane.getHeight();
         } else {
             Class<?> parentControlClass = fxParent.getClass();
             logger.log(Level.SEVERE, "Parent does not have a supported class: {0}", parentControlClass.getSimpleName());
             return;
         }
-        
+
         // TODO - The container nodes should call into publishNode instead of addNode, looking up any pre-existing fxChild node
-        
         // TODO - Continue refactoring here.  Use a factory method to decorate an FX node for each node type.
         logger.log(Level.INFO, "Decorating node {0}", node.name);
         BaseDecoratedNode decoratedNode = newDecoratedNode(node, decoratedParentNode, viewName);
@@ -2253,15 +2177,15 @@ public class JavaFXApplication extends BaseController {
             double width = fxNode.prefWidth(-1);
             double height = fxNode.prefHeight(-1);
             logger.log(Level.INFO, "Temp dimensions for {0} = {1}x{2}p", new Object[]{node, width, height});
-            ((javafx.scene.Group)fxNode.getScene().getRoot()).getChildren().remove(fxNode);
+            ((javafx.scene.Group) fxNode.getScene().getRoot()).getChildren().remove(fxNode);
         }
-        
+
         if ((node.effects != null) && (!node.effects.isEmpty())) {
             // Effects might require a wrapper so handle effects now before adding the node to its parent so that a wrapper can be added if needed
             decoratedNode = this.addEffects(viewName, parentName, decoratedNode, layout);
             fxNode = (Node) decoratedNode.controllerNode;
         }
-        
+
         // TODO - This is ugly.  Parent nodes do not have a base type (Parent) with a public getChildren() method so each parent class needs to be handled.
         Class<?> parentClass;
         if (parent != null) {
@@ -2288,6 +2212,15 @@ public class JavaFXApplication extends BaseController {
             }
             pane.layout();
             positionNode(pane, node, layout, fxNode);
+        } else if (fxParent instanceof Stage stage) {
+            Scene scene = stage.getScene();
+            Pane pane = (Pane) scene.getRoot();
+            if (isNew) {
+                logger.log(Level.INFO, "Adding node to stage");
+                pane.getChildren().add(fxNode);
+            }
+            pane.layout();
+            positionNode(pane, node, layout, fxNode);
         } else if (parent instanceof app.node.ScrollingPane) {
             ScrollPane sp = (ScrollPane) fxParent;
             if (isNew) {
@@ -2303,7 +2236,7 @@ public class JavaFXApplication extends BaseController {
                 logger.log(Level.INFO, "Adding node to HBox");
                 hbox.getChildren().add(fxNode);
             }
-        }  else if (parentClass == app.node.ScrollingDocument.class) {
+        } else if (parentClass == app.node.ScrollingDocument.class) {
             // TODO - Most of this is redundant with Document handling above
             ScrollPane scrollPane = (ScrollPane) fxParent;
             TextFlow flow = (TextFlow) scrollPane.getContent();
@@ -2361,9 +2294,9 @@ public class JavaFXApplication extends BaseController {
             logger.log(Level.SEVERE, "Parent does not have a supported class: {0}", parentControlClass.getSimpleName());
             return;
         }
-        
+
         this.registerNode(viewName, decoratedNode, parentName, layout);
-        
+
         double width = fxNode.prefWidth(-1); //fxChild.getBoundsInLocal().getWidth();
         double relativeWidth = width / parentWidth;
         double height = fxNode.prefHeight(-1); //fxChild.getBoundsInLocal().getHeight();
@@ -2375,7 +2308,7 @@ public class JavaFXApplication extends BaseController {
         RelativeBounds relativeBounds = new RelativeBounds(new RelativeCoordinates(relativeX, relativeY), relativeWidth, relativeHeight);
         node.onEvent(NODE_PUBLISHED_EVENT, relativeBounds); // Let the node know its bounds
         logger.log(Level.INFO, "Added node {0} {1} at ({2},{3}), width={4}, height={5} using parent pixel width={6}, parent pixel height={7}, pixel width={8}, pixel height={9}", new Object[]{node, node.name, relativeX, relativeY, relativeWidth, relativeHeight, parentWidth, parentHeight, width, height});
-        
+
         // Publish any child nodes for the node
         if (node instanceof BaseCompositeNode baseCompositeNode) {
             logger.log(Level.INFO, "Publishing child nodes of composite node");
@@ -2389,20 +2322,20 @@ public class JavaFXApplication extends BaseController {
             }
         }
     }
-    
+
     public void registerNode(String viewName, BaseDecoratedNode decoratedNode, String parentName, app.Layout layout) {
         logger.log(Level.INFO, "Entered: viewName={0}, decoratedNode={1}, parentName={2}, layout={3}", new Object[]{viewName, decoratedNode, parentName, layout});
         String nodeName = decoratedNode.node.name;
         this.namedDecoratedNodes.get(viewName).put(nodeName, decoratedNode);
         this.nodeLayouts.get(viewName).put(nodeName, layout);
     }
-    
+
     public void deregisterNode(String viewName, String nodeName) {
         logger.log(Level.INFO, "Entered: viewName={0}, nodeName={1}", new Object[]{viewName, nodeName});
         this.namedDecoratedNodes.get(viewName).remove(nodeName);
         this.nodeLayouts.get(viewName).remove(nodeName);
     }
-    
+
     /*
     // TODO - Make this newGrid() and add to addNode()
     @Override
@@ -2541,9 +2474,8 @@ public class JavaFXApplication extends BaseController {
         // TODO - Apply grid's layout
         tabContent.getChildren().add(gridContent);
     }
-    */
-    
-    /*
+     */
+ /*
     @Override
     public int displayImage(String viewName, String name, String fileName, int row, int column, Boolean fillParent) {
         System.out.println("JavaFXApplication: displayImage: viewName=" + viewName + ", name=" + name + ", fileName=" + fileName + ", row=" + row + ", column=" + column + ", fillParent=" + fillParent);
@@ -2585,8 +2517,7 @@ public class JavaFXApplication extends BaseController {
         
         return nextRow;
     }
-    */
-    
+     */
     public void positionNodeOld(Pane parent, Node childNode, Coordinates prefCoordinates) {
         // Position the node relative to the parent content
         Double paneWidth = parent.getPrefWidth();
@@ -2597,37 +2528,40 @@ public class JavaFXApplication extends BaseController {
         childNode.layoutYProperty().bind(parent.heightProperty().multiply(relativePositionY));
         System.out.println("JavaFXApplication: positionNode: parent=" + parent + ", childNode=" + childNode + ", prefCoordinates=" + prefCoordinates + ", paneWidth=" + paneWidth + ", paneHeight=" + paneHeight + ", relativePositionX=" + relativePositionX + ", relativePositionY=" + relativePositionY);
     }
-    
+
     @Override
     public void refreshView(String viewName) {
         System.out.println("JavaFXApplication: refreshView: viewName=" + viewName);
-        
+
         BaseView view = this.views.get(viewName);
         int index = this.getTabIndex(viewName);
         this.removeTab(viewName);
-        this.addView(view, false, index, true);
+        this.addView(view, index, true);
     }
-    
+
     public static Text stringToText(String string, RGBColor offsetColor, TextDecoration decoration, FontSmoothingType fst) {
         logger.log(Level.FINE, "Entered: string={0}, offsetColor={1}, decoration={2}, fst={3}", new Object[]{string, offsetColor, decoration, fst});
-        
+
         Text text = new Text(string);
-        
+
         if (decoration == null) {
             decoration = new TextDecoration();
         }
-        
+
         // Configure the font
         if (decoration.style == null) {
             decoration.style = FontStyle.NORMAL;
         }
-        
+
         FontPosture fxStyle = null;
         FontWeight fxWeight = FontWeight.NORMAL;
         switch (decoration.style) {
-            case FontStyle.NORMAL -> fxWeight = FontWeight.NORMAL;
-            case FontStyle.BOLD -> fxWeight = FontWeight.BOLD;
-            case FontStyle.ITALIC -> fxStyle = FontPosture.ITALIC;
+            case FontStyle.NORMAL ->
+                fxWeight = FontWeight.NORMAL;
+            case FontStyle.BOLD ->
+                fxWeight = FontWeight.BOLD;
+            case FontStyle.ITALIC ->
+                fxStyle = FontPosture.ITALIC;
             case FontStyle.UNDERLINE_DOUBLE -> {
                 // TODO - Not supported, needs styling
                 fxWeight = FontWeight.NORMAL;
@@ -2671,7 +2605,7 @@ public class JavaFXApplication extends BaseController {
                 fxWeight = FontWeight.NORMAL;
             }
         }
-        
+
         // Configure the text font
         if (decoration.font == null) {
             decoration.font = Font.getDefault().getName();
@@ -2693,9 +2627,9 @@ public class JavaFXApplication extends BaseController {
                 }
             }
         }
-        
+
         // Adjust for DPI
-        if(decoration.pixelSize == null) {
+        if (decoration.pixelSize == null) {
             decoration.pixelSize = DEFAULT_FONT_SIZE;
         }
         double newFontSize = adjustFontSizeForDPI(decoration.pixelSize);
@@ -2709,15 +2643,15 @@ public class JavaFXApplication extends BaseController {
         if (decoration.color != null) {
             text.setFill(getFxColor(decoration.color));
         }
-        
+
         text.setFontSmoothingType(fst);
-        
+
         return text;
     }
-    
+
     public static void loadEmojiData() {
         System.out.println("JavaFXApplication: loadEmojiData");
-        
+
         if (EMOJI_SHEET == null) {
             System.out.println("JavaFXApplication: loadEmojiData: Loading emoji sheet");
             EMOJI_SHEET = loadImage(EMOJI_SHEET_FILE);
@@ -2725,7 +2659,7 @@ public class JavaFXApplication extends BaseController {
 
         if (EMOJI_MAP == null) {
             System.out.println("JavaFXApplication: loadEmojiData: Loading emoji map");
-            
+
             EMOJI_MAP = new HashMap();
 
             // Build a map of every emoji according to its unified value
@@ -2749,24 +2683,24 @@ public class JavaFXApplication extends BaseController {
             }
         }
     }
-    
+
     public static Boolean isEmoji(String string) {
         // Check if the cluster contains a character intended to be an emoji
         boolean isVisualEmoji = string.codePoints()
-            .anyMatch(cp -> Character.isEmojiPresentation(cp) || 
-                            Character.isEmojiModifier(cp) ||
-                            cp == 0xFE0F); // VS-16: Forces emoji presentation
+                .anyMatch(cp -> Character.isEmojiPresentation(cp)
+                || Character.isEmojiModifier(cp)
+                || cp == 0xFE0F); // VS-16: Forces emoji presentation
         return isVisualEmoji;
     }
-    
+
     public static String getEmojiUnifiedValue(String emoji) {
         String unifiedValue = emoji.codePoints()
-            .mapToObj(cp -> String.format("%04X", cp))
-            .collect(Collectors.joining("-"));
+                .mapToObj(cp -> String.format("%04X", cp))
+                .collect(Collectors.joining("-"));
         return unifiedValue;
     }
-    
-    public static ImageView stringToEmoji(String string, TextDecoration decoration) {        
+
+    public static ImageView stringToEmoji(String string, TextDecoration decoration) {
         if (!isEmoji(string)) {
             return null;
         }
@@ -2802,7 +2736,7 @@ public class JavaFXApplication extends BaseController {
         pixelSize = adjustFontSizeForDPI(pixelSize);
         emojiView.setFitHeight(pixelSize);
         emojiView.setPreserveRatio(true);
-        
+
         if ((decoration != null) && (decoration.style == FontStyle.UNDERLINE_LINK)) {
             emojiView.setOnMouseEntered(e -> emojiView.setOpacity(0.8));
             emojiView.setOnMouseExited(e -> emojiView.setOpacity(1.0));
@@ -2813,21 +2747,21 @@ public class JavaFXApplication extends BaseController {
                 finalDecoration.eventListener.onEvent(string, null);
             });
         }
-        
+
         return emojiView;
     }
-    
+
     public static TextFlow stringToTextFlow(String string, RGBColor offsetColor, TextDecoration decoration, FontSmoothingType fst) {
         logger.log(Level.FINE, "Entered: string={0}, offsetColor={1}, decoration={2}, fst={3}", new Object[]{string, offsetColor, decoration, fst});
-        
+
         if ((string == null) || (string.isEmpty())) {
             return new TextFlow();
         }
-        
+
         TextFlow textFlow = new TextFlow();
-        
+
         String nonEmojiText = "";
-        
+
         // \X matches a "Unicode extended grapheme cluster" (the full emoji)
         Matcher matcher = Pattern.compile("\\X").matcher(string);
         while (matcher.find()) {
@@ -2841,7 +2775,7 @@ public class JavaFXApplication extends BaseController {
                     textFlow.getChildren().add(textNode);
                     nonEmojiText = "";
                 }
-                
+
                 // Emoji - Add an ImageView
                 System.out.println("JavaFXApplication: stringToTextFlow: Handling emoji: " + cluster);
                 ImageView emojiView = stringToEmoji(cluster, decoration);
@@ -2851,7 +2785,7 @@ public class JavaFXApplication extends BaseController {
                 nonEmojiText += cluster;
             }
         }
-        
+
         if (!nonEmojiText.isEmpty()) {
             Text textNode = stringToText(nonEmojiText, offsetColor, decoration, fst);
             textFlow.getChildren().add(textNode);
@@ -2859,7 +2793,7 @@ public class JavaFXApplication extends BaseController {
 
         return textFlow;
     }
-    
+
     /*
     @Override
     public void displayFloatingText(String viewName, String name, String text, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, app.Color fontColor, Integer fontSize, Integer fontStyle, String fontName) {
@@ -2908,9 +2842,8 @@ public class JavaFXApplication extends BaseController {
         // textFlow.layout(); // Force a layout pass to ensure all bounds are updated
         // double finalHeight = textFlow.getBoundsInLocal().getHeight();
     }
-    */
-    
-    /*
+     */
+ /*
     @Override
     public void displayInputField(String viewName, String name, String label, int length, int row, int column, String initValue, Boolean addButton, Boolean isMonospace, Boolean isUpperCase, Boolean isMultiUse, EventListener listener) {
         System.out.println("JavaFXApplication: displayInputField: viewName=" + viewName + ", name=" + name + ", label=" + label + ", length=" + length + ", row=" + row + ", column=" + column + ", initValue=" + initValue + ", addButton=" + addButton + ", isMonospace=" + isMonospace + ", isUpperCase=" + isUpperCase + ", isMultiUse=" + isMultiUse + ", listener=" + listener);
@@ -2974,31 +2907,30 @@ public class JavaFXApplication extends BaseController {
             );
         }
     }
-    */
-    
+     */
     public FlowPane newButtonGroup(app.node.ButtonGroup node, FlowPane fxButtonGroup, RGBColor offsetColor) {
         logger.log(Level.INFO, "Entered: node={0}, fxButtonGroup={1}, offsetColor={2}", new Object[]{node, fxButtonGroup, offsetColor});
-        
+
         if (fxButtonGroup == null) {
             fxButtonGroup = new FlowPane();
         }
-        
+
         if (node.spacerPixels != null) {
             fxButtonGroup.setHgap(node.spacerPixels);
             fxButtonGroup.setVgap(node.spacerPixels);
             fxButtonGroup.setPadding(new Insets(node.spacerPixels));
         }
-        
+
         if (node.backgroundColor != null) {
             Color fxBackgroundColor = getFxColor(node.backgroundColor);
             BackgroundFill backgroundFill = new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY);
             Background background = new Background(backgroundFill);
             fxButtonGroup.setBackground(background);
         }
-        
+
         return fxButtonGroup;
     }
-    
+
     /*
     @Override
     public void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, Layout layout, EventListener listener, Boolean allowRepeatClicks) {
@@ -3099,10 +3031,9 @@ public class JavaFXApplication extends BaseController {
         
         this.namedFXNodes.get(viewName).put(name, flowPane);
     }
-    */
     
     //@Override
-    public int displayGifOrig(String viewName, String fileName, int row, int column) {
+    public void displayGifOrig(String viewName, String fileName, int row, int column) {
         System.out.println("JavaFXApplication: displayGif: viewName=" + viewName + ", fileName=" + fileName + ", row=" + row + ", column=" + column);
         
         Pane content = this.tabContentMap.get(viewName);
@@ -3120,83 +3051,8 @@ public class JavaFXApplication extends BaseController {
         
         // Add the image
         content.getChildren().add(gifView);
-        
-        Coordinates dimensions = getDimensions(fileName);
-        int nextRow = row + ((int) dimensions.y / this.fontHeight) + 1;
-        
-        return nextRow;
     }
-    
-    @Override
-    public int displayGif(String viewName, String fileName, int row, int column) {
-        System.out.println("JavaFXApplication: displayGif: viewName=" + viewName + ", fileName=" + fileName + ", row=" + row + ", column=" + column);
-        
-        if (!IS_JPRO) {
-            System.out.println("JavaFXApplication: displayGif: Detected desktop app, reverting to regular gif support");
-            return this.displayGifOrig(viewName, fileName, row, column);
-        }
-        
-        Pane content = this.tabContentMap.get(viewName);
-        
-        ImageView imageView = new ImageView();
-        Coordinates coordinates = this.convertToCoordinates(row, column);
-        this.positionNodeOld(content, imageView, coordinates);
-        //imageView.setLayoutX(coordinates.x);
-        //imageView.setLayoutY(coordinates.y);
-        
-        List<Image> frames = new ArrayList<>();
-        List<Duration> frameDelays = new ArrayList<>();
-        Timeline timeline;
-        
-        javax.imageio.ImageReader reader = javax.imageio.ImageIO.getImageReadersByFormatName("gif").next();
-        try (javax.imageio.stream.ImageInputStream ciis = javax.imageio.ImageIO.createImageInputStream(getClass().getResourceAsStream(fileName))) {
-            reader.setInput(ciis, false);
-            int numberOfImages = reader.getNumImages(true);
-
-            for (int i = 0; i < numberOfImages; i++) {
-                java.awt.image.BufferedImage image = reader.read(i);
-                Image fxImage = SwingFXUtils.toFXImage(image, null); // Convert to JavaFX Image
-                frames.add(fxImage);
-
-                // Extract frame delay
-                IIOMetadata metadata = reader.getImageMetadata(i);
-                int delayMs = getFrameDelay(metadata);
-                frameDelays.add(Duration.millis(delayMs));
-            }
-        } catch (Exception e) {
-            System.err.println("JavaFXApplication: displayGif: Error! " + e.toString());
-            // TODO - Handle error (e.g., load a fallback static image)
-        }
-        
-        if (frames.isEmpty()) {
-            return 0;
-        }
-
-        timeline = new Timeline();
-        timeline.setCycleCount(Timeline.INDEFINITE); // Loop indefinitely
-
-        Duration currentTime = Duration.ZERO;
-        for (int i = 0; i < frames.size(); i++) {
-            final int frameIndex = i;
-            // Add a KeyFrame at the specific time instant to switch the image
-            KeyFrame keyFrame = new KeyFrame(currentTime, event -> {
-                imageView.setImage(frames.get(frameIndex));
-            });
-            timeline.getKeyFrames().add(keyFrame);
-            // Advance the time by the frame's duration
-            currentTime = currentTime.add(frameDelays.get(i));
-        }
-        
-        // Add and play the image
-        content.getChildren().add(imageView);
-        timeline.play();
-        
-        Coordinates dimensions = getDimensions(fileName);
-        int nextRow = row + ((int) dimensions.y / this.fontHeight) + 1;
-        
-        return nextRow;
-    }
-    
+     */
     public static int getFrameDelay(IIOMetadata metadata) {
         String metadataFormat = metadata.getNativeMetadataFormatName();
         org.w3c.dom.Node root = metadata.getAsTree(metadataFormat);
@@ -3210,7 +3066,7 @@ public class JavaFXApplication extends BaseController {
                     // Delay time is in hundredths of a second (centiseconds)
                     int delay = Integer.parseInt(delayTimeNode.getNodeValue());
                     // Convert to milliseconds
-                    return delay * 10; 
+                    return delay * 10;
                 } catch (NumberFormatException e) {
                     // Handle parse error, return default
                 }
@@ -3218,7 +3074,7 @@ public class JavaFXApplication extends BaseController {
         }
         return 100; // Default to 100ms if info can't be found
     }
-    
+
     public static org.w3c.dom.Node getNode(org.w3c.dom.Node rootNode, String nodeName) {
         for (int i = 0; i < rootNode.getChildNodes().getLength(); i++) {
             if (rootNode.getChildNodes().item(i).getNodeName().equalsIgnoreCase(nodeName)) {
@@ -3227,17 +3083,7 @@ public class JavaFXApplication extends BaseController {
         }
         return null;
     }
-    
-    public Coordinates convertToCoordinates(int row, int column) {
-        System.out.println("JavaFXApplication: convertToCoordinates: row=" + row + ", column=" + column);
-        
-        int x = (int) ((column) * this.fontWidth) - this.fontWidth;
-        int y = (int) ((row) * this.fontHeight) - this.fontHeight;
-        Coordinates coordinates = new Coordinates(x, y);
-        
-        return coordinates;
-    }
-    
+
     @Override
     public void setTimer(String name, double seconds, EventListener listener) {
         System.out.println("JavaFXApplication: setTimer: name=" + name + ", seconds=" + seconds + ", listener=" + listener);
@@ -3261,7 +3107,7 @@ public class JavaFXApplication extends BaseController {
         timeline.setCycleCount(1);
         timeline.play();
     }
-    
+
     @Override
     public void removeTimer(String name) {
         System.out.println("JavaFXApplication: removeTimer: name=" + name);
@@ -3272,26 +3118,28 @@ public class JavaFXApplication extends BaseController {
         }
         // TODO - Could store the timeline and call timeline.stop();
     }
-    
-    @Override
-    public Coordinates getDimensions(String imageFileName) {
-        System.out.println("JavaFXApplication: getDimensions: imageFileName=" + imageFileName);
-        
+
+    public static Coordinates getDimensions(String imageFileName) {
+        logger.log(Level.INFO, "Entered: imageFileName={0}", imageFileName);
         Image image = loadImage(imageFileName);
-        
-        if (image == null) {
-            return null;
-        }
-        
-        Coordinates dimensions = new Coordinates((int) image.getWidth(), (int) image.getHeight());
-        System.out.println("JavaFXApplication: getDimensions: image.getWidth()=" + image.getWidth() + ", image.getHeight()=" + image.getHeight());
-        
-        return dimensions;
+        return getDimensions(image);
     }
     
+    public static Coordinates getDimensions(Image image) {
+        logger.log(Level.INFO, "Entered: image={0}", image);
+
+        if (image == null) {
+            return new Coordinates(0, 0);
+        }
+
+        Coordinates dimensions = new Coordinates((int) image.getWidth(), (int) image.getHeight());
+
+        return dimensions;
+    }
+
     public static Image loadImage(String fileName) {
         System.out.println("JavaFXApplication: loadImage: fileName=" + fileName);
-        
+
         Image image = null;
         try (InputStream inputStream = JavaFXApplication.class.getResourceAsStream(fileName)) {
             if (inputStream != null) {
@@ -3302,64 +3150,14 @@ public class JavaFXApplication extends BaseController {
         } catch (Exception e) {
             System.err.println("JavaFXApplication: getDimensions: Error loading image!  fileName=" + fileName);
         }
-        
+
         return image;
     }
-    
-    @Override
-    public int getTextColumns() {
-        return this.textColumns;
-    }
-    
-    @Override
-    public int getTextRows() {
-        return this.textRows;
-    }
-    
-    @Override
-    public int getColumns(String fileName) {
-        System.out.println("JavaFXApplication: getColumns: fileName=" + fileName);
-        Coordinates dimensions = getDimensions(fileName);
-        int columns = ((int) dimensions.x / this.fontWidth) + 1;
-        return columns;
-    }
-    
-    @Override
-    public int getRows(String fileName) {
-        System.out.println("JavaFXApplication: getRows: fileName=" + fileName);
-        Coordinates dimensions = getDimensions(fileName);
-        int rows = ((int) dimensions.y / this.fontHeight) + 1;
-        return rows;
-    }
-    
-    public int getColumns(int x) {
-        int columns = ((int) x / this.fontWidth) + 1;
-        return columns;
-    }
-    
-    public int getRows(int y) {
-        int rows = ((int) y / this.fontHeight) + 1;
-        return rows;
-    }
-    
-    @Override
-    public int getButtonColumns(String buttonText) {
-        int width = (buttonText.length() * this.fontWidth) + (2 * this.fontWidth);    // Calculate width of text plus buffer of two imaginary characters
-        int columns = this.getColumns(width);
-        return columns;
-    }
-    
-    @Override
-    public int getButtonRows() {
-        int height = 2 * this.fontHeight;   // Calculate double height of text
-        int rows = getRows(height);
-        return rows;
-    }
-    
+
     @Override
     public void addAnimation(String viewName, String name, int row, int column, String backgroundImageFileName, List<String> imageFiles, double animationDelay, Animation listener) {
         System.out.println("JavaFXApplication: addAnimation: viewName=" + viewName + ", name=" + name + ", row=" + row + ", column=" + column + ", backgroundImageFileName=" + backgroundImageFileName + ", image file count=" + imageFiles.size() + ", animationDelay=" + animationDelay + ", listener=" + listener);
-                
+
         // Cache each sprite image
         Map<String, Image> spriteImages = new HashMap();
         for (String imageFile : imageFiles) {
@@ -3369,9 +3167,11 @@ public class JavaFXApplication extends BaseController {
             Image spriteImage = this.loadImage(imageFile);
             spriteImages.put(imageFile, spriteImage);
         }
-        
+
         // Place the animation background
-        Coordinates topLeft = this.convertToCoordinates(row, column);
+        //Coordinates topLeft = this.convertToCoordinates(row, column);
+        // TODO - This should be handled by a Layout
+        Coordinates topLeft = new Coordinates(0, 0);
         Image backgroundImage = this.loadImage(backgroundImageFileName);
         ImageView backgroundImageView = new ImageView(backgroundImage);
         Coordinates animationDimensions = this.getDimensions(backgroundImageFileName);
@@ -3381,17 +3181,17 @@ public class JavaFXApplication extends BaseController {
         backgroundImageView.setLayoutY(0);
         Pane animationBackground = new Pane();
         animationBackground.getChildren().add(backgroundImageView);
-        
+
         // Set a timer to fetch and display the current sprites
         PauseTransition pause = new PauseTransition(Duration.seconds(animationDelay));
         pause.setOnFinished(event -> animate(viewName, topLeft, pause, listener, animationDimensions, animationBackground, backgroundImageView, spriteImages));
         pause.play();
     }
-    
+
     public void animate(String viewName, Coordinates topLeft, PauseTransition pause, Animation listener, Coordinates animationDimensions, Pane animationBackground, ImageView backgroundImageView, Map<String, Image> spriteImages) {
         // Retrieve updated sprites
         List<Sprite> sprites = listener.onAnimate();
-        
+
         // Clean up the animation 
         if (sprites == null) {
             System.out.println("JavaFXApplication: animate: No more sprite data, done");
@@ -3413,8 +3213,8 @@ public class JavaFXApplication extends BaseController {
             animationBackground.setLayoutY(topLeft.y + 1);
             Pane content = this.tabContentMap.get(viewName);
             content.getChildren().add(animationBackground);
-        }        
-        
+        }
+
         // Clear the animation background and re-add the sprites
         List<Node> nodesToRemove = new ArrayList<>();
         for (Node node : animationBackground.getChildren()) {
@@ -3428,7 +3228,7 @@ public class JavaFXApplication extends BaseController {
             }
         }
         animationBackground.getChildren().removeAll(nodesToRemove);
-        
+
         // Build a list of sprite image views
         List<ImageView> spriteImageViews = new ArrayList();
         Map<Sprite, ImageView> spriteImageViewMap = new HashMap();
@@ -3438,26 +3238,25 @@ public class JavaFXApplication extends BaseController {
             spriteView.setLayoutX(sprite.x);
             spriteView.setLayoutY(sprite.y);
             //System.out.println("JavaFXApplication: animate: Added " + sprite.imageFile + " to " + sprite.x + ", " + sprite.y);
-            
+
             // Scale each sprite relative to the size of the animation background
             //Double spriteHeight = spriteView.getFitHeight();
             //Double spriteWidth = spriteView.getFitWidth();
             Double scaledSpriteHeight = animationDimensions.y * sprite.imageScale;
             //Double scaledSpriteWidth = spriteWidth * (scaledSpriteHeight / spriteHeight);
             spriteView.setFitHeight(scaledSpriteHeight);
-            spriteView.setPreserveRatio(true); 
+            spriteView.setPreserveRatio(true);
             //System.out.println("JavaFXApplication: animate: Sprite " + sprite.imageFile + " scale " + sprite.imageScale + ", height=" + spriteView.getFitHeight() + ", width=" + spriteView.getFitWidth());
             //spriteView.setFitWidth(scaledSpriteWidth);
-            
+
             // Make the sprite size responsive to changes in the size of the animation background
             //spriteView.fitWidthProperty().bind(animationBackground.widthProperty());
             //spriteView.fitHeightProperty().bind(animationBackground.heightProperty());
-            
             // Collect each ImageView in a list
             spriteImageViews.add(spriteView);
             spriteImageViewMap.put(sprite, spriteView);
         }
-        
+
         // For each collision, apply a red tint effect to both image views.
         // Saturation 1.0 makes colors vivid.  Reducing it moves toward grayscale first.
         // Hue adjustment shifts the color spectrum.  Red is around 0.0 or -1.0/1.0.
@@ -3465,10 +3264,10 @@ public class JavaFXApplication extends BaseController {
         // Might need to experiment with values between -1.0 and 1.0 to find the perfect shade of red.
         // Increase brightness/contrast if the resulting image is too dark
         ColorAdjust colorAdjust = new ColorAdjust();
-        colorAdjust.setSaturation(1.0); 
-        colorAdjust.setHue(-0.3); 
-        colorAdjust.setBrightness(0.1); 
-        
+        colorAdjust.setSaturation(1.0);
+        colorAdjust.setHue(-0.3);
+        colorAdjust.setBrightness(0.1);
+
         // Check for collisions
         for (Sprite sprite : spriteImageViewMap.keySet()) {
             if (sprite.potentialCollisionNames != null) {
@@ -3490,7 +3289,7 @@ public class JavaFXApplication extends BaseController {
                                 imageView.setEffect(colorAdjust);
                                 potentialCollisionImageView.setEffect(colorAdjust);
                                 // Raise the sprite event for a collision on both sprites
-                                sprite.onCollision(potentialCollisionSprite);                                
+                                sprite.onCollision(potentialCollisionSprite);
                                 potentialCollisionSprite.onCollision(sprite);
                             }
                         }
@@ -3506,7 +3305,7 @@ public class JavaFXApplication extends BaseController {
             }
             ImageView imageView = spriteImageViewMap.get(sprite);
             this.glowSprite(sprite, imageView, colorAdjust);
-        }        
+        }
         // TODO - Handle edge of animation background boundaries
         // This is disabled for now because preserving scaling and preserving the image's ratio causes the clipped image to grow
         /*
@@ -3552,27 +3351,27 @@ public class JavaFXApplication extends BaseController {
                 }
             }
         }
-        */
-        
+         */
+
         Rectangle clipRectangle = new Rectangle();
         clipRectangle.setWidth(animationBackground.getWidth());
         clipRectangle.setHeight(animationBackground.getHeight());
         animationBackground.setClip(clipRectangle);
-        
+
         // Re-add the sprites to the animation background
         for (ImageView spriteImageView : spriteImageViews) {
             animationBackground.getChildren().add(spriteImageView);
         }
-        
+
         // Reset the timer
         pause.playFromStart();
     }
-    
+
     public void glowSprite(Sprite sprite, ImageView spriteView, Effect currentEffect) {
         if (sprite.glowColor == null) {
             return;
         }
-        
+
         DropShadow glow = new DropShadow();
         glow.setRadius(20);
         glow.setColor(getFxColor(sprite.glowColor));
@@ -3582,7 +3381,7 @@ public class JavaFXApplication extends BaseController {
         glow.setInput(currentEffect);
         spriteView.setEffect(glow);
     }
-    
+
     public static boolean isColliding(ImageView node1, ImageView node2) {
         // 1. Check for bounding box overlap in the scene coordinates
         // We use localToParent transform to get bounds relative to a common parent/scene
@@ -3595,7 +3394,6 @@ public class JavaFXApplication extends BaseController {
 
         // TODO - For performance, use app.javafx.CollisionMask
         //return mask.intersects(otherMask, this.getX(), this.getY(), other.getX(), other.getY());
-
         // Determine the overlapping rectangle in scene coordinates
         double intersectionMinX = Math.max(bounds1.getMinX(), bounds2.getMinX());
         double intersectionMinY = Math.max(bounds1.getMinY(), bounds2.getMinY());
@@ -3633,7 +3431,7 @@ public class JavaFXApplication extends BaseController {
 
         return false; // No colliding pixels found in the intersection area
     }
-    
+
     public static double getPixelAlpha(Image image, double x, double y) {
         // Check bounds first
         if (x >= 0 && x < image.getWidth() && y >= 0 && y < image.getHeight()) {
@@ -3653,11 +3451,11 @@ public class JavaFXApplication extends BaseController {
     public static double translateToOriginalY(ImageView iv, double localY) {
         return localY * (iv.getImage().getHeight() / iv.getBoundsInLocal().getHeight());
     }
-    
+
     @Override
     public void playSound(String fileName, Boolean isLoop) {
         System.out.println("JavaFXApplication: playSound: fileName=" + fileName + ", isLoop=" + isLoop);
-        
+
         if (IS_JPRO) {
             logger.log(Level.WARNING, "Sound is not supported for JPro environments");
             return;
@@ -3671,9 +3469,9 @@ public class JavaFXApplication extends BaseController {
 
         this.audioLock.lock();
         System.out.println("JavaFXApplication: playSound: Claimed lock");
-        
+
         try {
-            Media media = new Media(resource.toURI().toString());        
+            Media media = new Media(resource.toURI().toString());
             final MediaPlayer mediaPlayer = new MediaPlayer(media);
             if (this.mediaPlayers.containsKey(fileName)) {
                 List<MediaPlayer> list = this.mediaPlayers.get(fileName);
@@ -3713,24 +3511,24 @@ public class JavaFXApplication extends BaseController {
         } finally {
             this.audioLock.unlock();
         }
-        
+
         // Fallback code for troublshooting whether missing codecs are to blame
         /*
         AudioClip audioClip = new AudioClip(resource.toExternalForm());
         audioClip.setVolume(0.8);
         audioClip.play();
-        */
+         */
     }
-    
+
     @Override
     public void stopSound(String fileName, Boolean removeAudioPlayer) {
         System.out.println("JavaFXApplication: stopSound: fileName=" + fileName + ", removeAudioPlayer=" + removeAudioPlayer);
-        
+
         if (IS_JPRO) {
             logger.log(Level.WARNING, "Sound is not supported for JPro environments");
             return;
         }
-        
+
         if (!this.mediaPlayers.containsKey(fileName)) {
             System.out.println("JavaFXApplication: stopSound: Collection for file not found");
             return;
@@ -3738,7 +3536,7 @@ public class JavaFXApplication extends BaseController {
 
         this.audioLock.lock();
         System.out.println("JavaFXApplication: stopSound: Claimed lock");
-        
+
         try {
             List<MediaPlayer> list = this.mediaPlayers.get(fileName);
             for (MediaPlayer mediaPlayer : list) {
@@ -3762,19 +3560,19 @@ public class JavaFXApplication extends BaseController {
             this.audioLock.unlock();
         }
     }
-    
+
     @Override
     public void stopAllSounds() {
         System.out.println("JavaFXApplication: stopAllSounds");
-        
+
         if (IS_JPRO) {
             logger.log(Level.WARNING, "Sound is not supported for JPro environments");
             return;
         }
-        
+
         this.audioLock.lock();
         System.out.println("JavaFXApplication: stopAllSounds: Claimed lock");
-        
+
         try {
             for (String fileName : this.mediaPlayers.keySet()) {
                 for (MediaPlayer mediaPlayer : this.mediaPlayers.get(fileName)) {
@@ -3792,19 +3590,19 @@ public class JavaFXApplication extends BaseController {
             this.audioLock.unlock();
         }
     }
-    
+
     @Override
     public void pauseAllSounds() {
         System.out.println("JavaFXApplication: pauseAllSounds");
-        
+
         if (IS_JPRO) {
             logger.log(Level.WARNING, "Sound is not supported for JPro environments");
             return;
         }
-        
+
         this.audioLock.lock();
         System.out.println("JavaFXApplication: pauseAllSounds: Claimed lock");
-        
+
         try {
             for (Map.Entry<String, List<MediaPlayer>> entry : this.mediaPlayers.entrySet()) {
                 List<MediaPlayer> mediaPlayers = entry.getValue();
@@ -3821,19 +3619,19 @@ public class JavaFXApplication extends BaseController {
             this.audioLock.unlock();
         }
     }
-    
+
     @Override
     public void unpauseAllSounds() {
         System.out.println("JavaFXApplication: unpauseAllSounds");
-        
+
         if (IS_JPRO) {
             logger.log(Level.WARNING, "Sound is not supported for JPro environments");
             return;
         }
-        
+
         this.audioLock.lock();
         System.out.println("JavaFXApplication: unpauseAllSounds: Claimed lock");
-        
+
         try {
             for (Map.Entry<String, List<MediaPlayer>> entry : this.mediaPlayers.entrySet()) {
                 List<MediaPlayer> mediaPlayers = entry.getValue();
@@ -3850,7 +3648,7 @@ public class JavaFXApplication extends BaseController {
             this.audioLock.unlock();
         }
     }
-    
+
     @Override
     public void sendToFront(String viewName, String name) {
         System.out.println("JavaFXApplication: sendToFront: viewName=" + viewName + ", name=" + name);
@@ -3861,7 +3659,7 @@ public class JavaFXApplication extends BaseController {
         }
         control.toFront();
     }
-    
+
     @Override
     public void sendToBack(String viewName, String name) {
         System.out.println("JavaFXApplication: sendToBack: viewName=" + viewName + ", name=" + name);

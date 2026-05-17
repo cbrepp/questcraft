@@ -2,6 +2,7 @@ package app.controller;
 
 import app.Utility;
 import static app.controller.BaseController.logger;
+import app.view.BaseSplashView;
 import app.view.BaseView;
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,13 +54,13 @@ public class Bootstrap {
         String appName = getAppName(configAppClass);
 
         // Initialize the splash view
-        BaseView splashView = null;
+        BaseSplashView splashView = null;
         if (configSplashClass != null) {
             logger.log(Level.INFO, "Initializing the splash view for {0}", appName);
-            splashView = (BaseView) Utility.instance(configSplashClass, appName);
+            splashView = (BaseSplashView) Utility.instance(configSplashClass, appName);
             clazz = splashView.getClass();
             if (!BaseView.class.isAssignableFrom(clazz)) {
-                logger.log(Level.SEVERE, "Splash view is not an application view: {0}", clazz.getName());
+                logger.log(Level.SEVERE, "Splash view is not a splash application view: {0}", clazz.getName());
                 return;
             }
         }

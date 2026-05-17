@@ -63,6 +63,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import app.view.Animation;
+import app.view.BaseSplashView;
 
 public class SWTApplication extends BaseController {
 
@@ -118,7 +119,7 @@ public class SWTApplication extends BaseController {
     }
 
     @Override
-    public void open(BaseView splashView, BaseView mainView) {
+    public void open(BaseSplashView splashView, BaseView mainView) {
         if (splashView != null) {
             this.display = new Display();
             this.displayShell(splashView);
@@ -388,7 +389,7 @@ public class SWTApplication extends BaseController {
         if (index == null) {
             index = this.tabIndexMap.size();
         }
-        this.addView(view, isParent, index, false);
+        this.addView(view, index, false);
     }
     
     public static void setTabLabel(CTabItem tab, BaseView view) {
@@ -402,8 +403,10 @@ public class SWTApplication extends BaseController {
     }
     
     @Override
-    public void addView(BaseView view, Boolean isParent, int index, Boolean isRefresh) {
-        System.out.println("SWTApplication: addView: name=" + view.name + ", isParent=" + isParent + ", index=" + index + ", isRefresh=" + isRefresh);
+    public void addView(BaseView view, int index, Boolean isRefresh) {
+        System.out.println("SWTApplication: addView: name=" + view.name + ", index=" + index + ", isRefresh=" + isRefresh);
+        
+        Boolean isParent = false; // TODO: This changed
         
         Composite composite;
         if (isParent) {
@@ -511,7 +514,6 @@ public class SWTApplication extends BaseController {
         }
     }
     
-    @Override
     public Coordinates getDimensions(String imageFileName) {
         System.out.println("SWTApplication: getDimensions: imageFileName=" + imageFileName);
         Coordinates dimensions = null;
@@ -563,46 +565,6 @@ public class SWTApplication extends BaseController {
         textArea.addListener(SWT.Resize, event -> {
             textArea.setBackgroundImage(backgroundImage);
         });
-    }
-    
-    @Override
-    public int getTextColumns() {
-        return this.textColumns;
-    }
-    
-    @Override
-    public int getTextRows() {
-        return this.textRows;
-    }
-    
-    @Override
-    public int getColumns(String fileName) {
-        System.out.println("SWTApplication: getColumns: fileName=" + fileName);
-        Coordinates dimensions = getDimensions(fileName);
-        int columns = getColumns(dimensions.x);
-        return columns;
-    }
-    
-    @Override
-    public int getRows(String fileName) {
-        System.out.println("SWTApplication: getRows: fileName=" + fileName);
-        Coordinates dimensions = getDimensions(fileName);
-        int rows = getRows(dimensions.x);
-        return rows;
-    }
-    
-    @Override
-    public int getButtonColumns(String buttonText) {
-        int width = (buttonText.length() * this.fontWidth) + (2 * this.fontWidth);    // Calculate width of text plus buffer of two imaginary characters
-        int columns = this.getColumns(width);
-        return columns;
-    }
-    
-    @Override
-    public int getButtonRows() {
-        int height = 2 * this.fontHeight;   // Calculate double height of text
-        int rows = getRows(height);
-        return rows;
     }
     
     @Override
@@ -1194,7 +1156,6 @@ public class SWTApplication extends BaseController {
         int nextRow = row + this.getRows(dimensions.y);
         return nextRow;
     }
-    */
     
     @Override
     public int displayGif(String viewName, String fileName, int row, int column) {
@@ -1222,6 +1183,7 @@ public class SWTApplication extends BaseController {
         
         return nextRow;
     }
+    */
     
     @Override
     public void setTimer(String name, double seconds, EventListener listener) {
@@ -1993,5 +1955,5 @@ public class SWTApplication extends BaseController {
     public TextDecoration getDefaultTextDecoration(String viewName) {
         throw new UnsupportedOperationException("Not supported.");
     }
-
+    
 }

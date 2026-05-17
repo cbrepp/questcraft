@@ -17,7 +17,6 @@ package app.controller;
  */
 
 import app.view.BaseView;
-import app.Coordinates;
 import app.EventListener;
 import app.Layout;
 import app.TextDecoration;
@@ -27,6 +26,7 @@ import app.node.BaseNode;
 import java.util.List;
 import java.util.logging.Logger;
 import app.view.Animation;
+import app.view.BaseSplashView;
 
 /**
  * 
@@ -53,10 +53,10 @@ public abstract class BaseController {
     public abstract void refreshTabLabel(String viewName);
     public abstract void removeTab(String viewName);
     public abstract void addView(BaseView view);
-    public abstract void addView(BaseView view, Boolean isParent, int index, Boolean isRefresh);
+    public abstract void addView(BaseView view, int index, Boolean isRefresh);
     public abstract Integer getTabIndex(String viewName);
     public abstract void close();
-    public abstract void open(BaseView splashView, BaseView mainView);
+    public abstract void open(BaseSplashView splashView, BaseView mainView);
     public abstract void displayView(BaseView view);
     public abstract void displayView(String viewName);
     //public abstract void displayOverlay(String viewName, String name, app.Color color, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, Integer transparency, Boolean invert);
@@ -77,16 +77,16 @@ public abstract class BaseController {
     //public abstract void displayFloatingText(String viewName, String name, String text, Integer startRow, Integer startColumn, Integer endRow, Integer endColumn, app.Color fontColor, Integer fontSize, Integer fontStyle, String fontName);
     //public abstract void displayInputField(String viewName, String name, String label, int length, int row, int column, String initValue, Boolean addButton, Boolean isMonospace, Boolean isUpperCase, Boolean isMultiUse, EventListener listener);
     //public abstract void displayValidatedInputField(String viewName, String name, List<String> values, int row, int startColumn, int endColumn, Layout layout, EventListener listener, Boolean allowRepeatClicks);
-    public abstract int displayGif(String viewName, String fileName, int row, int column);
+    //public abstract int displayGif(String viewName, String fileName, int row, int column);
     public abstract void setTimer(String name, double seconds, EventListener listener);
     public abstract void removeTimer(String name);
-    public abstract Coordinates getDimensions(String imageFileName);
-    public abstract int getTextColumns();
-    public abstract int getTextRows();
-    public abstract int getColumns(String fileName);
-    public abstract int getRows(String fileName);
-    public abstract int getButtonColumns(String buttonText);
-    public abstract int getButtonRows();
+    //public abstract Coordinates getDimensions(String imageFileName);
+    //public abstract int getTextColumns();
+    //public abstract int getTextRows();
+    //public abstract int getColumns(String fileName);
+    //public abstract int getRows(String fileName);
+    //public abstract int getButtonColumns(String buttonText);
+    //public abstract int getButtonRows();
     public abstract void addAnimation(String viewName, String name, int row, int startColumn, String backgroundImageFileName, List<String> imageFiles, double animationDelay, Animation listener);
     public abstract void playSound(String fileName, Boolean isLoop);
     public abstract void stopSound(String fileName, Boolean removeAudioPlayer);

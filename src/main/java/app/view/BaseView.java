@@ -22,7 +22,6 @@ public class BaseView extends Pane implements EventListener {
     public List<String> emojis;
     public String iconFileName;
     public Boolean isSplash;
-    public int timeoutSeconds;
     public LinkedHashMap<String, List<BaseView>> eventListenerMap;
     
     public BaseView(String name) {
@@ -32,7 +31,6 @@ public class BaseView extends Pane implements EventListener {
         this.emojis = new ArrayList();
         this.eventListenerMap = new LinkedHashMap<>();
         this.isSplash = false;
-        this.timeoutSeconds = 0;
     }
     
     @Override
