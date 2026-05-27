@@ -56,10 +56,6 @@ public class JavaFXVerticalGroup extends BaseJavaFXNode {
             controllerNode.setBackground(new Background(new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY)));
         }
 
-        for (BaseNode childNode : ((app.node.Group) node).nodes) {
-            this.controller.addNode(viewName, node.name, childNode, null);
-        }
-        
         this.scaleNode(controllerNode);
     }
     

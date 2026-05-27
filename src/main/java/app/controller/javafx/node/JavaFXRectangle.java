@@ -30,12 +30,12 @@ public class JavaFXRectangle extends BaseJavaFXNode {
         RGBColor offsetColor = new DecoratedOffsetColor(new OffsetColor(), this.parent);
     
         if (node.color == null) {
-            controllerNode.setFill(Color.rgb(offsetColor.getRed(), offsetColor.getGreen(), offsetColor.getBlue(), node.opacity));
+            controllerNode.setFill(Color.rgb(offsetColor.getRed(), offsetColor.getGreen(), offsetColor.getBlue(), offsetColor.getOpacity()));
         } else {
             if (node.color instanceof OffsetColor primitiveOffsetColor) {
                 node.color = new DecoratedOffsetColor(primitiveOffsetColor, this.parent);
             }
-            controllerNode.setFill(Color.rgb(node.color.getRed(), node.color.getGreen(), node.color.getBlue(), node.opacity));
+            controllerNode.setFill(Color.rgb(node.color.getRed(), node.color.getGreen(), node.color.getBlue(), node.color.getOpacity()));
         }
         
         this.scaleNode(controllerNode);

@@ -9,6 +9,7 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
 /**
@@ -22,7 +23,7 @@ public abstract class BaseJavaFXNode extends BaseDecoratedNode {
     }
     
     public void scaleNode(Node controllerNode) {
-        if ((controllerNode != null) && (this.parent != null) && (controllerNode instanceof Region region)) {
+        if ((controllerNode != null) && (this.parent != null)) {
             Object fxParentNode = this.parent.controllerNode;
             double parentWidth;
             double parentHeight;
@@ -44,19 +45,36 @@ public abstract class BaseJavaFXNode extends BaseDecoratedNode {
                 return;
             }
 
-            if (node.scaleX != null) {
-                double prefWidth = parentWidth * node.scaleX;
-                region.setPrefWidth(prefWidth);
-                region.setMaxWidth(prefWidth);
+            if (controllerNode instanceof Region region) {
+                if (node.scaleX != null) {
+                    double prefWidth = Math.round(parentWidth * node.scaleX);
+                    region.setPrefWidth(prefWidth);
+                    region.setMaxWidth(prefWidth);
+                } else {
+                    region.setMaxWidth(parentWidth);
+                }
+                if (node.scaleY != null) {
+                    double prefHeight = Math.round(parentHeight * node.scaleY);
+                    region.setPrefHeight(prefHeight);
+                    region.setMaxHeight(prefHeight);
+                } else {
+                    region.setMaxHeight(parentHeight);
+                }
+            } else if (controllerNode instanceof Rectangle rectangle) {
+                if (node.scaleX != null) {
+                    double prefWidth = Math.round(parentWidth * node.scaleX);
+                    rectangle.setWidth(prefWidth);
+                } else {
+                    rectangle.setWidth(parentWidth);
+                }
+                if (node.scaleY != null) {
+                    double prefHeight = Math.round(parentHeight * node.scaleY);
+                    rectangle.setHeight(prefHeight);
+                } else {
+                    rectangle.setHeight(parentHeight);
+                }
             } else {
-                region.setMaxWidth(parentWidth);
-            }
-            if (node.scaleY != null) {
-                double prefHeight = parentHeight * node.scaleY;
-                region.setPrefHeight(prefHeight);
-                region.setMaxHeight(prefHeight);
-            } else {
-                region.setMaxHeight(parentHeight);
+                logger.log(Level.WARNING, "Scaling is not supported for node type {0}", controllerNode.getClass().getName());
             }
         }
     }

@@ -34,11 +34,9 @@ public class JavaFXImage extends BaseJavaFXNode {
         app.node.Image node = (app.node.Image) this.node;
         ImageView controllerNode = (ImageView) this.controllerNode;
         
-        if (controllerNode == null) {
-            final Image image = loadImage(node.file);
-            controllerNode = new ImageView(image);
-            controllerNode.setSmooth(true);
-        }
+        final Image image = loadImage(node.file);
+        controllerNode.setImage(image);
+        controllerNode.setSmooth(true);
 
         int dotIndex = node.file.lastIndexOf('.');
         String extension = (dotIndex > 0) ? node.file.substring(dotIndex + 1) : "";

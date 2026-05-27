@@ -161,7 +161,7 @@ public class Application extends app.view.BaseView {
             }
             case CHANGELOG_EVENT -> {
                 if (this.changelogButton.text.equals(DOUBLE_LEFT_ARROW)) {
-                    // Display the changelog in a scrolling region centered on the right with a spacer separating it from the quit button.
+                    // Display the changelog in a scrolling region centered on the right.
                     // Event NODE_TRANSITIONED_EVENT will be raised when the event is complete.
                     TextDecoration decoration = new TextDecoration();
                     decoration.pixelSize = 10.0;
@@ -214,7 +214,7 @@ public class Application extends app.view.BaseView {
                 decoration.font = NORMAL_FONT;
                 decoration.style = FontStyle.BOLD;
                 Label nowPlayingLabel = new Label("now playing", text, decoration);
-                nowPlayingLabel.backgroundColor = Color.WHITE;
+                nowPlayingLabel.backgroundColor = new Color(Color.WHITE, 0.5);
                 this.appController.addNode(this.name, this.name, nowPlayingLabel, new Layout(new RelativeCoordinates(0.0, (this.quitButton.getBounds().coordinates.y + (this.quitButton.getBounds().height * 4))), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
 
                 this.publishEvent("book", bookFile);                
@@ -279,7 +279,7 @@ public class Application extends app.view.BaseView {
                 decoration.color = Color.SHADOW;
                 decoration.font = NORMAL_FONT;
                 Label versionLabel = new Label("version", currentVersion, decoration);
-                versionLabel.backgroundColor = Color.WHITE;
+                versionLabel.backgroundColor = new Color(Color.WHITE, 0.5);
                 this.appController.addNode(this.name, this.name, versionLabel, new Layout(new RelativeCoordinates(0.01, 0.99), HorizontalAlignment.LEFT, VerticalAlignment.BOTTOM));
             }
             
@@ -300,6 +300,7 @@ public class Application extends app.view.BaseView {
         decoration.font = NORMAL_FONT;
         decoration.style = FontStyle.ITALIC;
         Label comingSoonLabel = new Label("coming soon", "Coming soon... TWIN QUEST: DOW Chapter 2", decoration);
+        comingSoonLabel.backgroundColor = new Color(Color.WHITE, 0.5);
         this.appController.addNode(this.name, this.name, comingSoonLabel, new Layout(new RelativeCoordinates(0.99, 0.99), HorizontalAlignment.RIGHT, VerticalAlignment.BOTTOM));
         
         this.appController.setTimer(DISPLAY_BUTTONS_TIMER, 0.5, this);

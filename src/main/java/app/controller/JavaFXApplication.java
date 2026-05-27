@@ -17,6 +17,8 @@ import app.VerticalAlignment;
 import static app.VerticalAlignment.BOTTOM;
 import static app.VerticalAlignment.CENTER;
 import static app.VerticalAlignment.TOP;
+import app.color.DecoratedOffsetColor;
+import app.color.OffsetColor;
 import app.color.RGBColor;
 import static app.controller.BaseController.NODE_TRANSITIONED_EVENT;
 import static app.controller.BaseController.logger;
@@ -148,8 +150,10 @@ import javafx.scene.layout.BackgroundImage;
 import javafx.scene.layout.BackgroundPosition;
 import javafx.scene.layout.BackgroundRepeat;
 import javafx.scene.layout.BackgroundSize;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.text.FontSmoothingType;
+import javafx.scene.text.TextBoundsType;
 import javafx.stage.Stage;
 
 /**
@@ -305,6 +309,7 @@ public class JavaFXApplication extends BaseController {
     public void addView(BaseView view, int index, Boolean isRefresh) {
         logger.log(Level.INFO, "JavaFXApplication: addView: name={0}, index={1}, isRefresh={2}", new Object[]{view.name, index, isRefresh});
 
+        // TODO - A view should be the full Tab added to the TabPane
         BaseDecoratedNode decoratedContent = new JavaFXPane(view, this.parentDecoratedNode, view.name, this);
         decoratedContent.configure(); // TODO - Need constructor for JavaFXPane that handles a view and takes care of the complex config seen below
         Pane content = (Pane) decoratedContent.controllerNode;
@@ -318,10 +323,12 @@ public class JavaFXApplication extends BaseController {
         content.setMinSize(imageDimensions.x, imageDimensions.y);
         content.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         content.setSnapToPixel(true);
+        content.setCacheHint(CacheHint.QUALITY);
         
         // Configure automatic zooming.  A StackPane is used for bindings and layout.  A Group is used for scaling.
         Group zoomGroup = new Group(content);
         StackPane contentHolder = new StackPane(zoomGroup);
+        contentHolder.setSnapToPixel(true);
         
         double zoomFactor = 1.0; 
         zoomGroup.setScaleX(zoomFactor);
@@ -346,6 +353,10 @@ public class JavaFXApplication extends BaseController {
         scrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
         scrollPane.setFitToWidth(false);
         scrollPane.setFitToHeight(false);
+        scrollPane.setPadding(Insets.EMPTY);
+        scrollPane.getStyleClass().add("edge-to-edge"); // Removes the border
+        scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent; -fx-padding: 0;");
+        scrollPane.setCache(false);
         
         // Configure the background
         Coordinates dimensions = new Coordinates(1280, 793);
@@ -449,9 +460,6 @@ public class JavaFXApplication extends BaseController {
             this.nodeLayouts.put(view.name, new HashMap());
         }
 
-        // Add overlay pane AFTER HTMLEditor as StackPane displays its contents back-to-front
-        //Pane overlayPane = new Pane();
-        //content.getChildren().add(overlayPane);
         this.tabContentMap.put(view.name, content);
 
         if (!isRefresh) {
@@ -975,7 +983,7 @@ public class JavaFXApplication extends BaseController {
 
             switch (effect) {
                 case app.node.effect.Glow glowEffect -> {
-                    this.addGlow(originalFxNode, glowEffect);
+                    this.addGlow(decoratedNode, glowEffect);
                     logger.log(Level.INFO, "Added glow effect");
                 }
                 case app.node.effect.SlideTransition transitionEffect -> {
@@ -1157,14 +1165,22 @@ public class JavaFXApplication extends BaseController {
         }
     }
 
-    public void addGlow(Node fxNode, Glow effect) {
-        logger.log(Level.INFO, "Entered: fxNode={0}, glowEffect={1}", new Object[]{fxNode, effect});
+    public void addGlow(BaseDecoratedNode decoratedNode, Glow effect) {
+        logger.log(Level.INFO, "Entered: decoratedNode={0}, glowEffect={1}", new Object[]{decoratedNode, effect});
         RGBColor glowColor;
         if (effect.color == null) {
             glowColor = DEFAULT_OFFSET_COLOR;
         } else {
             glowColor = effect.color;
         }
+        if (glowColor instanceof OffsetColor primitiveOffsetColor) {
+            glowColor = new DecoratedOffsetColor(primitiveOffsetColor, decoratedNode.parent);
+            if (effect.color == null) {
+                glowColor = DEFAULT_OFFSET_COLOR;
+            }
+        }
+        Node fxNode = (Node) decoratedNode.controllerNode;
+        logger.log(Level.INFO, "Glow color={0}", glowColor);
         String defaultStyle = "-fx-effect: dropshadow(three-pass-box, rgba(" + glowColor.getRed() + ", " + glowColor.getGreen() + ", " + glowColor.getBlue() + ", 0.8), 5, 0.8, 0, 0);";
         String hoverStyle = "-fx-effect: dropshadow(three-pass-box, rgba(" + glowColor.getRed() + ", " + glowColor.getGreen() + ", " + glowColor.getBlue() + ", 1), 10, 0.8, 0, 0);";
         fxNode.setStyle(defaultStyle);
@@ -1921,9 +1937,9 @@ public class JavaFXApplication extends BaseController {
         }
 
         if (node.color == null) {
-            fxRectangle.setFill(Color.rgb(offsetColor.getRed(), offsetColor.getGreen(), offsetColor.getBlue(), node.opacity));
+            fxRectangle.setFill(Color.rgb(offsetColor.getRed(), offsetColor.getGreen(), offsetColor.getBlue(), offsetColor.getOpacity()));
         } else {
-            fxRectangle.setFill(Color.rgb(node.color.getRed(), node.color.getGreen(), node.color.getBlue(), node.opacity));
+            fxRectangle.setFill(Color.rgb(node.color.getRed(), node.color.getGreen(), node.color.getBlue(), node.color.getOpacity()));
         }
 
         return fxRectangle;
@@ -2057,18 +2073,10 @@ public class JavaFXApplication extends BaseController {
             }
             case app.node.HorizontalGroup hg -> {
                 decoratedNode = new JavaFXHorizontalGroup(hg, decoratedParentNode, viewName, this);
-                // TODO - Probably won't work since the parent needs to be registered which hasn't happened yet
-                for (BaseNode childNode : ((app.node.Group) node).nodes) {
-                    this.addNode(viewName, node.name, childNode, null);
-                }
                 break;
             }
             case app.node.VerticalGroup vg -> {
                 decoratedNode = new JavaFXVerticalGroup(vg, decoratedParentNode, viewName, this);
-                // TODO - Probably won't work since the parent needs to be registered which hasn't happened yet
-                for (BaseNode childNode : ((app.node.Group) node).nodes) {
-                    this.addNode(viewName, node.name, childNode, null);
-                }
                 break;
             }
             case app.node.Rectangle rectangle -> {
@@ -2093,21 +2101,20 @@ public class JavaFXApplication extends BaseController {
     public void changeNode(String viewName, BaseNode node, Layout layout) {
         logger.log(Level.INFO, "Entered: viewName={0}, node={1}, layout={2}", new Object[]{viewName, node, layout});
         BaseDecoratedNode decoratedNode = this.namedDecoratedNodes.get(viewName).get(node.name);
+        if (decoratedNode == null) {
+            logger.log(Level.WARNING, "Decorated node {0} not found", node.name);
+            return;
+        }
         String parentName = decoratedNode.parent.node.name;
         if (parentName == null) {
             logger.log(Level.WARNING, "Parent not found for node {0}", node.name);
-            return;
-        }
-        Node fxNode = (Node) this.namedDecoratedNodes.get(viewName).get(node.name).controllerNode;
-        if (fxNode == null) {
-            logger.log(Level.WARNING, "Node {0} not found", node.name);
             return;
         }
         if (layout == null) {
             // As a convenience, re-use the current layout
             layout = this.nodeLayouts.get(viewName).get(node.name);
         }
-        this.publishNode(viewName, parentName, node, layout, fxNode);
+        this.publishNode(viewName, parentName, node, layout, decoratedNode);
     }
 
     @Override
@@ -2116,8 +2123,8 @@ public class JavaFXApplication extends BaseController {
         this.publishNode(viewName, parentName, node, layout, null);
     }
 
-    public void publishNode(String viewName, String parentName, BaseNode node, Layout layout, Node fxNode) {
-        logger.log(Level.INFO, "Entered: viewName={0}, parentName={1}, node={2}, layout={3}, fxNode={4}", new Object[]{viewName, parentName, node, layout, fxNode});
+    public void publishNode(String viewName, String parentName, BaseNode node, Layout layout, BaseDecoratedNode decoratedNode) {
+        logger.log(Level.INFO, "Entered: viewName={0}, parentName={1}, node={2}, layout={3}, decoratedNode={4}", new Object[]{viewName, parentName, node, layout, decoratedNode});
 
         if (node.name == null) {
             logger.log(Level.SEVERE, "Node does not have a name!");
@@ -2141,7 +2148,6 @@ public class JavaFXApplication extends BaseController {
             }
         }
         BaseNode parent = decoratedParentNode.node;
-        Boolean isNew = (fxNode == null);
 
         // TODO - This is ugly.  Parent nodes do not have a base type with public getPrefWidth() and getPrefHeight() methods so each parent class needs to be handled.
         double parentWidth;
@@ -2163,9 +2169,12 @@ public class JavaFXApplication extends BaseController {
         // TODO - The container nodes should call into publishNode instead of addNode, looking up any pre-existing fxChild node
         // TODO - Continue refactoring here.  Use a factory method to decorate an FX node for each node type.
         logger.log(Level.INFO, "Decorating node {0}", node.name);
-        BaseDecoratedNode decoratedNode = newDecoratedNode(node, decoratedParentNode, viewName);
+        Boolean isNew = (decoratedNode == null);
+        if (isNew) {
+            decoratedNode = newDecoratedNode(node, decoratedParentNode, viewName);
+        }
         decoratedNode.configure();
-        fxNode = (Node) decoratedNode.controllerNode;
+        Node fxNode = (Node) decoratedNode.controllerNode;
 
         if (isNew) {
             // TODO - This is ugly.
@@ -2195,7 +2204,23 @@ public class JavaFXApplication extends BaseController {
             parentClass = null;
             logger.log(Level.INFO, "Evaluating null parent");
         }
-        if (fxParent instanceof FlowPane fp) {
+        if (fxParent instanceof GridPane grid) {
+            logger.log(Level.INFO, "Adding node to grid");
+            JavaFXGrid decoratedParentGrid = (JavaFXGrid) decoratedParentNode;
+            decoratedParentGrid.advanceNextCell();
+            Coordinates currentCell = decoratedParentGrid.getCurrentCell();
+            for (Node gridChildNode : grid.getChildren()) {
+                Integer nodeCol = GridPane.getColumnIndex(gridChildNode);
+                Integer nodeRow = GridPane.getRowIndex(gridChildNode);
+
+                if ((nodeCol != null) && (nodeRow != null) && (nodeCol == currentCell.x) && (nodeRow == currentCell.y)) {
+                    if (gridChildNode instanceof StackPane sp) {
+                        sp.getChildren().add(fxNode);
+                        break;
+                    }
+                }
+            }
+        } else if (fxParent instanceof FlowPane fp) {
             if (isNew) {
                 logger.log(Level.INFO, "Adding node to flow pane");
                 fp.getChildren().add(fxNode);
@@ -2253,8 +2278,10 @@ public class JavaFXApplication extends BaseController {
                     for (Node textFlowNode : textFlowNodes) {
                         if (textFlowNode.getClass() == Text.class) {
                             Text textNode = (Text) textFlowNode;
-                            logger.log(Level.INFO, "Fixing font smoothing type for scrolling document's text");
-                            textNode.setFontSmoothingType(FontSmoothingType.GRAY);
+                            if (textNode.getFontSmoothingType() != FontSmoothingType.GRAY) {
+                                logger.log(Level.INFO, "Fixing font smoothing type for scrolling document's text");
+                                textNode.setFontSmoothingType(FontSmoothingType.GRAY);
+                            }
                         }
                         flow.getChildren().add(textFlowNode);
                     }
@@ -2313,12 +2340,12 @@ public class JavaFXApplication extends BaseController {
         if (node instanceof BaseCompositeNode baseCompositeNode) {
             logger.log(Level.INFO, "Publishing child nodes of composite node");
             for (BaseNode childNode : baseCompositeNode.getChildren()) {
-                Node fxChildNode = null;
+                BaseDecoratedNode childDecoratedNode = null;
                 if (this.namedDecoratedNodes.get(viewName).containsKey(childNode.name)) {
-                    fxChildNode = (Node) this.namedDecoratedNodes.get(viewName).get(childNode.name).controllerNode; // If the child node already exists, get it so it can be updated
+                    childDecoratedNode = this.namedDecoratedNodes.get(viewName).get(childNode.name); // If the child node already exists, get it so it can be updated
                 }
                 Layout childLayout = this.nodeLayouts.get(viewName).get(childNode.name); // If the child node's layout already exists, get it
-                this.publishNode(viewName, node.name, childNode, childLayout, fxChildNode);
+                this.publishNode(viewName, node.name, childNode, childLayout, childDecoratedNode);
             }
         }
     }
@@ -2645,6 +2672,10 @@ public class JavaFXApplication extends BaseController {
         }
 
         text.setFontSmoothingType(fst);
+        text.setSmooth(true);
+        
+        // By default, JavaFX measures text bounds using Logical line heights (including font design spaces like ascenders and descenders), which can mess up vertical sub-pixel layouts
+        text.setBoundsType(TextBoundsType.VISUAL);
 
         return text;
     }
@@ -2752,7 +2783,7 @@ public class JavaFXApplication extends BaseController {
     }
 
     public static TextFlow stringToTextFlow(String string, RGBColor offsetColor, TextDecoration decoration, FontSmoothingType fst) {
-        logger.log(Level.FINE, "Entered: string={0}, offsetColor={1}, decoration={2}, fst={3}", new Object[]{string, offsetColor, decoration, fst});
+        logger.log(Level.INFO, "Entered: string={0}, offsetColor={1}, decoration={2}, fst={3}", new Object[]{string, offsetColor, decoration, fst});
 
         if ((string == null) || (string.isEmpty())) {
             return new TextFlow();
@@ -2790,6 +2821,28 @@ public class JavaFXApplication extends BaseController {
             Text textNode = stringToText(nonEmojiText, offsetColor, decoration, fst);
             textFlow.getChildren().add(textNode);
         }
+        
+        textFlow.setLineSpacing(1.0); 
+        textFlow.setCache(false);
+        
+        // Add warnings for state that can lead to blurry text
+        textFlow.layoutXProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal.doubleValue() % 1 != 0) {
+                logger.log(Level.WARNING, "TextFlow LayoutX is fractional: {0}\n", newVal.doubleValue());
+            }
+        });
+        textFlow.layoutYProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal.doubleValue() % 1 != 0) {
+                logger.log(Level.WARNING, "TextFlow LayoutY is fractional: {0}\n", newVal.doubleValue());
+            }
+        });
+        textFlow.boundsInParentProperty().addListener((obs, oldBounds, newBounds) -> {
+            if ((newBounds.getMinX() % 1 != 0) || (newBounds.getMinY() % 1 != 0) || (newBounds.getWidth() % 1 != 0) || (newBounds.getHeight() % 1 != 0)) {
+                logger.log(Level.WARNING, "TextFlow bounds is fractional: MinX: {0}, MinY: {1}, Width: {2}, Height: {3}\n",
+                    new Object[]{newBounds.getMinX(), newBounds.getMinY(), newBounds.getWidth(), newBounds.getHeight()});
+            }
+            
+        });
 
         return textFlow;
     }

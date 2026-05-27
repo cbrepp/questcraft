@@ -8,7 +8,7 @@ import java.util.List;
  *
  * @author repp
  */
-public abstract class Group extends BaseNode {
+public abstract class Group extends BaseNode implements BaseCompositeNode {
     
     public RGBColor backgroundColor; // Default (null) is transparent
     public int borderWidth = 1; // Default (1) is thin borders
@@ -16,6 +16,11 @@ public abstract class Group extends BaseNode {
 
     public Group (String name) {
         super(name);
+    }
+    
+    @Override
+    public List<? extends BaseNode> getChildren() {
+        return this.nodes;
     }
     
 }

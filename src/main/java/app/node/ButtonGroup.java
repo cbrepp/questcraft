@@ -49,7 +49,7 @@ public class ButtonGroup extends BaseNode implements BaseCompositeNode {
     }
     
     @Override
-    public List<BaseNode> getChildren() {
+    public List<? extends BaseNode> getChildren() {
         List<BaseNode> children = new ArrayList();
         
         // Build a map of effects for specific buttons

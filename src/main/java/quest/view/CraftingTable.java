@@ -37,7 +37,7 @@ public class CraftingTable extends BaseView {
         decoration.font = Font.ROBOTO_BLACK;
         decoration.style = FontStyle.BOLD;
         Label comingSoonLabel = new Label("coming soon", "Coming soon", decoration);
-        comingSoonLabel.backgroundColor = Color.WHITE;
+        comingSoonLabel.backgroundColor = new Color(Color.WHITE, 0.5);
         appController.addNode(this.name, this.name, comingSoonLabel, new Layout(new RelativeCoordinates(0.0, 0.0), HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
     }
     

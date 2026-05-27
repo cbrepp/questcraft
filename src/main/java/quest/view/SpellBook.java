@@ -144,7 +144,7 @@ public class SpellBook extends app.view.BaseView {
         Label learnedSpellsLabel = new Label("learned spells", learnedSpellsText, decoration);
         learnedSpellsLabel.backgroundColor = fadedMagicColor;
         learnedSpellsLabel.borderColor = magicAccentColor;
-        learnedSpellsLabel.borderWidth = 1;
+        learnedSpellsLabel.borderWidth = 5;
         this.appController.addNode(this.name, this.name, learnedSpellsLabel, new Layout(new RelativeCoordinates(0.95, 0.05), HorizontalAlignment.RIGHT, VerticalAlignment.TOP));
     }
 

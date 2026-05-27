@@ -31,6 +31,7 @@ public class JavaFXScrollingLabel extends BaseJavaFXNode {
         
         node.antiAliasMethod = AntiAliasMethod.ANIMATION; // Needed because scroll pane's dork with FontSmoothingType.LCD
         JavaFXLabel decoratedLabel = new JavaFXLabel(node, this, this.viewName, this.controller);
+        decoratedLabel.configure();
         
         // Allow text to be scrolled if needed
         ((TextFlow) decoratedLabel.controllerNode).setCache(false);

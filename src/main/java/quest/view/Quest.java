@@ -245,8 +245,7 @@ public class Quest extends app.view.BaseView {
         // Loading screen
         if (this.book.animationFileName != null) {
             Rectangle overlay = new Rectangle("overlay");
-            overlay.color = Color.BLACK;
-            overlay.opacity = 0.5;
+            overlay.color = new Color(Color.BLACK, 0.5);
             overlay.scaleX = 1.0;
             overlay.scaleY = 1.0;
             this.appController.addNode(this.name, this.name, overlay, new Layout(new RelativeCoordinates(0.0, 0.0), HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
@@ -699,8 +698,7 @@ public class Quest extends app.view.BaseView {
             }
             if (displayOverlay) {
                 Rectangle overlay = new Rectangle(overlayName);
-                overlay.color = Color.RED;
-                overlay.opacity = 0.5;
+                overlay.color = new Color(Color.RED, 0.5);
                 overlay.scaleX = 1.0;
                 overlay.scaleY = 1.0;
                 this.appController.addNode(this.name, this.name, overlay, new Layout(new RelativeCoordinates(0.0, 0.0), HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
@@ -710,8 +708,7 @@ public class Quest extends app.view.BaseView {
             //this.appController.playSound("/assets/sounds/TODO", false);
             if (displayOverlay) {
                 Rectangle overlay = new Rectangle(overlayName);
-                overlay.color = Color.GREEN;
-                overlay.opacity = 0.5;
+                overlay.color = new Color(Color.GREEN, 0.5);
                 overlay.scaleX = 1.0;
                 overlay.scaleY = 1.0;
                 this.appController.addNode(this.name, this.name, overlay, new Layout(new RelativeCoordinates(0.0, 0.0), HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
@@ -742,8 +739,7 @@ public class Quest extends app.view.BaseView {
         if (delta < 0) {
             this.appController.playSound("/assets/sounds/spell-cast.wav", false);
             Rectangle overlay = new Rectangle(overlayName);
-            overlay.color = Color.DARK_MAGENTA;
-            overlay.opacity = 0.5;
+            overlay.color = new Color(Color.DARK_MAGENTA, 0.5);
             overlay.scaleX = 1.0;
             overlay.scaleY = 1.0;
             this.appController.addNode(this.name, this.name, overlay, new Layout(new RelativeCoordinates(0.0, 0.0), HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
@@ -751,8 +747,7 @@ public class Quest extends app.view.BaseView {
         } else if (delta > 0) {
             this.appController.playSound("/assets/sounds/mp-up.wav", false);
             Rectangle overlay = new Rectangle(overlayName);
-            overlay.color = Color.DARK_MAGENTA;
-            overlay.opacity = 0.5;
+            overlay.color = new Color(Color.DARK_MAGENTA, 0.5);
             overlay.scaleX = 1.0;
             overlay.scaleY = 1.0;
             this.appController.addNode(this.name, this.name, overlay, new Layout(new RelativeCoordinates(0.0, 0.0), HorizontalAlignment.CENTER, VerticalAlignment.CENTER));

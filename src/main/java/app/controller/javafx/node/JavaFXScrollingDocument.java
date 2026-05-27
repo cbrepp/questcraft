@@ -8,6 +8,7 @@ import static app.controller.JavaFXApplication.getFxColor;
 import app.node.BaseDecoratedNode;
 import java.util.logging.Level;
 import javafx.geometry.Insets;
+import javafx.scene.CacheHint;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -33,6 +34,7 @@ public class JavaFXScrollingDocument extends BaseJavaFXNode {
         ScrollPane controllerNode = (ScrollPane) this.controllerNode;
         
         JavaFXDocument document = new JavaFXDocument((app.node.ScrollingDocument) this.node, this, this.viewName, this.controller);
+        document.configure();
         ((TextFlow) document.controllerNode).setManaged(true);
         ((TextFlow) document.controllerNode).setSnapToPixel(true);
         ((TextFlow) document.controllerNode).setPadding(Insets.EMPTY);
@@ -74,8 +76,9 @@ public class JavaFXScrollingDocument extends BaseJavaFXNode {
         )));
         controllerNode.setPadding(Insets.EMPTY);
         controllerNode.getStyleClass().add("edge-to-edge"); // Removes the border
-        controllerNode.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
+        controllerNode.setStyle("-fx-background: transparent; -fx-background-color: transparent; -fx-padding: 0;");
         controllerNode.setCache(false);
+        controllerNode.setCacheHint(CacheHint.QUALITY);
         ((TextFlow) document.controllerNode).setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE); // Fill the scroll pane.  The scroll pane will be scaled as needed.
         
         this.scaleNode(controllerNode);

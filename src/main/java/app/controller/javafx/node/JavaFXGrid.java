@@ -1,5 +1,6 @@
 package app.controller.javafx.node;
 
+import app.Coordinates;
 import app.color.DecoratedOffsetColor;
 import app.color.OffsetColor;
 import app.color.RGBColor;
@@ -30,6 +31,10 @@ import javafx.scene.layout.StackPane;
  */
 public class JavaFXGrid extends BaseJavaFXNode {
     
+    // Internal trackers for where to add the next child
+    private int currentColumn = 0;
+    private int currentRow = 1;
+    
     public JavaFXGrid(Grid node, BaseDecoratedNode parent, String viewName, BaseController controller) {
         super(node, new GridPane(), parent, viewName, controller);
     }
@@ -45,6 +50,7 @@ public class JavaFXGrid extends BaseJavaFXNode {
         
         // Remove all of the children in case this is an update and not an add
         controllerNode.getChildren().clear();
+        this.resetCurrentCell();
         
         // TODO - It's an assumption that the parent is a region
         Region parentControllerNode = (Region) this.parent.controllerNode;
@@ -91,14 +97,13 @@ public class JavaFXGrid extends BaseJavaFXNode {
         }
         
         // Configure dimensions
-        int columns = node.columns;
-        if (columns == 0) {
+        if (node.columns == 0) {
             double squareRoot = Math.sqrt(cellCount);
-            columns = (int) Math.ceil(squareRoot);
+            node.columns = (int) Math.ceil(squareRoot);
         }
         int rows = 0;
-        if (columns != 0) {
-            double rowsDiv = ((double) cellCount / (double) columns);  // Make sure values are double so remainder causes rows count to round up
+        if (node.columns != 0) {
+            double rowsDiv = ((double) cellCount / (double) node.columns);  // Make sure values are double so remainder causes rows count to round up
             rows = (int) Math.ceil(rowsDiv);
         }
         
@@ -112,19 +117,15 @@ public class JavaFXGrid extends BaseJavaFXNode {
         }
         
         // Allow columns to expand as much as they can
-        int columnWidth = (int) Math.floor(100 / columns);
-        for (int i = 0; i < columns; i++) {
+        int columnWidth = (int) Math.floor(100 / node.columns);
+        for (int i = 0; i < node.columns; i++) {
             ColumnConstraints column = new ColumnConstraints();
             column.setPercentWidth(columnWidth);
             column.setHgrow(Priority.ALWAYS);
             controllerNode.getColumnConstraints().add(column);
         }
 
-        logger.log(Level.INFO, "cells={0}, columns={1}, rows={2}", new Object[]{cellCount, columns, rows});
-        
-        // TODO - If the individual cells need to be worked with, publishNode() can call publishNode() for each at the end.
-        // Would be useful to make a parent type node that publishNode can use to invoke a base method for adding children once the parent is complete.
-        // For now, assume the cells need to be updated by updating the entire grid.
+        logger.log(Level.INFO, "cells={0}, columns={1}, rows={2}", new Object[]{cellCount, node.columns, rows});
         
         int currentRow = 1;
         int currentColumn = 0;        
@@ -156,7 +157,7 @@ public class JavaFXGrid extends BaseJavaFXNode {
             }
 
             currentColumn++;
-            if (currentColumn > columns) {
+            if (currentColumn > node.columns) {
                 currentRow++;
                 currentColumn = 1;
             }
@@ -177,6 +178,24 @@ public class JavaFXGrid extends BaseJavaFXNode {
         }
         
         this.scaleNode(controllerNode);
+    }
+    
+    public void advanceNextCell() {
+        Grid node = (Grid) this.node;
+        this.currentColumn++;
+        if (this.currentColumn > node.columns) {
+            this.currentRow++;
+            this.currentColumn = 1;
+        }
+    }
+    
+    public void resetCurrentCell() {
+        this.currentColumn = 0;
+        this.currentRow = 1;
+    }
+    
+    public Coordinates getCurrentCell() {
+        return new Coordinates(this.currentColumn - 1, this.currentRow - 1);
     }
     
 }

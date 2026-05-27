@@ -47,7 +47,11 @@ public class JavaFXLabel extends BaseJavaFXNode {
 
         FontSmoothingType fst;
         if (node.antiAliasMethod == null) {
-            fst = null;
+            if ((this.parent instanceof JavaFXScrollingDocument) || (this.parent instanceof JavaFXScrollingLabel) || (this.parent instanceof JavaFXScrollingDocument)) {
+                fst = FontSmoothingType.GRAY;
+            } else {
+                fst = FontSmoothingType.LCD;
+            }
         } else fst = switch (node.antiAliasMethod) {
             case ANIMATION -> FontSmoothingType.GRAY;
             case TEXT -> FontSmoothingType.LCD;

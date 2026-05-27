@@ -48,7 +48,7 @@ public class InputField extends BaseNode implements BaseCompositeNode {
     }
     
     @Override
-    public List<BaseNode> getChildren() {
+    public List<? extends BaseNode> getChildren() {
         List<BaseNode> children = new ArrayList();
         
         String fieldName = this.name + "_field";

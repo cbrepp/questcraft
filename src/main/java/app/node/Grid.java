@@ -9,7 +9,7 @@ import java.util.List;
  *
  * @author repp
  */
-public class Grid extends BaseNode {
+public class Grid extends BaseNode implements BaseCompositeNode {
     
     public RGBColor backgroundColor; // Default (null) is transparent
     public int borderPadding = 0; // Default (0px) is no padding outside the border of each cell
@@ -20,7 +20,7 @@ public class Grid extends BaseNode {
     public EventListener listener;
     public int padding = 0; // Default (0px) is no padding inside the border of each cell
     public Boolean showBorders = true;
-
+    
     public Grid (String name) {
         super(name);
     }
@@ -28,6 +28,11 @@ public class Grid extends BaseNode {
     @Override
     public RGBColor getColor() {
         return this.backgroundColor;
+    }
+
+    @Override
+    public List<? extends BaseNode> getChildren() {
+        return this.cells;
     }
     
 }

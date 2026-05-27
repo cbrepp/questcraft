@@ -46,6 +46,13 @@ public class Color implements RGBColor, Serializable {
         this.opacity = opacity;
     }
     
+    public Color(Color color, Double opacity) {
+        this.red = color.red;
+        this.green = color.green;
+        this.blue = color.blue;
+        this.opacity = opacity;
+    }
+    
     @Override
     public Integer getRed() {
         return this.red;

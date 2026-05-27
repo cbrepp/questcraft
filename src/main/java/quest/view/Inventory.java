@@ -6,13 +6,11 @@ import app.EventListener;
 import app.HorizontalAlignment;
 import app.Icon;
 import app.Layout;
-import app.RelativeCoordinates;
 import app.TextDecoration;
 import app.VerticalAlignment;
 import app.dialog.Alert;
 import app.node.Grid;
 import app.node.Group;
-import app.node.Image;
 import app.node.Label;
 import app.node.Link;
 import app.node.VerticalGroup;
@@ -165,7 +163,6 @@ public class Inventory extends app.view.BaseView implements EventListener {
         }
         
         this.appController.addNode(this.name, this.name, gridControl, new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
-        //appController.displayGrid(this.name, gridControl, new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
     }
 
 }

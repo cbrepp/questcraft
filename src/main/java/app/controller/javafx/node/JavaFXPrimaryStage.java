@@ -9,6 +9,7 @@ import app.controller.JavaFXApplication;
 import static app.controller.JavaFXApplication.getFxColor;
 import java.util.logging.Level;
 import javafx.geometry.Insets;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.TabPane;
 import javafx.scene.image.Image;
@@ -16,6 +17,7 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.paint.Color;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 /**
@@ -59,12 +61,38 @@ public class JavaFXPrimaryStage extends BaseJavaFXNode {
             CornerRadii.EMPTY, 
             Insets.EMPTY      // To prevent blurry text
         )));
+        // TODO - It's pretty ugly having an image on the view that's only used for dimensions
         Image image = JavaFXApplication.loadImage(node.backgroundImage);
         Coordinates imageDimensions = JavaFXApplication.getDimensions(image);
         
-        // TODO - It's pretty ugly having an image on the view that's only used for dimensions
-        Scene splashScene = new Scene(root, imageDimensions.x, imageDimensions.y);
-        controllerNode.setScene(splashScene);
+        // TODO - The 59.0 is a fudge factor for the added height of the TabPane to prevent seeing the vertical scroll bar by default
+        double initialWidth = imageDimensions.x;
+        double initialHeight = imageDimensions.y + 59.0;
+        
+        // Find the largest screen
+        Screen targetScreen = Screen.getPrimary();
+        double maxSize = 0;
+        var screens = Screen.getScreens();
+        for (Screen screen : screens) {
+            Rectangle2D screenBounds = screen.getVisualBounds();
+            double screenSize = screenBounds.getWidth() * screenBounds.getHeight();
+            if (screenSize > maxSize) {
+                targetScreen = screen;
+            }
+        }
+
+        Rectangle2D screenBounds = targetScreen.getVisualBounds();
+        double centerX = screenBounds.getMinX() + (screenBounds.getWidth() - initialWidth) / 2;
+        double centerY = screenBounds.getMinY() + (screenBounds.getHeight() - initialHeight) / 2;
+
+        // 5. Apply the coordinates and sizes to the Stage
+        controllerNode.setX(centerX);
+        controllerNode.setY(centerY);
+        controllerNode.setWidth(initialWidth);
+        controllerNode.setHeight(initialHeight);
+        
+        Scene primaryScene = new Scene(root, initialWidth, initialHeight);
+        controllerNode.setScene(primaryScene);
         controllerNode.show();
     }
     

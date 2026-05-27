@@ -61,7 +61,6 @@ public class OverlayControl extends QuestControl {
         
         Rectangle overlay = new Rectangle(controlName);
         overlay.color = color;
-        overlay.opacity = 0.5;
         overlay.scaleX = 1.0;
         overlay.scaleY = 1.0;
         this.quest.appController.addNode(this.quest.name, this.quest.name, overlay, new Layout(new RelativeCoordinates(0.0, 0.0), HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
