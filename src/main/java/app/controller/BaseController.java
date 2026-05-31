@@ -27,9 +27,10 @@ import java.util.List;
 import java.util.logging.Logger;
 import app.view.Animation;
 import app.view.BaseSplashView;
+import java.util.Properties;
 
 /**
- * 
+ * TODO - Is a controller nothing more than a decorated app?
  * @author repp
  */
 public abstract class BaseController {
@@ -46,6 +47,8 @@ public abstract class BaseController {
     public static String NAME;
     public static BaseController appController;
     public static final Logger logger = Logger.getLogger(BaseController.class.getName());
+    
+    public final Properties props;
     
     public abstract void setDelegate(Object delegate);
     public abstract void addDesigner(String viewName);
@@ -98,5 +101,9 @@ public abstract class BaseController {
     public abstract void refreshView(String viewName);
     public abstract void setDefaultTextDecoration(String viewName, TextDecoration textDecoration);
     public abstract TextDecoration getDefaultTextDecoration(String viewName);
+    
+    public BaseController(Properties props) {
+        this.props = props;
+    }
     
 }

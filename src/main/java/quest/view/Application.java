@@ -6,6 +6,7 @@ import app.color.Color;
 import app.Font;
 import app.FontStyle;
 import app.HorizontalAlignment;
+import app.KeyboardKey;
 import app.Layout;
 import app.RelativeCoordinates;
 import app.TextDecoration;
@@ -47,16 +48,22 @@ import quest.control.DefaultTextDecorationSet;
 import quest.control.Illustrate;
 import quest.control.InventoryAdd;
 import quest.control.InventoryRemove;
+import quest.control.MoveAhead;
+import quest.control.ObservedSceneAdd;
 import quest.control.PageGoto;
 import quest.control.PageRefresh;
+import quest.control.PlayerDirectionSet;
 import quest.control.Scribe;
 import quest.control.PlayerSymbolSet;
+import quest.control.Prompt;
 import quest.control.SceneDisplay;
 import quest.control.SoundPlay;
 import quest.control.SoundStop;
 import quest.control.SpellRegister;
 import quest.control.SubpageDisplay;
 import quest.control.TabSelect;
+import quest.control.TurnLeft;
+import quest.control.TurnRight;
 import quest.text.Texts;
 import quest.node.ValidatedVariablePrompt;
 import quest.text.Variable;
@@ -70,8 +77,13 @@ import quest.model.Page;
 import quest.model.Scene;
 import quest.model.Story;
 import quest.text.If;
+import quest.text.InventoryHas;
 import quest.text.LineSeparator;
+import quest.text.NextScene;
+import quest.text.PlayerHP;
+import quest.text.PlayerMP;
 import quest.text.PlayerSymbol;
+import quest.text.PlayerXP;
 import quest.text.VariableExists;
 
 /**
@@ -1106,16 +1118,13 @@ public class Application extends app.view.BaseView {
                 new LineSeparator(),
                 new PlayerSymbol(), " YOU: \"", new Variable("eat-twin"), "\"", new LineSeparator(),
                 new LineSeparator(),
-                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"Perhaps.  But you might have some time.  He just ate an entire Red Lobster restaurant for breakfast this morning so he might be full.  I bet ", new Variable("twin"), " will be an appetizer for later.\"", new LineSeparator(),
+                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"Perhaps.  But you might have some time.  He just ate an entire Red Lobster restaurant for breakfast so he might be full.  I bet ", new Variable("twin"), " will be an appetizer for later.\"", new LineSeparator(),
                 new LineSeparator(),
                 new PlayerSymbol(), " YOU: \"", new Variable("thats-horrible"), "\"", new LineSeparator(),
                 new LineSeparator(),
                 "\uD83D\uDC08\u200D\u2B1B MYLEE: \"Don't I know it, ", new Variable("player-mylee-nickname"), ".  But he's my younger brother so we need to stop him in a way that doesn't hurt him.  Were I to fight him directly... well, let's just say he wouldn't walk away from that!  That's why I need you to help me.  You're clever, but, not exactly a tough cat like me...\""))))));
         page8.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/mylee.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("8", page8);
-        
-        // TODO - Now that FLIP BOOK (requires 0MP) is looking nice as in-line bold text, add new app.Text properties so a mock link can be created and presented in-line
-        // TODO - Clean up this code to flow nicely
         
         Page page9 = new Page();
         page9.previousPageName = "5";
@@ -1143,13 +1152,14 @@ public class Application extends app.view.BaseView {
         page9.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/mylee.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("9", page9);
 
-        /*
         Page page10 = new Page();
         page10.previousPageName = "5";
         page10.hideNextButton = true;
-        page10.story.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of(new PlayerSymbol(), " YOU: \"", new Variable("mylee-prompt"), "\"", new LineSeparator(),
+        text1 = new app.Text(new Texts(List.of(new PlayerSymbol(), " YOU: \"", new Variable("mylee-prompt"), "\"", new LineSeparator(),
                 new LineSeparator(),
-                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"That "))), new quest.node.InventoryItem("map item", "Map"), new Label("par2", new Texts(List.of(" tab up above?  It's another essential item for your quest.  Every location for the current level will be shown.  But only the locations that you've actually seen will have any information.\"", new LineSeparator(),
+                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"That ")));
+        text2 = new quest.text.InventoryItem("Map");
+        text3 = new app.Text(new Texts(List.of(" tab up above?  It's another essential item for your quest.  Every location for the current level will be shown.  But only the locations that you've actually seen will have any information.\"", new LineSeparator(),
                 new LineSeparator(),
                 new PlayerSymbol(), " YOU: \"", new If("SHMEBULOCK?", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "So it will show me what's out there... but not everything until I've done some exploring?"), "\"", new LineSeparator(),
                 new LineSeparator(),
@@ -1157,74 +1167,103 @@ public class Application extends app.view.BaseView {
                 new LineSeparator(),
                 new PlayerSymbol(), " YOU: \"", new If("SHMEBULOCK?", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "Is there anything else I need to know?"), "\"", new LineSeparator(),
                 new LineSeparator(),
-                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"It would certainly help to look before you leap!  Think carefully before entering a new location that looks like it could be dangerous.\""))))));
+                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"It would certainly help to look before you leap!  Think carefully before entering a new location that looks like it could be dangerous.\"")));
+        page10.story.controls.add(new Scribe(List.of(new Label("par1", List.of(text1, text2, text3)))));
         page10.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/mylee.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("10", page10);
 
         Page page11 = new Page();
         page11.previousPageName = "5";
         page11.hideNextButton = true;
-        page11.story.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of(new PlayerSymbol(), " YOU: \"", new Variable("mylee-prompt"), "\"", new LineSeparator(),
+        text1 = new app.Text(new Texts(List.of(new PlayerSymbol(), " YOU: \"", new Variable("mylee-prompt"), "\"", new LineSeparator(),
                 new LineSeparator(),
                 "\uD83D\uDC08\u200D\u2B1B MYLEE: \"This is my elevator!  And I'm quite proud of it.  It's solar-powered and emits zero greenhouse gases.\"", new LineSeparator(),
                 new LineSeparator(),
                 new PlayerSymbol(), " YOU: \"", new If("SHMEBULOCK?", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "But I mean, what does it do?  Where does it go?"), "\"", new LineSeparator(),
                 new LineSeparator(),
-                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"Beyond these elevator doors lies a magical world.  If you want to save ", new Variable("twin"), ", gain some experience out there and then come back.  If you bring me some "))), new quest.node.InventoryItem("gold item", "Gold"), new Label("par2", new Texts(List.of(" I'll take you to the next level.  There are seven levels in all and Level 7 is where Big Chung hangs out.  But be careful!  Even though the first level is the easiest, a creature named Night Owl and a fierce Dragon both like "))), new quest.node.InventoryItem("gold item 2", "Map"), new Label("par3", new Texts(List.of(".  If you remove any from their level they might come after you.  Slay that Dragon if you can and ask my friend Gianni for help with that Night Owl problem.  Oh and don't you dare try to fight Night Owl in a dark place.  He'll swoop down on you before you have a chance to defend yourself!\"", new LineSeparator(),
+                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"Beyond these elevator doors lies a magical world.  If you want to save ", new Variable("twin"), ", gain some experience out there and then come back.  If you bring me some ")));
+        text2 = new quest.text.InventoryItem("Gold");
+        text3 = new app.Text(new Texts(List.of(" I'll take you to the next level.  There are seven levels in all and Level 7 is where Big Chung hangs out.  But be careful!  Even though the first level is the easiest, a creature named Night Owl and a fierce Dragon both like ")));
+        text4 = new quest.text.InventoryItem("Gold");
+        text5 = new app.Text(new Texts(List.of(".  If you remove any from their level they might come after you.  Slay that Dragon if you can and ask my friend Gianni for help with that Night Owl problem.  Oh and don't you dare try to fight Night Owl in a dark place.  He'll swoop down on you before you have a chance to defend yourself!\"", new LineSeparator(),
                 new LineSeparator(),
                 new PlayerSymbol(), " YOU: \"", new If("SHMEBULOCK?", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "So this is going to be dangerous?"), "\"", new LineSeparator(),
                 new LineSeparator(),
-                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"Very!  But if you keep your wits about you then a ", new If("magical one", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "clever kid"), " like yourself should do just fine.\""))))));
+                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"Very!  But if you keep your wits about you then a ", new If("magical one", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "clever kid"), " like yourself should do just fine.\"")));
+        page11.story.controls.add(new Scribe(List.of(new Label("par1", List.of(text1, text2, text3, text4, text5)))));
         page11.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/mylee.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("11", page11);
         
         Page page12 = new Page();
         page12.previousPageName = "5";
-        page12.story.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of(new PlayerSymbol(), " YOU: \"", new Variable("mylee-prompt"), "\"", new LineSeparator(),
+        text1 = new app.Text(new Texts(List.of(new PlayerSymbol(), " YOU: \"", new Variable("mylee-prompt"), "\"", new LineSeparator(),
                 new LineSeparator(),
-                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"Nothing else, huh.  I'll open the magic elevator doors for you.  Just march on out and start exploring the first level.  Remember: Don't die.  And... bring me back some "))), new quest.node.InventoryItem("gold item", "Gold"), new Label("par2", new Texts(List.of("!!!\"", new LineSeparator(),
+                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"Nothing else, huh.  I'll open the magic elevator doors for you.  Just march on out and start exploring the first level.  Remember: Don't die.  And... bring me back some ")));
+        text2 = new quest.text.InventoryItem("Gold");
+        text3 = new app.Text(new Texts(List.of("!!!\"", new LineSeparator(),
                 new LineSeparator(),
-                "Mylee flips the elevator switch and the doors open.  You walk out and find that you're no longer on the cloud..."))))));
+                "Mylee flips the elevator switch and the doors open.  You walk out and find that you're no longer on the cloud...")));
+        page12.story.controls.add(new Scribe(List.of(new Label("par1", List.of(text1, text2, text3)))));
+        // TODO - Generate an AI image of the elevator doors open and the faint mist of magic beyond
         page12.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/mylee.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("12", page12);
-        */
         
-        // TODO - Continue refactoring        
-
-
-        /*
         Act chapter1 = new Act();
         chapter1.firstSceneName = "Chapter";
         book.acts.put("Chapter 1", chapter1);
         
         Story sceneHeaderSubpage = new Story();
-        sceneHeaderSubpage.contents.add("<subpage-display Player Stats>");
-        sceneHeaderSubpage.contents.add("You are in <scene>.");
-        sceneHeaderSubpage.contents.add("Ahead (<player-direction>) you see <next-scene>.");
+        sceneHeaderSubpage.controls.add(new SubpageDisplay("Player Stats"));
+        text1 = new app.Text(new Texts(List.of("You are in ", new quest.text.Scene(), ".", new LineSeparator(),
+                "Ahead (", new quest.text.PlayerDirection(), ") you see ", new NextScene(), ".")));
+        sceneHeaderSubpage.controls.add(new Scribe(List.of(new Label("Scene Header", List.of(text1)))));
         book.subpages.put("Scene Header", sceneHeaderSubpage);
         
         Story playerStatsSubpage = new Story();
-        playerStatsSubpage.contents.add("<first-page><player-symbol> <u><hp> HP   <mp> MP   <xp> XP</u>");
+        text1 = new app.Text(new Texts(List.of(new PlayerSymbol(), " ")));
+        decoration = new TextDecoration();
+        decoration.style = FontStyle.BOLD;
+        decoration.color = Color.RED;
+        text2 = new app.Text(new Texts(List.of(new PlayerHP(), " HP")), decoration);
+        decoration = new TextDecoration();
+        decoration.style = FontStyle.BOLD;
+        decoration.color = Color.DARK_MAGENTA;
+        text3 = new app.Text(new Texts(List.of("   ", new PlayerMP(), " MP")), decoration);
+        decoration = new TextDecoration();
+        decoration.style = FontStyle.BOLD;
+        decoration.color = Color.GOLD;
+        text4 = new app.Text(new Texts(List.of("   ", new PlayerXP(), " XP")), decoration);
+        playerStatsSubpage.controls.add(new Scribe(List.of(new Label("Player Stats", List.of(text1, text2, text3, text4)))));
         book.subpages.put("Player Stats", playerStatsSubpage);
         
         Story navigationFooterSubpage = new Story();
-        navigationFooterSubpage.contents.add("<variable-set nextScene next-scene>");
-        navigationFooterSubpage.contents.add("<button-row>");
-        navigationFooterSubpage.contents.add("<get-validated-input condition=\"next-scene=EDGE OF THE WORLD\" align=right navigation-prompt &left; Turn Left+!&up; Move Ahead+&right; Turn Right>");
-        navigationFooterSubpage.contents.add("<get-validated-input condition=\"next-scene!=EDGE OF THE WORLD\" align=right navigation-prompt &left; Turn Left+&up; Move Ahead+&right; Turn Right>");
+        //navigationFooterSubpage.contents.add("<variable-set nextScene next-scene>");
+        //navigationFooterSubpage.contents.add("<button-row>");
+        ValidatedVariablePrompt freeNavigation = new ValidatedVariablePrompt("navigation-prompt", List.of("< Turn Left", "Move Ahead", "Turn Right >"));
+        freeNavigation.keyBindingButtons.put("< Turn Left", KeyboardKey.LEFT);
+        freeNavigation.keyBindingButtons.put("Move Ahead", KeyboardKey.UP);
+        freeNavigation.keyBindingButtons.put("Turn Right >", KeyboardKey.RIGHT);
+        ValidatedVariablePrompt restrictedNavigation = new ValidatedVariablePrompt("navigation-prompt", List.of("< Turn Left", "Move Ahead", "Turn Right >"));
+        restrictedNavigation.keyBindingButtons.put("< Turn Left", KeyboardKey.LEFT);
+        restrictedNavigation.keyBindingButtons.put("Turn Right >", KeyboardKey.RIGHT);
+        restrictedNavigation.isEnabledButtons.put("Move Ahead", false);
+        navigationFooterSubpage.controls.add(new Prompt(freeNavigation, new Condition(new NextScene(), Condition.Operator.EQUALS, "EDGE OF THE WORLD", false)));
+        navigationFooterSubpage.controls.add(new Prompt(restrictedNavigation, new Condition(new NextScene(), Condition.Operator.EQUALS, "EDGE OF THE WORLD", true)));
+        //navigationFooterSubpage.contents.add("<get-validated-input condition=\"next-scene=EDGE OF THE WORLD\" align=right navigation-prompt &left; Turn Left+!&up; Move Ahead+&right; Turn Right>");
+        //navigationFooterSubpage.contents.add("<get-validated-input condition=\"next-scene!=EDGE OF THE WORLD\" align=right navigation-prompt &left; Turn Left+&up; Move Ahead+&right; Turn Right>");
         book.subpages.put("Navigation Footer", navigationFooterSubpage);
         
         Story inputTurnLeftSubpage = new Story();
-        inputTurnLeftSubpage.contents.add("<turn-left>");
-        book.subpages.put("INPUT navigation-prompt= Turn Left", inputTurnLeftSubpage);
+        inputTurnLeftSubpage.controls.add(new TurnLeft());
+        book.subpages.put("INPUT navigation-prompt=< Turn Left", inputTurnLeftSubpage);
         
         Story inputMoveAheadSubpage = new Story();
-        inputMoveAheadSubpage.contents.add("<move-ahead>");
-        book.subpages.put("INPUT navigation-prompt= Move Ahead", inputMoveAheadSubpage);
+        inputMoveAheadSubpage.controls.add(new MoveAhead());
+        book.subpages.put("INPUT navigation-prompt=Move Ahead", inputMoveAheadSubpage);
 
         Story inputTurnRightSubpage = new Story();
-        inputTurnRightSubpage.contents.add("<turn-right>");
-        book.subpages.put("INPUT navigation-prompt= Turn Right", inputTurnRightSubpage);
+        inputTurnRightSubpage.controls.add(new TurnRight());
+        book.subpages.put("INPUT navigation-prompt=Turn Right >", inputTurnRightSubpage);
         
         Scene chapterScene = new Scene();
         chapterScene.firstPageName = "1";
@@ -1232,8 +1271,67 @@ public class Application extends app.view.BaseView {
         chapterScene.nextSceneName = "WILDERNESS 1";
         chapterScene.stopOtherSounds = true;
         chapterScene.soundFileName = "/assets/sounds/elevator-open.mp3";
+        chapterScene.soundRepeats = false;
         chapter1.scenes.put("Chapter", chapterScene);
         
+        // TODO - Continue refactoring
+        
+        page1 = new Page();
+        decoration = new TextDecoration();
+        decoration.pixelSize = Quest.DEFAULT_FONT_SIZE * 2;
+        text1 = new app.Text(new Texts(List.of("CHAPTER 1:", new LineSeparator())), decoration);
+        decoration = new TextDecoration();
+        decoration.style = FontStyle.BOLD;
+        decoration.pixelSize = Quest.DEFAULT_FONT_SIZE * 4;
+        text2 = new app.Text(new Texts(List.of("The Dragon")), decoration);
+        page1.story.controls.add(new Scribe(List.of(new Label("par1", List.of(text1, text2)))));
+        page1.story.controls.add(new PlayerDirectionSet("SOUTH"));
+        page1.story.controls.add(new ObservedSceneAdd("MYLEE'S ELEVATOR"));
+        page1.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/wayne-chung-dragon.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        chapterScene.pages.put("1", page1);
+        
+        Scene myleesElevator = new Scene();
+        myleesElevator.color = Color.SILVER;
+        myleesElevator.firstPageName = "main";
+        myleesElevator.stopOtherSounds = true;
+        myleesElevator.soundFileName = "/assets/sounds/elevator.wav";
+        myleesElevator.symbol = "\uD83D\uDED7";
+        myleesElevator.x = 2;
+        myleesElevator.y = 0;
+        chapter1.scenes.put("MYLEE'S ELEVATOR", myleesElevator);
+        
+        TextDecoration sceneDecoration = new TextDecoration();
+        sceneDecoration.color = myleesElevator.color;
+
+        // If inventory does not have Gold, you catch Mylee taking a bath and she asks you to leave.
+        // If dragon is not dead, Dragon comes crashing into the elevator and kills you.
+        // If Gianni isn't tamed (no long range weapon), Night Owl comes crashing into the elevator and kills you.
+        // Else, start the Night Owl minigame.
+        Page mainPage = new Page();
+        SubpageDisplay noGoldDisplay = new SubpageDisplay("No Gold");
+        noGoldDisplay.condition = new Condition(new InventoryHas("Gold"), Condition.Operator.EQUALS, "true", false);
+        mainPage.story.controls.add(noGoldDisplay);
+        SubpageDisplay hasGoldDisplay = new SubpageDisplay("Has Gold");
+        hasGoldDisplay.condition = new Condition(new InventoryHas("Gold"), Condition.Operator.EQUALS, "true", true);
+        mainPage.story.controls.add(hasGoldDisplay);
+        myleesElevator.pages.put("main", mainPage);
+        
+        Story noGoldSubpage = new Story();
+        noGoldSubpage.controls.add(new SubpageDisplay("Scene Header"));
+        text1 = new app.Text(new Texts(List.of("\uD83D\uDC08\u200D\u2B1B MYLEE: \"Hey!  I'm trying to take a bath!  Off with you ", new Variable("player-mylee-nickname"), "!!!  And don't you come back until you have some ")), sceneDecoration);
+        text2 = new quest.text.InventoryItem("Gold");
+        text3 = new app.Text(new Texts(List.of("!\"", new LineSeparator(),
+                new LineSeparator(),
+                "So this elevator has a sink?  Does she live here?", new LineSeparator(),
+                new LineSeparator(),
+                "You have so many questions.  But for now, you better leave.", new LineSeparator(),
+                new LineSeparator(),
+                new ValidatedVariablePrompt("action", List.of("Listen", "&down; Leave Elevator")))), sceneDecoration);
+        noGoldSubpage.controls.add(new Scribe(List.of(new Label("par1", List.of(text1, text2, text3)))));
+        noGoldSubpage.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/mylee-sink.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+
+
+        /*
         page1 = new Page();
         page1.story.contents.add("<image wayne-chung-dragon center /assets/images/wayne-chung-dragon.jpg>");
         page1.story.contents.add("<second-page>");
@@ -1254,10 +1352,6 @@ public class Application extends app.view.BaseView {
         myleesElevator.y = 0;
         chapter1.scenes.put("MYLEE'S ELEVATOR", myleesElevator);
         
-        // TODO - If inventory does not have Gold, you catch Mylee taking a bath and she asks you to leave
-        // TODO - If dragon is not dead, Dragon comes crashing into the elevator and kills you
-        // TODO - If Gianni isn't tamed (no long range weapon), Night Owl comes crashing into the elevator and kills you
-        // TODO - Else, start the Night Owl minigame
         Page mainPage = new Page();
         mainPage.story.contents.add("<subpage-display condition=\"inventory-has Gold!=true\" No Gold><subpage-display condition=\"inventory-has Gold=true\" Has Gold>");
         myleesElevator.pages.put("main", mainPage);
@@ -1657,6 +1751,7 @@ public class Application extends app.view.BaseView {
         onToAct2.contents.add("<background-color 0+0+0 High Scores>");
         onToAct2.contents.add("<goto-act Chapter 2>");
         getMeWhiteMeatChickenPage.subpages.put("INPUT action=Continue", onToAct2);
+        */
         
         Scene wilderness2 = new Scene();
         wilderness2.color = new Color(0, 100, 0);
@@ -1668,6 +1763,10 @@ public class Application extends app.view.BaseView {
         wilderness2.y = 1;
         chapter1.scenes.put("WILDERNESS 2", wilderness2);
         
+        sceneDecoration = new TextDecoration();
+        sceneDecoration.color = wilderness2.color;
+        
+        /*
         mainPage = new Page();
         mainPage.story.contents.add("<subpage-display Scene Header>");
         mainPage.story.contents.add("<color 0+100+0>");
@@ -1749,6 +1848,7 @@ public class Application extends app.view.BaseView {
         troubleBunniesSubpage.contents.add("<image bionic-bunny-commander left /assets/images/bionic-bunny-commander.jpg>");
         chaseBunniesPage.subpages.put("Trouble", troubleBunniesSubpage);
         wilderness2.pages.put("Chase Bunnies", chaseBunniesPage);
+        */
         
         Scene wilderness1 = new Scene();
         wilderness1.color = new Color(79, 47, 79);
@@ -1759,7 +1859,44 @@ public class Application extends app.view.BaseView {
         wilderness1.x = 2;
         wilderness1.y = 1;
         chapter1.scenes.put("WILDERNESS 1", wilderness1);
+
+        sceneDecoration = new TextDecoration();
+        sceneDecoration.color = wilderness1.color;
         
+        mainPage = new Page();
+        mainPage.story.controls.add(new SubpageDisplay("Scene Header"));
+        mainPage.story.controls.add(new SubpageDisplay("Navigation Footer"));
+        text1 = new app.Text(new Texts(List.of("You see a meadow full of purple flowers.  The sun is shining brightly and cute bunnies scamper around you.  A wide, well-traveled dirt path splits out in all directions.", new LineSeparator(),
+                new LineSeparator(),
+                "In the southeast a mighty mountain range borders the world.  It stretches to a central point where a mountain appears to climb so high that it quite possibly goes up into outer space.", new LineSeparator(),
+                new LineSeparator(),
+                "To the south the sky darkens above a menacing woods.", new LineSeparator(),
+                new LineSeparator(),
+                "And to the southwest you see more wilderness and a series of rock formations.", new LineSeparator(),
+                new LineSeparator(),
+                "You need to remember so you can find your way back... \uD83D\uDED7 MYLEE'S ELEVATOR is by the purple flowers.", new LineSeparator(),
+                new LineSeparator())), sceneDecoration);
+        mainPage.story.controls.add(new Scribe(List.of(new Label("par1", List.of(text1)), new ValidatedVariablePrompt("action", List.of("Listen", "Chase Bunnies")))));
+        mainPage.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/wilderness3.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));        
+        wilderness1.pages.put("main", mainPage);
+        Story listenSubpage = new Story();
+        listenSubpage.contents.add("<goto-page Listen>");
+        mainPage.subpages.put("INPUT action=Listen", listenSubpage);
+        
+        Story chaseBunniesSubpage = new Story();
+        chaseBunniesSubpage.controls.add(new PageGoto("Chase Bunnies"));
+        mainPage.subpages.put("INPUT action=Chase Bunnies", chaseBunniesSubpage);
+        
+        Page listenPage = new Page();
+        listenPage.previousPageName = "main";
+        text1 = new app.Text(new Texts(List.of("You hear birds singing and perhaps some insects.  There is also a slight breeze.  These are the typical sounds of nature.", new LineSeparator(),
+                new LineSeparator(),
+                "Oh the great outdoors!")), sceneDecoration);        
+        listenPage.story.controls.add(new Scribe(List.of(new Label("par1", List.of(text1)))));
+        listenPage.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/wilderness3.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));        
+        wilderness1.pages.put("Listen", listenPage);
+        
+        /*
         mainPage = new Page();
         mainPage.story.contents.add("<subpage-display Scene Header>");
         mainPage.story.contents.add("<color 79+47+79>");

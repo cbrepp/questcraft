@@ -11,6 +11,7 @@ import app.node.BaseNode;
 import java.util.List;
 import app.view.Animation;
 import app.view.BaseSplashView;
+import java.util.Properties;
 
 /**
  *
@@ -32,6 +33,10 @@ public class AWTApplication extends BaseController {
             args[0] = new Throwable().getStackTrace()[0].getClassName();
         }
         Bootstrap.main(args);
+    }
+    
+    public AWTApplication(Properties props) {
+        super(props);
     }
     
     @Override

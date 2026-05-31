@@ -38,8 +38,7 @@ public class Bootstrap {
         // TODO - Set the default color using app.properties value app.color
         
         // Instance the application controller
-        String guiProperty = props.getProperty("app.gui");
-        BaseController.appController = resolveController(args, guiProperty);
+        BaseController.appController = resolveController(args, props);
         if (BaseController.appController == null) {
             logger.log(Level.SEVERE, "Unable to construct the application controller");
             return;
@@ -96,10 +95,12 @@ public class Bootstrap {
     // 1) Passed in argument
     // 2) Immediate class (if not generic)
     // 3) app.properties file
-    public static BaseController resolveController(String[] args, String guiProperty) {
-        logger.log(Level.INFO, "Entered: args={0}, guiProperty={1}", new Object[]{Arrays.toString(args), guiProperty});
+    public static BaseController resolveController(String[] args, Properties props) {
+        logger.log(Level.INFO, "Entered: args={0}, props={1}", new Object[]{Arrays.toString(args), props});
         
         BaseController controller = null;
+        
+        String guiProperty = props.getProperty("app.gui");
         
         // Evaluate the passed in GUI parameter
         String gui = getGUIFromArgs(args);
@@ -124,7 +125,7 @@ public class Bootstrap {
             if (controllerClass == null) {
                 logger.log(Level.SEVERE, "Unsupported controller: {0}", gui);
             } else {
-                controller = (BaseController) Utility.instance(controllerClass.getName());
+                controller = (BaseController) Utility.instance(controllerClass.getName(), props);
             }
         } else {
             logger.log(Level.SEVERE, "Could not resolve controller");

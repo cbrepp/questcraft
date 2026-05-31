@@ -17,6 +17,7 @@ public class Color implements RGBColor, Serializable {
     public static final Color DARK_GRAY = new Color(169, 169, 169);
     public static final Color DARK_MAGENTA = new Color(139, 0, 139); // Premium/Muted (Deep Magenta)
     public static final Color DARKEST_MAGENTA = new Color(84, 0, 84);
+    public static final Color GOLD = new Color(197, 160, 89); // Classic Champagne Gold (Balanced & Sophisticated)
     public static final Color GREEN = new Color (0, 255, 0);
     public static final Color HYPERLINK_BLUE = new Color(0, 0, 238); // Default blue used by modern browsers
     public static final Color HYPERLINK_LIGHT_BLUE = new Color(0, 102, 255); // Contrast Ratio on Black: 4.7:1 (meets WCAG AA for normal text)
@@ -24,6 +25,7 @@ public class Color implements RGBColor, Serializable {
     public static final Color NEON_MAGENTA = new Color(255, 0, 255); // High-Contrast (Vibrant/Neon)
     public static final Color RED = new Color (255, 0, 0);
     public static final Color SHADOW = new Color(54, 54, 54);
+    public static final Color SILVER = new Color(192, 192, 192);
     public static final Color WHITE = new Color(255, 255, 255);
     public static final Color YELLOW = new Color(255, 222, 33);
     

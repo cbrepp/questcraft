@@ -138,6 +138,7 @@ import org.w3c.dom.NamedNodeMap;
 import app.view.Animation;
 import app.view.BaseSplashView;
 import java.util.Collections;
+import java.util.Properties;
 import javafx.animation.Interpolator;
 import javafx.animation.TranslateTransition;
 import javafx.beans.binding.DoubleBinding;
@@ -183,6 +184,7 @@ public class JavaFXApplication extends BaseController {
     public JavaFXPrimaryStage parentDecoratedNode;
     public BaseView parentView;
     public Scene primaryScene;
+    public Properties properties;
     public BaseSplashView splashView;
     public HashMap<String, Pane> tabContentMap;
     public TabPane tabFolder;
@@ -201,6 +203,10 @@ public class JavaFXApplication extends BaseController {
             args[0] = new Throwable().getStackTrace()[0].getClassName();
         }
         Bootstrap.main(args);
+    }
+    
+    public JavaFXApplication(Properties props) {
+        super(props);
     }
 
     @Override
@@ -271,7 +277,9 @@ public class JavaFXApplication extends BaseController {
         this.parentDecoratedNode = new JavaFXPrimaryStage(this.parentView, this.parentView.name, this);
         this.parentDecoratedNode.configure();
         this.primaryScene = ((Stage) this.parentDecoratedNode.controllerNode).getScene();
-        this.tabFolder = (TabPane) this.primaryScene.getRoot();
+        StackPane primaryPane = (StackPane) this.primaryScene.getRoot();
+        //this.tabFolder = (TabPane) this.primaryScene.getRoot();
+        this.tabFolder = (TabPane) primaryPane.getChildren().get(0);
         this.tabFolder.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
             String selectedTabTitle = newTab.getText();
             logger.log(Level.INFO, "Selected tab {0}", selectedTabTitle);
@@ -3723,4 +3731,5 @@ public class JavaFXApplication extends BaseController {
         }
         control.toBack();
     }
+    
 }

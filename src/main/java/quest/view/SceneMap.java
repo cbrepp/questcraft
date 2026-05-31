@@ -5,6 +5,7 @@ import app.color.Color;
 import app.EventListener;
 import app.HorizontalAlignment;
 import app.Layout;
+import app.TextDecoration;
 import app.VerticalAlignment;
 import app.node.Grid;
 import app.node.Group;
@@ -99,6 +100,9 @@ public class SceneMap extends app.view.BaseView implements EventListener {
             }
         }
         
+        TextDecoration twiceAsBig = new TextDecoration();
+        twiceAsBig.pixelSize = Quest.DEFAULT_FONT_SIZE * 2;
+        
         // Populate the grid cells using the sorted cells
         Grid gridControl = new Grid("scene map grid");
         gridControl.borderPadding = 0;
@@ -157,14 +161,14 @@ public class SceneMap extends app.view.BaseView implements EventListener {
                         case Quest.DIRECTION_SOUTH -> playerSymbol += " " + "\u2B07";
                         case Quest.DIRECTION_WEST -> playerSymbol += " " + "\u2B05";
                     }
-                    Label labelControl = new Label("player", playerSymbol);
+                    Label labelControl = new Label("player", playerSymbol, twiceAsBig);
                     itemGroup.nodes.add(labelControl);
                     System.out.println("SceneMap: render: Added " + playerSymbol + " to " + x + ", " + y);
                 }
                 if (sceneName != null) {
                     Scene scene = act.scenes.get(sceneName);
                     if ((scene != null) && (scene.symbol != null) && (observedActScenes.contains(sceneName))) {
-                        Label labelControl2 = new Label(sceneName + " symbol", scene.symbol);
+                        Label labelControl2 = new Label(sceneName + " symbol", scene.symbol, twiceAsBig);
                         itemGroup.nodes.add(labelControl2);
                         System.out.println("SceneMap: render: Added " + scene.symbol + " to " + x + ", " + y);
                     }

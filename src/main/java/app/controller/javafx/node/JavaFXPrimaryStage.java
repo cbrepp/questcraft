@@ -1,21 +1,26 @@
 package app.controller.javafx.node;
 
 import app.Coordinates;
+import app.Icon;
 import app.color.DecoratedOffsetColor;
 import app.color.OffsetColor;
 import app.controller.BaseController;
 import static app.controller.BaseController.logger;
 import app.controller.JavaFXApplication;
 import static app.controller.JavaFXApplication.getFxColor;
+import app.dialog.Alert;
 import java.util.logging.Level;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.TabPane;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -91,7 +96,26 @@ public class JavaFXPrimaryStage extends BaseJavaFXNode {
         controllerNode.setWidth(initialWidth);
         controllerNode.setHeight(initialHeight);
         
-        Scene primaryScene = new Scene(root, initialWidth, initialHeight);
+        // TODO - Abstract this out onto the BaseController
+        String infoEmoji = "\u2139\uFE0F";
+        Button infoButton = new Button(infoEmoji);
+        double emojiSize = JavaFXApplication.DEFAULT_FONT_SIZE + 2;
+        infoButton.setStyle("-fx-background-radius: 999; -fx-min-width: " + (emojiSize) + "px; -fx-min-height: " + (emojiSize) + "px; -fx-alignment: center; -fx-max-width: " + (emojiSize) + "px; -fx-max-height: " + (emojiSize) + "px; -fx-padding: 0;");
+        infoButton.setOnAction(e -> {
+                Alert alert = new Alert("About", "by " + controller.props.getProperty("app.author") + "\n\n" + controller.props.getProperty("app.description"));
+                alert.icon = Icon.INFORMATION;
+                alert.emojis = String.join(" ", infoEmoji);
+                alert.header = node.name;
+                this.controller.newDialog(alert);
+        });
+        
+        StackPane primaryPane = new StackPane();
+        primaryPane.getChildren().addAll(root, infoButton);
+        StackPane.setAlignment(infoButton, Pos.TOP_RIGHT);
+        StackPane.setMargin(infoButton, new javafx.geometry.Insets(5, 5, 0, 0));
+        
+        //Scene primaryScene = new Scene(root, initialWidth, initialHeight);
+        Scene primaryScene = new Scene(primaryPane, initialWidth, initialHeight);
         controllerNode.setScene(primaryScene);
         controllerNode.show();
     }

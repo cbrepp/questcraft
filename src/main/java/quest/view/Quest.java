@@ -33,6 +33,7 @@ import quest.model.InventoryItem;
 import quest.model.Page;
 import quest.model.Scene;
 import quest.model.Story;
+import quest.node.ValidatedVariablePrompt;
 
 public class Quest extends app.view.BaseView {
     
@@ -440,6 +441,11 @@ public class Quest extends app.view.BaseView {
         }
     }
     
+    public void displayStoryPrompt(ValidatedVariablePrompt prompt) {
+        logger.log(Level.INFO, "Entered: node={0}", prompt);
+        this.appController.addNode(this.name, this.name, prompt, new Layout(new RelativeCoordinates(LEFT_PAGE_STARTING_X, PAGE_ENDING_Y), HorizontalAlignment.LEFT, VerticalAlignment.BOTTOM));
+    }
+    
     public void displayStory(Story story, Boolean isSubpage) {
         logger.log(Level.INFO, "Entered: page={0}, isSubpage={1}", new Object[]{story, isSubpage});
         
@@ -819,7 +825,7 @@ public class Quest extends app.view.BaseView {
         // Start a new sound file if needed
         if ((!isFirstAct) && (scene.soundFileName != null) && (!scene.soundFileName.equals("")) && (!scene.soundFileName.equals(previousSoundFileName))) {
             System.out.println("Quest: startScene: Playing sound file " + scene.soundFileName);
-            this.appController.playSound(scene.soundFileName, true);
+            this.appController.playSound(scene.soundFileName, scene.soundRepeats);
         }
         
         // Track where we are in the book

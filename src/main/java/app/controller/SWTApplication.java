@@ -13,7 +13,6 @@ import app.node.Sprite;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -23,7 +22,6 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -64,6 +62,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import app.view.Animation;
 import app.view.BaseSplashView;
+import java.util.Properties;
 
 public class SWTApplication extends BaseController {
 
@@ -111,6 +110,10 @@ public class SWTApplication extends BaseController {
             args[0] = new Throwable().getStackTrace()[0].getClassName();
         }
         Bootstrap.main(args);
+    }
+    
+    public SWTApplication(Properties props) {
+        super(props);
     }
     
     @Override
