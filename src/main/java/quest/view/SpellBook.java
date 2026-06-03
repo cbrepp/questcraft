@@ -119,6 +119,7 @@ public class SpellBook extends app.view.BaseView {
         field.buttonBorderWidth = 1;
         field.buttonText = "Cast Spell";
         field.eventListener = this;
+        field.pixelSize = Quest.DEFAULT_FONT_SIZE;
         field.isMultiUse = true;
         field.isUpperCase = true;
         field.label = "Enter spell here";
@@ -140,6 +141,7 @@ public class SpellBook extends app.view.BaseView {
         }
         
         TextDecoration decoration = new TextDecoration();
+        decoration.pixelSize = Quest.DEFAULT_FONT_SIZE;
         decoration.style = FontStyle.BOLD;
         Label learnedSpellsLabel = new Label("learned spells", learnedSpellsText, decoration);
         learnedSpellsLabel.backgroundColor = fadedMagicColor;

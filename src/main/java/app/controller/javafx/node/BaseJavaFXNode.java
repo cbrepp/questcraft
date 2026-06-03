@@ -9,6 +9,7 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
+import javafx.scene.media.MediaView;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
@@ -72,6 +73,15 @@ public abstract class BaseJavaFXNode extends BaseDecoratedNode {
                     rectangle.setHeight(prefHeight);
                 } else {
                     rectangle.setHeight(parentHeight);
+                }
+            } else if (controllerNode instanceof MediaView video) {
+                if (node.scaleX != null) {
+                    double prefWidth = Math.round(parentWidth * node.scaleX);
+                    video.setFitWidth(prefWidth);
+                }
+                if (node.scaleY != null) {
+                    double prefHeight = Math.round(parentHeight * node.scaleY);
+                    video.setFitHeight(prefHeight);
                 }
             } else {
                 logger.log(Level.WARNING, "Scaling is not supported for node type {0}", controllerNode.getClass().getName());

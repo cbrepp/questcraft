@@ -109,6 +109,12 @@ public class Inventory extends app.view.BaseView implements EventListener {
         
         this.lastRenderContainedNewItems = false;
         
+        TextDecoration emojiDecoration = new TextDecoration();
+        emojiDecoration.pixelSize = BaseController.EMOJI_SHEET_SIZE;
+
+        TextDecoration textDecoration = new TextDecoration();
+        textDecoration.pixelSize = Quest.DEFAULT_FONT_SIZE;
+        
         // As a special spell, the user can "ACTIVATE INVENTORY" to enable the links for inventory items they don't yet have.
         // TODO - The spell doesn't re-render the Inventory view
         Boolean activateInventory = false;
@@ -129,13 +135,12 @@ public class Inventory extends app.view.BaseView implements EventListener {
             
             InventoryItem bookItem = this.quest.book.inventory.get(key);
 
-            TextDecoration decoration = new TextDecoration();
-            decoration.pixelSize = BaseController.EMOJI_SHEET_SIZE;
-            Label emojiControl = new Label(key + " emojis", String.join(" ", bookItem.emojis), decoration);
+            Label emojiControl = new Label(key + " emojis", String.join(" ", bookItem.emojis), emojiDecoration);
             itemGroup.nodes.add(emojiControl);
 
             Link linkControl = new Link(key);
             linkControl.text = key;
+            linkControl.pixelSize = Quest.DEFAULT_FONT_SIZE;
             linkControl.eventListener = this;
             itemGroup.nodes.add(linkControl);
 
@@ -150,7 +155,7 @@ public class Inventory extends app.view.BaseView implements EventListener {
 
                 linkControl.isEnabled = true;
 
-                Label countControl = new Label(key + " count", "x" + questItem.quantity);
+                Label countControl = new Label(key + " count", "x" + questItem.quantity, textDecoration);
                 itemGroup.nodes.add(countControl);
             } else {
                 System.out.println("Inventory: render: Item NOT in quest inventory: " + key);

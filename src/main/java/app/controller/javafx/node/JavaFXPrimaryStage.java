@@ -99,7 +99,7 @@ public class JavaFXPrimaryStage extends BaseJavaFXNode {
         // TODO - Abstract this out onto the BaseController
         String infoEmoji = "\u2139\uFE0F";
         Button infoButton = new Button(infoEmoji);
-        double emojiSize = JavaFXApplication.DEFAULT_FONT_SIZE + 2;
+        double emojiSize = JavaFXApplication.DEFAULT_PIXEL_SIZE - 2;
         infoButton.setStyle("-fx-background-radius: 999; -fx-min-width: " + (emojiSize) + "px; -fx-min-height: " + (emojiSize) + "px; -fx-alignment: center; -fx-max-width: " + (emojiSize) + "px; -fx-max-height: " + (emojiSize) + "px; -fx-padding: 0;");
         infoButton.setOnAction(e -> {
                 Alert alert = new Alert("About", "by " + controller.props.getProperty("app.author") + "\n\n" + controller.props.getProperty("app.description"));

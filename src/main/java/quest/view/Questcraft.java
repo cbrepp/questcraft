@@ -7,6 +7,8 @@ import quest.model.Book;
 /**
  * This application is for personal, non-commercial use only.
  * 
+ * Certain digital assets within this software were generated using Grok, an AI service provided by xAI. The creators of this application retain ownership of the generated outputs in accordance with xAI's terms.
+ * 
  * To launch from the fat jar: LIBMANAGERS=alsa GDK_BACKEND=x11 java -jar target/questcraft-maven-shaded.jar &
  * If audio doesn't work in KDE Neon, install package pavucontrol to fix missing system-level audio libraries/utilities.
  * 
@@ -30,8 +32,8 @@ import quest.model.Book;
  * cat-eyes.gif - "a close up of a cat 's eyes with a dark background" (https://tenor.com/view/cat-eyes-blink-gif-5820964)
  * cat-missile-left.png and cat-missile-right.png - Cat Kitten Animal royalty-free vector graphic. Free for use & download. (https://pixabay.com/vectors/cat-kitten-lazy-tired-sleepy-pet-8633535/)
  * catapult.wav - "06177 wire launch.wav, Launching wire harpoon - simulated" by Robinhood76 (https://freesound.org/people/Robinhood76/sounds/329683/)
- * cat-storm.gif - "Cat, Love, Rain GIF. Free for use." by u_h70uxspxzf (https://pixabay.com/gifs/cat-love-rain-lightning-cave-974/)
- * clouds.jpg - OpenClipart-Vectors (https://pixabay.com/vectors/sunrise-clouds-rising-sun-sky-sun-153600/)
+ * cat-storm.mp4 - Mylee in her elevator watching a raging storm by Mr. Chris and Grok
+ * clouds.jpg - Mysterious clouds by Mr. Chris and Grok
  * compass-small.png - "Compass Rose, Wind, Directions royalty-free vector graphic. Free for use & download." by clker-free-vector-images-3736 (https://pixabay.com/vectors/compass-rose-wind-directions-305254/)
  * cosmic-wonder-1.mp3 - "Drone made with small analog modular synth. Digital fx." by gis_sweden (https://freesound.org/people/gis_sweden/sounds/816905/)
  * cosmic-wonder-1.png - "Ai Generated, Figure, Lonely royalty-free stock illustration. Free for use & download." by Kyraxys (https://pixabay.com/illustrations/ai-generated-figure-lonely-layer-9505087/)
@@ -40,10 +42,10 @@ import quest.model.Book;
  * crash.wav - "This is a sound of a heavy hard resonant impact metal used for heavy crashing and for a knockout sound for robots battling out against each other.  One of the sounds belongs to Halleck.  Enjoy using this sfx and credit me and Halleck when using this!" by Artninja (https://freesound.org/people/Artninja/sounds/703595/)
  * death.mp3 - Dramatic Scene Character Death Separation Melancholy Sadness (https://freesound.org/people/UNIVERSFIELD/sounds/697083/)
  * designer.jpg - "Digital, Binary Code, Abstract royalty-free stock illustration. Free for use & download." by wastedgeneration (https://pixabay.com/illustrations/digital-binary-code-abstract-8280790/)
- * difficulty.jpg - "Nature, Mountain, Seasons royalty-free stock illustration. Free for use & download." by betidraws (https://pixabay.com/illustrations/nature-mountain-seasons-colors-7842167/)
+ * difficulty.jpg - AI generated difficulty screen with a drago by Mr. Chris and Grok
  * difficulty-magical.jpg - "Journey, Wizard, Magic royalty-free stock illustration. Free for use & download." by betidraws (https://pixabay.com/illustrations/journey-wizard-magic-sorcerer-trip-9543980/)
- * dragon.gif - "#dragon" by Kentrius (https://gifer.com/en/6JPK)
  * dragon.mp3 - The Roar of a 5-Headed Dragon (https://freesound.org/people/bevibeldesign/sounds/366095/)
+ * dragon.mp4 - AI image of a dragon by Mr. Chris and Grok
  * dragon.png, dragon-red.png, and dragon-inverted.png - "Comodo, Lizard, Dragon royalty-free stock illustration. Free for use & download." by alex_fox25 (https://pixabay.com/illustrations/comodo-lizard-dragon-7014193/)
  * dragons-den.jpg - "Tunnel, Underground, Perspective royalty-free stock illustration. Free for use & download." by TheDigitalArtist (https://pixabay.com/illustrations/tunnel-underground-perspective-dark-8870192/)
  * dragons-den-empty.jpg - "Tunnel, Underground, Perspective royalty-free stock illustration. Free for use & download." by TheDigitalArtist (https://pixabay.com/illustrations/tunnel-underground-perspective-dark-8870193/)
@@ -52,7 +54,8 @@ import quest.model.Book;
  * dragon-hurt.wav - "Dragon hurt by sword and pouring buckets of dragon blood. Made to replace drag1.wav in FreeDink." by qubodup (https://freesound.org/people/qubodup/sounds/442966/)
  * dragon-sketch.png - "Ai Generated, Dragon, Line Art royalty-free vector graphic. Free for use & download." by GDJ (https://pixabay.com/vectors/ai-generated-dragon-line-art-8907059/)
  * elevator.wav - music elevator ext (https://freesound.org/people/Jay_You/sounds/467240/)
- * elevator-doors.png - Krolestwo_Nauki (https://pixabay.com/vectors/elevator-elevator-door-building-6232385/)
+ * elevator-doors.jpg - Mysterious elevator doors by Mr. Chris and Grok
+ * elevator-doors.mp4 - Mysterious elevator doors opening by Mr. Chris and Grok
  * emoji.json (for use with sheet_google_64.png) - Google's 64px unicode emoji spritesheet for Noto Emoji (https://github.com/googlefonts/noto-emoji) v2.048 (https://github.com/iamcal/emoji-data/tree/master)
  * epic.mp3 - "Epic Trailer Background Music" by Migfus20 (https://freesound.org/people/Migfus20/sounds/560454/)
  * faery-zing.wav - "me saying zing with pitch change" by girlana (https://freesound.org/people/girlana/sounds/76384/)
@@ -94,9 +97,11 @@ import quest.model.Book;
  * monkey.wav - "Imitation of a monkey or ape. Originally created for Stendhal: https://stendhalgame.org/" by AntumDeluge (https://freesound.org/people/AntumDeluge/sounds/417823/)
  * mount-fluff.jpg - "Dog, Cat, Pet royalty-free stock illustration. Free for use & download." by varunanand93 (https://pixabay.com/illustrations/dog-cat-pet-nature-puppy-animals-9527945/)
  * mp-up.wav - "Scifi plasma charging" by Robinhood76 (https://freesound.org/people/Robinhood76/sounds/700413/)
- * mylee.jpg - Mylee Marie by Mr. Chris
  * mylee-sink.jpg - Mylee in a sink by Mr. Chris
- * mystery-door.jpg - "Hello :)" by qimono (https://pixabay.com/illustrations/door-open-doorway-entrance-1590024/)
+ * myles-elevator.jpg - Mylee in an elevator by Mr. Chris and Grok
+ * myles-elevator-meanwhile.jpg - Mylee waiting patiently in an elevator by Mr. Chris and Grok
+ * myles-elevator.mp4 - Mylee welcoming you to Floor 1 by Mr. Chris and Grok
+ * mystery-door.jpg - Photo by Mr. Chris of his leprechaun closet's door and edited by Grok
  * night-owl.gif - "Owl, Bird, Barn owl GIF. Free for use." by KiFoKu (https://pixabay.com/gifs/owl-bird-barn-owl-plumage-beak-17686/)
  * night-owl.jpg - "Scary, Owl, Eyes image. Free for use." by Skitterphoto (https://pixabay.com/photos/scary-owl-eyes-spooky-halloween-3595742/)
  * night-owl.png - "Ai Generated, Bird, Nature royalty-free vector graphic. Free for use & download." by MickeyLIT (https://pixabay.com/vectors/ai-generated-bird-owl-animal-8255570/)
@@ -130,16 +135,15 @@ import quest.model.Book;
  * suspense2.mp3 - "Free!  120 BPM loop. Suspenseful and dramatic." by awrmacd (https://freesound.org/people/awrmacd/sounds/387222/)
  * suspense3.wav - "Starts calmly raising the suspense and the mystery. Then gets darker and ends smoothly.  Software: Cubase (midi files)" by tyops (https://freesound.org/people/tyops/sounds/423208/)
  * toadstool.png - "Mushroom, Fungus, Amanita Muscaria royalty-free vector graphic. Free for use & download." by nickpanek620 (https://pixabay.com/vectors/mushroom-fungus-amanita-muscaria-8518047/)
- * thunder.wav - "On 2nd of June, 2007 there was a storm with Cloud to ground lightnings. It arrived to me very quickly. I got my Cassette recorder with microphone and recorded this sample." by csengeri (https://freesound.org/people/csengeri/sounds/35703/)
- * title-page.jpg - "Magic, Wizard, Witch royalty-free stock illustration. Free for use & download." by betidraws (https://pixabay.com/illustrations/magic-wizard-witch-forest-trees-9635417/)
+ * title-page.jpg - Photo of Wayne Chung by Mr. Chris manipulated by Grok
  * turn-page.mp3 - "page turn" by partheeban (https://freesound.org/people/partheeban/sounds/457767/)
- * twins.jpg - "Image of the twins taken by Holly then manipulated by AI to make them look like video game characters" by repp
+ * twins.jpg - Image of the twins taken by Holly then manipulated by Mr. Chris and Grok to make them look like retro wizards
  * UNO-reverse.png - "Arrows, Blue, Double royalty-free vector graphic. Free for use & download." by OpenClipart-Vectors (https://pixabay.com/vectors/arrows-blue-double-reverse-redo-151635/)
  * victory.mp3 - "This sound was generated using an AI model (elevenlabs). No real-world recording was used ." by mokasza (https://freesound.org/people/mokasza/sounds/810330/)
  * wayne-chung-classic.jpg - "Image of Wayne Chung manipulated by AI to make him look like a video game character" by repp
  * wayne-chung-dragon.jpg - "Image of Wayne Chung manipulated by AI to make him look like an epic dragon lord" by repp
  * wayne-chung-dark.jpg - "Image of Wayne Chung manipulated by AI to make him look like dark and cool" by repp
- * wayne-chung.jpg - "Image of Wayne Chung wondering what's going on" by repp
+ * wayne-chung.jpg - Image of Wayne Chung wondering what's going on by Mr. Chris and edited by Grok
  * wilderness.jpg and wilderness-full.jpg - Nature, Fog, Travel image. Free for use. by jameswheeler (https://pixabay.com/photos/nature-fog-travel-foggy-haze-mist-3787200/)
  * wilderness.mp3 - birds_210513_0088.mp3 (https://freesound.org/people/titi2/sounds/571247/)
  * wilderness3.jpg and wilderness3-small.jpg - Ai Generated Meadow Mountain royalty-free stock illustration. Free for use & download. (https://pixabay.com/illustrations/ai-generated-meadow-mountain-8190587/)

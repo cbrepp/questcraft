@@ -100,6 +100,8 @@ public class SceneMap extends app.view.BaseView implements EventListener {
             }
         }
         
+        TextDecoration normalizeSize = new TextDecoration();
+        normalizeSize.pixelSize = Quest.DEFAULT_FONT_SIZE;
         TextDecoration twiceAsBig = new TextDecoration();
         twiceAsBig.pixelSize = Quest.DEFAULT_FONT_SIZE * 2;
         
@@ -145,10 +147,10 @@ public class SceneMap extends app.view.BaseView implements EventListener {
                     itemGroup.backgroundColor = scene.color;
                     Label labelControl;
                     if ((observedActScenes.isEmpty()) || (!observedActScenes.contains(sceneName))) {
-                        labelControl = new Label(sceneName + " label", "?");
+                        labelControl = new Label(sceneName + " label", "?", normalizeSize);
                         System.out.println("SceneMap: render: Adding unobserved scene to " + x + ", " + y);
                     } else {
-                        labelControl = new Label(sceneName + " label", sceneName);
+                        labelControl = new Label(sceneName + " label", sceneName, normalizeSize);
                         System.out.println("SceneMap: render: Adding " + sceneName + " to " + x + ", " + y);
                     }
                     itemGroup.nodes.add(labelControl);

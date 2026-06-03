@@ -33,6 +33,7 @@ public class SplashScreen extends app.view.BaseSplashView {
         logger.log(Level.INFO, "Entered: appController={0}", appController);
         this.appController = appController;
         
+        /*
         TextDecoration companyDecoration = new TextDecoration();
         companyDecoration.pixelSize = 32.0;
         companyDecoration.color = Color.SHADOW;
@@ -52,10 +53,8 @@ public class SplashScreen extends app.view.BaseSplashView {
         bylineDecoration.style = FontStyle.BOLD;
         Label bylineLabel = new Label("byline", "A SOFTWARE COMPANY", bylineDecoration);
         appController.addNode(this.name, this.name, bylineLabel, new Layout(new RelativeCoordinates(0.05, 0.35), HorizontalAlignment.LEFT, VerticalAlignment.TOP));
+        */
         
-        //Color black = new Color(0, 0, 0, 1.0);
-        //appController.displayText(this.name, "Wayne Chung Enterprises", 7, 2, black, FontStyle.BOLD);
-        //appController.displayText(this.name, "presents", 9, 9, black, FontStyle.BOLD);
         this.appController.playSound("/assets/sounds/wayne-chung.wav", false);
     }
     

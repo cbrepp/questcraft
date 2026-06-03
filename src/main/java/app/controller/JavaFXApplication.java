@@ -42,8 +42,10 @@ import app.controller.javafx.node.JavaFXScrollingDocument;
 import app.controller.javafx.node.JavaFXScrollingLabel;
 import app.controller.javafx.node.JavaFXScrollingPane;
 import app.controller.javafx.node.JavaFXSeparator;
+import app.controller.javafx.node.JavaFXSpinner;
 import app.controller.javafx.node.JavaFXSplashStage;
 import app.controller.javafx.node.JavaFXVerticalGroup;
+import app.controller.javafx.node.JavaFXVideo;
 import app.dialog.BaseDialog;
 import app.node.BaseCompositeNode;
 import app.node.Sprite;
@@ -165,7 +167,6 @@ public class JavaFXApplication extends BaseController {
 
     public static final int DEFAULT_BUTTON_FONT_SIZE = 10;
     public static final String DEFAULT_FONT = app.Font.ROBOTO_MONO;
-    public static final double DEFAULT_FONT_SIZE = 18.0;
     public static final RGBColor DEFAULT_OFFSET_COLOR = app.color.Color.BLACK;
     public static Map<String, JsonObject> EMOJI_MAP;
     public static Image EMOJI_SHEET;
@@ -737,7 +738,7 @@ public class JavaFXApplication extends BaseController {
         if (!view.emojis.isEmpty()) {
             String emojiString = String.join(" ", view.emojis);
             TextDecoration decoration = new TextDecoration();
-            decoration.pixelSize = DEFAULT_FONT_SIZE;
+            decoration.pixelSize = DEFAULT_PIXEL_SIZE;
             TextFlow emojis = stringToTextFlow(emojiString, DEFAULT_OFFSET_COLOR, decoration, FontSmoothingType.LCD);
             tab.setGraphic(emojis);
         }
@@ -1009,7 +1010,7 @@ public class JavaFXApplication extends BaseController {
                         // Clip the transition in a wrapper so that when the application window is maximized, the spill-over node contents aren't seen
                         app.node.Pane paneNode = new app.node.Pane(node.name);
                         paneNode.borderWidth = 0;
-                        fxDecoratedWrapperNode = newDecoratedNode(paneNode, decoratedNode.parent, viewName);
+                        fxDecoratedWrapperNode = newDecoratedNode(paneNode, decoratedNode.parent, viewName, layout);
                         decoratedNode.configure();
                         Pane fxWrapperNode = (Pane) fxDecoratedWrapperNode.controllerNode;
                         fxWrapperNode.getChildren().add(originalFxNode);
@@ -2017,8 +2018,8 @@ public class JavaFXApplication extends BaseController {
         return fxImageView;
     }
 
-    public BaseDecoratedNode newDecoratedNode(app.node.BaseNode node, BaseDecoratedNode decoratedParentNode, String viewName) {
-        logger.log(Level.INFO, "Entered: node={0}, decoratedParentNode={1}, offsetColor={2}, viewName={3}", new Object[]{node, decoratedParentNode, viewName});
+    public BaseDecoratedNode newDecoratedNode(app.node.BaseNode node, BaseDecoratedNode decoratedParentNode, String viewName, Layout layout) {
+        logger.log(Level.INFO, "Entered: node={0}, decoratedParentNode={1}, offsetColor={2}, viewName={3}, layout={4}", new Object[]{node, decoratedParentNode, viewName, layout});
 
         if ((node == null) || (decoratedParentNode == null)) {
             logger.log(Level.SEVERE, "Entered: Null value was provided");
@@ -2037,6 +2038,10 @@ public class JavaFXApplication extends BaseController {
             }
             case app.node.ButtonGroup bg -> {
                 decoratedNode = new JavaFXButtonGroup(bg, decoratedParentNode, viewName, this);
+                break;
+            }
+            case app.node.Spinner spinner -> {
+                decoratedNode = new JavaFXSpinner(spinner, decoratedParentNode, viewName, this);
                 break;
             }
             case app.node.Field field -> {
@@ -2073,6 +2078,10 @@ public class JavaFXApplication extends BaseController {
             }
             case app.node.Image image -> {
                 decoratedNode = new JavaFXImage(image, decoratedParentNode, viewName, this);
+                break;
+            }
+            case app.node.Video video -> {
+                decoratedNode = new JavaFXVideo(video, decoratedParentNode, viewName, this, layout);
                 break;
             }
             case app.node.Grid grid -> {
@@ -2179,7 +2188,7 @@ public class JavaFXApplication extends BaseController {
         logger.log(Level.INFO, "Decorating node {0}", node.name);
         Boolean isNew = (decoratedNode == null);
         if (isNew) {
-            decoratedNode = newDecoratedNode(node, decoratedParentNode, viewName);
+            decoratedNode = newDecoratedNode(node, decoratedParentNode, viewName, layout);
         }
         decoratedNode.configure();
         Node fxNode = (Node) decoratedNode.controllerNode;
@@ -2575,7 +2584,7 @@ public class JavaFXApplication extends BaseController {
     }
 
     public static Text stringToText(String string, RGBColor offsetColor, TextDecoration decoration, FontSmoothingType fst) {
-        logger.log(Level.FINE, "Entered: string={0}, offsetColor={1}, decoration={2}, fst={3}", new Object[]{string, offsetColor, decoration, fst});
+        logger.log(Level.INFO, "Entered: string={0}, offsetColor={1}, decoration={2}, fst={3}", new Object[]{string, offsetColor, decoration, fst});
 
         Text text = new Text(string);
 
@@ -2665,13 +2674,15 @@ public class JavaFXApplication extends BaseController {
 
         // Adjust for DPI
         if (decoration.pixelSize == null) {
-            decoration.pixelSize = DEFAULT_FONT_SIZE;
+            decoration.pixelSize = DEFAULT_PIXEL_SIZE;
         }
         double newFontSize = adjustFontSizeForDPI(decoration.pixelSize);
         Font font;
         if (fxStyle != null) {
+            logger.log(Level.INFO, "Using style: decoration.font={0}, fxStyle={1}, newFontSize={2}", new Object[]{decoration.font, fxStyle, newFontSize});
             font = Font.font(decoration.font, fxStyle, newFontSize);
         } else {
+            logger.log(Level.INFO, "Using style: decoration.font={0}, fxWeight={1}, newFontSize={2}", new Object[]{decoration.font, fxWeight, newFontSize});
             font = Font.font(decoration.font, fxWeight, newFontSize);
         }
         text.setFont(font);
@@ -2768,7 +2779,7 @@ public class JavaFXApplication extends BaseController {
         emojiView.setCacheHint(CacheHint.QUALITY);
         double pixelSize;
         if ((decoration == null) || (decoration.pixelSize == null)) {
-            pixelSize = DEFAULT_FONT_SIZE;
+            pixelSize = DEFAULT_PIXEL_SIZE;
         } else {
             pixelSize = decoration.pixelSize;
         }

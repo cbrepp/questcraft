@@ -36,7 +36,7 @@ import java.util.Properties;
 public abstract class BaseController {
 
     public static Color DEFAULT_COLOR = Color.WHITE;
-    public static final Double DEFAULT_PIXEL_SIZE = 14.0;
+    public static final Double DEFAULT_PIXEL_SIZE = 24.0;
     public static final String EMOJI_SHEET_FILE = "/assets/images/sheet_google_64.png";
     public static final String EMOJI_SHEET_JSON = "/assets/json/emoji.json";
     public static final Double EMOJI_SHEET_SIZE = 64.0;

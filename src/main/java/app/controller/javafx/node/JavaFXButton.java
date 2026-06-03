@@ -58,6 +58,8 @@ public class JavaFXButton extends BaseJavaFXNode {
         
         RGBColor offsetColor = new DecoratedOffsetColor(new OffsetColor(), this.parent);
         
+        TextDecoration defaultTextDecoration = ((JavaFXApplication) this.controller).defaultTextDecorations.get(this.viewName);
+        
         controllerNode.setDisable(!node.isEnabled);
                 
         String font;
@@ -83,7 +85,11 @@ public class JavaFXButton extends BaseJavaFXNode {
         
         double pixelSize;
         if (node.pixelSize == null) {
-            pixelSize = DEFAULT_PIXEL_SIZE;
+            if ((defaultTextDecoration != null) && (defaultTextDecoration.pixelSize != null)) {
+                pixelSize = defaultTextDecoration.pixelSize;
+            } else {
+                pixelSize = DEFAULT_PIXEL_SIZE;
+            }
         } else {
             pixelSize = node.pixelSize;
         }

@@ -21,6 +21,7 @@ import app.node.Button;
 import app.node.Image;
 import app.node.Label;
 import app.node.ScrollingLabel;
+import app.node.Video;
 import app.node.effect.BaseEffect;
 import app.node.effect.Glow;
 import app.node.effect.SlideTransition;
@@ -68,6 +69,7 @@ import quest.text.Texts;
 import quest.node.ValidatedVariablePrompt;
 import quest.text.Variable;
 import quest.control.VariableSet;
+import quest.control.VideoPlay;
 import quest.control.ViewAdd;
 import quest.model.Act;
 import quest.model.Book;
@@ -76,6 +78,7 @@ import quest.model.InventoryItem;
 import quest.model.Page;
 import quest.model.Scene;
 import quest.model.Story;
+import quest.node.ValidatedVariableSpinner;
 import quest.text.If;
 import quest.text.InventoryHas;
 import quest.text.LineSeparator;
@@ -600,7 +603,7 @@ public class Application extends app.view.BaseView {
         System.out.println("Application: serializeTwinQuestBook");
         
         Book book = new Book();
-        book.animationFileName = "/assets/images/dragon.gif";
+        book.animationFileName = "/assets/videos/dragon.mp4";
         book.preloadEmojisDuringAnimation = true;
         book.author = "R. W. Chung";
         book.firstActName = "Opening";
@@ -749,6 +752,7 @@ public class Application extends app.view.BaseView {
         
         Act opening = new Act();
         opening.firstSceneName = "Title Page";
+        opening.nextActName = "Introduction";
         book.acts.put("Opening", opening);
         Scene titlePage = new Scene();
         titlePage.firstPageName = "1";
@@ -759,7 +763,10 @@ public class Application extends app.view.BaseView {
         opening.scenes.put("Title Page", titlePage);
         
         Page page1 = new Page();
-        List<Object> dragonArt = List.of(
+        TextDecoration decoration = new TextDecoration();
+        decoration.color = MAGIC_COLOR;
+        decoration.style = FontStyle.BOLD;
+        app.Text text1 = new app.Text(new Texts(List.of(
                 "                             ___, ____--'", new LineSeparator(),
                 "                        _,-.'_,-'      (", new LineSeparator(),
                 "                     ,-' _.-''....____(", new LineSeparator(),
@@ -776,13 +783,12 @@ public class Application extends app.view.BaseView {
                 "          / /          ,-=='-`=-'  / /", new LineSeparator(),
                 "    ,-=='-`=-.               ,-=='-`=-.", new LineSeparator(),
                 new LineSeparator(),
-                "              T W I N   Q U E S T");
-        TextDecoration decoration = new TextDecoration();
-        decoration.color = MAGIC_COLOR;
-        decoration.style = FontStyle.BOLD;
-        Label dragonLabel = new Label("par1", new Texts(dragonArt), decoration);
-        page1.story.controls.add(new Scribe(List.of(dragonLabel))); 
-        page1.story.controls.add(new Scribe(List.of(new Label("par3", new Texts(List.of("  ", new BookTitle(), new LineSeparator(), "  by ", new BookAuthor(), new LineSeparator(), "  Last Updated: ", new BookLastUpdatedDate()))))));
+                "              T W I N   Q U E S T")), decoration);
+        TextDecoration decoration2 = new TextDecoration();
+        decoration2.style = FontStyle.BOLD;
+        decoration2.pixelSize = Quest.DEFAULT_FONT_SIZE + 2;
+        app.Text text2 = new app.Text(new Texts(List.of(new LineSeparator(), new LineSeparator(), "  ", new BookTitle(), new LineSeparator(), "  by ", new BookAuthor(), new LineSeparator(), "  Last Updated: ", new BookLastUpdatedDate())), decoration2);
+        page1.story.controls.add(new Scribe(List.of(new Label("par1", List.of(text1, text2)))));
         page1.story.controls.add(new Illustrate(new Image("title image", "/assets/images/title-page.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
 
         titlePage.pages.put("1", page1);
@@ -794,6 +800,7 @@ public class Application extends app.view.BaseView {
         playerSelection.soundFileName = "/assets/sounds/epic.mp3";
         opening.scenes.put("Player Selection", playerSelection);
         page1 = new Page();
+        page1.hideNextButton = true;
         SubpageDisplay subpage = new SubpageDisplay("SHMEBULOCK input");
         subpage.condition = new Condition(new Variable("summonShmebulock"), Condition.Operator.EQUALS, "true", true);
         page1.story.controls.add(subpage);
@@ -904,28 +911,28 @@ public class Application extends app.view.BaseView {
         glowEffect = new Glow(MAGIC_ACCENT_COLOR);
         effectList = new ArrayList();
         effectList.add(glowEffect);
-        input = new ValidatedVariablePrompt("difficulty", List.of("Easy", "Normal", "Hard"));
-        input.effectsButtons.put("Easy", effectList);
-        input.effectsButtons.put("Normal", effectList);
-        input.effectsButtons.put("Hard", effectList);
+        ValidatedVariableSpinner spinput = new ValidatedVariableSpinner("difficulty", List.of("Easy", "Normal", "Hard"));
+        spinput.defaultValue = "Normal";
+        spinput.effects.add(glowEffect);
         inputSubpage = new Story();
-        inputSubpage.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("Select Difficulty:", new LineSeparator()))), input)));
+        inputSubpage.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("Select Difficulty:", new LineSeparator(), new LineSeparator(), "  "))), spinput)));
         inputSubpage.controls.add(new Illustrate(new Image("select difficulty image", "/assets/images/difficulty.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         page1.subpages.put("input", inputSubpage);
         
         glowEffect = new Glow(MAGIC_ACCENT_COLOR);
         effectList = new ArrayList();
         effectList.add(glowEffect);
-        input = new ValidatedVariablePrompt("difficulty", List.of("Magical"));
-        input.effectsButtons.put("Magical", effectList);
+        spinput = new ValidatedVariableSpinner("difficulty", List.of("Magical"));
+        spinput.defaultValue = "Magical";
+        spinput.effects.add(glowEffect);
         inputSubpage = new Story();
-        inputSubpage.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("Select Difficulty:", new LineSeparator()))), input)));
+        inputSubpage.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("Select Difficulty:", new LineSeparator(), new LineSeparator(), "  "))), spinput)));
         inputSubpage.controls.add(new Illustrate(new Image("select difficulty image", "/assets/images/difficulty-magical.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         page1.subpages.put("SHMEBULOCK input", inputSubpage);
         
-        Story difficultySelectedSubpage = new Story();
-        difficultySelectedSubpage.controls.add(new ActDisplay("Introduction"));
-        page1.subpages.put("INPUT difficulty", difficultySelectedSubpage);
+        //Story difficultySelectedSubpage = new Story();
+        //difficultySelectedSubpage.controls.add(new ActDisplay("Introduction"));
+        //page1.subpages.put("INPUT difficulty", difficultySelectedSubpage);
         
         difficultySelection.pages.put("1", page1);
         
@@ -943,7 +950,6 @@ public class Application extends app.view.BaseView {
         
         Page page1a = new Page();
         page1a.nextPageName = "1";
-        page1a.story.controls.add(new SoundPlay("/assets/sounds/thunder.wav", true));
         decoration = new TextDecoration();
         decoration.style = FontStyle.ITALIC;
         Label styledLabel = new Label("par1", new Texts(List.of("Time has passed has passed by slowly.  The seconds have been monotonous.  Countless.  Like drops of rain in a storm that never ends.  And she has patiently waited.", new LineSeparator(),
@@ -958,14 +964,17 @@ public class Application extends app.view.BaseView {
         shmebulockExtraText.condition = new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true);
         page1a.story.controls.add(shmebulockExtraText);
         
-        page1a.story.controls.add(new Illustrate(new Image("mylee waiting image", "/assets/images/cat-storm-large.gif"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        Video mylesVideo = new Video("he has arrived", "/assets/videos/cat-storm.mp4");
+        mylesVideo.scaleX = 0.95;
+        page1a.story.controls.add(new Illustrate(mylesVideo, new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("1a", page1a);
         
         page1 = new Page();
         page1.previousPageName = "1a";
         page1.nextPageName = "2";
-        page1.story.controls.add(new SoundStop("/assets/sounds/thunder.wav"));
-        page1.story.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of(new Variable("twin-with-symbol"), ": \"Ahh!!!  ", new Variable("player"), "!!!  Save ", new If("us", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "me"), "!!!\"", new LineSeparator(),
+        page1.story.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("Meanwhile in Pendleton...", new LineSeparator(),
+                new LineSeparator(),
+                new Variable("twin-with-symbol"), ": \"Ahh!!!  ", new Variable("player"), "!!!  Save ", new If("us", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "me"), "!!!\"", new LineSeparator(),
                 new LineSeparator(),
                 new PlayerSymbol(), " ", new Variable("player"), ": \"", new Variable("battle-cry"), "\"", new LineSeparator(),
                 new LineSeparator(),
@@ -986,24 +995,34 @@ public class Application extends app.view.BaseView {
         
         Page page3 = new Page();
         page3.previousPageName = "2";
-        page3.nextPageName = "4";
-        page3.story.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("You are now standing on the surface of a cloud floating high up in the sky.  You look around and see nothing but the large poofy white cloud, the blue sky, the bright yellow sun... and... what appears to be elevator doors in the middle of the cloud.", new LineSeparator(),
+        page3.hideNextButton = true;
+        input = new ValidatedVariablePrompt("action", List.of("Open Doors and Step Inside"));
+        input.effectsButtons.put("Open Doors and Step Inside", effectList);
+        page3.story.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("You are now standing on the surface of a dark cloud floating high up in the sky.  You look around and see nothing but the strange and wonderful heavens, the dark sky, swirling purple mist... and... what appear to be elevator doors in the middle of the cloud.", new LineSeparator(),
+                new LineSeparator(),
+                "You look closer and see a button on the side of the doors.", new LineSeparator(),
                 new LineSeparator(),
                 "Anxiety and fear grip you.  But you have no choice.  You must save ", new Variable("twin"), ".  And so...", new LineSeparator(),
-                new LineSeparator(),
-                "You press the elevator button to open the door.  And... you step inside..."))))));
-        page3.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/clouds.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
-        page3.story.controls.add(new Illustrate(new Image("illustration image 2", "/assets/images/elevator-doors.png"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+                new LineSeparator()))), input)));
+        page3.story.controls.add(new Illustrate(new Image("illustration image", "/assets/images/elevator-doors.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("3", page3);
+        
+        Story enterElevator = new Story();
+        enterElevator.controls.add(new SoundPlay("/assets/sounds/elevator-open.mp3", false));
+        enterElevator.controls.add(new VideoPlay("/assets/videos/elevator-doors.mp4", "on elevator doors open"));
+        page3.subpages.put("INPUT action=Open Doors and Step Inside", enterElevator);
+
+        Story nextPage = new Story();
+        nextPage.controls.add(new PageGoto("4"));
+        page3.subpages.put("on elevator doors open", nextPage);
         
         Page page4 = new Page();
         page4.previousPageName = "3";
         page4.nextPageName = "5";
         page4.hidePreviousButton = true;
         page4.story.controls.add(new SoundStop(""));
-        page4.story.controls.add(new SoundPlay("/assets/sounds/elevator-open.mp3", false));
         page4.story.controls.add(new SoundPlay("/assets/sounds/elevator.wav", false));
-        page4.story.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("\uD83D\uDC08\u200D\u2B1B MYLEE: \"Oh hey, ", new Variable("player-mylee-nickname"), ".\"", new LineSeparator(),
+        page4.story.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("\uD83D\uDC08\u200D\u2B1B MYLEE: \"Good day!  Which floor?  Certainly.  Floor one.  Here we are.\"", new LineSeparator(),
                 new LineSeparator(),
                 "You're confused for a moment.  Inside the elevator there's a cat perched up on a shelf by the main elevator switch.  Is a cat operating this elevator?  And... did that cat just talk???", new LineSeparator(),
                 new LineSeparator(),
@@ -1011,12 +1030,14 @@ public class Application extends app.view.BaseView {
                 new LineSeparator(),
                 "Wait, what?  Can this talking cat read your mind?", new LineSeparator(),
                 new LineSeparator(),
-                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"And you're probably wondering now if I can read your mind.  The answer to that is... no.  ", new Variable("mylee-fandom"), "\"", new LineSeparator(),
+                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"And you're probably wondering now if I can read your mind, ", new Variable("player-mylee-nickname"), ".  The answer to that is... no.  ", new Variable("mylee-fandom"), "\"", new LineSeparator(),
                 new LineSeparator(),
                 new Variable("mylee-reaction"), " is right.", new LineSeparator(),
                 new LineSeparator(),
-                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"Enough talk, ", new Variable("player-mylee-nickname"), ".  You look confused.  How about you ask me some questions.\""))))));
-        page4.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/mylee.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+                "\uD83D\uDC08\u200D\u2B1B MYLEE: \"Enough talk, ", new Variable("player-mylee-nickname"), ".  You look confused.  How about you ask me some questions?\""))))));
+        Video mylesElevator = new Video("illustration video", "/assets/videos/myles-elevator.mp4");
+        mylesElevator.scaleX = 0.95;
+        page4.story.controls.add(new Illustrate(mylesElevator, new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("4", page4);
         
         effectList = new ArrayList();
@@ -1033,7 +1054,13 @@ public class Application extends app.view.BaseView {
         page5.story.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("\uD83D\uDC08\u200D\u2B1B MYLEE: \"You look like you're new to this so I'll help you out.  See those buttons below?  They're giving you some choices.  Pick one.  You can learn about this game before you begin your quest.\"", new LineSeparator()))))));
         page5.story.controls.add(new Scribe(List.of(input), new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true)));
         page5.story.controls.add(new Scribe(List.of(twinPut), new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", false)));
-        page5.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/mylee.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        Illustrate i = new Illustrate(new Image("illustration image", "/assets/images/myles-elevator.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
+        i.condition = new Condition(new Variable("myles-elevator-meanwhile"), Condition.Operator.EQUALS, "true", false);
+        page5.story.controls.add(i);
+        Illustrate i2 = new Illustrate(new Image("illustration image", "/assets/images/myles-elevator-meanwhile.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
+        i2.condition = new Condition(new Variable("myles-elevator-meanwhile"), Condition.Operator.EQUALS, "true", true);
+        page5.story.controls.add(i2);
+        page5.story.controls.add(new VariableSet("myles-elevator-meanwhile", "true"));
         introScene.pages.put("5", page5);
         
         Story whoAreYouSubpage = new Story();
@@ -1093,7 +1120,7 @@ public class Application extends app.view.BaseView {
                 "...", new LineSeparator(),
                 new LineSeparator(),
                 "You wait a moment for Mylee to say more but she doesn't.  Okay... at least you got her name.  Perhaps it's time to ask another question?"))))));
-        page6.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/mylee.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        page6.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/myles-elevator.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("6", page6);
         
         Page page7 = new Page();
@@ -1106,7 +1133,7 @@ public class Application extends app.view.BaseView {
                 new PlayerSymbol(), " YOU: \"", new Variable("why-is-that"), "\"", new LineSeparator(),
                 new LineSeparator(),
                 "\uD83D\uDC08\u200D\u2B1B MYLEE: \"You'd have to understand my brother to know why that is...\""))))));
-        page7.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/mylee.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        page7.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/myles-elevator.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("7", page7);
 
         Page page8 = new Page();
@@ -1123,17 +1150,17 @@ public class Application extends app.view.BaseView {
                 new PlayerSymbol(), " YOU: \"", new Variable("thats-horrible"), "\"", new LineSeparator(),
                 new LineSeparator(),
                 "\uD83D\uDC08\u200D\u2B1B MYLEE: \"Don't I know it, ", new Variable("player-mylee-nickname"), ".  But he's my younger brother so we need to stop him in a way that doesn't hurt him.  Were I to fight him directly... well, let's just say he wouldn't walk away from that!  That's why I need you to help me.  You're clever, but, not exactly a tough cat like me...\""))))));
-        page8.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/mylee.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        page8.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/myles-elevator.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("8", page8);
         
         Page page9 = new Page();
         page9.previousPageName = "5";
         page9.hideNextButton = true;
         page9.story.controls.add(new SpellRegister("FLIP BOOK", book.subpages.get("FLIP BOOK")));
-        app.Text text1 = new app.Text(new Texts(List.of(new PlayerSymbol(), " YOU: \"", new Variable("mylee-prompt"), "\"", new LineSeparator(),
+        text1 = new app.Text(new Texts(List.of(new PlayerSymbol(), " YOU: \"", new Variable("mylee-prompt"), "\"", new LineSeparator(),
                 new LineSeparator(),
                 "\uD83D\uDC08\u200D\u2B1B MYLEE: \"I think you mean that tab up above that looks like this... ")));
-        app.Text text2 = new quest.text.InventoryItem("Spell Book");
+        text2 = new quest.text.InventoryItem("Spell Book");
         app.Text text3 = new app.Text(new Texts(List.of(".  Every brave soul that takes on a quest is equipped with one of these.  Any spell that you write into the book will be cast with the book's magic.\"", new LineSeparator(),
                 new LineSeparator(),
                 new PlayerSymbol(), " YOU: \"", new If("SHMEBULOCK.", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "So I can cast spells and stuff?"), "\"", new LineSeparator(),
@@ -1149,7 +1176,7 @@ public class Application extends app.view.BaseView {
         app.Text text4 = new app.Text(new Texts(List.of("FLIP BOOK (requires 0MP)")), decoration);
         app.Text text5 = new app.Text(new Texts(List.of(".  Go to the Spell Book and try it out!  This one isn't very powerful but there's no limit to the number of times you can cast it.\"")));        
         page9.story.controls.add(new Scribe(List.of(new Label("par1", List.of(text1, text2, text3, text4, text5)))));
-        page9.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/mylee.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        page9.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/myles-elevator.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("9", page9);
 
         Page page10 = new Page();
@@ -1169,7 +1196,7 @@ public class Application extends app.view.BaseView {
                 new LineSeparator(),
                 "\uD83D\uDC08\u200D\u2B1B MYLEE: \"It would certainly help to look before you leap!  Think carefully before entering a new location that looks like it could be dangerous.\"")));
         page10.story.controls.add(new Scribe(List.of(new Label("par1", List.of(text1, text2, text3)))));
-        page10.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/mylee.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        page10.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/myles-elevator.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("10", page10);
 
         Page page11 = new Page();
@@ -1191,7 +1218,7 @@ public class Application extends app.view.BaseView {
                 new LineSeparator(),
                 "\uD83D\uDC08\u200D\u2B1B MYLEE: \"Very!  But if you keep your wits about you then a ", new If("magical one", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "clever kid"), " like yourself should do just fine.\"")));
         page11.story.controls.add(new Scribe(List.of(new Label("par1", List.of(text1, text2, text3, text4, text5)))));
-        page11.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/mylee.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        page11.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/myles-elevator.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("11", page11);
         
         Page page12 = new Page();
@@ -1205,7 +1232,7 @@ public class Application extends app.view.BaseView {
                 "Mylee flips the elevator switch and the doors open.  You walk out and find that you're no longer on the cloud...")));
         page12.story.controls.add(new Scribe(List.of(new Label("par1", List.of(text1, text2, text3)))));
         // TODO - Generate an AI image of the elevator doors open and the faint mist of magic beyond
-        page12.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/mylee.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        page12.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/myles-elevator.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("12", page12);
         
         Act chapter1 = new Act();
@@ -1329,7 +1356,7 @@ public class Application extends app.view.BaseView {
                 new ValidatedVariablePrompt("action", List.of("Listen", "&down; Leave Elevator")))), sceneDecoration);
         noGoldSubpage.controls.add(new Scribe(List.of(new Label("par1", List.of(text1, text2, text3)))));
         noGoldSubpage.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/mylee-sink.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
-
+        mainPage.subpages.put("No Gold", noGoldSubpage);
 
         /*
         page1 = new Page();

@@ -10,15 +10,14 @@ import app.Layout;
 import app.RelativeCoordinates;
 import app.TextDecoration;
 import app.VerticalAlignment;
-import static app.controller.BaseController.DEFAULT_PIXEL_SIZE;
 import static app.controller.BaseController.logger;
 import app.node.BaseNode;
 import app.node.Button;
-import app.node.Image;
 import app.node.Label;
 import app.node.Pane;
 import app.node.Rectangle;
 import app.node.ScrollingDocument;
+import app.node.Video;
 import app.node.effect.Glow;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,7 +40,7 @@ public class Quest extends app.view.BaseView {
     
     public static Quest quest; // TODO - Make this a session-specific value
     
-    public final static Double DEFAULT_FONT_SIZE = 14.0;
+    public final static Double DEFAULT_FONT_SIZE = 16.0;
     public final static String DIRECTION_EAST = "EAST";
     public final static String DIRECTION_NORTH = "NORTH";
     public final static String DIRECTION_SOUTH = "SOUTH";
@@ -243,6 +242,11 @@ public class Quest extends app.view.BaseView {
         
         this.appController = appController;
         
+        // Reset the default text decoration
+        TextDecoration textDecoration = new TextDecoration();
+        textDecoration.pixelSize = DEFAULT_FONT_SIZE;
+        this.appController.setDefaultTextDecoration(this.name, textDecoration);
+        
         // Loading screen
         if (this.book.animationFileName != null) {
             Rectangle overlay = new Rectangle("overlay");
@@ -251,16 +255,16 @@ public class Quest extends app.view.BaseView {
             overlay.scaleY = 1.0;
             this.appController.addNode(this.name, this.name, overlay, new Layout(new RelativeCoordinates(0.0, 0.0), HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
             
-            Image loadingImage = new Image("loading");
-            loadingImage.file = this.book.animationFileName;
-            this.appController.addNode(this.name, this.name, loadingImage, new Layout(new RelativeCoordinates(0.0, 0.25), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
+            Video loadingVideo = new Video("loading");
+            loadingVideo.file = this.book.animationFileName;
+            this.appController.addNode(this.name, this.name, loadingVideo, new Layout(new RelativeCoordinates(0.0, 0.0), HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
             
             Act firstAct = book.acts.get(this.book.firstActName);
             Scene firstScene = firstAct.scenes.get(firstAct.firstSceneName);
             if (!firstScene.soundFileName.equals("")) {
                 this.appController.playSound(firstScene.soundFileName, true);
             }
-            appController.setTimer(LOADING_COMPLETE, 3, this);
+            appController.setTimer(LOADING_COMPLETE, 6, this);
             if (this.book.preloadEmojisDuringAnimation) {
                 // TODO - This isn't a thing
                 //this.appController.loadEmojiData();
@@ -366,7 +370,7 @@ public class Quest extends app.view.BaseView {
             }
             
             TextDecoration decoration = new TextDecoration();
-            decoration.pixelSize = DEFAULT_PIXEL_SIZE;
+            decoration.pixelSize = DEFAULT_FONT_SIZE - 2;
             decoration.color = Color.BLACK;
             decoration.font = Font.ROBOTO_MONO;
             decoration.style = FontStyle.BOLD;
@@ -400,7 +404,7 @@ public class Quest extends app.view.BaseView {
             //this.appController.displayButton(this.name, NEXT_PAGE, buttonText, this.buttonRow, buttonColumn, null, null, false, null, !page.noGlow, this);
             Button nextButton = new Button(NEXT_PAGE);
             nextButton.eventListener = this;
-            nextButton.pixelSize = DEFAULT_PIXEL_SIZE;
+            nextButton.pixelSize = DEFAULT_FONT_SIZE - 2;
             nextButton.textColor = Color.BLACK;
             nextButton.text = "Next \uD83E\uDC62";
             //nextButton.textFont = Font.ROBOTO_BLACK;
@@ -417,7 +421,7 @@ public class Quest extends app.view.BaseView {
             //this.appController.displayButton(this.name, PREVIOUS_PAGE, buttonText, this.buttonRow, buttonColumn, null, null, false, null, glow, this);
             Button previousButton = new Button(PREVIOUS_PAGE);
             previousButton.eventListener = this;
-            previousButton.pixelSize = DEFAULT_PIXEL_SIZE;
+            previousButton.pixelSize = DEFAULT_FONT_SIZE - 2;
             previousButton.textColor = Color.BLACK;
             previousButton.text = "\uD83E\uDC60 Previous";
             //previousButton.textFont = Font.ROBOTO_BLACK;
@@ -432,7 +436,7 @@ public class Quest extends app.view.BaseView {
             //this.appController.displayButton(this.name, GAME_OVER, buttonText, this.buttonRow, buttonColumn, null, null, false, null, true, this);
             Button gameOverButton = new Button(GAME_OVER);
             gameOverButton.eventListener = this;
-            gameOverButton.pixelSize = DEFAULT_PIXEL_SIZE;
+            gameOverButton.pixelSize = DEFAULT_FONT_SIZE - 2;
             gameOverButton.textColor = Color.BLACK;
             gameOverButton.text = "Game Over >";
             //gameOverButton.textFont = Font.ROBOTO_BLACK;

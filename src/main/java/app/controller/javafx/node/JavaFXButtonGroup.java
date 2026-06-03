@@ -8,6 +8,7 @@ import static app.controller.JavaFXApplication.getFxColor;
 import app.node.BaseDecoratedNode;
 import java.util.logging.Level;
 import javafx.geometry.Insets;
+import javafx.geometry.VPos;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
@@ -30,6 +31,8 @@ public class JavaFXButtonGroup extends BaseJavaFXNode {
         
         app.node.ButtonGroup node = (app.node.ButtonGroup) this.node;
         FlowPane controllerNode = (FlowPane) this.controllerNode;
+        
+        controllerNode.setRowValignment(VPos.TOP);
         
         if (node.spacerPixels != null) {
             controllerNode.setHgap(node.spacerPixels);
