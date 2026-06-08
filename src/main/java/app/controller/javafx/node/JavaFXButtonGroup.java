@@ -34,10 +34,13 @@ public class JavaFXButtonGroup extends BaseJavaFXNode {
         
         controllerNode.setRowValignment(VPos.TOP);
         
-        if (node.spacerPixels != null) {
-            controllerNode.setHgap(node.spacerPixels);
-            controllerNode.setVgap(node.spacerPixels);
-            controllerNode.setPadding(new Insets(node.spacerPixels));
+        if (node.innerSpacerPixels != null) {
+            controllerNode.setHgap(node.innerSpacerPixels);
+            controllerNode.setVgap(node.innerSpacerPixels);
+        }
+
+        if (node.outerSpacerPixels != null) {
+            controllerNode.setPadding(new Insets(node.outerSpacerPixels));
         }
         
         if (node.backgroundColor != null) {

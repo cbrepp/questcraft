@@ -26,6 +26,9 @@ import app.node.BaseNode;
 import app.controller.javafx.DelegateApplication;
 import app.controller.javafx.node.JavaFXButton;
 import app.controller.javafx.node.JavaFXButtonGroup;
+import app.controller.javafx.node.JavaFXChoiceBox;
+import app.controller.javafx.node.JavaFXComboBox;
+import app.controller.javafx.node.JavaFXDialog;
 import app.controller.javafx.node.JavaFXDocument;
 import app.controller.javafx.node.JavaFXField;
 import app.controller.javafx.node.JavaFXGrid;
@@ -148,6 +151,7 @@ import javafx.geometry.Orientation;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Separator;
 import javafx.scene.layout.BackgroundImage;
 import javafx.scene.layout.BackgroundPosition;
@@ -596,10 +600,9 @@ public class JavaFXApplication extends BaseController {
         this.removeFXNode(viewName, decoratedNode);
 
         BaseNode node = decoratedNode.node;
-        Node fxNode = (Node) decoratedNode.controllerNode;
 
         if (!node.effects.isEmpty()) {
-            this.removeEffects(viewName, parentName, node, nodeLayout, fxNode);
+            this.removeEffects(viewName, parentName, node, nodeLayout, decoratedNode.controllerNode);
         }
     }
 
@@ -609,44 +612,61 @@ public class JavaFXApplication extends BaseController {
         String parentName = decoratedNode.parent.node.name;
         BaseDecoratedNode decoratedParentNode = this.namedDecoratedNodes.get(viewName).get(parentName);
         Object fxParentNode = decoratedParentNode.controllerNode;
-        Node fxNode = (Node) decoratedNode.controllerNode;
 
         // TODO - This is ugly.  Parent nodes do not have a base type (Parent) with a public getChildren() method so each parent class needs to be handled.
         Class<?> parentControlClass = fxParentNode.getClass();
         if (parentControlClass.equals(Pane.class)) {
             Pane pane = (Pane) fxParentNode;
-            pane.getChildren().remove(fxNode);
+            pane.getChildren().remove(decoratedNode.controllerNode);
             pane.layout();
         } else if (parentControlClass.equals(StackPane.class)) {
             StackPane pane = (StackPane) fxParentNode;
-            pane.getChildren().remove(fxNode);
+            pane.getChildren().remove(decoratedNode.controllerNode);
+            pane.layout();
+        } else if (parentControlClass.equals(GridPane.class)) {
+            GridPane pane = (GridPane) fxParentNode;
+            pane.getChildren().remove(decoratedNode.controllerNode);
             pane.layout();
         } else if (parentControlClass.equals(HBox.class)) {
             HBox box = (HBox) fxParentNode;
-            box.getChildren().remove(fxNode);
+            box.getChildren().remove(decoratedNode.controllerNode);
             box.layout();
         } else if (parentControlClass.equals(VBox.class)) {
             VBox box = (VBox) fxParentNode;
-            box.getChildren().remove(fxNode);
+            box.getChildren().remove(decoratedNode.controllerNode);
             box.layout();
         } else if (parentControlClass.equals(Stage.class)) {
             Stage stage = (Stage) fxParentNode;
             Scene scene = stage.getScene();
             Pane pane = (Pane) scene.getRoot();
-            pane.getChildren().remove(fxNode);
+            pane.getChildren().remove(decoratedNode.controllerNode);
             pane.layout();
+        } else if (parentControlClass.equals(Dialog.class)) {
+            Dialog dialog = (Dialog) fxParentNode;
+            dialog.getDialogPane().setContent(null);
         } else {
             logger.log(Level.SEVERE, "Parent does not have a supported class: {0}", parentControlClass.getSimpleName());
             return;
+        }
+        
+        if (decoratedNode instanceof JavaFXDialog dialog) {
+            ((Dialog) dialog.controllerNode).getDialogPane().setContent(null);
+        }
+        
+        // Clean up all of the node's children
+        if (decoratedNode.node instanceof BaseCompositeNode compositeNode) {
+            for (BaseNode childNode : compositeNode.getChildren()) {
+                this.removeNode(viewName, childNode.name);
+            }
         }
 
         String nodeName = decoratedNode.node.name;
         this.deregisterNode(viewName, nodeName);
 
         // If the control is a button with a key binding remove the event filter from the scene
-        if (this.keyBindings.containsKey(fxNode)) {
-            this.primaryScene.removeEventFilter(KeyEvent.KEY_PRESSED, this.keyBindings.get(fxNode));
-            this.keyBindings.remove(fxNode);
+        if (this.keyBindings.containsKey(decoratedNode.controllerNode)) {
+            this.primaryScene.removeEventFilter(KeyEvent.KEY_PRESSED, this.keyBindings.get(decoratedNode.controllerNode));
+            this.keyBindings.remove(decoratedNode.controllerNode);
         }
     }
 
@@ -1150,7 +1170,7 @@ public class JavaFXApplication extends BaseController {
         return decoratedNode;
     }
 
-    public void removeEffects(String viewName, String parentName, BaseNode node, Layout layout, Node fxNode) {
+    public void removeEffects(String viewName, String parentName, BaseNode node, Layout layout, Object fxNode) {
         logger.log(Level.INFO, "Entered: viewName={0}, parentName={1}, node={2}, layout={3}, fxNode={4}", new Object[]{viewName, parentName, node, layout, fxNode});
 
         if ((node.effects == null) || (node.effects.isEmpty())) {
@@ -2104,6 +2124,15 @@ public class JavaFXApplication extends BaseController {
                 decoratedNode = new JavaFXSeparator(separator, decoratedParentNode, viewName, this);
                 break;
             }
+            case app.node.Dialog dialog -> {
+                decoratedNode = new JavaFXDialog(dialog, decoratedParentNode, viewName, this);
+            }
+            case app.node.ChoiceBox choiceBox -> {
+                decoratedNode = new JavaFXChoiceBox(choiceBox, decoratedParentNode, viewName, this);
+            }
+            case app.node.ComboBox comboBox -> {
+                decoratedNode = new JavaFXComboBox(comboBox, decoratedParentNode, viewName, this);
+            }
             default -> {
                 Class<?> nodeClass = node.getClass();
                 logger.log(Level.SEVERE, "Class is not a supported child class: {0}", nodeClass.getSimpleName());
@@ -2170,13 +2199,24 @@ public class JavaFXApplication extends BaseController {
         double parentWidth;
         double parentHeight;
         if (fxParent instanceof Region region) {
+            region.applyCss();
+            region.layout();
             parentWidth = region.getPrefWidth();
+            if (parentWidth == -1) {
+                parentWidth = this.primaryScene.getWidth(); // TODO - Hack to not use bogus parent width value
+            }
             parentHeight = region.getPrefHeight();
+            if (parentHeight == -1) {
+                parentHeight = this.primaryScene.getHeight(); // TODO - Hack to not use bogus parent height value
+            }
         } else if (fxParent instanceof Stage stage) {
             Scene scene = stage.getScene();
             Pane pane = (Pane) scene.getRoot();
             parentWidth = pane.getWidth();
             parentHeight = pane.getHeight();
+        } else if (fxParent instanceof Dialog dialog) {
+            parentWidth = dialog.getWidth();
+            parentHeight = dialog.getHeight();
         } else {
             Class<?> parentControlClass = fxParent.getClass();
             logger.log(Level.SEVERE, "Parent does not have a supported class: {0}", parentControlClass.getSimpleName());
@@ -2191,168 +2231,179 @@ public class JavaFXApplication extends BaseController {
             decoratedNode = newDecoratedNode(node, decoratedParentNode, viewName, layout);
         }
         decoratedNode.configure();
-        Node fxNode = (Node) decoratedNode.controllerNode;
+        
+        if (!node.isParent()) {
+            Node fxNode = (Node) decoratedNode.controllerNode;
 
-        if (isNew) {
-            // TODO - This is ugly.
-            // To allow the width and height to be accessed immediately, add the child to a temporary Scene.
-            // The temporary Scene and Group will be garbage collected at the end of the method as they fall out of scope.
-            javafx.scene.Group tempRoot = new javafx.scene.Group(fxNode);
-            Scene tempScene = new Scene(tempRoot);
-            fxNode.applyCss();
-            double width = fxNode.prefWidth(-1);
-            double height = fxNode.prefHeight(-1);
-            logger.log(Level.INFO, "Temp dimensions for {0} = {1}x{2}p", new Object[]{node, width, height});
-            ((javafx.scene.Group) fxNode.getScene().getRoot()).getChildren().remove(fxNode);
-        }
+            if (isNew) {
+                // TODO - This is ugly.
+                // To allow the width and height to be accessed immediately, add the child to a temporary Scene.
+                // The temporary Scene and Group will be garbage collected at the end of the method as they fall out of scope.
+                javafx.scene.Group tempRoot = new javafx.scene.Group(fxNode);
+                Scene tempScene = new Scene(tempRoot);
+                fxNode.applyCss();
+                double width = fxNode.prefWidth(-1);
+                double height = fxNode.prefHeight(-1);
+                logger.log(Level.INFO, "Temp dimensions for {0} = {1}x{2}p", new Object[]{node, width, height});
+                ((javafx.scene.Group) fxNode.getScene().getRoot()).getChildren().remove(fxNode);
+            }
 
-        if ((node.effects != null) && (!node.effects.isEmpty())) {
-            // Effects might require a wrapper so handle effects now before adding the node to its parent so that a wrapper can be added if needed
-            decoratedNode = this.addEffects(viewName, parentName, decoratedNode, layout);
-            fxNode = (Node) decoratedNode.controllerNode;
-        }
+            if ((node.effects != null) && (!node.effects.isEmpty())) {
+                // Effects might require a wrapper so handle effects now before adding the node to its parent so that a wrapper can be added if needed
+                decoratedNode = this.addEffects(viewName, parentName, decoratedNode, layout);
+                fxNode = (Node) decoratedNode.controllerNode;
+            }
 
-        // TODO - This is ugly.  Parent nodes do not have a base type (Parent) with a public getChildren() method so each parent class needs to be handled.
-        Class<?> parentClass;
-        if (parent != null) {
-            parentClass = parent.getClass();
-            logger.log(Level.INFO, "Evaluating parent {0}", parentClass);
-        } else {
-            parentClass = null;
-            logger.log(Level.INFO, "Evaluating null parent");
-        }
-        if (fxParent instanceof GridPane grid) {
-            logger.log(Level.INFO, "Adding node to grid");
-            JavaFXGrid decoratedParentGrid = (JavaFXGrid) decoratedParentNode;
-            decoratedParentGrid.advanceNextCell();
-            Coordinates currentCell = decoratedParentGrid.getCurrentCell();
-            for (Node gridChildNode : grid.getChildren()) {
-                Integer nodeCol = GridPane.getColumnIndex(gridChildNode);
-                Integer nodeRow = GridPane.getRowIndex(gridChildNode);
+            // TODO - This is ugly.  Parent nodes do not have a base type (Parent) with a public getChildren() method so each parent class needs to be handled.
+            Class<?> parentClass;
+            if (parent != null) {
+                parentClass = parent.getClass();
+                logger.log(Level.INFO, "Evaluating parent {0}", parentClass);
+            } else {
+                parentClass = null;
+                logger.log(Level.INFO, "Evaluating null parent");
+            }
+            if (fxParent instanceof GridPane grid) {
+                logger.log(Level.INFO, "Adding node to grid");
+                JavaFXGrid decoratedParentGrid = (JavaFXGrid) decoratedParentNode;
+                decoratedParentGrid.advanceNextCell();
+                Coordinates currentCell = decoratedParentGrid.getCurrentCell();
+                for (Node gridChildNode : grid.getChildren()) {
+                    Integer nodeCol = GridPane.getColumnIndex(gridChildNode);
+                    Integer nodeRow = GridPane.getRowIndex(gridChildNode);
 
-                if ((nodeCol != null) && (nodeRow != null) && (nodeCol == currentCell.x) && (nodeRow == currentCell.y)) {
-                    if (gridChildNode instanceof StackPane sp) {
-                        sp.getChildren().add(fxNode);
-                        break;
+                    if ((nodeCol != null) && (nodeRow != null) && (nodeCol == currentCell.x) && (nodeRow == currentCell.y)) {
+                        if (gridChildNode instanceof StackPane sp) {
+                            sp.getChildren().add(fxNode);
+                            break;
+                        }
                     }
                 }
-            }
-        } else if (fxParent instanceof FlowPane fp) {
-            if (isNew) {
-                logger.log(Level.INFO, "Adding node to flow pane");
-                fp.getChildren().add(fxNode);
-            }
-        } else if (fxParent instanceof StackPane sp) {
-            if (isNew) {
-                logger.log(Level.INFO, "Adding node to stack pane");
-                sp.getChildren().add(fxNode);
-            }
-        } else if (fxParent instanceof Pane pane) {
-            if (isNew) {
-                logger.log(Level.INFO, "Adding node to pane");
-                pane.getChildren().add(fxNode);
-            }
-            pane.layout();
-            positionNode(pane, node, layout, fxNode);
-        } else if (fxParent instanceof Stage stage) {
-            Scene scene = stage.getScene();
-            Pane pane = (Pane) scene.getRoot();
-            if (isNew) {
-                logger.log(Level.INFO, "Adding node to stage");
-                pane.getChildren().add(fxNode);
-            }
-            pane.layout();
-            positionNode(pane, node, layout, fxNode);
-        } else if (parent instanceof app.node.ScrollingPane) {
-            ScrollPane sp = (ScrollPane) fxParent;
-            if (isNew) {
-                logger.log(Level.INFO, "Adding node to scroll pane");
-                Pane pane = (Pane) sp.getContent();
-                pane.getChildren().add(fxNode);
+            } else if (fxParent instanceof Dialog dialog) {
+                logger.log(Level.INFO, "Adding node to dialog");
+                dialog.getDialogPane().setContent(fxNode);
+            } else if (fxParent instanceof FlowPane fp) {
+                if (isNew) {
+                    logger.log(Level.INFO, "Adding node to flow pane");
+                    fp.getChildren().add(fxNode);
+                }
+            } else if (fxParent instanceof StackPane sp) {
+                if (isNew) {
+                    logger.log(Level.INFO, "Adding node to stack pane");
+                    sp.getChildren().add(fxNode);
+                }
+            } else if (fxParent instanceof Pane pane) {
+                if (isNew) {
+                    logger.log(Level.INFO, "Adding node to pane");
+                    pane.getChildren().add(fxNode);
+                }
                 pane.layout();
                 positionNode(pane, node, layout, fxNode);
-            }
-        } else if (fxParent instanceof HBox hbox) {
-            HBox.setHgrow(fxNode, Priority.NEVER); // Preventing HBox from stretching children horizontally just to fill its width
-            if (isNew) {
-                logger.log(Level.INFO, "Adding node to HBox");
-                hbox.getChildren().add(fxNode);
-            }
-        } else if (parentClass == app.node.ScrollingDocument.class) {
-            // TODO - Most of this is redundant with Document handling above
-            ScrollPane scrollPane = (ScrollPane) fxParent;
-            TextFlow flow = (TextFlow) scrollPane.getContent();
-            if (isNew) {
-                if (node instanceof app.node.Label label) {
-                    // TODO - This is ugly and breaks any effects that might be added
-                    // Decompose the textflow into its individual children and add them one by one to allow the FlowPane to handle the baseline alignment.
-                    TextFlow fxLabel = (TextFlow) fxNode;
-                    List<Node> textFlowNodes = new ArrayList();
-                    for (Node flowNode : fxLabel.getChildren()) {
-                        textFlowNodes.add(flowNode);
-                    }
-                    logger.log(Level.INFO, "Adding TextFlow children to scrolling document");
-                    for (Node textFlowNode : textFlowNodes) {
-                        if (textFlowNode.getClass() == Text.class) {
-                            Text textNode = (Text) textFlowNode;
-                            if (textNode.getFontSmoothingType() != FontSmoothingType.GRAY) {
-                                logger.log(Level.INFO, "Fixing font smoothing type for scrolling document's text");
-                                textNode.setFontSmoothingType(FontSmoothingType.GRAY);
-                            }
+            } else if (fxParent instanceof Stage stage) {
+                Scene scene = stage.getScene();
+                Pane pane = (Pane) scene.getRoot();
+                if (isNew) {
+                    logger.log(Level.INFO, "Adding node to stage");
+                    pane.getChildren().add(fxNode);
+                }
+                pane.layout();
+                positionNode(pane, node, layout, fxNode);
+            } else if (parent instanceof app.node.ScrollingPane) {
+                ScrollPane sp = (ScrollPane) fxParent;
+                if (isNew) {
+                    logger.log(Level.INFO, "Adding node to scroll pane");
+                    Pane pane = (Pane) sp.getContent();
+                    pane.getChildren().add(fxNode);
+                    pane.layout();
+                    positionNode(pane, node, layout, fxNode);
+                }
+            } else if (fxParent instanceof HBox hbox) {
+                HBox.setHgrow(fxNode, Priority.NEVER); // Preventing HBox from stretching children horizontally just to fill its width
+                if (isNew) {
+                    logger.log(Level.INFO, "Adding node to HBox");
+                    hbox.getChildren().add(fxNode);
+                }
+            } else if (parentClass == app.node.ScrollingDocument.class) {
+                // TODO - Most of this is redundant with Document handling above
+                ScrollPane scrollPane = (ScrollPane) fxParent;
+                TextFlow flow = (TextFlow) scrollPane.getContent();
+                if (isNew) {
+                    if (node instanceof app.node.Label label) {
+                        // TODO - This is ugly and breaks any effects that might be added
+                        // Decompose the textflow into its individual children and add them one by one to allow the FlowPane to handle the baseline alignment.
+                        TextFlow fxLabel = (TextFlow) fxNode;
+                        List<Node> textFlowNodes = new ArrayList();
+                        for (Node flowNode : fxLabel.getChildren()) {
+                            textFlowNodes.add(flowNode);
                         }
-                        flow.getChildren().add(textFlowNode);
+                        logger.log(Level.INFO, "Adding TextFlow children to scrolling document");
+                        for (Node textFlowNode : textFlowNodes) {
+                            if (textFlowNode.getClass() == Text.class) {
+                                Text textNode = (Text) textFlowNode;
+                                if (textNode.getFontSmoothingType() != FontSmoothingType.GRAY) {
+                                    logger.log(Level.INFO, "Fixing font smoothing type for scrolling document's text");
+                                    textNode.setFontSmoothingType(FontSmoothingType.GRAY);
+                                }
+                            }
+                            flow.getChildren().add(textFlowNode);
+                        }
+                    } else {
+                        Class<?> nodeClass = node.getClass();
+                        logger.log(Level.INFO, "Adding node {0} to scrolling document", nodeClass);
+                        flow.getChildren().add(fxNode);
                     }
-                } else {
-                    Class<?> nodeClass = node.getClass();
-                    logger.log(Level.INFO, "Adding node {0} to scrolling document", nodeClass);
-                    flow.getChildren().add(fxNode);
+                    flow.requestLayout();
                 }
-                flow.requestLayout();
-            }
-        } else if (fxParent instanceof VBox vbox) {
-            VBox.setVgrow(fxNode, Priority.NEVER); // Preventing VBox from stretching children vertically just to fill its height
-            if (isNew) {
-                logger.log(Level.INFO, "Adding node to VBox");
-                vbox.getChildren().add(fxNode);
-            }
-        } else if (parentClass == app.node.Document.class) {
-            TextFlow flow = (TextFlow) fxParent;
-            if (isNew) {
-                if (node instanceof app.node.Label) {
-                    // Decompose the textflow into its individual children and add them one by one to allow the FlowPane to handle the baseline alignment.
-                    TextFlow label = (TextFlow) fxNode;
-                    List<Node> textFlowNodes = new ArrayList();
-                    for (Node flowNode : label.getChildren()) {
-                        textFlowNodes.add(flowNode);
-                    }
-                    for (Node textFlowNode : textFlowNodes) {
-                        flow.getChildren().add(textFlowNode);
-                    }
-                } else {
-                    flow.getChildren().add(fxNode);
+            } else if (fxParent instanceof VBox vbox) {
+                VBox.setVgrow(fxNode, Priority.NEVER); // Preventing VBox from stretching children vertically just to fill its height
+                if (isNew) {
+                    logger.log(Level.INFO, "Adding node to VBox");
+                    vbox.getChildren().add(fxNode);
                 }
-                flow.layout();
+            } else if (parentClass == app.node.Document.class) {
+                TextFlow flow = (TextFlow) fxParent;
+                if (isNew) {
+                    if (node instanceof app.node.Label) {
+                        // Decompose the textflow into its individual children and add them one by one to allow the FlowPane to handle the baseline alignment.
+                        TextFlow label = (TextFlow) fxNode;
+                        List<Node> textFlowNodes = new ArrayList();
+                        for (Node flowNode : label.getChildren()) {
+                            textFlowNodes.add(flowNode);
+                        }
+                        for (Node textFlowNode : textFlowNodes) {
+                            flow.getChildren().add(textFlowNode);
+                        }
+                    } else {
+                        flow.getChildren().add(fxNode);
+                    }
+                    flow.layout();
+                }
+            } else {
+                Class<?> parentControlClass = fxParent.getClass();
+                logger.log(Level.SEVERE, "Parent does not have a supported class: {0}", parentControlClass.getSimpleName());
+                return;
             }
+
+            this.registerNode(viewName, decoratedNode, parentName, layout);
+
+            double width = fxNode.prefWidth(-1); //fxChild.getBoundsInLocal().getWidth();
+            double relativeWidth = width / parentWidth;
+            double height = fxNode.prefHeight(-1); //fxChild.getBoundsInLocal().getHeight();
+            double relativeHeight = height / parentHeight;
+            double x = fxNode.getLayoutX();
+            double relativeX = x / parentWidth;
+            double y = fxNode.getLayoutY();
+            double relativeY = y / parentHeight;
+            RelativeBounds relativeBounds = new RelativeBounds(new RelativeCoordinates(relativeX, relativeY), relativeWidth, relativeHeight);
+
+            node.onEvent(NODE_PUBLISHED_EVENT, relativeBounds); // Let the node know its bounds
+            logger.log(Level.INFO, "Added node {0} {1} at ({2},{3}), width={4}, height={5} using parent pixel width={6}, parent pixel height={7}, pixel width={8}, pixel height={9}", new Object[]{node, node.name, relativeX, relativeY, relativeWidth, relativeHeight, parentWidth, parentHeight, width, height});
         } else {
-            Class<?> parentControlClass = fxParent.getClass();
-            logger.log(Level.SEVERE, "Parent does not have a supported class: {0}", parentControlClass.getSimpleName());
-            return;
+            this.registerNode(viewName, decoratedNode, parentName, layout);
+            logger.log(Level.INFO, "Added node {0} {1}", new Object[]{node, node.name});
+            node.onEvent(NODE_PUBLISHED_EVENT, null); // Let the node know its bounds
         }
-
-        this.registerNode(viewName, decoratedNode, parentName, layout);
-
-        double width = fxNode.prefWidth(-1); //fxChild.getBoundsInLocal().getWidth();
-        double relativeWidth = width / parentWidth;
-        double height = fxNode.prefHeight(-1); //fxChild.getBoundsInLocal().getHeight();
-        double relativeHeight = height / parentHeight;
-        double x = fxNode.getLayoutX();
-        double relativeX = x / parentWidth;
-        double y = fxNode.getLayoutY();
-        double relativeY = y / parentHeight;
-        RelativeBounds relativeBounds = new RelativeBounds(new RelativeCoordinates(relativeX, relativeY), relativeWidth, relativeHeight);
-        node.onEvent(NODE_PUBLISHED_EVENT, relativeBounds); // Let the node know its bounds
-        logger.log(Level.INFO, "Added node {0} {1} at ({2},{3}), width={4}, height={5} using parent pixel width={6}, parent pixel height={7}, pixel width={8}, pixel height={9}", new Object[]{node, node.name, relativeX, relativeY, relativeWidth, relativeHeight, parentWidth, parentHeight, width, height});
-
+    
         // Publish any child nodes for the node
         if (node instanceof BaseCompositeNode baseCompositeNode) {
             logger.log(Level.INFO, "Publishing child nodes of composite node");
@@ -2980,28 +3031,6 @@ public class JavaFXApplication extends BaseController {
         }
     }
      */
-    public FlowPane newButtonGroup(app.node.ButtonGroup node, FlowPane fxButtonGroup, RGBColor offsetColor) {
-        logger.log(Level.INFO, "Entered: node={0}, fxButtonGroup={1}, offsetColor={2}", new Object[]{node, fxButtonGroup, offsetColor});
-
-        if (fxButtonGroup == null) {
-            fxButtonGroup = new FlowPane();
-        }
-
-        if (node.spacerPixels != null) {
-            fxButtonGroup.setHgap(node.spacerPixels);
-            fxButtonGroup.setVgap(node.spacerPixels);
-            fxButtonGroup.setPadding(new Insets(node.spacerPixels));
-        }
-
-        if (node.backgroundColor != null) {
-            Color fxBackgroundColor = getFxColor(node.backgroundColor);
-            BackgroundFill backgroundFill = new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY);
-            Background background = new Background(backgroundFill);
-            fxButtonGroup.setBackground(background);
-        }
-
-        return fxButtonGroup;
-    }
 
     /*
     @Override

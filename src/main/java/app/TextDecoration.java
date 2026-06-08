@@ -15,6 +15,13 @@ public class TextDecoration implements Serializable {
     public String font; // Default (null) is the app controller's default font
     public FontStyle style; // Default (null) is normal
     
+    public TextDecoration() {
+    }
+    
+    public TextDecoration(String font) {
+        this.font = font;
+    }
+    
     @Override
     public String toString() {
         return "pixelSize=" + this.pixelSize + ",  color=" + this.color + ", eventListener=" + this.eventListener + ", font=" + this.font + ", style=" + this.style;

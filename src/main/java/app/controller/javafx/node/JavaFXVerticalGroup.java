@@ -7,7 +7,6 @@ import app.controller.BaseController;
 import static app.controller.BaseController.logger;
 import static app.controller.JavaFXApplication.getFxColor;
 import app.node.BaseDecoratedNode;
-import app.node.BaseNode;
 import java.util.logging.Level;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;

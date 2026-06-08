@@ -3,16 +3,19 @@ package quest.view;
 import app.controller.BaseController;
 import app.color.Color;
 import app.EventListener;
+import app.FontStyle;
 import app.HorizontalAlignment;
 import app.Layout;
 import app.TextDecoration;
 import app.VerticalAlignment;
+import static app.controller.BaseController.logger;
 import app.node.Grid;
 import app.node.Group;
 import app.node.Label;
 import app.node.Image;
 import app.node.VerticalGroup;
 import java.util.List;
+import java.util.logging.Level;
 import quest.model.Act;
 import quest.model.Scene;
 
@@ -37,19 +40,19 @@ public class SceneMap extends app.view.BaseView implements EventListener {
     
     @Override
     public void onEvent(String eventName, Object eventValue) {
-        System.out.println("SceneMap: onEvent: eventName=" + eventName + ", eventValue=" + eventValue);
+        logger.log(Level.INFO, "Entered: eventName={0}, eventValue={1}", new Object[]{eventName, eventValue});
         
         switch (eventName) {
             case Quest.NEW_SCENE -> this.render();
             case Quest.PLAYER_DIRECTION -> this.render();
             case COMPASS -> this.appController.selectTab(Questcraft.QUEST);
-            default -> System.err.println("SceneMap: onEvent: UNSUPPORTED EVENT!");
+            default -> logger.log(Level.WARNING, "Unsupported event!");
         }
     }
     
     @Override
     public void onLoad(BaseController appController) {
-        System.out.println("SceneMap: onLoad");
+        logger.log(Level.INFO, "Entered: appController={0}", appController);
         
         this.appController = appController;
         this.render();
@@ -58,7 +61,7 @@ public class SceneMap extends app.view.BaseView implements EventListener {
     }
     
     public void render() {
-        System.out.println("SceneMap: render");
+        logger.log(Level.INFO, "Entered");
         
         this.appController.clearScreen(this.name);
         
@@ -89,7 +92,6 @@ public class SceneMap extends app.view.BaseView implements EventListener {
         
         int mapWidth = maxX - minX + 1;
         int mapHeight = maxY - minY + 1;
-        System.out.println("SceneMap: render: Calculated " + mapWidth + "x" + mapHeight + " grid with X coordinates " + minX + "-" + maxY + " and Y coordinates " + minY + "-" + maxY);
 
         // Sort each scene by its coordinates
         String[][] sortedScenes = new String[mapWidth][mapHeight];
@@ -100,8 +102,9 @@ public class SceneMap extends app.view.BaseView implements EventListener {
             }
         }
         
-        TextDecoration normalizeSize = new TextDecoration();
-        normalizeSize.pixelSize = Quest.DEFAULT_FONT_SIZE;
+        TextDecoration normalSize = new TextDecoration();
+        normalSize.style = FontStyle.BOLD;
+        normalSize.pixelSize = Quest.DEFAULT_FONT_SIZE;
         TextDecoration twiceAsBig = new TextDecoration();
         twiceAsBig.pixelSize = Quest.DEFAULT_FONT_SIZE * 2;
         
@@ -141,38 +144,55 @@ public class SceneMap extends app.view.BaseView implements EventListener {
                 if (sceneName == null) {
                     emptyCellCount++;   // TODO - This is ugly
                     sceneName = "EMPTY SCENE " + emptyCellCount;
-                    System.out.println("SceneMap: render: Nothing to add to " + x + ", " + y);
+                    logger.log(Level.INFO, "Nothing to add to {0}, {1}", new Object[]{x, y});
                 } else {
+                    if ((this.quest.playerX != null) && (this.quest.playerX == x) && (this.quest.playerY != null) && (this.quest.playerY == y)) {
+                        if (this.quest.getPlayerDirection().toUpperCase().equals(Quest.DIRECTION_NORTH)) {
+                            logger.log(Level.INFO, "Adding NORTH direction label");
+                            Label directionLabel = new Label("direction", "\u2B06", twiceAsBig);
+                            itemGroup.nodes.add(directionLabel);
+                        }
+                        
+                        String playerSymbol = this.quest.playerSymbol;
+                        logger.log(Level.INFO, "Adding player {0} to {1}, {2}", new Object[]{playerSymbol, x, y});
+                        switch (this.quest.getPlayerDirection().toUpperCase()) {
+                            case Quest.DIRECTION_EAST -> {
+                                logger.log(Level.INFO, "Adding EAST direction label");
+                                playerSymbol += " " + "\u27A1";
+                            }
+                            case Quest.DIRECTION_WEST -> {
+                                logger.log(Level.INFO, "Adding WEST direction label");
+                                playerSymbol = "\u2B05 " + playerSymbol;
+                            }
+                        }
+                        Label playerLabel = new Label("player", playerSymbol, twiceAsBig);
+                        itemGroup.nodes.add(playerLabel);
+                        
+                        if (this.quest.getPlayerDirection().toUpperCase().equals(Quest.DIRECTION_SOUTH)) {
+                            logger.log(Level.INFO, "Adding NORTH direction label");
+                            Label directionLabel = new Label("direction", "\u2B07", twiceAsBig);
+                            itemGroup.nodes.add(directionLabel);
+                        }
+                    }
+
                     Scene scene = act.scenes.get(sceneName);
-                    itemGroup.backgroundColor = scene.color;
+                    itemGroup.backgroundColor = new Color(scene.color, 0.5);
                     Label labelControl;
                     if ((observedActScenes.isEmpty()) || (!observedActScenes.contains(sceneName))) {
-                        labelControl = new Label(sceneName + " label", "?", normalizeSize);
-                        System.out.println("SceneMap: render: Adding unobserved scene to " + x + ", " + y);
+                        logger.log(Level.INFO, "Found unobserved scene");
+                        labelControl = new Label(sceneName + " label", "?", normalSize);
                     } else {
-                        labelControl = new Label(sceneName + " label", sceneName, normalizeSize);
-                        System.out.println("SceneMap: render: Adding " + sceneName + " to " + x + ", " + y);
+                        labelControl = new Label(sceneName + " label", sceneName, normalSize);
                     }
+                    logger.log(Level.INFO, "Adding scene name {0} to {1}, {2}", new Object[]{sceneName, x, y});
                     itemGroup.nodes.add(labelControl);
-                }
-                if ((this.quest.playerX != null) && (this.quest.playerX == x) && (this.quest.playerY != null) && (this.quest.playerY == y)) {
-                    String playerSymbol = this.quest.playerSymbol;
-                    switch (this.quest.getPlayerDirection().toUpperCase()) {
-                        case Quest.DIRECTION_EAST -> playerSymbol += " " + "\u27A1";
-                        case Quest.DIRECTION_NORTH -> playerSymbol += " " + "\u2B06";
-                        case Quest.DIRECTION_SOUTH -> playerSymbol += " " + "\u2B07";
-                        case Quest.DIRECTION_WEST -> playerSymbol += " " + "\u2B05";
-                    }
-                    Label labelControl = new Label("player", playerSymbol, twiceAsBig);
-                    itemGroup.nodes.add(labelControl);
-                    System.out.println("SceneMap: render: Added " + playerSymbol + " to " + x + ", " + y);
                 }
                 if (sceneName != null) {
                     Scene scene = act.scenes.get(sceneName);
                     if ((scene != null) && (scene.symbol != null) && (observedActScenes.contains(sceneName))) {
+                        logger.log(Level.INFO, "Adding scene symbol {0} to {1}, {2}", new Object[]{scene.symbol, x, y});
                         Label labelControl2 = new Label(sceneName + " symbol", scene.symbol, twiceAsBig);
                         itemGroup.nodes.add(labelControl2);
-                        System.out.println("SceneMap: render: Added " + scene.symbol + " to " + x + ", " + y);
                     }
                 }
                 gridControl.cells.add(itemGroup);
@@ -180,7 +200,6 @@ public class SceneMap extends app.view.BaseView implements EventListener {
         }
         
         this.appController.addNode(this.name, this.name, gridControl, new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
-        //this.appController.displayGrid(this.name, gridControl, new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
     }
 
 }

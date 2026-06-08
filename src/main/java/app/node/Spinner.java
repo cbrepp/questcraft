@@ -2,6 +2,7 @@ package app.node;
 
 import app.*;
 import app.color.RGBColor;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,7 +18,7 @@ public class Spinner extends BaseNode {
     public Object eventName; // Default (null) is the button's name
     public Boolean isEnabled = true;
     public Double pixelSize; // Default is app controller's default pixel size
-    public List<Object> values;
+    public List<Object> values = new ArrayList();
     public RGBColor textColor; // Default (null) is either black or white depending on which color would best offset the background
     public String textFont; // Default is the app controller's default font
     public Boolean wrapAround; // Default (null) is false

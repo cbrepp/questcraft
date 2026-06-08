@@ -152,36 +152,36 @@ public class JavaFXSpinner extends BaseJavaFXNode {
             eventName = node.eventName.toString();
         }
         
-        if (node.eventListener != null) {
-            // setOnAction updates the only event handler and thus is safe to call many times without needing to remove the previous handler
-            controllerNode.valueProperty().addListener((obs, oldValue, newValue) -> {
-                logger.log(Level.INFO, "Value selected: name={0}, oldValue={1}, newValue={2}", new Object[]{node.name, oldValue, newValue});
+        // setOnAction updates the only event handler and thus is safe to call many times without needing to remove the previous handler
+        controllerNode.valueProperty().addListener((obs, oldValue, newValue) -> {
+            logger.log(Level.INFO, "Value selected: name={0}, oldValue={1}, newValue={2}", new Object[]{node.name, oldValue, newValue});
+            if (node.eventListener != null) {
                 node.eventListener.onEvent(eventName, newValue);
-                
-                // Because the spinner control by default does not make the buttons appear disabled on either end, implement by adjusting opacity of the buttons
-                if ((node.wrapAround == null) || (node.wrapAround == false)) {
-                    int currentIndex = values.indexOf(newValue);
-                    // Look up the internal arrow button nodes
-                    Node incrementBtn = controllerNode.lookup(".increment-arrow-button");
-                    Node decrementBtn = controllerNode.lookup(".decrement-arrow-button");
+            }
 
-                    if (incrementBtn != null && decrementBtn != null) {
-                        // Reset both to full visibility first
-                        incrementBtn.setOpacity(1.0);
-                        decrementBtn.setOpacity(1.0);
+            // Because the spinner control by default does not make the buttons appear disabled on either end, implement by adjusting opacity of the buttons
+            if ((node.wrapAround == null) || (node.wrapAround == false)) {
+                int currentIndex = values.indexOf(newValue);
+                // Look up the internal arrow button nodes
+                Node incrementBtn = controllerNode.lookup(".increment-arrow-button");
+                Node decrementBtn = controllerNode.lookup(".decrement-arrow-button");
 
-                        // If we are at the very first item (e.g., APPRENTICE), fade the left arrow
-                        if (currentIndex == 0) {
-                            decrementBtn.setOpacity(0.3); // Looks faded/disabled
-                        } 
-                        // If we are at the very last item (e.g., MYTHIC), fade the right arrow
-                        else if (currentIndex == values.size() - 1) {
-                            incrementBtn.setOpacity(0.3); // Looks faded/disabled
-                        }
+                if (incrementBtn != null && decrementBtn != null) {
+                    // Reset both to full visibility first
+                    incrementBtn.setOpacity(1.0);
+                    decrementBtn.setOpacity(1.0);
+
+                    // If we are at the very first item (e.g., APPRENTICE), fade the left arrow
+                    if (currentIndex == 0) {
+                        decrementBtn.setOpacity(0.3); // Looks faded/disabled
+                    } 
+                    // If we are at the very last item (e.g., MYTHIC), fade the right arrow
+                    else if (currentIndex == values.size() - 1) {
+                        incrementBtn.setOpacity(0.3); // Looks faded/disabled
                     }
                 }
-            });
-        }
+            }
+        });
         
         // Handle scaling
         this.scaleNode(controllerNode);

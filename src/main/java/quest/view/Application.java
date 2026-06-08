@@ -9,6 +9,7 @@ import app.HorizontalAlignment;
 import app.KeyboardKey;
 import app.Layout;
 import app.RelativeCoordinates;
+import app.Text;
 import app.TextDecoration;
 import app.VerticalAlignment;
 import app.color.OffsetColor;
@@ -17,10 +18,15 @@ import static app.controller.BaseController.NODE_TRANSITIONED_EVENT;
 import static app.controller.BaseController.logger;
 import app.dialog.Alert;
 import app.dialog.FileSelection;
+import app.node.BaseNode;
 import app.node.Button;
+import app.node.ChoiceBox;
+import app.node.ComboBox;
+import app.node.Dialog;
 import app.node.Image;
 import app.node.Label;
 import app.node.ScrollingLabel;
+import app.node.Spinner;
 import app.node.Video;
 import app.node.effect.BaseEffect;
 import app.node.effect.Glow;
@@ -50,6 +56,7 @@ import quest.control.Illustrate;
 import quest.control.InventoryAdd;
 import quest.control.InventoryRemove;
 import quest.control.MoveAhead;
+import quest.control.NodeRemove;
 import quest.control.ObservedSceneAdd;
 import quest.control.PageGoto;
 import quest.control.PageRefresh;
@@ -69,7 +76,6 @@ import quest.text.Texts;
 import quest.node.ValidatedVariablePrompt;
 import quest.text.Variable;
 import quest.control.VariableSet;
-import quest.control.VideoPlay;
 import quest.control.ViewAdd;
 import quest.model.Act;
 import quest.model.Book;
@@ -108,6 +114,7 @@ public class Application extends app.view.BaseView {
     public final static String MONO_FONT = Font.ROBOTO_MONO;
     public final static String NORMAL_FONT = Font.ROBOTO;
     public final static String OPTIONS_EVENT = "options";
+    public final static String OPTIONS_SAVED_EVENT = "options saved";
     public final static String DOUBLE_RIGHT_ARROW = "\u2192" + System.lineSeparator() + "\u2192"; // Unicode emoticon for right arrow (x2)
     public final static String SELECT_EVENT = "select";
     public final static String TITLE_FONT = Font.MINECRAFT;
@@ -200,11 +207,40 @@ public class Application extends app.view.BaseView {
                 alert.icon = app.Icon.INFORMATION;
                 this.appController.newDialog(alert);
             } case OPTIONS_EVENT -> {
-                Alert alert = new Alert(this.name);
-                alert.header = "Coming soon!";
-                alert.text = "Application options are not available at this time.";
-                alert.icon = app.Icon.INFORMATION;
-                this.appController.newDialog(alert);
+                List<BaseNode> options = new ArrayList();
+                Spinner fontSizeSpinner = new Spinner("Text Size");
+                fontSizeSpinner.values.add("14");
+                fontSizeSpinner.values.add("16");
+                fontSizeSpinner.values.add("18");
+                fontSizeSpinner.values.add("20");
+                fontSizeSpinner.values.add("22");
+                fontSizeSpinner.values.add("24");
+                fontSizeSpinner.values.add("26");
+                fontSizeSpinner.values.add("28");
+                fontSizeSpinner.values.add("30");
+                fontSizeSpinner.values.add("32");
+                fontSizeSpinner.defaultValue = Math.toIntExact(Math.round(Quest.DEFAULT_FONT_SIZE));
+                options.add(fontSizeSpinner);
+                // TODO - Use a combo box to allow each font to appear using itself
+                ComboBox comboBox = new ComboBox("Text Font");
+                for (String fontName : List.of(Font.LATO, Font.MINECRAFT, Font.ROBOTO, Font.ROBOTO_BLACK, Font.ROBOTO_LIGHT, Font.ROBOTO_MEDIUM, Font.ROBOTO_MONO,
+                        Font.ROBOTO_MONO_LIGHT, Font.ROBOTO_MONO_MEDIUM, Font.ROBOTO_MONO_THIN, Font.ROBOTO_THIN)) {
+                    comboBox.values.add(new Text(fontName, new TextDecoration(fontName)));
+                }
+                comboBox.defaultValue = Quest.DEFAULT_FONT;
+                options.add(comboBox);
+                Dialog optionsDialog = new Dialog("app options", "Options...", "Customize quest options", options);
+                optionsDialog.eventName = OPTIONS_SAVED_EVENT;
+                optionsDialog.eventListener = this;
+                this.appController.addNode(this.name, this.name, optionsDialog, null);
+            } case OPTIONS_SAVED_EVENT -> {
+                List<String> resultList = (ArrayList) eventValue;
+                Double fontSize = Double.valueOf(resultList.get(0));
+                Quest.DEFAULT_FONT_SIZE = fontSize;
+                logger.log(Level.INFO, "Font size: {0}", fontSize);
+                String fontName = resultList.get(1);
+                Quest.DEFAULT_FONT = fontName;
+                logger.log(Level.INFO, "Font name: {0}", fontName);
             } case QUIT_EVENT -> {
                 this.appController.close();
             } case SELECT_EVENT -> {
@@ -996,21 +1032,28 @@ public class Application extends app.view.BaseView {
         Page page3 = new Page();
         page3.previousPageName = "2";
         page3.hideNextButton = true;
-        input = new ValidatedVariablePrompt("action", List.of("Open Doors and Step Inside"));
+        input = new ValidatedVariablePrompt("action", List.of("Go to Elevator"));
         input.effectsButtons.put("Open Doors and Step Inside", effectList);
         page3.story.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("You are now standing on the surface of a dark cloud floating high up in the sky.  You look around and see nothing but the strange and wonderful heavens, the dark sky, swirling purple mist... and... what appear to be elevator doors in the middle of the cloud.", new LineSeparator(),
                 new LineSeparator(),
-                "You look closer and see a button on the side of the doors.", new LineSeparator(),
+                "To continue your journey it seems you must go through the elevator.  But... is it safe?.", new LineSeparator(),
                 new LineSeparator(),
                 "Anxiety and fear grip you.  But you have no choice.  You must save ", new Variable("twin"), ".  And so...", new LineSeparator(),
                 new LineSeparator()))), input)));
-        page3.story.controls.add(new Illustrate(new Image("illustration image", "/assets/images/elevator-doors.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        Image illustrationImage = new Image("illustration image", "/assets/images/elevator-doors.jpg");
+        illustrationImage.scaleX = 0.95;
+        illustrationImage.scaleY = 0.95;
+        page3.story.controls.add(new Illustrate(illustrationImage, new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("3", page3);
         
         Story enterElevator = new Story();
         enterElevator.controls.add(new SoundPlay("/assets/sounds/elevator-open.mp3", false));
-        enterElevator.controls.add(new VideoPlay("/assets/videos/elevator-doors.mp4", "on elevator doors open"));
-        page3.subpages.put("INPUT action=Open Doors and Step Inside", enterElevator);
+        enterElevator.controls.add(new NodeRemove("illustration image"));
+        quest.node.Video illustrationVideo = new quest.node.Video("elevator doors opening", "/assets/videos/elevator-doors.mp4", "on elevator doors open");
+        illustrationVideo.scaleX = 0.95;
+        illustrationVideo.scaleY = 0.95;
+        enterElevator.controls.add(new Illustrate(illustrationVideo, new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        page3.subpages.put("INPUT action=Go to Elevator", enterElevator);
 
         Story nextPage = new Story();
         nextPage.controls.add(new PageGoto("4"));
@@ -1024,7 +1067,7 @@ public class Application extends app.view.BaseView {
         page4.story.controls.add(new SoundPlay("/assets/sounds/elevator.wav", false));
         page4.story.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("\uD83D\uDC08\u200D\u2B1B MYLEE: \"Good day!  Which floor?  Certainly.  Floor one.  Here we are.\"", new LineSeparator(),
                 new LineSeparator(),
-                "You're confused for a moment.  Inside the elevator there's a cat perched up on a shelf by the main elevator switch.  Is a cat operating this elevator?  And... did that cat just talk???", new LineSeparator(),
+                "You're confused for a moment.  Inside the elevator is a cat perched up on a control box.  Is a cat operating this elevator?  And... did that cat just talk???", new LineSeparator(),
                 new LineSeparator(),
                 "\uD83D\uDC08\u200D\u2B1B MYLEE: \"You're wondering if I just talked even though I'm a cat.  And the answer is 'yes'.  Yes I did.\"", new LineSeparator(),
                 new LineSeparator(),
@@ -1232,7 +1275,7 @@ public class Application extends app.view.BaseView {
                 "Mylee flips the elevator switch and the doors open.  You walk out and find that you're no longer on the cloud...")));
         page12.story.controls.add(new Scribe(List.of(new Label("par1", List.of(text1, text2, text3)))));
         // TODO - Generate an AI image of the elevator doors open and the faint mist of magic beyond
-        page12.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/myles-elevator.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        page12.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/myles-elevator-gold.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("12", page12);
         
         Act chapter1 = new Act();
@@ -1264,33 +1307,33 @@ public class Application extends app.view.BaseView {
         book.subpages.put("Player Stats", playerStatsSubpage);
         
         Story navigationFooterSubpage = new Story();
-        //navigationFooterSubpage.contents.add("<variable-set nextScene next-scene>");
-        //navigationFooterSubpage.contents.add("<button-row>");
-        ValidatedVariablePrompt freeNavigation = new ValidatedVariablePrompt("navigation-prompt", List.of("< Turn Left", "Move Ahead", "Turn Right >"));
-        freeNavigation.keyBindingButtons.put("< Turn Left", KeyboardKey.LEFT);
-        freeNavigation.keyBindingButtons.put("Move Ahead", KeyboardKey.UP);
-        freeNavigation.keyBindingButtons.put("Turn Right >", KeyboardKey.RIGHT);
-        ValidatedVariablePrompt restrictedNavigation = new ValidatedVariablePrompt("navigation-prompt", List.of("< Turn Left", "Move Ahead", "Turn Right >"));
-        restrictedNavigation.keyBindingButtons.put("< Turn Left", KeyboardKey.LEFT);
-        restrictedNavigation.keyBindingButtons.put("Turn Right >", KeyboardKey.RIGHT);
-        restrictedNavigation.isEnabledButtons.put("Move Ahead", false);
+        ValidatedVariablePrompt freeNavigation = new ValidatedVariablePrompt("navigation-prompt", List.of("\uD83E\uDC60 Turn Left", "Move \uD83E\uDC61 Ahead", "Turn Right \uD83E\uDC62"));
+        freeNavigation.pixelSize = Quest.DEFAULT_FONT_SIZE - 2;
+        freeNavigation.outerSpacerPixels = null;
+        freeNavigation.keyBindingButtons.put("\uD83E\uDC60 Turn Left", KeyboardKey.LEFT);
+        freeNavigation.keyBindingButtons.put("Move \uD83E\uDC61 Ahead", KeyboardKey.UP);
+        freeNavigation.keyBindingButtons.put("Turn Right \uD83E\uDC62", KeyboardKey.RIGHT);
+        ValidatedVariablePrompt restrictedNavigation = new ValidatedVariablePrompt("navigation-prompt", List.of("\uD83E\uDC60 Turn Left", "Move \uD83E\uDC61 Ahead", "Turn Right \uD83E\uDC62"));
+        restrictedNavigation.pixelSize = Quest.DEFAULT_FONT_SIZE - 2;
+        restrictedNavigation.outerSpacerPixels = null;
+        restrictedNavigation.keyBindingButtons.put("\uD83E\uDC60 Turn Left", KeyboardKey.LEFT);
+        restrictedNavigation.keyBindingButtons.put("Turn Right \uD83E\uDC62", KeyboardKey.RIGHT);
+        restrictedNavigation.isEnabledButtons.put("Move \uD83E\uDC61 Ahead", false);
         navigationFooterSubpage.controls.add(new Prompt(freeNavigation, new Condition(new NextScene(), Condition.Operator.EQUALS, "EDGE OF THE WORLD", false)));
         navigationFooterSubpage.controls.add(new Prompt(restrictedNavigation, new Condition(new NextScene(), Condition.Operator.EQUALS, "EDGE OF THE WORLD", true)));
-        //navigationFooterSubpage.contents.add("<get-validated-input condition=\"next-scene=EDGE OF THE WORLD\" align=right navigation-prompt &left; Turn Left+!&up; Move Ahead+&right; Turn Right>");
-        //navigationFooterSubpage.contents.add("<get-validated-input condition=\"next-scene!=EDGE OF THE WORLD\" align=right navigation-prompt &left; Turn Left+&up; Move Ahead+&right; Turn Right>");
         book.subpages.put("Navigation Footer", navigationFooterSubpage);
         
         Story inputTurnLeftSubpage = new Story();
         inputTurnLeftSubpage.controls.add(new TurnLeft());
-        book.subpages.put("INPUT navigation-prompt=< Turn Left", inputTurnLeftSubpage);
+        book.subpages.put("INPUT navigation-prompt=\uD83E\uDC60 Turn Left", inputTurnLeftSubpage);
         
         Story inputMoveAheadSubpage = new Story();
         inputMoveAheadSubpage.controls.add(new MoveAhead());
-        book.subpages.put("INPUT navigation-prompt=Move Ahead", inputMoveAheadSubpage);
+        book.subpages.put("INPUT navigation-prompt=Move \uD83E\uDC61 Ahead", inputMoveAheadSubpage);
 
         Story inputTurnRightSubpage = new Story();
         inputTurnRightSubpage.controls.add(new TurnRight());
-        book.subpages.put("INPUT navigation-prompt=Turn Right >", inputTurnRightSubpage);
+        book.subpages.put("INPUT navigation-prompt=Turn Right \uD83E\uDC62", inputTurnRightSubpage);
         
         Scene chapterScene = new Scene();
         chapterScene.firstPageName = "1";
@@ -1355,7 +1398,7 @@ public class Application extends app.view.BaseView {
                 new LineSeparator(),
                 new ValidatedVariablePrompt("action", List.of("Listen", "&down; Leave Elevator")))), sceneDecoration);
         noGoldSubpage.controls.add(new Scribe(List.of(new Label("par1", List.of(text1, text2, text3)))));
-        noGoldSubpage.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/mylee-sink.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        noGoldSubpage.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/myles-elevator-bath.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         mainPage.subpages.put("No Gold", noGoldSubpage);
 
         /*
@@ -1527,11 +1570,11 @@ public class Application extends app.view.BaseView {
         nightOwlMinigamePage.subpages.put("Monster Shooter", monsterShooterSubpage);
         
         Story monsterShooterGreysonSubpage = new Story();
-        monsterShooterGreysonSubpage.contents.add("<monster-shooter condition=\"variable animation-on!=true\" night-owl left /assets/images/wilderness3.jpg /assets/images/wizard-back-facing-left.png /assets/images/wizard-back-facing-right.png /assets/images/arrow.png /assets/images/arrow.png /assets/sounds/arrow.mp3 /assets/images/flying-owl-facing-left.png /assets/images/flying-owl-facing-right.png /assets/images/lightning-bolt-left.png /assets/images/lightning-bolt-right.png /assets/sounds/zap.wav /assets/sounds/hooting.mp3 true difficulty>");
+        monsterShooterGreysonSubpage.contents.add("<monster-shooter condition=\"variable animation-on!=true\" night-owl left /assets/images/wilderness1.jpg /assets/images/wizard-back-facing-left.png /assets/images/wizard-back-facing-right.png /assets/images/arrow.png /assets/images/arrow.png /assets/sounds/arrow.mp3 /assets/images/flying-owl-facing-left.png /assets/images/flying-owl-facing-right.png /assets/images/lightning-bolt-left.png /assets/images/lightning-bolt-right.png /assets/sounds/zap.wav /assets/sounds/hooting.mp3 true difficulty>");
         nightOwlMinigamePage.subpages.put("Monster Shooter Greyson", monsterShooterGreysonSubpage);
         
         Story monsterShooterZaraSubpage = new Story();
-        monsterShooterZaraSubpage.contents.add("<monster-shooter condition=\"variable animation-on!=true\" night-owl left /assets/images/wilderness3.jpg /assets/images/witch-back-facing-left.png /assets/images/witch-back-facing-right.png /assets/images/cat-missile-left.png /assets/images/cat-missile-right.png /assets/sounds/arrow.mp3 /assets/images/flying-owl-facing-left.png /assets/images/flying-owl-facing-right.png /assets/images/lightning-bolt-left.png /assets/images/lightning-bolt-right.png /assets/sounds/zap.wav /assets/sounds/hooting.mp3 true difficulty>");
+        monsterShooterZaraSubpage.contents.add("<monster-shooter condition=\"variable animation-on!=true\" night-owl left /assets/images/wilderness1.jpg /assets/images/witch-back-facing-left.png /assets/images/witch-back-facing-right.png /assets/images/cat-missile-left.png /assets/images/cat-missile-right.png /assets/sounds/arrow.mp3 /assets/images/flying-owl-facing-left.png /assets/images/flying-owl-facing-right.png /assets/images/lightning-bolt-left.png /assets/images/lightning-bolt-right.png /assets/sounds/zap.wav /assets/sounds/hooting.mp3 true difficulty>");
         nightOwlMinigamePage.subpages.put("Monster Shooter Zara", monsterShooterZaraSubpage);
         
         Story continueSubpage = new Story();
@@ -1566,7 +1609,7 @@ public class Application extends app.view.BaseView {
         eyesOfChungPage.hideNextButton = true;
         eyesOfChungPage.nextPageName = "Back To Elevator";
         eyesOfChungPage.story.contents.add("<second-page>");
-        eyesOfChungPage.story.contents.add("<image wilderness3 left /assets/images/wilderness3.jpg>");
+        eyesOfChungPage.story.contents.add("<image wilderness1 left /assets/images/wilderness1.jpg>");
         eyesOfChungPage.story.contents.add("<first-page><subpage-display Scene Header>");
         eyesOfChungPage.story.contents.add("<color 0+0+0><remove lights-out><overlay lights-out 0+0+0 false><send-to-front VARIABLE:action>");
         eyesOfChungPage.story.contents.add("You did it!  You defeated Night Owl!!!  With great speed he flies back to his woods for safety.");
@@ -1904,7 +1947,7 @@ public class Application extends app.view.BaseView {
                 "You need to remember so you can find your way back... \uD83D\uDED7 MYLEE'S ELEVATOR is by the purple flowers.", new LineSeparator(),
                 new LineSeparator())), sceneDecoration);
         mainPage.story.controls.add(new Scribe(List.of(new Label("par1", List.of(text1)), new ValidatedVariablePrompt("action", List.of("Listen", "Chase Bunnies")))));
-        mainPage.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/wilderness3.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));        
+        mainPage.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/wilderness1.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));        
         wilderness1.pages.put("main", mainPage);
         Story listenSubpage = new Story();
         listenSubpage.contents.add("<goto-page Listen>");
@@ -1920,7 +1963,7 @@ public class Application extends app.view.BaseView {
                 new LineSeparator(),
                 "Oh the great outdoors!")), sceneDecoration);        
         listenPage.story.controls.add(new Scribe(List.of(new Label("par1", List.of(text1)))));
-        listenPage.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/wilderness3.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));        
+        listenPage.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/wilderness1.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));        
         wilderness1.pages.put("Listen", listenPage);
         
         /*
@@ -1941,7 +1984,7 @@ public class Application extends app.view.BaseView {
         mainPage.story.contents.add("<br>");
         mainPage.story.contents.add("<subpage-display Navigation Footer>");
         mainPage.story.contents.add("<second-page>");
-        mainPage.story.contents.add("<image wilderness3 left /assets/images/wilderness3.jpg>");
+        mainPage.story.contents.add("<image wilderness1 left /assets/images/wilderness1.jpg>");
         wilderness1.pages.put("main", mainPage);
         listenSubpage = new Story();
         listenSubpage.contents.add("<goto-page Listen>");
@@ -1957,7 +2000,7 @@ public class Application extends app.view.BaseView {
         listenPage.story.contents.add("Oh the great outdoors!");
         listenPage.story.contents.add("</color>");
         listenPage.story.contents.add("<second-page>");
-        listenPage.story.contents.add("<image wilderness3 left /assets/images/wilderness3.jpg>");
+        listenPage.story.contents.add("<image wilderness1 left /assets/images/wilderness1.jpg>");
         wilderness1.pages.put("Listen", listenPage);
         
         chaseBunniesPage = new Page();

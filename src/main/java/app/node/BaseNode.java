@@ -32,6 +32,10 @@ public abstract class BaseNode implements EventListener, Serializable {
     
     public abstract RGBColor getColor();
     
+    public boolean isParent() {
+        return false;
+    }
+    
     @Override
     public void onEvent(String eventName, Object eventValue) {
         logger.log(Level.INFO, "Entered: eventName={0}, eventValue={1}", new Object[]{eventName, eventValue});

@@ -1,6 +1,8 @@
 
 package quest.control;
 
+import app.Text;
+import app.TextDecoration;
 import static app.controller.BaseController.logger;
 import app.node.BaseNode;
 import app.node.Label;
@@ -54,9 +56,26 @@ public class Scribe extends BaseQuestControl {
         
         for (BaseNode node : this.nodes) {
             logger.log(Level.INFO, "Requesting display of node: {0}", node);
+            
             if (node.name == null) {
                 node.name = Quest.quest.newNodeIndex();
             }
+            
+            // Use the Quest default settings for font and font size
+            if (node instanceof Label label) {
+                for (Text text : label.texts) {
+                    if (text.decoration == null) {
+                        text.decoration = new TextDecoration();
+                    }
+                    if (text.decoration.font == null) {
+                        text.decoration.font = Quest.DEFAULT_FONT;
+                    }
+                    if (text.decoration.pixelSize == null) {
+                        text.decoration.pixelSize = Quest.DEFAULT_FONT_SIZE;
+                    }
+                }
+            }
+            
             Quest.quest.displayStoryNode(node);
         }
         

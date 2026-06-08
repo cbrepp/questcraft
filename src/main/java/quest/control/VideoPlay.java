@@ -12,11 +12,8 @@ import app.node.Rectangle;
 import app.node.Video;
 import java.util.logging.Level;
 import quest.control_deprecated.BaseQuestControl;
-import quest.model.Act;
-import quest.model.Scene;
 import quest.model.Story;
 import quest.view.Quest;
-import static quest.view.Quest.LOADING_COMPLETE;
 
 /**
  *

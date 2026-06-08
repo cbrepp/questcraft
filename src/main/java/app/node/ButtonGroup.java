@@ -25,7 +25,8 @@ public class ButtonGroup extends BaseNode implements BaseCompositeNode {
     public Boolean isMultiUse = true;
     public Map<Object, KeyboardKey> keyBindingButtons;
     public Double pixelSize; // Default is app controller's default pixel size
-    public Integer spacerPixels = 10; // Default is 10 pixels separating the buttons horizontally and vertically
+    public Integer innerSpacerPixels = 10; // Default is 10 pixels separating the buttons horizontally and vertically
+    public Integer outerSpacerPixels = 10; // Default is 10 pixels separating the border around the buttons
     public List<Object> text; // toString() will be invoked on each object to derive text
     public RGBColor textColor; // Default (null) is either black or white depending on which color would best offset the background
     public String textFont; // Default is the app controller's default font

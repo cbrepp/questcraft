@@ -9,8 +9,16 @@ import static app.controller.BaseController.logger;
 import static app.controller.JavaFXApplication.getFxColor;
 import app.node.BaseDecoratedNode;
 import app.node.Grid;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBoxBase;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.Spinner;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Border;
@@ -20,6 +28,7 @@ import javafx.scene.layout.BorderWidths;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.RowConstraints;
@@ -52,9 +61,18 @@ public class JavaFXGrid extends BaseJavaFXNode {
         controllerNode.getChildren().clear();
         this.resetCurrentCell();
         
-        // TODO - It's an assumption that the parent is a region
-        Region parentControllerNode = (Region) this.parent.controllerNode;
-        controllerNode.setPrefSize(parentControllerNode.getMinWidth(), parentControllerNode.getMinHeight());
+        Double parentWidth = null;
+        Double parentHeight = null;
+        if (this.parent.controllerNode instanceof Region region) {
+            parentWidth = region.getMinWidth();
+            parentHeight = region.getMinHeight();
+        } else if (this.parent.controllerNode instanceof Dialog dialog) {
+            parentWidth = dialog.getDialogPane().getPrefWidth();
+            parentHeight = dialog.getDialogPane().getPrefHeight();
+        } else {
+            logger.log(Level.SEVERE, "Grid's parent is not supported");
+        }
+        controllerNode.setPrefSize(parentWidth, parentHeight);
         controllerNode.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         int cellCount = node.cells.size();
 
@@ -196,6 +214,47 @@ public class JavaFXGrid extends BaseJavaFXNode {
     
     public Coordinates getCurrentCell() {
         return new Coordinates(this.currentColumn - 1, this.currentRow - 1);
+    }
+    
+    public static List<String> getValues(GridPane gp) {
+        logger.log(Level.INFO, "Entered");
+        
+        List<String> result = new ArrayList();
+        
+        for (Node gridChild : gp.getChildren()) {
+            logger.log(Level.INFO, "Processing grid child");
+            if (gridChild instanceof StackPane pane) {
+                logger.log(Level.INFO, "Processing stack pane");
+                for (Node paneChild : pane.getChildren()) {
+                    logger.log(Level.INFO, "Processing inner pane");
+                    if (paneChild instanceof Pane innerPane) {
+                        for (Node innerPaneChild : innerPane.getChildren()) {
+                            logger.log(Level.INFO, "Processing inner pane child");
+                            if (innerPaneChild instanceof Spinner spinner) {
+                                logger.log(Level.INFO, "Processing spinner");
+                                result.add((String) spinner.getValue());
+                            } else if (innerPaneChild instanceof ComboBoxBase cb) {
+                                logger.log(Level.INFO, "Processing combo box");
+                                result.add((String) cb.getValue());
+                            } else if (innerPaneChild instanceof ChoiceBox cb) {
+                                logger.log(Level.INFO, "Processing choice box");
+                                result.add((String) cb.getValue());
+                            } else if (innerPaneChild instanceof Label) {
+                                logger.log(Level.INFO, "Skipping label");
+                            } else {
+                                logger.log(Level.WARNING, "Unsupported inner pane child type : {0}", innerPaneChild.getClass().getSimpleName());
+                            }
+                        }
+                    } else {
+                        logger.log(Level.WARNING, "Unsupported stack pane child type : {0}", paneChild.getClass().getSimpleName());
+                    }
+                }
+            } else {
+                logger.log(Level.WARNING, "Unsupported grid child type : {0}", gridChild.getClass().getSimpleName());
+            }
+        }
+        
+        return result;
     }
     
 }

@@ -114,9 +114,23 @@ public class JavaFXPrimaryStage extends BaseJavaFXNode {
         StackPane.setAlignment(infoButton, Pos.TOP_RIGHT);
         StackPane.setMargin(infoButton, new javafx.geometry.Insets(5, 5, 0, 0));
         
-        //Scene primaryScene = new Scene(root, initialWidth, initialHeight);
         Scene primaryScene = new Scene(primaryPane, initialWidth, initialHeight);
         controllerNode.setScene(primaryScene);
+        
+        // TODO - To make the splash compatible with JPro, add the image as a StackPane PNG overlay on top of the other children in the primaryPane.
+        // Then, set up a FadeTransition before showing the controllerNode:
+        /*
+        FadeTransition fade = new FadeTransition(Duration.seconds(1), splashPane);
+        fade.setFromValue(1.0);
+        fade.setToValue(0.0);
+        fade.setDelay(Duration.seconds(3));
+        fade.setOnFinished(e -> rootPane.getChildren().remove(splashPane));
+        
+        primaryStage.setOnShown(windowEvent -> {
+            fade.play();
+        });
+        */
+        
         controllerNode.show();
     }
     

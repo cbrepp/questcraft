@@ -97,9 +97,9 @@ import quest.model.Book;
  * monkey.wav - "Imitation of a monkey or ape. Originally created for Stendhal: https://stendhalgame.org/" by AntumDeluge (https://freesound.org/people/AntumDeluge/sounds/417823/)
  * mount-fluff.jpg - "Dog, Cat, Pet royalty-free stock illustration. Free for use & download." by varunanand93 (https://pixabay.com/illustrations/dog-cat-pet-nature-puppy-animals-9527945/)
  * mp-up.wav - "Scifi plasma charging" by Robinhood76 (https://freesound.org/people/Robinhood76/sounds/700413/)
- * mylee-sink.jpg - Mylee in a sink by Mr. Chris
  * myles-elevator.jpg - Mylee in an elevator by Mr. Chris and Grok
  * myles-elevator-meanwhile.jpg - Mylee waiting patiently in an elevator by Mr. Chris and Grok
+ * myles-elevator-bath.jpg - Mylee in an elevator trying to take a bath by Mr. Chris and Grok
  * myles-elevator.mp4 - Mylee welcoming you to Floor 1 by Mr. Chris and Grok
  * mystery-door.jpg - Photo by Mr. Chris of his leprechaun closet's door and edited by Grok
  * night-owl.gif - "Owl, Bird, Barn owl GIF. Free for use." by KiFoKu (https://pixabay.com/gifs/owl-bird-barn-owl-plumage-beak-17686/)
@@ -141,12 +141,13 @@ import quest.model.Book;
  * UNO-reverse.png - "Arrows, Blue, Double royalty-free vector graphic. Free for use & download." by OpenClipart-Vectors (https://pixabay.com/vectors/arrows-blue-double-reverse-redo-151635/)
  * victory.mp3 - "This sound was generated using an AI model (elevenlabs). No real-world recording was used ." by mokasza (https://freesound.org/people/mokasza/sounds/810330/)
  * wayne-chung-classic.jpg - "Image of Wayne Chung manipulated by AI to make him look like a video game character" by repp
- * wayne-chung-dragon.jpg - "Image of Wayne Chung manipulated by AI to make him look like an epic dragon lord" by repp
+ * wayne-chung-dragon.jpg - "Image of Wayne Chung manipulated by AI to make him look like an epic dragon lord" by repp and Grok using a comic book styling
+ * wayne-chung-dragon-orig.jpg - "Image of Wayne Chung manipulated by AI to make him look like an epic dragon lord" by repp
  * wayne-chung-dark.jpg - "Image of Wayne Chung manipulated by AI to make him look like dark and cool" by repp
  * wayne-chung.jpg - Image of Wayne Chung wondering what's going on by Mr. Chris and edited by Grok
  * wilderness.jpg and wilderness-full.jpg - Nature, Fog, Travel image. Free for use. by jameswheeler (https://pixabay.com/photos/nature-fog-travel-foggy-haze-mist-3787200/)
  * wilderness.mp3 - birds_210513_0088.mp3 (https://freesound.org/people/titi2/sounds/571247/)
- * wilderness3.jpg and wilderness3-small.jpg - Ai Generated Meadow Mountain royalty-free stock illustration. Free for use & download. (https://pixabay.com/illustrations/ai-generated-meadow-mountain-8190587/)
+ * wilderness1.jpg - A meadow of purple flowers and bunnies by Mr. Chris and Grok
  * wind.mp3 - A 1 min. 25 sec. raw audio mp3 recording of a rather strong-sounding wind blowing through pine trees. The wind eventually gets a little lighter toward the end of the recording. Includes a bit of breeze on the microphone but only enough to add to the effect. Recorded with a black Sony IC digital voice recorder. (https://freesound.org/people/FunWithSound/sounds/390740/)
  * witch-back.png, witch-front.png - "Witch Skin for Minecraft" by ? (https://superminecraftskins.com/other/witch-101661)
  * wizard-back.png, wizard-front.png - "The chosen WIZARD Skin for Minecraft" by ? (https://superminecraftskins.com/images/uploads/skinsminecraft/000/038/762/the-chosen-wizard-3d.png)

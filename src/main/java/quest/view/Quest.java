@@ -3,7 +3,6 @@ package quest.view;
 import quest.control_deprecated.BaseQuestControl;
 import app.controller.BaseController;
 import app.color.Color;
-import app.Font;
 import app.FontStyle;
 import app.HorizontalAlignment;
 import app.Layout;
@@ -40,11 +39,13 @@ public class Quest extends app.view.BaseView {
     
     public static Quest quest; // TODO - Make this a session-specific value
     
-    public final static Double DEFAULT_FONT_SIZE = 16.0;
+    public static String DEFAULT_FONT = app.Font.ROBOTO_MONO;
+    public static Double DEFAULT_FONT_SIZE = 16.0;
     public final static String DIRECTION_EAST = "EAST";
     public final static String DIRECTION_NORTH = "NORTH";
     public final static String DIRECTION_SOUTH = "SOUTH";
     public final static String DIRECTION_WEST = "WEST";
+    public final static Double DOCUMENT_STARTING_Y = 0.09;
     public final static String EDGE_OF_THE_WORLD = "EDGE OF THE WORLD";
     public static int FIRST_PAGE = 1;
     public final static String GAME_OVER = "game-over";
@@ -54,6 +55,8 @@ public class Quest extends app.view.BaseView {
     public final static Double LEFT_PAGE_STARTING_X = 0.09;
     public final static Double PAGE_STARTING_Y = 0.025;
     public final static Double PAGE_ENDING_Y = 0.93;
+    public final static Double PAGE_WIDTH = 0.4;
+    public final static Double PAGE_HEIGHT = 0.785;
     public final static Double RIGHT_PAGE_ENDING_X = 0.922;
     public final static String LINK_EVENT_PREFIX = "LINK";
     public final static String LOADING_COMPLETE = "loading-complete";
@@ -372,7 +375,7 @@ public class Quest extends app.view.BaseView {
             TextDecoration decoration = new TextDecoration();
             decoration.pixelSize = DEFAULT_FONT_SIZE - 2;
             decoration.color = Color.BLACK;
-            decoration.font = Font.ROBOTO_MONO;
+            decoration.font = DEFAULT_FONT;
             decoration.style = FontStyle.BOLD;
             Label titleLabel = new Label("title", this.book.title, decoration);
             this.appController.addNode(this.name, this.name, titleLabel, new Layout(new RelativeCoordinates(titleX, titleY), titleHorizontalAlignment, VerticalAlignment.TOP));
@@ -438,7 +441,7 @@ public class Quest extends app.view.BaseView {
             gameOverButton.eventListener = this;
             gameOverButton.pixelSize = DEFAULT_FONT_SIZE - 2;
             gameOverButton.textColor = Color.BLACK;
-            gameOverButton.text = "Game Over >";
+            gameOverButton.text = "Game Over \uD83E\uDC62";
             //gameOverButton.textFont = Font.ROBOTO_BLACK;
             gameOverButton.effects.add(new Glow(Color.DARK_MAGENTA));
             this.appController.addNode(this.name, this.name, gameOverButton, new Layout(new RelativeCoordinates(RIGHT_PAGE_ENDING_X, PAGE_ENDING_Y), HorizontalAlignment.RIGHT, VerticalAlignment.BOTTOM));
@@ -447,7 +450,9 @@ public class Quest extends app.view.BaseView {
     
     public void displayStoryPrompt(ValidatedVariablePrompt prompt) {
         logger.log(Level.INFO, "Entered: node={0}", prompt);
-        this.appController.addNode(this.name, this.name, prompt, new Layout(new RelativeCoordinates(LEFT_PAGE_STARTING_X, PAGE_ENDING_Y), HorizontalAlignment.LEFT, VerticalAlignment.BOTTOM));
+        // TODO - The vertical layout is a work-around to button group buttons not having a height value when the group is positioned.
+        // It would be much cleaner to align at the bottom of PAGE_ENDING_Y.
+        this.appController.addNode(this.name, this.name, prompt, new Layout(new RelativeCoordinates(LEFT_PAGE_STARTING_X + PAGE_WIDTH, DOCUMENT_STARTING_Y + PAGE_HEIGHT + 0.025), HorizontalAlignment.RIGHT, VerticalAlignment.TOP));
     }
     
     public void displayStory(Story story, Boolean isSubpage) {
@@ -486,7 +491,7 @@ public class Quest extends app.view.BaseView {
         }
         
         Double documentX;
-        Double documentY = 0.09;
+        Double documentY = DOCUMENT_STARTING_Y;
         HorizontalAlignment documentHorizontalAlignment;
         if (SECOND_PAGE == LEFT_PAGE) {
             documentX = LEFT_PAGE_STARTING_X;
@@ -497,8 +502,8 @@ public class Quest extends app.view.BaseView {
         }
         this.illustrationContainer = new Pane(Area.ILLUSTRATION.name());
         this.illustrationContainer.borderWidth = 0;
-        this.illustrationContainer.scaleX = 0.4; // Relative width of an individual page
-        this.illustrationContainer.scaleY = 0.785; // Relative height of an individual page (less the title and a spacer and the button row)
+        this.illustrationContainer.scaleX = PAGE_WIDTH; // Relative width of an individual page
+        this.illustrationContainer.scaleY = PAGE_HEIGHT; // Relative height of an individual page (less the title and a spacer and the button row)
         this.appController.addNode(this.name, this.name, this.illustrationContainer, new Layout(new RelativeCoordinates(documentX, documentY), documentHorizontalAlignment, VerticalAlignment.TOP));
     }
     
@@ -515,7 +520,7 @@ public class Quest extends app.view.BaseView {
         this.storySectionCount = 0;
         
         Double documentX;
-        Double documentY = 0.09;
+        Double documentY = DOCUMENT_STARTING_Y;
         HorizontalAlignment storyDocumentHorizontalAlignment;
         if (FIRST_PAGE == LEFT_PAGE) {
             documentX = LEFT_PAGE_STARTING_X;
@@ -526,8 +531,8 @@ public class Quest extends app.view.BaseView {
         }
         this.storyDocument = new ScrollingDocument(Area.STORY.name());
         this.storyDocument.borderWidth = 0;
-        this.storyDocument.scaleX = 0.4; // Relative width of an individual page
-        this.storyDocument.scaleY = 0.785; // Relative height of an individual page (less the title and a spacer)
+        this.storyDocument.scaleX = PAGE_WIDTH; // Relative width of an individual page
+        this.storyDocument.scaleY = PAGE_HEIGHT; // Relative height of an individual page (less the title and a spacer)
         this.appController.addNode(this.name, this.name, this.storyDocument, new Layout(new RelativeCoordinates(documentX, documentY), storyDocumentHorizontalAlignment, VerticalAlignment.TOP));
     }
     
