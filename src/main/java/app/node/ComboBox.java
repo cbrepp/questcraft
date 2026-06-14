@@ -13,6 +13,7 @@ public class ComboBox extends BaseNode {
     
     public Object defaultValue;
     public List<Text> values = new ArrayList();
+    public List<Object> disabledValues = new ArrayList();
 
     public ComboBox (String name) {
         super(name);

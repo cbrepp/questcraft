@@ -1,6 +1,6 @@
-package app.controller;
+package app;
 
-import app.Utility;
+import app.controller.BaseController;
 import static app.controller.BaseController.logger;
 import app.view.BaseSplashView;
 import app.view.BaseView;
@@ -15,7 +15,7 @@ import java.util.logging.Level;
  *
  * @author repp
  */
-public class Bootstrap {
+public class Appcraft {
     
     public static void main(String[] args) {
         // Configure the JUL logger:

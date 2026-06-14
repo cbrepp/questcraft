@@ -1,5 +1,6 @@
 package app.controller;
 
+import app.Appcraft;
 import app.view.BaseView;
 import app.Coordinates;
 import app.EventListener;
@@ -39,6 +40,7 @@ import app.controller.javafx.node.JavaFXLabel;
 import app.controller.javafx.node.JavaFXLink;
 import app.node.BaseDecoratedNode;
 import app.controller.javafx.node.JavaFXPane;
+import app.controller.javafx.node.JavaFXPopupWindow;
 import app.controller.javafx.node.JavaFXPrimaryStage;
 import app.controller.javafx.node.JavaFXRectangle;
 import app.controller.javafx.node.JavaFXScrollingDocument;
@@ -51,6 +53,7 @@ import app.controller.javafx.node.JavaFXVerticalGroup;
 import app.controller.javafx.node.JavaFXVideo;
 import app.dialog.BaseDialog;
 import app.node.BaseCompositeNode;
+import app.node.PrimaryStage;
 import app.node.Sprite;
 import app.node.effect.BaseEffect;
 import app.node.effect.Glow;
@@ -188,6 +191,7 @@ public class JavaFXApplication extends BaseController {
     public Map<String, Map<String, Layout>> nodeLayouts; // view name -> node name -> layout
     public JavaFXPrimaryStage parentDecoratedNode;
     public BaseView parentView;
+    public StackPane rootPane;
     public Scene primaryScene;
     public Properties properties;
     public BaseSplashView splashView;
@@ -207,7 +211,7 @@ public class JavaFXApplication extends BaseController {
             args = new String[1];
             args[0] = new Throwable().getStackTrace()[0].getClassName();
         }
-        Bootstrap.main(args);
+        Appcraft.main(args);
     }
     
     public JavaFXApplication(Properties props) {
@@ -241,12 +245,13 @@ public class JavaFXApplication extends BaseController {
             Primary:
             Stage
                 Scene
-                    TabPane - parent view
-                        Tab
-                            ScrollPane (for scrolling with decreased application window size)
-                                StackPane (for bindings and layout for the zoom group)
-                                    Group (for zooming with increased application window size)
-                                        Pane - child view
+                    StackPane
+                        TabPane
+                            Tab
+                                ScrollPane (for scrolling with decreased application window size)
+                                    StackPane (for bindings and layout for the zoom group)
+                                        Group (for zooming with increased application window size)
+                                            Pane - child view
         */
         
         if (this.splashView != null) {
@@ -279,8 +284,24 @@ public class JavaFXApplication extends BaseController {
     public void showPrimaryStage() {
         logger.log(Level.INFO, "Entered");
         
-        this.parentDecoratedNode = new JavaFXPrimaryStage(this.parentView, this.parentView.name, this);
-        this.parentDecoratedNode.configure();
+        this.tabContentMap = new HashMap<>();
+        this.tabIndexMap = new HashMap<>();
+        this.tabItemMap = new HashMap<>();
+        this.tabItemViewMap = new HashMap<>();
+        this.views = new HashMap();
+        this.namedDecoratedNodes = new HashMap();
+        this.nodeLayouts = new HashMap();
+        
+        // Initialize a base (null) view that contains all parent nodes
+        // TODO - There should be something like a registerView() method
+        this.namedDecoratedNodes.put(null, new HashMap());
+        this.nodeLayouts.put(null, new HashMap());
+        
+        PrimaryStage primaryStage = new PrimaryStage(this.parentView); // TODO - Make a naming convention like system/primary and prevent custom nodes from using it
+        this.publishNode(NAME, null, primaryStage, null, null);
+        //this.parentDecoratedNode = new JavaFXPrimaryStage(primaryStage, this.parentView.name, this);
+        //this.parentDecoratedNode.configure();
+        this.parentDecoratedNode = (JavaFXPrimaryStage) this.namedDecoratedNodes.get(null).get(this.parentView.name);
         this.primaryScene = ((Stage) this.parentDecoratedNode.controllerNode).getScene();
         StackPane primaryPane = (StackPane) this.primaryScene.getRoot();
         //this.tabFolder = (TabPane) this.primaryScene.getRoot();
@@ -298,15 +319,18 @@ public class JavaFXApplication extends BaseController {
                 }
             }
         });
-        this.tabContentMap = new HashMap<>();
-        this.tabIndexMap = new HashMap<>();
-        this.tabItemMap = new HashMap<>();
-        this.tabItemViewMap = new HashMap<>();
-        this.views = new HashMap();
-        this.namedDecoratedNodes = new HashMap();
-        this.nodeLayouts = new HashMap();
+        
         this.parentView.onLoad(this);
         this.parentView.onDisplay(this);
+    }
+    
+    public BaseDecoratedNode getDecoratedNode(String viewName, String name) {
+        BaseDecoratedNode decoratedNode = this.namedDecoratedNodes.get(viewName).get(name);
+        if ((viewName != null) && (decoratedNode == null)) {
+            // Check the null view, which is used by the root
+            decoratedNode = this.namedDecoratedNodes.get(null).get(name);
+        }
+        return decoratedNode;
     }
 
     @Override
@@ -587,7 +611,7 @@ public class JavaFXApplication extends BaseController {
     public void removeNode(String viewName, String nodeName) {
         logger.log(Level.INFO, "Entered: viewName={0}, nodeName={1}", new Object[]{viewName, nodeName});
 
-        BaseDecoratedNode decoratedNode = this.namedDecoratedNodes.get(viewName).get(nodeName);
+        BaseDecoratedNode decoratedNode = this.getDecoratedNode(viewName, nodeName);
         if (decoratedNode == null) {
             logger.log(Level.WARNING, "FX node decorator could NOT be found");
             return;
@@ -610,7 +634,7 @@ public class JavaFXApplication extends BaseController {
         logger.log(Level.INFO, "Entered: viewName={0}, decoratedNode={1}", new Object[]{viewName, decoratedNode});
 
         String parentName = decoratedNode.parent.node.name;
-        BaseDecoratedNode decoratedParentNode = this.namedDecoratedNodes.get(viewName).get(parentName);
+        BaseDecoratedNode decoratedParentNode = this.getDecoratedNode(viewName, parentName);
         Object fxParentNode = decoratedParentNode.controllerNode;
 
         // TODO - This is ugly.  Parent nodes do not have a base type (Parent) with a public getChildren() method so each parent class needs to be handled.
@@ -659,9 +683,17 @@ public class JavaFXApplication extends BaseController {
                 this.removeNode(viewName, childNode.name);
             }
         }
-
+        
         String nodeName = decoratedNode.node.name;
         this.deregisterNode(viewName, nodeName);
+
+        // For non-composite parents, find each child the hard way
+        for (String registeredNodeName : this.namedDecoratedNodes.get(viewName).keySet()) {
+            BaseDecoratedNode registeredDecoratedNode = this.namedDecoratedNodes.get(viewName).get(registeredNodeName);
+            if ((registeredDecoratedNode.parent != null) && (registeredDecoratedNode.parent.node != null) && (registeredDecoratedNode.parent.node.name.equals(nodeName))) {
+                this.removeNode(viewName, registeredDecoratedNode.parent.node.name);
+            }
+        }
 
         // If the control is a button with a key binding remove the event filter from the scene
         if (this.keyBindings.containsKey(decoratedNode.controllerNode)) {
@@ -703,7 +735,7 @@ public class JavaFXApplication extends BaseController {
             System.out.println("JavaFXApplication: refreshTabLabel: Tab not found for view");
             return;
         }
-        this.setTabLabel(tab, view);
+        setTabLabel(tab, view);
     }
 
     @Override
@@ -1043,7 +1075,7 @@ public class JavaFXApplication extends BaseController {
                         double nodeWidth = fxWrapperNode.prefWidth(-1);
                         double nodeHeight = fxWrapperNode.prefHeight(-1);
 
-                        Pane fxParent = (Pane) this.namedDecoratedNodes.get(viewName).get(parentName).controllerNode; // TODO - This effect should only be supported when the parent is a pane
+                        Pane fxParent = (Pane) this.getDecoratedNode(viewName, parentName).controllerNode; // TODO - This effect should only be supported when the parent is a pane
                         Layout originalLayout;
                         if (layout == null) {
                             originalLayout = null;
@@ -2041,13 +2073,22 @@ public class JavaFXApplication extends BaseController {
     public BaseDecoratedNode newDecoratedNode(app.node.BaseNode node, BaseDecoratedNode decoratedParentNode, String viewName, Layout layout) {
         logger.log(Level.INFO, "Entered: node={0}, decoratedParentNode={1}, offsetColor={2}, viewName={3}, layout={4}", new Object[]{node, decoratedParentNode, viewName, layout});
 
-        if ((node == null) || (decoratedParentNode == null)) {
+        if (node == null) {
             logger.log(Level.SEVERE, "Entered: Null value was provided");
+            return null;
+        }
+        
+        if ((!node.isParent()) && ((decoratedParentNode == null))) {
+            logger.log(Level.SEVERE, "Entered: Null parent value was provided");
             return null;
         }
 
         BaseDecoratedNode decoratedNode;
         switch (node) {
+            case app.node.PrimaryStage primaryStage -> {
+                decoratedNode = new JavaFXPrimaryStage(primaryStage, null, this);
+                break;
+            }
             case app.node.Link link -> {
                 decoratedNode = new JavaFXLink(link, decoratedParentNode, viewName, this);
                 break;
@@ -2125,7 +2166,10 @@ public class JavaFXApplication extends BaseController {
                 break;
             }
             case app.node.Dialog dialog -> {
-                decoratedNode = new JavaFXDialog(dialog, decoratedParentNode, viewName, this);
+                decoratedNode = new JavaFXDialog(dialog, this.parentDecoratedNode, viewName, this);
+            }
+            case app.node.PopupWindow popup -> {
+                decoratedNode = new JavaFXPopupWindow(popup, this.parentDecoratedNode, viewName, this);
             }
             case app.node.ChoiceBox choiceBox -> {
                 decoratedNode = new JavaFXChoiceBox(choiceBox, decoratedParentNode, viewName, this);
@@ -2146,7 +2190,7 @@ public class JavaFXApplication extends BaseController {
     @Override
     public void changeNode(String viewName, BaseNode node, Layout layout) {
         logger.log(Level.INFO, "Entered: viewName={0}, node={1}, layout={2}", new Object[]{viewName, node, layout});
-        BaseDecoratedNode decoratedNode = this.namedDecoratedNodes.get(viewName).get(node.name);
+        BaseDecoratedNode decoratedNode = this.getDecoratedNode(viewName, node.name);
         if (decoratedNode == null) {
             logger.log(Level.WARNING, "Decorated node {0} not found", node.name);
             return;
@@ -2177,50 +2221,55 @@ public class JavaFXApplication extends BaseController {
             return;
         }
 
-        BaseDecoratedNode decoratedParentNode = this.namedDecoratedNodes.get(viewName).get(parentName);
-        if (decoratedParentNode == null) {
-            logger.log(Level.SEVERE, "Parent node does not exist for the view");
-            return;
-        }
-
-        // TODO - The view should be stored in namedDecoratedNodes
-        Object fxParent = decoratedParentNode.controllerNode;
-        if (fxParent == null) {
-            if (viewName.equals(parentName)) {
-                fxParent = this.tabContentMap.get(viewName);
-            } else {
-                logger.log(Level.SEVERE, "FX parent with provided name not found");
+        BaseDecoratedNode decoratedParentNode = null;
+        Object fxParent = null;
+        BaseNode parent = null;
+        Double parentWidth = null;
+        Double parentHeight = null;
+        if (!node.isParent()) {
+            decoratedParentNode = this.getDecoratedNode(viewName, parentName);
+            if (decoratedParentNode == null) {
+                logger.log(Level.SEVERE, "Parent node does not exist for the view");
                 return;
             }
-        }
-        BaseNode parent = decoratedParentNode.node;
 
-        // TODO - This is ugly.  Parent nodes do not have a base type with public getPrefWidth() and getPrefHeight() methods so each parent class needs to be handled.
-        double parentWidth;
-        double parentHeight;
-        if (fxParent instanceof Region region) {
-            region.applyCss();
-            region.layout();
-            parentWidth = region.getPrefWidth();
-            if (parentWidth == -1) {
-                parentWidth = this.primaryScene.getWidth(); // TODO - Hack to not use bogus parent width value
+            // TODO - The view should be stored in namedDecoratedNodes
+            fxParent = decoratedParentNode.controllerNode;
+            if (fxParent == null) {
+                if (viewName.equals(parentName)) {
+                    fxParent = this.tabContentMap.get(viewName);
+                } else {
+                    logger.log(Level.SEVERE, "FX parent with provided name not found");
+                    return;
+                }
             }
-            parentHeight = region.getPrefHeight();
-            if (parentHeight == -1) {
-                parentHeight = this.primaryScene.getHeight(); // TODO - Hack to not use bogus parent height value
+            parent = decoratedParentNode.node;
+
+            // TODO - This is ugly.  Parent nodes do not have a base type with public getPrefWidth() and getPrefHeight() methods so each parent class needs to be handled.
+            if (fxParent instanceof Region region) {
+                region.applyCss();
+                region.layout();
+                parentWidth = region.getPrefWidth();
+                if (parentWidth == -1) {
+                    parentWidth = this.primaryScene.getWidth(); // TODO - Hack to not use bogus parent width value
+                }
+                parentHeight = region.getPrefHeight();
+                if (parentHeight == -1) {
+                    parentHeight = this.primaryScene.getHeight(); // TODO - Hack to not use bogus parent height value
+                }
+            } else if (fxParent instanceof Stage stage) {
+                Scene scene = stage.getScene();
+                Pane pane = (Pane) scene.getRoot();
+                parentWidth = pane.getWidth();
+                parentHeight = pane.getHeight();
+            } else if (fxParent instanceof Dialog dialog) {
+                parentWidth = dialog.getWidth();
+                parentHeight = dialog.getHeight();
+            } else {
+                Class<?> parentControlClass = fxParent.getClass();
+                logger.log(Level.SEVERE, "Parent does not have a supported class: {0}", parentControlClass.getSimpleName());
+                return;
             }
-        } else if (fxParent instanceof Stage stage) {
-            Scene scene = stage.getScene();
-            Pane pane = (Pane) scene.getRoot();
-            parentWidth = pane.getWidth();
-            parentHeight = pane.getHeight();
-        } else if (fxParent instanceof Dialog dialog) {
-            parentWidth = dialog.getWidth();
-            parentHeight = dialog.getHeight();
-        } else {
-            Class<?> parentControlClass = fxParent.getClass();
-            logger.log(Level.SEVERE, "Parent does not have a supported class: {0}", parentControlClass.getSimpleName());
-            return;
         }
 
         // TODO - The container nodes should call into publishNode instead of addNode, looking up any pre-existing fxChild node
@@ -2228,7 +2277,7 @@ public class JavaFXApplication extends BaseController {
         logger.log(Level.INFO, "Decorating node {0}", node.name);
         Boolean isNew = (decoratedNode == null);
         if (isNew) {
-            decoratedNode = newDecoratedNode(node, decoratedParentNode, viewName, layout);
+            decoratedNode = this.newDecoratedNode(node, decoratedParentNode, viewName, layout);
         }
         decoratedNode.configure();
         
@@ -3187,21 +3236,22 @@ public class JavaFXApplication extends BaseController {
 
     @Override
     public void setTimer(String name, double seconds, EventListener listener) {
-        System.out.println("JavaFXApplication: setTimer: name=" + name + ", seconds=" + seconds + ", listener=" + listener);
+        logger.log(Level.INFO, "Entered: name={0}, seconds={1}, listener={2}", new Object[]{name, seconds, listener});
         if (TIMER_EVENTS.contains(name)) {
-            System.out.println("JavaFXApplication: setTimer: Timer already exists for " + name + "!");
+            logger.log(Level.INFO, "Timer already exists for {0}", name);
             return;
         }
         Timeline timeline = new Timeline();
         TIMER_EVENTS.add(name);
         KeyFrame keyFrame = new KeyFrame(Duration.seconds(seconds), (ActionEvent event) -> {
-            System.out.println("JavaFXApplication: setTimer: Timer elapsed: name=" + name + ", seconds=" + seconds + ", listener=" + listener);
+            logger.log(Level.INFO, "Timer elapsed: name={0}, seconds={1}, listener={2}", new Object[]{name, seconds, listener});
             if (!TIMER_EVENTS.contains(name)) {
-                System.out.println("JavaFXApplication: setTimer: Timer " + name + " was removed!");
+                logger.log(Level.INFO, "Timer was already removed");
                 return;
             }
             TIMER_EVENTS.remove(name);
             listener.onEvent(name, seconds);
+            logger.log(Level.INFO, "Timer complete");
         });
 
         timeline.getKeyFrames().add(keyFrame);
@@ -3211,11 +3261,12 @@ public class JavaFXApplication extends BaseController {
 
     @Override
     public void removeTimer(String name) {
-        System.out.println("JavaFXApplication: removeTimer: name=" + name);
+        logger.log(Level.INFO, "Entered: name={0}", name);
         if (!TIMER_EVENTS.contains(name)) {
-            System.out.println("JavaFXApplication: removeTimer: Timer " + name + " was already removed!");
+            logger.log(Level.INFO, "Timer was already removed");
         } else {
             TIMER_EVENTS.remove(name);
+            logger.log(Level.INFO, "Removed timer");
         }
         // TODO - Could store the timeline and call timeline.stop();
     }
@@ -3753,7 +3804,7 @@ public class JavaFXApplication extends BaseController {
     @Override
     public void sendToFront(String viewName, String name) {
         System.out.println("JavaFXApplication: sendToFront: viewName=" + viewName + ", name=" + name);
-        Node control = (Node) this.namedDecoratedNodes.get(viewName).get(name).controllerNode;
+        Node control = (Node) this.getDecoratedNode(viewName, name).controllerNode;
         if (control == null) {
             System.out.println("JavaFXApplication: sendToBack: Control not found");
             return;
@@ -3764,7 +3815,7 @@ public class JavaFXApplication extends BaseController {
     @Override
     public void sendToBack(String viewName, String name) {
         System.out.println("JavaFXApplication: sendToBack: viewName=" + viewName + ", name=" + name);
-        Node control = (Node) this.namedDecoratedNodes.get(viewName).get(name).controllerNode;
+        Node control = (Node) this.getDecoratedNode(viewName, name).controllerNode;
         if (control == null) {
             System.out.println("JavaFXApplication: sendToBack: Control not found");
             return;

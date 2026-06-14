@@ -29,7 +29,7 @@ public class JavaFXDialog extends BaseJavaFXNode {
         app.node.Dialog node = (app.node.Dialog) this.node;
         Dialog<List<String>> controllerNode = (Dialog) this.controllerNode;
         
-        Stage parentStage = (Stage) ((JavaFXApplication) controller).parentDecoratedNode.controllerNode;
+        Stage parentStage = (Stage) this.parent.controllerNode;
         controllerNode.initOwner(parentStage);
         controllerNode.setTitle(node.title);
         controllerNode.setHeaderText(node.headerText);

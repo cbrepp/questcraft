@@ -22,7 +22,7 @@ public class MoveAhead extends BaseQuestControl {
             logger.log(Level.WARNING, "Moved past the edge of the world!");
         } else {
             Quest.quest.startScene(nextSceneName, false, false);
-            Quest.quest.display();
+            Quest.quest.display(true);
         }
     }
     

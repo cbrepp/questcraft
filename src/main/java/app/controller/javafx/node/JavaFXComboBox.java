@@ -42,6 +42,14 @@ public class JavaFXComboBox extends BaseJavaFXNode {
             }
         }
         
+        List<String> disabledValues = new ArrayList();
+        if (node.disabledValues != null) {
+            for (Object disabledObject : node.disabledValues) {
+                String disabledString = disabledObject.toString();
+                disabledValues.add(disabledString);
+            }
+        }
+        
         ObservableList<String> observableList = FXCollections.observableArrayList(values);
         controllerNode.setItems(observableList);
         
@@ -61,6 +69,11 @@ public class JavaFXComboBox extends BaseJavaFXNode {
                 if ((empty) || (item == null)) {
                     setText(null);
                     setFont(Font.getDefault());
+                    setDisable(true);
+                } else if (disabledValues.contains(item)) {
+                    setText(item);
+                    setStyle("-fx-opacity: 0.4;");
+                    setDisable(true);
                 } else {
                     setText(item);
                     if (textMap.containsKey(item)) {
@@ -72,6 +85,7 @@ public class JavaFXComboBox extends BaseJavaFXNode {
                             }
                         }
                     }
+                    setDisable(false);
                 }
             }
         });

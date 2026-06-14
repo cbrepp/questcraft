@@ -31,7 +31,7 @@ import javafx.stage.Stage;
  */
 public class JavaFXPrimaryStage extends BaseJavaFXNode {
     
-    public JavaFXPrimaryStage(app.view.BaseView node, String viewName, BaseController controller) {
+    public JavaFXPrimaryStage(app.node.PrimaryStage node, String viewName, BaseController controller) {
         super(node, ((JavaFXApplication) controller).delegateApp.primaryStage, null, viewName, controller);
     }
     
@@ -39,7 +39,7 @@ public class JavaFXPrimaryStage extends BaseJavaFXNode {
     public void configure() {
         logger.log(Level.INFO, "Entered");
         
-        app.view.BaseView node = (app.view.BaseView) this.node;
+        app.node.PrimaryStage node = (app.node.PrimaryStage) this.node;
         Stage controllerNode = (Stage) this.controllerNode;
         
         controllerNode.setTitle(node.name);
@@ -50,7 +50,7 @@ public class JavaFXPrimaryStage extends BaseJavaFXNode {
         }
         
         // The JavaFX Scene constructor requires a non-null Parent node upon creation, so prepare that first
-        TabPane root = new TabPane();
+        TabPane tabPane = new TabPane();
         Color fxBackgroundColor;
         if (node.backgroundColor == null) {
             fxBackgroundColor = Color.TRANSPARENT;
@@ -61,7 +61,7 @@ public class JavaFXPrimaryStage extends BaseJavaFXNode {
             }
             fxBackgroundColor = getFxColor(node.backgroundColor);
         }
-        root.setBackground(new Background(new BackgroundFill(
+        tabPane.setBackground(new Background(new BackgroundFill(
             fxBackgroundColor,
             CornerRadii.EMPTY, 
             Insets.EMPTY      // To prevent blurry text
@@ -109,12 +109,13 @@ public class JavaFXPrimaryStage extends BaseJavaFXNode {
                 this.controller.newDialog(alert);
         });
         
-        StackPane primaryPane = new StackPane();
-        primaryPane.getChildren().addAll(root, infoButton);
+        StackPane root = new StackPane();
+        root.getChildren().addAll(tabPane, infoButton);
+        ((JavaFXApplication) controller).rootPane = root;
         StackPane.setAlignment(infoButton, Pos.TOP_RIGHT);
         StackPane.setMargin(infoButton, new javafx.geometry.Insets(5, 5, 0, 0));
         
-        Scene primaryScene = new Scene(primaryPane, initialWidth, initialHeight);
+        Scene primaryScene = new Scene(root, initialWidth, initialHeight);
         controllerNode.setScene(primaryScene);
         
         // TODO - To make the splash compatible with JPro, add the image as a StackPane PNG overlay on top of the other children in the primaryPane.

@@ -2,7 +2,7 @@
 package quest.control_deprecated;
 
 import quest.view.Quest;
-import quest.view.Questcraft;
+import quest.Questcraft;
 
 /**
  *

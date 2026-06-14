@@ -20,7 +20,6 @@ import app.dialog.Alert;
 import app.dialog.FileSelection;
 import app.node.BaseNode;
 import app.node.Button;
-import app.node.ChoiceBox;
 import app.node.ComboBox;
 import app.node.Dialog;
 import app.node.Image;
@@ -208,6 +207,7 @@ public class Application extends app.view.BaseView {
                 this.appController.newDialog(alert);
             } case OPTIONS_EVENT -> {
                 List<BaseNode> options = new ArrayList();
+
                 Spinner fontSizeSpinner = new Spinner("Text Size");
                 fontSizeSpinner.values.add("14");
                 fontSizeSpinner.values.add("16");
@@ -221,7 +221,7 @@ public class Application extends app.view.BaseView {
                 fontSizeSpinner.values.add("32");
                 fontSizeSpinner.defaultValue = Math.toIntExact(Math.round(Quest.DEFAULT_FONT_SIZE));
                 options.add(fontSizeSpinner);
-                // TODO - Use a combo box to allow each font to appear using itself
+
                 ComboBox comboBox = new ComboBox("Text Font");
                 for (String fontName : List.of(Font.LATO, Font.MINECRAFT, Font.ROBOTO, Font.ROBOTO_BLACK, Font.ROBOTO_LIGHT, Font.ROBOTO_MEDIUM, Font.ROBOTO_MONO,
                         Font.ROBOTO_MONO_LIGHT, Font.ROBOTO_MONO_MEDIUM, Font.ROBOTO_MONO_THIN, Font.ROBOTO_THIN)) {
@@ -229,6 +229,20 @@ public class Application extends app.view.BaseView {
                 }
                 comboBox.defaultValue = Quest.DEFAULT_FONT;
                 options.add(comboBox);
+                
+                ComboBox comboBox2 = new ComboBox("Application Controller");
+                comboBox2.values.add(new Text("AWT (Abstract Window Toolkit)"));
+                comboBox2.disabledValues.add("AWT (Abstract Window Toolkit)");
+                comboBox2.values.add(new Text("JPro (Web Browser)"));
+                comboBox2.disabledValues.add("JPro (Web Browser)");
+                comboBox2.values.add(new Text("JavaFX"));
+                comboBox2.values.add(new Text("SWT (Standard Widget Toolkit)"));
+                comboBox2.disabledValues.add("SWT (Standard Widget Toolkit)");
+                comboBox2.values.add(new Text("Swing"));
+                comboBox2.disabledValues.add("Swing");
+                comboBox2.defaultValue = "JavaFX";
+                options.add(comboBox2);
+
                 Dialog optionsDialog = new Dialog("app options", "Options...", "Customize quest options", options);
                 optionsDialog.eventName = OPTIONS_SAVED_EVENT;
                 optionsDialog.eventListener = this;
@@ -1392,7 +1406,7 @@ public class Application extends app.view.BaseView {
         text2 = new quest.text.InventoryItem("Gold");
         text3 = new app.Text(new Texts(List.of("!\"", new LineSeparator(),
                 new LineSeparator(),
-                "So this elevator has a sink?  Does she live here?", new LineSeparator(),
+                "So this elevator has plumbing?  How is that even possible?", new LineSeparator(),
                 new LineSeparator(),
                 "You have so many questions.  But for now, you better leave.", new LineSeparator(),
                 new LineSeparator(),

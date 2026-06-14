@@ -48,6 +48,7 @@ public abstract class BaseJavaFXNode extends BaseDecoratedNode {
 
             if (controllerNode instanceof Region region) {
                 if (node.scaleX != null) {
+                    logger.log(Level.INFO, "Scaling Region to parent width {0} by {1}", new Object[]{parentWidth, node.scaleX});
                     double prefWidth = Math.round(parentWidth * node.scaleX);
                     region.setPrefWidth(prefWidth);
                     region.setMaxWidth(prefWidth);
@@ -55,6 +56,7 @@ public abstract class BaseJavaFXNode extends BaseDecoratedNode {
                     region.setMaxWidth(parentWidth);
                 }
                 if (node.scaleY != null) {
+                    logger.log(Level.INFO, "Scaling Region to parent height {0} by {1}", new Object[]{parentHeight, node.scaleY});
                     double prefHeight = Math.round(parentHeight * node.scaleY);
                     region.setPrefHeight(prefHeight);
                     region.setMaxHeight(prefHeight);
@@ -63,12 +65,14 @@ public abstract class BaseJavaFXNode extends BaseDecoratedNode {
                 }
             } else if (controllerNode instanceof Rectangle rectangle) {
                 if (node.scaleX != null) {
+                    logger.log(Level.INFO, "Scaling Rectangle to parent width {0} by {1}", new Object[]{parentWidth, node.scaleX});
                     double prefWidth = Math.round(parentWidth * node.scaleX);
                     rectangle.setWidth(prefWidth);
                 } else {
                     rectangle.setWidth(parentWidth);
                 }
                 if (node.scaleY != null) {
+                    logger.log(Level.INFO, "Scaling Rectangle to parent height {0} by {1}", new Object[]{parentHeight, node.scaleY});
                     double prefHeight = Math.round(parentHeight * node.scaleY);
                     rectangle.setHeight(prefHeight);
                 } else {
@@ -76,10 +80,12 @@ public abstract class BaseJavaFXNode extends BaseDecoratedNode {
                 }
             } else if (controllerNode instanceof MediaView video) {
                 if (node.scaleX != null) {
+                    logger.log(Level.INFO, "Scaling MediaView to parent width {0} by {1}", new Object[]{parentWidth, node.scaleX});
                     double prefWidth = Math.round(parentWidth * node.scaleX);
                     video.setFitWidth(prefWidth);
                 }
                 if (node.scaleY != null) {
+                    logger.log(Level.INFO, "Scaling MediaView to parent height {0} by {1}", new Object[]{parentHeight, node.scaleY});
                     double prefHeight = Math.round(parentHeight * node.scaleY);
                     video.setFitHeight(prefHeight);
                 }

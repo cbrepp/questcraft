@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import quest.view.Quest;
-import quest.view.Questcraft;
+import quest.Questcraft;
 import app.view.Animation;
 
 /**
@@ -522,7 +522,7 @@ public class MonsterShooterControl extends QuestControl implements Animation, Ev
             System.out.println("MonsterShooterControl: onEvent: Continuing on from animation");
             this.animationComplete = true;
             this.quest.appController.removeNode(this.quest.name, CONTINUE_BUTTON_NAME);
-            this.quest.display(); // Refresh the pages
+            this.quest.display(false); // Refresh the pages
         } else {
             if ((!this.quest.variables.containsKey("animation-paused")) || (!this.quest.variables.get("animation-paused").equals("true"))) {
                 if (eventValue.equals(" Move Left")) {

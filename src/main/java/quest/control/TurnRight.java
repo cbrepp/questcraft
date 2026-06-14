@@ -21,7 +21,7 @@ public class TurnRight extends BaseQuestControl {
             case Quest.DIRECTION_SOUTH -> Quest.quest.setPlayerDirection(Quest.DIRECTION_WEST);
             case Quest.DIRECTION_WEST -> Quest.quest.setPlayerDirection(Quest.DIRECTION_NORTH);
         }        
-        Quest.quest.display();
+        Quest.quest.display(true);
     }
     
 }

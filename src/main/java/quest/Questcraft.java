@@ -1,8 +1,13 @@
-package quest.view;
+package quest;
 
 import app.controller.BaseController;
 import app.color.Color;
 import quest.model.Book;
+import quest.view.Application;
+import quest.view.CraftingTable;
+import quest.view.HighScores;
+import quest.view.Inventory;
+import quest.view.Quest;
 
 /**
  * This application is for personal, non-commercial use only.

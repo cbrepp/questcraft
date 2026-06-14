@@ -1,5 +1,6 @@
 package quest.view;
 
+import quest.Questcraft;
 import app.controller.BaseController;
 import app.color.Color;
 import app.EventListener;
@@ -60,10 +61,8 @@ public class SceneMap extends app.view.BaseView implements EventListener {
         this.quest.addListener(Quest.PLAYER_DIRECTION, this);
     }
     
-    public void render() {
-        logger.log(Level.INFO, "Entered");
-        
-        this.appController.clearScreen(this.name);
+    public Grid getGrid(Boolean mini) {
+        logger.log(Level.INFO, "Entered: mini={0}", mini);
         
         Act act = this.quest.book.acts.get(this.quest.currentAct);
         int minX = 0, maxX = 0, minY = 0, maxY = 0;
@@ -111,14 +110,17 @@ public class SceneMap extends app.view.BaseView implements EventListener {
         // Populate the grid cells using the sorted cells
         Grid gridControl = new Grid("scene map grid");
         gridControl.borderPadding = 0;
-        gridControl.columns = mapWidth + 1;
+        gridControl.columns = mapWidth;
+        if (!mini) {
+            gridControl.columns++;
+        }
         gridControl.listener = this;
         gridControl.padding = 20;
         gridControl.showBorders = false;
         int emptyCellCount = 0;
         for (int y = 0; y < mapHeight; y++) {
-            for (int x = 0; x <= mapWidth; x++) {
-                if (x == mapWidth) {
+            for (int x = 0; x < gridControl.columns; x++) {
+                if ((!mini) && (x == mapWidth)) {
                     if (y == 0) {
                         // The last column is reserved for the compass
                         Group itemGroup = new VerticalGroup(COMPASS);
@@ -199,6 +201,13 @@ public class SceneMap extends app.view.BaseView implements EventListener {
             }
         }
         
+        return gridControl;
+    }
+    
+    public void render() {
+        logger.log(Level.INFO, "Entered");
+        this.appController.clearScreen(this.name);
+        Grid gridControl = this.getGrid(false);
         this.appController.addNode(this.name, this.name, gridControl, new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
     }
 

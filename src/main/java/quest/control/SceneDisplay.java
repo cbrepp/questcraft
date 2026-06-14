@@ -23,7 +23,7 @@ public class SceneDisplay extends BaseQuestControl {
         logger.log(Level.INFO, "Entered");
         String sceneNameString = sceneName.toString();
         Quest.quest.startScene(sceneNameString, false, false);
-        Quest.quest.display();
+        Quest.quest.display(false);
     }
     
 }

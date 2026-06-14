@@ -24,7 +24,7 @@ public class PageGoto extends BaseQuestControl {
         String pageName = this.page.toString();
         logger.log(Level.WARNING, "Displaying page {0}", pageName);
         Quest.quest.currentPage = pageName;
-        Quest.quest.display();
+        Quest.quest.display(false);
     }
     
 }

@@ -25,7 +25,7 @@ public class MoveBackControl extends QuestControl {
             System.err.println("MoveBackControl: onExecute: Can move past the edge of the world!");
         } else {
             this.quest.startScene(nextSceneName, false, false);
-            this.quest.display();
+            this.quest.display(false);
         }
             
         return "";

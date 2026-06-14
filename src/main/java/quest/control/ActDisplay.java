@@ -23,7 +23,7 @@ public class ActDisplay extends BaseQuestControl {
         logger.log(Level.INFO, "Entered");
         String actNameString = this.actName.toString();
         Quest.quest.startAct(actNameString);
-        Quest.quest.display();
+        Quest.quest.display(false);
     }
     
 }

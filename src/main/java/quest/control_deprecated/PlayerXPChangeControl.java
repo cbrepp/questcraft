@@ -22,7 +22,7 @@ public class PlayerXPChangeControl extends QuestControl {
         Boolean refreshPage = Boolean.valueOf(getTagToken(tag, 2, true));
         this.quest.setPlayerXP(amount, refreshPage);
         if (refreshPage) {
-            this.quest.display();
+            this.quest.display(false);
         }
         return "";
     }

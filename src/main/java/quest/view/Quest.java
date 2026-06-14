@@ -1,5 +1,6 @@
 package quest.view;
 
+import quest.Questcraft;
 import quest.control_deprecated.BaseQuestControl;
 import app.controller.BaseController;
 import app.color.Color;
@@ -12,8 +13,10 @@ import app.VerticalAlignment;
 import static app.controller.BaseController.logger;
 import app.node.BaseNode;
 import app.node.Button;
+import app.node.Grid;
 import app.node.Label;
 import app.node.Pane;
+import app.node.PopupWindow;
 import app.node.Rectangle;
 import app.node.ScrollingDocument;
 import app.node.Video;
@@ -62,6 +65,8 @@ public class Quest extends app.view.BaseView {
     public final static String LOADING_COMPLETE = "loading-complete";
     public final static String LOADING_OVERLAY = "loading-overlay";
     public final static String MAP = "Map";
+    public final static String MINI_MAP_NAME = "mini-map";
+    public final static String MINI_MAP_GRID_NAME = "mini-map-grid";
     public final static String MP_CHANGE = "mp-change";
     public final static String MP_CHANGE_REFRESH = "mp-change-refresh";
     public final static String NEW_ACT = "new-act";
@@ -70,6 +75,7 @@ public class Quest extends app.view.BaseView {
     public final static String NEXT_PAGE = "next-page";
     public final static String PLAYER_DIRECTION = "player-direction";
     public final static String PREVIOUS_PAGE = "previous-page";
+    public final static String REMOVE_MINI_MAP = "remove-mini-map";
     public final static int RIGHT_PAGE = 2;
     public static int SECOND_PAGE = 2;
     public final static String SPELL_BOOK = "Spell Book";
@@ -132,22 +138,23 @@ public class Quest extends app.view.BaseView {
             case HP_CHANGE -> this.appController.removeNode(this.name, HP_CHANGE);
             case HP_CHANGE_REFRESH -> {
                 this.appController.removeNode(this.name, HP_CHANGE_REFRESH);
-                this.display();
+                this.display(false);
             }
             case MP_CHANGE -> this.appController.removeNode(this.name, MP_CHANGE);
             case MP_CHANGE_REFRESH -> {
                 this.appController.removeNode(this.name, MP_CHANGE_REFRESH);
-                this.display();
+                this.display(false);
             }
             case XP_CHANGE -> this.appController.removeNode(this.name, XP_CHANGE);
             case XP_CHANGE_REFRESH -> {
                 this.appController.removeNode(this.name, XP_CHANGE_REFRESH);
-                this.display();
+                this.display(false);
             }
+            case REMOVE_MINI_MAP -> this.appController.removeNode(this.name, MINI_MAP_NAME);
             case LOADING_COMPLETE -> {
                 this.appController.removeNode(this.name, LOADING_OVERLAY);
                 this.startAct(this.book.firstActName);
-                this.display();
+                this.display(false);
             }
             case NEXT_PAGE -> {
                 Act act = book.acts.get(this.currentAct);
@@ -165,7 +172,7 @@ public class Quest extends app.view.BaseView {
                         this.startAct(act.nextActName);
                     }
                 }
-                this.display();
+                this.display(false);
             }
             case PREVIOUS_PAGE -> {
                 Act act = book.acts.get(this.currentAct);
@@ -173,13 +180,13 @@ public class Quest extends app.view.BaseView {
                 Page page = scene.pages.get(this.currentPage);
                 if (page.previousPageName != null) {
                     this.currentPage = page.previousPageName;
-                    this.display();
+                    this.display(false);
                 } else if ((scene.firstPageName.equals(this.currentPage)) && (scene.previousSceneName != null)) {
                     this.startScene(scene.previousSceneName, false, false);
-                    this.display();
+                    this.display(false);
                 } else if ((scene.firstPageName.equals(this.currentPage)) && (act.firstSceneName.equals(this.currentScene)) && (act.previousActName != null)) {
                     this.startAct(act.previousActName);
-                    this.display();
+                    this.display(false);
                 }
             }
             case GAME_OVER -> {
@@ -200,7 +207,7 @@ public class Quest extends app.view.BaseView {
                 checkHighScoresSubpage.contents.add("<tab-select " + Questcraft.HIGH_SCORES + ">");
                 deathPage.subpages.put("INPUT action=Check High Scores", checkHighScoresSubpage);
                 this.currentPage = "DEATH PAGE";
-                this.display();
+                this.display(false);
             }
             default -> {
                 String[] eventNameParts = eventName.split(":");
@@ -277,7 +284,7 @@ public class Quest extends app.view.BaseView {
         // Start book (if not waiting for the animation to complete and the LOADING_COMPLETE event to be raised)
         if (this.book.animationFileName == null) {
             this.startAct(this.book.firstActName);
-            this.display();
+            this.display(false);
         }
     }
     
@@ -340,8 +347,11 @@ public class Quest extends app.view.BaseView {
         this.publishEvent(NEW_INVENTORY_ITEM, inventoryItemName);
     }
     
-    public void display() {
+    public void display(Boolean displayMiniMap) {
         logger.log(Level.INFO, "Entered");
+        
+        this.appController.removeNode(this.name, MINI_MAP_NAME);
+        this.appController.removeTimer(REMOVE_MINI_MAP);
         
         // Dispose all controls on the book's composite
         this.appController.clearScreen(this.name);
@@ -445,6 +455,20 @@ public class Quest extends app.view.BaseView {
             //gameOverButton.textFont = Font.ROBOTO_BLACK;
             gameOverButton.effects.add(new Glow(Color.DARK_MAGENTA));
             this.appController.addNode(this.name, this.name, gameOverButton, new Layout(new RelativeCoordinates(RIGHT_PAGE_ENDING_X, PAGE_ENDING_Y), HorizontalAlignment.RIGHT, VerticalAlignment.BOTTOM));
+        }
+        
+        if ((displayMiniMap != null) && (displayMiniMap)) {
+            PopupWindow mapWindow = new PopupWindow(MINI_MAP_NAME);
+            mapWindow.cornerRadii = 10; // Round the corners by 10px
+            mapWindow.scaleX = 0.5;
+            mapWindow.scaleY = 0.5;
+            this.appController.addNode(this.name, this.name, mapWindow, new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
+            
+            Grid mapGrid = this.map.getGrid(true);
+            mapGrid.name = MINI_MAP_GRID_NAME;
+            this.appController.addNode(this.name, mapWindow.name, mapGrid, new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
+            
+            this.appController.setTimer(REMOVE_MINI_MAP, 1, this);
         }
     }
     

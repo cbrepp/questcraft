@@ -23,7 +23,7 @@ public class PlayerHPChangeControl extends QuestControl {
         String damageSource = getTagToken(tag, 3, true);
         this.quest.setPlayerHP(amount, refreshPage, damageSource, true);
         if (refreshPage) {
-            this.quest.display();
+            this.quest.display(false);
         }
         return "";
     }

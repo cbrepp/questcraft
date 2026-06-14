@@ -19,7 +19,7 @@ public class BookFlip extends BaseQuestControl {
     public void onExecute() {
         logger.log(Level.INFO, "Entered");
         Quest.quest.flipBook();
-        Quest.quest.display();
+        Quest.quest.display(false);
     }
     
 }

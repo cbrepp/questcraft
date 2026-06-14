@@ -48,11 +48,11 @@ public class BaseView extends Pane implements EventListener {
     
     @Override
     public void onEvent(String eventName, Object eventValue) {
-        System.out.println("ApplicationView: onEvent: Unimplemented: eventName=" + eventName + ", eventValue=" + eventValue);
+        logger.log(Level.INFO, "Entered: eventName={0}, eventValue={1}", new Object[]{eventName, eventValue});
     }
     
     public void addListener(String eventName, BaseView listener) {
-        System.out.println("ApplicationView: addListener: eventName=" + eventName + ", listener=" + listener);
+        logger.log(Level.INFO, "Entered: eventName={0}, listener={1}", new Object[]{eventName, listener});
         List<BaseView> eventListeners = this.eventListenerMap.get(eventName);
         if (eventListeners == null) {
             eventListeners = new ArrayList<>();
@@ -62,38 +62,38 @@ public class BaseView extends Pane implements EventListener {
     }
     
     public void onDisplay(BaseController appController) {
-        System.out.println("ApplicationView: onDisplay: Unimplemented");
+        logger.log(Level.INFO, "Entered: UNIMPLEMENTED for {0}", this.name);
     }
     
     public void onLoad(BaseController appController) {
-        System.out.println("ApplicationView: onLoad: Unimplemented");
+        logger.log(Level.INFO, "Entered: UNIMPLEMENTED for {0}", this.name);
     }
     
     public void onSelected(BaseController appController) {
-        System.out.println("ApplicationView: onSelected: Unimplemented for " + this.name);
+        logger.log(Level.INFO, "Entered: UNIMPLEMENTED for {0}", this.name);
     }
     
     public void onUnselected(BaseController appController) {
-        System.out.println("ApplicationView: onUnselected: Unimplemented for " + this.name);
+        logger.log(Level.INFO, "Entered: UNIMPLEMENTED for {0}", this.name);
     }
     
     public void publishEvent(String eventName, Object eventValue) {
-        System.out.println("ApplicationView: publishEvent: eventName=" + eventName + ", eventValue=" + eventValue);
+        logger.log(Level.INFO, "Entered: eventName={0}, eventValue={1}", new Object[]{eventName, eventValue});
         List<BaseView> eventListeners = this.eventListenerMap.get(eventName);
         if (eventListeners == null) {
-            System.out.println("ApplicationView: publishEvent: No listeners!");
+            logger.log(Level.INFO, "Entered: No listeners");
             return;
         }
         eventListeners.forEach(
             eventListener -> {
-                System.out.println("ApplicationView: Publishing event for " + eventListener.name);
+                logger.log(Level.INFO, "Entered: Publishing event for {0}", eventListener.name);
                 eventListener.onEvent(eventName, eventValue);
             }
         );
     }
     
     public void removeListener(String eventName, BaseView listener) {
-        System.out.println("ApplicationView: removeListener: eventName=" + eventName + ", listener=" + listener);
+        logger.log(Level.INFO, "Entered: eventName={0}, listener={1}", new Object[]{eventName, listener});
         List<BaseView> eventListeners = this.eventListenerMap.get(eventName);
         if (eventListeners == null) {
             return;

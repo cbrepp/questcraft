@@ -1,5 +1,6 @@
 package app.controller;
 
+import app.Appcraft;
 import app.view.BaseView;
 import app.Coordinates;
 import app.EventListener;
@@ -32,7 +33,7 @@ public class AWTApplication extends BaseController {
             args = new String[1];
             args[0] = new Throwable().getStackTrace()[0].getClassName();
         }
-        Bootstrap.main(args);
+        Appcraft.main(args);
     }
     
     public AWTApplication(Properties props) {

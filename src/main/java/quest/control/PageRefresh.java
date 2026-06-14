@@ -18,7 +18,7 @@ public class PageRefresh extends BaseQuestControl {
     @Override
     public void onExecute() {
         logger.log(Level.INFO, "Entered");
-        Quest.quest.display();
+        Quest.quest.display(false);
     }
     
 }
