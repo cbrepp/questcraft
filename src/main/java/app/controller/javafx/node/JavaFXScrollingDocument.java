@@ -1,11 +1,16 @@
 package app.controller.javafx.node;
 
+import app.Layout;
 import app.color.DecoratedOffsetColor;
 import app.color.OffsetColor;
 import app.controller.BaseController;
 import static app.controller.BaseController.logger;
 import static app.controller.JavaFXApplication.getFxColor;
+import app.node.BaseCompositeNode;
 import app.node.BaseDecoratedNode;
+import app.node.BaseNode;
+import app.node.ScrollingDocument;
+import java.util.Map;
 import java.util.logging.Level;
 import javafx.geometry.Insets;
 import javafx.scene.CacheHint;
@@ -20,7 +25,7 @@ import javafx.scene.text.TextFlow;
  *
  * @author repp
  */
-public class JavaFXScrollingDocument extends BaseJavaFXNode {
+public class JavaFXScrollingDocument extends BaseJavaFXNode implements BaseCompositeNode {
     
     public JavaFXScrollingDocument(app.node.ScrollingDocument node, BaseDecoratedNode parent, String viewName, BaseController controller) {
         super(node, new ScrollPane(), parent, viewName, controller);
@@ -82,6 +87,12 @@ public class JavaFXScrollingDocument extends BaseJavaFXNode {
         ((TextFlow) document.controllerNode).setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE); // Fill the scroll pane.  The scroll pane will be scaled as needed.
         
         this.scaleNode(controllerNode);
+    }
+    
+    @Override
+    public Map<? extends BaseNode, Layout> getChildren() {
+        ScrollingDocument doc = (ScrollingDocument) this.node;
+        return doc.nodes;
     }
     
 }

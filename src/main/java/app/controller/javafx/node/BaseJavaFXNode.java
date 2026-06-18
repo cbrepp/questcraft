@@ -31,6 +31,7 @@ public abstract class BaseJavaFXNode extends BaseDecoratedNode {
             if ((fxParentNode != null) && (fxParentNode instanceof Region parentRegion)) {
                 parentWidth = parentRegion.getPrefWidth();
                 parentHeight = parentRegion.getPrefHeight();
+                logger.log(Level.SEVERE, "Parent region preferred dimensions: {0}x{1}", new Object[]{parentWidth, parentHeight});
             } else if ((fxParentNode != null) && (fxParentNode instanceof Stage parentStage)) {
                 Scene scene = parentStage.getScene();
                 Pane pane = (Pane) scene.getRoot();

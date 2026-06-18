@@ -127,7 +127,7 @@ public class SceneMap extends app.view.BaseView implements EventListener {
                         itemGroup.borderWidth = 0;
                         Image imageControl = new Image(COMPASS + " image");
                         imageControl.file = "/assets/images/compass-small.png";
-                        itemGroup.nodes.add(imageControl);
+                        itemGroup.nodes.put(imageControl, null);
                         gridControl.cells.add(itemGroup);
                     } else {
                         emptyCellCount++;   // TODO - This is ugly
@@ -152,7 +152,7 @@ public class SceneMap extends app.view.BaseView implements EventListener {
                         if (this.quest.getPlayerDirection().toUpperCase().equals(Quest.DIRECTION_NORTH)) {
                             logger.log(Level.INFO, "Adding NORTH direction label");
                             Label directionLabel = new Label("direction", "\u2B06", twiceAsBig);
-                            itemGroup.nodes.add(directionLabel);
+                            itemGroup.nodes.put(directionLabel, null);
                         }
                         
                         String playerSymbol = this.quest.playerSymbol;
@@ -168,12 +168,12 @@ public class SceneMap extends app.view.BaseView implements EventListener {
                             }
                         }
                         Label playerLabel = new Label("player", playerSymbol, twiceAsBig);
-                        itemGroup.nodes.add(playerLabel);
+                        itemGroup.nodes.put(playerLabel, null);
                         
                         if (this.quest.getPlayerDirection().toUpperCase().equals(Quest.DIRECTION_SOUTH)) {
                             logger.log(Level.INFO, "Adding NORTH direction label");
                             Label directionLabel = new Label("direction", "\u2B07", twiceAsBig);
-                            itemGroup.nodes.add(directionLabel);
+                            itemGroup.nodes.put(directionLabel, null);
                         }
                     }
 
@@ -187,14 +187,14 @@ public class SceneMap extends app.view.BaseView implements EventListener {
                         labelControl = new Label(sceneName + " label", sceneName, normalSize);
                     }
                     logger.log(Level.INFO, "Adding scene name {0} to {1}, {2}", new Object[]{sceneName, x, y});
-                    itemGroup.nodes.add(labelControl);
+                    itemGroup.nodes.put(labelControl, null);
                 }
                 if (sceneName != null) {
                     Scene scene = act.scenes.get(sceneName);
                     if ((scene != null) && (scene.symbol != null) && (observedActScenes.contains(sceneName))) {
                         logger.log(Level.INFO, "Adding scene symbol {0} to {1}, {2}", new Object[]{scene.symbol, x, y});
                         Label labelControl2 = new Label(sceneName + " symbol", scene.symbol, twiceAsBig);
-                        itemGroup.nodes.add(labelControl2);
+                        itemGroup.nodes.put(labelControl2, null);
                     }
                 }
                 gridControl.cells.add(itemGroup);

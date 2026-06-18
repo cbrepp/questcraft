@@ -1,13 +1,14 @@
 package app.node;
 
-import java.util.List;
+import app.Layout;
+import java.util.Map;
 
 /**
  *
  * @author repp
  */
 public interface BaseCompositeNode {
-        
-    public List<? extends BaseNode> getChildren();
+    
+    public Map<? extends BaseNode, Layout> getChildren();
     
 }

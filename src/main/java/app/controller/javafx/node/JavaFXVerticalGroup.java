@@ -1,12 +1,17 @@
 package app.controller.javafx.node;
 
+import app.Layout;
 import app.color.DecoratedOffsetColor;
 import app.color.OffsetColor;
 import app.color.RGBColor;
 import app.controller.BaseController;
 import static app.controller.BaseController.logger;
 import static app.controller.JavaFXApplication.getFxColor;
+import app.node.BaseCompositeNode;
 import app.node.BaseDecoratedNode;
+import app.node.BaseNode;
+import app.node.VerticalGroup;
+import java.util.Map;
 import java.util.logging.Level;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -24,7 +29,7 @@ import javafx.scene.paint.Color;
  *
  * @author repp
  */
-public class JavaFXVerticalGroup extends BaseJavaFXNode {
+public class JavaFXVerticalGroup extends BaseJavaFXNode implements BaseCompositeNode {
     
     public JavaFXVerticalGroup(app.node.VerticalGroup node, BaseDecoratedNode parent, String viewName, BaseController controller) {
         super(node, new VBox(), parent, viewName, controller);
@@ -56,6 +61,12 @@ public class JavaFXVerticalGroup extends BaseJavaFXNode {
         }
 
         this.scaleNode(controllerNode);
+    }
+    
+    @Override
+    public Map<? extends BaseNode, Layout> getChildren() {
+        VerticalGroup vg = (VerticalGroup) this.node;
+        return vg.nodes;
     }
     
 }

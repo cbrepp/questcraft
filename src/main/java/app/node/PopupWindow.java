@@ -24,10 +24,5 @@ public class PopupWindow extends BaseNode {
     public RGBColor getColor() {
         return this.backgroundColor;
     }
-    
-    @Override
-    public boolean isParent() {
-        return true;
-    }
         
 }

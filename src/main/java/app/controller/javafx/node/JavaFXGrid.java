@@ -1,16 +1,22 @@
 package app.controller.javafx.node;
 
 import app.Coordinates;
+import app.Layout;
 import app.color.DecoratedOffsetColor;
 import app.color.OffsetColor;
 import app.color.RGBColor;
 import app.controller.BaseController;
 import static app.controller.BaseController.logger;
 import static app.controller.JavaFXApplication.getFxColor;
+import app.node.BaseCompositeNode;
 import app.node.BaseDecoratedNode;
+import app.node.BaseNode;
 import app.node.Grid;
+import app.node.Group;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -38,7 +44,7 @@ import javafx.scene.layout.StackPane;
  *
  * @author repp
  */
-public class JavaFXGrid extends BaseJavaFXNode {
+public class JavaFXGrid extends BaseJavaFXNode implements BaseCompositeNode {
     
     // Internal trackers for where to add the next child
     private int currentColumn = 0;
@@ -255,6 +261,16 @@ public class JavaFXGrid extends BaseJavaFXNode {
         }
         
         return result;
+    }
+    
+    @Override
+    public Map<? extends BaseNode, Layout> getChildren() {
+        Map<Group, Layout> children = new LinkedHashMap();
+        app.node.Grid grid = (app.node.Grid) this.node;
+        for (Group cell : grid.cells) {
+            children.put(cell, null);
+        }
+        return children;
     }
     
 }

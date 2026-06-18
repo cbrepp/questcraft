@@ -1,17 +1,18 @@
 package app.node;
 
 import app.EventListener;
+import app.Layout;
 import app.color.RGBColor;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
  * @author repp
  */
-public class Dialog extends BaseNode implements BaseCompositeNode {
+public class Dialog extends BaseNode {
     
-    public List<BaseNode> children = new ArrayList();
+    public Map<? extends BaseNode, Layout> children = new HashMap();
     public EventListener eventListener;
     public Object eventName; // Default (null) is the button's name
     public String headerText;
@@ -21,32 +22,11 @@ public class Dialog extends BaseNode implements BaseCompositeNode {
         super(name);
     }
     
-    public Dialog (String name, String title, String headerText, List<BaseNode> children) {
+    public Dialog (String name, String title, String headerText, Map<? extends BaseNode, Layout> children) {
         super(name);
         this.title = title;
         this.headerText = headerText;
         this.children = children;
-    }
-    
-    @Override
-    public List<? extends BaseNode> getChildren() {
-        List<Group> labeledChildren = new ArrayList();
-        for (BaseNode node : this.children) {
-            Group childrenGroup = new VerticalGroup(node.name + " group");
-            childrenGroup.borderWidth = 0;
-            Label label = new Label(node.name + " label", node.name + ":");
-            childrenGroup.nodes.add(label);
-            childrenGroup.nodes.add(node);
-            labeledChildren.add(childrenGroup);
-        }
-        
-        Grid dialogGrid = new Grid(this.name + " grid");
-        dialogGrid.showBorders = false;
-        dialogGrid.cells = labeledChildren;
-        List<BaseNode> children = new ArrayList();
-        children.add(dialogGrid);
-        
-        return children;
     }
 
     @Override

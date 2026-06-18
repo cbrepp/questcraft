@@ -3,13 +3,15 @@ package app.node;
 import app.*;
 import app.color.RGBColor;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
  * @author repp
  */
-public class Grid extends BaseNode implements BaseCompositeNode {
+public class Grid extends BaseNode {
     
     public RGBColor backgroundColor; // Default (null) is transparent
     public int borderPadding = 0; // Default (0px) is no padding outside the border of each cell
@@ -28,11 +30,6 @@ public class Grid extends BaseNode implements BaseCompositeNode {
     @Override
     public RGBColor getColor() {
         return this.backgroundColor;
-    }
-
-    @Override
-    public List<? extends BaseNode> getChildren() {
-        return this.cells;
     }
     
 }

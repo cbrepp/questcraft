@@ -2,17 +2,14 @@ package app.node;
 
 import app.*;
 import app.color.RGBColor;
-import static app.controller.BaseController.logger;
 import app.node.effect.BaseEffect;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 /**
  *
  * @author repp
  */
-public class InputField extends BaseNode implements BaseCompositeNode {
+public class InputField extends BaseNode {
     
     public RGBColor backgroundColor; // Default (null) is system default
     public List<BaseEffect> buttonEffects;
@@ -45,75 +42,6 @@ public class InputField extends BaseNode implements BaseCompositeNode {
     @Override
     public RGBColor getColor() {
         return this.backgroundColor;
-    }
-    
-    @Override
-    public List<? extends BaseNode> getChildren() {
-        List<BaseNode> children = new ArrayList();
-        
-        String fieldName = this.name + "_field";
-        logger.log(Level.WARNING, "Adding field {0}", fieldName);
-        Field field = new Field(fieldName);
-        if (this.fieldBackgroundColor != null) {
-            field.backgroundColor = this.fieldBackgroundColor;
-        }
-        field.borderWidth = fieldBorderWidth;
-        if (this.fieldDisplayLength != null) {
-            field.displayLength = this.fieldDisplayLength;
-        }
-        field.effects = this.fieldEffects;
-        if (this.initialValue != null) {
-            field.initialValue = this.initialValue.toString();
-        }
-        field.isEnabled = this.isEnabled;
-        field.isUpperCase = this.isUpperCase;
-        if (this.label != null) {
-            field.label = this.label.toString();
-        }
-        field.length = this.length;
-        field.pixelSize = this.pixelSize;
-        field.textColor = this.textColor;
-        field.textFont = this.textFont;
-        children.add(field);
-        
-        String buttonName = this.getButtonName();
-        logger.log(Level.WARNING, "Adding button {0}", buttonName);
-        Button button = new Button(buttonName);
-        if (this.buttonBackgroundColor != null) {
-            button.backgroundColor = this.buttonBackgroundColor;
-        }
-        if (this.buttonBorderWidth != null) {
-            button.borderWidth = this.buttonBorderWidth;
-        }
-        button.effects = this.buttonEffects;
-        button.eventListener = this.internalEventListener;
-        
-        // Button defers to parent's node's event listener
-        button.eventName = this.name;
-        button.isEnabled = this.isEnabled;
-        button.isMultiUse = this.isMultiUse;
-        button.keyBinding = this.keyBinding;
-        button.pixelSize = this.pixelSize;
-        if (this.buttonText != null) {
-            button.text = this.buttonText.toString();
-        }
-        button.textColor = this.textColor;
-        button.textFont = this.textFont;
-        children.add(button);
-
-        return children;
-    }
-    
-    public String getButtonName() {
-        String buttonName;
-        
-        if (this.buttonText == null) {
-            buttonName = this.name + "_button";
-        } else {
-            buttonName = this.name + "_" + this.buttonText.toString();
-        }
-        
-        return buttonName;
     }
     
 }

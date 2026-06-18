@@ -62,10 +62,11 @@ public class JavaFXPopupWindow extends BaseJavaFXNode {
         // TODO - Get the root pane from the constructor's parent param, should be passed in
         // TODO - The JavaFXApplication.parentDecoratedNode should be the only parent type node and should be registered like the others
         // TODO - Should probably be the root pane
-        Stage primaryStage = (Stage) this.parent.controllerNode;
-        Scene primaryScene = primaryStage.getScene();
-        StackPane rootPane = (StackPane) primaryScene.getRoot();
-        rootPane.getChildren().add(controllerNode);
+        //Stage primaryStage = (Stage) this.parent.controllerNode;
+        //Scene primaryScene = primaryStage.getScene();
+        //StackPane rootPane = (StackPane) primaryScene.getRoot();
+        //rootPane.getChildren().add(controllerNode);
+        //logger.log(Level.INFO, "Root pane pref dimensions={0}x{1}, actual={2}x{3}", new Object[]{rootPane.getPrefWidth(), rootPane.getPrefHeight(), rootPane.getWidth(), rootPane.getHeight()});
         // Need to add named Stage, Scene, StackPane, and TabPane? with names like system/stage, etc.
         
         this.scaleNode(controllerNode);

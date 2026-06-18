@@ -267,6 +267,8 @@ public class Quest extends app.view.BaseView {
             
             Video loadingVideo = new Video("loading");
             loadingVideo.file = this.book.animationFileName;
+            loadingVideo.eventListener = this;
+            loadingVideo.eventName = LOADING_COMPLETE;
             this.appController.addNode(this.name, this.name, loadingVideo, new Layout(new RelativeCoordinates(0.0, 0.0), HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
             
             Act firstAct = book.acts.get(this.book.firstActName);
@@ -274,7 +276,6 @@ public class Quest extends app.view.BaseView {
             if (!firstScene.soundFileName.equals("")) {
                 this.appController.playSound(firstScene.soundFileName, true);
             }
-            appController.setTimer(LOADING_COMPLETE, 6, this);
             if (this.book.preloadEmojisDuringAnimation) {
                 // TODO - This isn't a thing
                 //this.appController.loadEmojiData();
@@ -468,7 +469,7 @@ public class Quest extends app.view.BaseView {
             mapGrid.name = MINI_MAP_GRID_NAME;
             this.appController.addNode(this.name, mapWindow.name, mapGrid, new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
             
-            this.appController.setTimer(REMOVE_MINI_MAP, 1, this);
+            this.appController.setTimer(REMOVE_MINI_MAP, 2, this);
         }
     }
     

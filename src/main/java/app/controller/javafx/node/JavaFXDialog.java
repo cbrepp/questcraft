@@ -1,10 +1,19 @@
 package app.controller.javafx.node;
 
+import app.Layout;
 import app.controller.BaseController;
 import static app.controller.BaseController.logger;
-import app.controller.JavaFXApplication;
+import app.node.BaseCompositeNode;
 import app.node.BaseDecoratedNode;
+import app.node.BaseNode;
+import app.node.Grid;
+import app.node.Group;
+import app.node.Label;
+import app.node.VerticalGroup;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
@@ -16,7 +25,7 @@ import javafx.stage.Stage;
  *
  * @author repp
  */
-public class JavaFXDialog extends BaseJavaFXNode {
+public class JavaFXDialog extends BaseJavaFXNode implements BaseCompositeNode {
     
     public JavaFXDialog(app.node.Dialog node, BaseDecoratedNode parent, String viewName, BaseController controller) {
         super(node, new Dialog(), parent, viewName, controller);
@@ -71,6 +80,31 @@ public class JavaFXDialog extends BaseJavaFXNode {
         });
         
         controllerNode.show();
+    }
+    
+    @Override
+    public Map<? extends BaseNode, Layout> getChildren() {
+        Map<BaseNode, Layout> children = new LinkedHashMap();
+        
+        app.node.Dialog dialog = (app.node.Dialog) this.node;
+        
+        List<Group> labeledChildren = new ArrayList();
+        for (BaseNode node : dialog.children.keySet()) {
+            Layout layout = dialog.children.get(node);
+            Group childrenGroup = new VerticalGroup(node.name + " group");
+            childrenGroup.borderWidth = 0;
+            Label label = new Label(node.name + " label", node.name + ":");
+            childrenGroup.nodes.put(label, layout);
+            childrenGroup.nodes.put(node, layout);
+            labeledChildren.add(childrenGroup);
+        }
+        
+        Grid dialogGrid = new Grid(dialog.name + " grid");
+        dialogGrid.showBorders = false;
+        dialogGrid.cells = labeledChildren;
+        children.put(dialogGrid, null);
+        
+        return children;
     }
     
 }

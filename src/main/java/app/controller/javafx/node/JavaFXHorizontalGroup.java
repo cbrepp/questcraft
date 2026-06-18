@@ -1,13 +1,18 @@
 package app.controller.javafx.node;
 
+import app.Layout;
 import app.color.DecoratedOffsetColor;
 import app.color.OffsetColor;
 import app.color.RGBColor;
 import app.controller.BaseController;
 import static app.controller.BaseController.logger;
 import static app.controller.JavaFXApplication.getFxColor;
+import app.node.BaseCompositeNode;
 import app.node.BaseDecoratedNode;
 import app.node.BaseNode;
+import app.node.HorizontalGroup;
+import app.node.ScrollingDocument;
+import java.util.Map;
 import java.util.logging.Level;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -25,7 +30,7 @@ import javafx.scene.paint.Color;
  *
  * @author repp
  */
-public class JavaFXHorizontalGroup extends BaseJavaFXNode {
+public class JavaFXHorizontalGroup extends BaseJavaFXNode implements BaseCompositeNode {
     
     public JavaFXHorizontalGroup(app.node.HorizontalGroup node, BaseDecoratedNode parent, String viewName, BaseController controller) {
         super(node, new HBox(), parent, viewName, controller);
@@ -56,11 +61,19 @@ public class JavaFXHorizontalGroup extends BaseJavaFXNode {
             controllerNode.setBackground(new Background(new BackgroundFill(fxBackgroundColor, CornerRadii.EMPTY, Insets.EMPTY)));
         }
 
-        for (BaseNode childNode : ((app.node.Group) node).nodes) {
+        Map<? extends BaseNode, Layout> childNodes = ((app.node.Group) node).nodes;
+        for (BaseNode childNode : childNodes.keySet()) {
+            Layout layout = childNodes.get(childNode);
             this.controller.addNode(viewName, node.name, childNode, null);
         }
         
         this.scaleNode(controllerNode);
+    }
+    
+    @Override
+    public Map<? extends BaseNode, Layout> getChildren() {
+        HorizontalGroup hg = (HorizontalGroup) this.node;
+        return hg.nodes;
     }
     
 }

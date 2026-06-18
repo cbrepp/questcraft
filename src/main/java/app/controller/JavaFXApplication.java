@@ -162,6 +162,7 @@ import javafx.scene.layout.BackgroundRepeat;
 import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
+import javafx.scene.media.MediaView;
 import javafx.scene.text.FontSmoothingType;
 import javafx.scene.text.TextBoundsType;
 import javafx.stage.Stage;
@@ -678,8 +679,10 @@ public class JavaFXApplication extends BaseController {
         }
         
         // Clean up all of the node's children
-        if (decoratedNode.node instanceof BaseCompositeNode compositeNode) {
-            for (BaseNode childNode : compositeNode.getChildren()) {
+        if (decoratedNode instanceof BaseCompositeNode compositeNode) {
+            Map<? extends BaseNode, Layout> children = compositeNode.getChildren();
+            for (BaseNode childNode : children.keySet()) {
+                Layout childLayout = children.get(childNode);
                 this.removeNode(viewName, childNode.name);
             }
         }
@@ -2169,7 +2172,7 @@ public class JavaFXApplication extends BaseController {
                 decoratedNode = new JavaFXDialog(dialog, this.parentDecoratedNode, viewName, this);
             }
             case app.node.PopupWindow popup -> {
-                decoratedNode = new JavaFXPopupWindow(popup, this.parentDecoratedNode, viewName, this);
+                decoratedNode = new JavaFXPopupWindow(popup, decoratedParentNode, viewName, this);
             }
             case app.node.ChoiceBox choiceBox -> {
                 decoratedNode = new JavaFXChoiceBox(choiceBox, decoratedParentNode, viewName, this);
@@ -2454,14 +2457,15 @@ public class JavaFXApplication extends BaseController {
         }
     
         // Publish any child nodes for the node
-        if (node instanceof BaseCompositeNode baseCompositeNode) {
+        if (decoratedNode instanceof BaseCompositeNode compositeNode) {
             logger.log(Level.INFO, "Publishing child nodes of composite node");
-            for (BaseNode childNode : baseCompositeNode.getChildren()) {
+            Map<? extends BaseNode, Layout> children = compositeNode.getChildren();
+            for (BaseNode childNode : children.keySet()) {
+                Layout childLayout = children.get(childNode);
                 BaseDecoratedNode childDecoratedNode = null;
                 if (this.namedDecoratedNodes.get(viewName).containsKey(childNode.name)) {
                     childDecoratedNode = this.namedDecoratedNodes.get(viewName).get(childNode.name); // If the child node already exists, get it so it can be updated
                 }
-                Layout childLayout = this.nodeLayouts.get(viewName).get(childNode.name); // If the child node's layout already exists, get it
                 this.publishNode(viewName, node.name, childNode, childLayout, childDecoratedNode);
             }
         }

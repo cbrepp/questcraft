@@ -136,13 +136,13 @@ public class Inventory extends app.view.BaseView implements EventListener {
             InventoryItem bookItem = this.quest.book.inventory.get(key);
 
             Label emojiControl = new Label(key + " emojis", String.join(" ", bookItem.emojis), emojiDecoration);
-            itemGroup.nodes.add(emojiControl);
+            itemGroup.nodes.put(emojiControl, null);
 
             Link linkControl = new Link(key);
             linkControl.text = key;
             linkControl.pixelSize = Quest.DEFAULT_FONT_SIZE;
             linkControl.eventListener = this;
-            itemGroup.nodes.add(linkControl);
+            itemGroup.nodes.put(linkControl, null);
 
             InventoryItem questItem = this.quest.inventory.get(key);
             if (questItem != null) {
@@ -156,7 +156,7 @@ public class Inventory extends app.view.BaseView implements EventListener {
                 linkControl.isEnabled = true;
 
                 Label countControl = new Label(key + " count", "x" + questItem.quantity, textDecoration);
-                itemGroup.nodes.add(countControl);
+                itemGroup.nodes.put(countControl, null);
             } else {
                 System.out.println("Inventory: render: Item NOT in quest inventory: " + key);
                 itemGroup.backgroundColor = Color.DARK_GRAY;

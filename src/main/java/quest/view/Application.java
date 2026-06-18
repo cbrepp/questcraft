@@ -40,9 +40,11 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.logging.Level;
 import quest.control.ActDisplay;
 import quest.text.BookAuthor;
@@ -206,7 +208,7 @@ public class Application extends app.view.BaseView {
                 alert.icon = app.Icon.INFORMATION;
                 this.appController.newDialog(alert);
             } case OPTIONS_EVENT -> {
-                List<BaseNode> options = new ArrayList();
+                Map<BaseNode, Layout> options = new LinkedHashMap();
 
                 Spinner fontSizeSpinner = new Spinner("Text Size");
                 fontSizeSpinner.values.add("14");
@@ -220,7 +222,7 @@ public class Application extends app.view.BaseView {
                 fontSizeSpinner.values.add("30");
                 fontSizeSpinner.values.add("32");
                 fontSizeSpinner.defaultValue = Math.toIntExact(Math.round(Quest.DEFAULT_FONT_SIZE));
-                options.add(fontSizeSpinner);
+                options.put(fontSizeSpinner, null);
 
                 ComboBox comboBox = new ComboBox("Text Font");
                 for (String fontName : List.of(Font.LATO, Font.MINECRAFT, Font.ROBOTO, Font.ROBOTO_BLACK, Font.ROBOTO_LIGHT, Font.ROBOTO_MEDIUM, Font.ROBOTO_MONO,
@@ -228,7 +230,7 @@ public class Application extends app.view.BaseView {
                     comboBox.values.add(new Text(fontName, new TextDecoration(fontName)));
                 }
                 comboBox.defaultValue = Quest.DEFAULT_FONT;
-                options.add(comboBox);
+                options.put(comboBox, null);
                 
                 ComboBox comboBox2 = new ComboBox("Application Controller");
                 comboBox2.values.add(new Text("AWT (Abstract Window Toolkit)"));
@@ -241,7 +243,7 @@ public class Application extends app.view.BaseView {
                 comboBox2.values.add(new Text("Swing"));
                 comboBox2.disabledValues.add("Swing");
                 comboBox2.defaultValue = "JavaFX";
-                options.add(comboBox2);
+                options.put(comboBox2, null);
 
                 Dialog optionsDialog = new Dialog("app options", "Options...", "Customize quest options", options);
                 optionsDialog.eventName = OPTIONS_SAVED_EVENT;
