@@ -65,6 +65,7 @@ import quest.control.PlayerDirectionSet;
 import quest.control.Scribe;
 import quest.control.PlayerSymbolSet;
 import quest.control.Prompt;
+import quest.control.RandomSubpage;
 import quest.control.SceneDisplay;
 import quest.control.SoundPlay;
 import quest.control.SoundStop;
@@ -1853,37 +1854,36 @@ public class Application extends app.view.BaseView {
         sceneDecoration = new TextDecoration();
         sceneDecoration.color = wilderness2.color;
         
-        /*
         mainPage = new Page();
-        mainPage.story.contents.add("<subpage-display Scene Header>");
-        mainPage.story.contents.add("<color 0+100+0>");
-        mainPage.story.contents.add("You see tall grass, a few trees, a misty stream, hills in the distance, and cute bunnies.  Also, the sun is shining brightly.");
-        mainPage.story.contents.add("<br>");
-        mainPage.story.contents.add("Could something sinister be hiding in the tall grass?");
-        mainPage.story.contents.add("</color>");
-        mainPage.story.contents.add("<get-validated-input action Listen+Chase Bunnies>");
-        mainPage.story.contents.add("<br>");
-        mainPage.story.contents.add("<subpage-display Navigation Footer>");
-        mainPage.story.contents.add("<second-page>");
-        mainPage.story.contents.add("<image wilderness left /assets/images/wilderness.jpg>");
+        mainPage.story.controls.add(new SubpageDisplay("Scene Header"));
+        mainPage.story.controls.add(new SubpageDisplay("Navigation Footer"));
+        text1 = new app.Text(new Texts(List.of("You see tall grass, a few trees, a misty stream, hills in the distance, and cute bunnies.  Also, the sun is shining brightly.", new LineSeparator(),
+                new LineSeparator(),
+                "Could something sinister be hiding in the tall grass?\"", new LineSeparator(),
+                new LineSeparator())), sceneDecoration);
+        mainPage.story.controls.add(new Scribe(List.of(new Label("par1", List.of(text1)), new ValidatedVariablePrompt("action", List.of("Listen", "Chase Bunnies")))));
+        mainPage.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/wilderness.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         wilderness2.pages.put("main", mainPage);
-        listenSubpage = new Story();
-        listenSubpage.contents.add("<goto-page Listen>");
+        
+        Story listenSubpage = new Story();
+        listenSubpage.controls.add(new PageGoto("Listen"));
         mainPage.subpages.put("INPUT action=Listen", listenSubpage);
+        
         Story chaseBunniesSubpage = new Story();
-        chaseBunniesSubpage.contents.add("<goto-page Chase Bunnies>");
+        chaseBunniesSubpage.controls.add(new PageGoto("Chase Bunnies"));
         mainPage.subpages.put("INPUT action=Chase Bunnies", chaseBunniesSubpage);
         
-        listenPage = new Page();
+        Page listenPage = new Page();
         listenPage.previousPageName = "main";
-        listenPage.story.contents.add("<color 0+100+0>You hear birds singing and perhaps some insects.  There is also a slight breeze.  These are the typical sounds of nature.");
-        listenPage.story.contents.add("<br>");
-        listenPage.story.contents.add("Oh the great outdoors!");
-        listenPage.story.contents.add("</color>");
-        listenPage.story.contents.add("<second-page>");
-        listenPage.story.contents.add("<image wilderness left /assets/images/wilderness.jpg>");
+        text1 = new app.Text(new Texts(List.of("You hear birds singing and perhaps some insects.  There is also a slight breeze.  These are the typical sounds of nature.", new LineSeparator(),
+                new LineSeparator(),
+                "Wait... do you also hear the subtle but heavy sound of army tanks?")), sceneDecoration);
+        listenPage.story.controls.add(new Scribe(List.of(new Label("par1", List.of(text1)))));
+        listenPage.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/wilderness.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         wilderness2.pages.put("Listen", listenPage);
+
         
+        /*      
         Page chaseBunniesPage = new Page();
         chaseBunniesPage.previousPageName = "main";
         chaseBunniesPage.story.contents.add("<color 79+47+79>Seems like an unimportant thing to do but nevertheless you try to chase some of the bunnies.");
@@ -1966,15 +1966,16 @@ public class Application extends app.view.BaseView {
         mainPage.story.controls.add(new Scribe(List.of(new Label("par1", List.of(text1)), new ValidatedVariablePrompt("action", List.of("Listen", "Chase Bunnies")))));
         mainPage.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/wilderness1.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));        
         wilderness1.pages.put("main", mainPage);
-        Story listenSubpage = new Story();
-        listenSubpage.contents.add("<goto-page Listen>");
+        
+        listenSubpage = new Story();
+        listenSubpage.controls.add(new PageGoto("Listen"));
         mainPage.subpages.put("INPUT action=Listen", listenSubpage);
         
-        Story chaseBunniesSubpage = new Story();
+        chaseBunniesSubpage = new Story();
         chaseBunniesSubpage.controls.add(new PageGoto("Chase Bunnies"));
         mainPage.subpages.put("INPUT action=Chase Bunnies", chaseBunniesSubpage);
         
-        Page listenPage = new Page();
+        listenPage = new Page();
         listenPage.previousPageName = "main";
         text1 = new app.Text(new Texts(List.of("You hear birds singing and perhaps some insects.  There is also a slight breeze.  These are the typical sounds of nature.", new LineSeparator(),
                 new LineSeparator(),
@@ -1984,42 +1985,6 @@ public class Application extends app.view.BaseView {
         wilderness1.pages.put("Listen", listenPage);
         
         /*
-        mainPage = new Page();
-        mainPage.story.contents.add("<subpage-display Scene Header>");
-        mainPage.story.contents.add("<color 79+47+79>");
-        mainPage.story.contents.add("You see a meadow full of purple flowers.  The sun is shining brightly and cute bunnies scamper around you.  A wide, well-traveled dirt path splits out in all directions.");
-        mainPage.story.contents.add("<br>");
-        mainPage.story.contents.add("In the southeast a mighty mountain range borders the world.  It stretches to a central point where a mountain appears to climb so high that it quite possibly goes up into outer space.");
-        mainPage.story.contents.add("<br>");
-        mainPage.story.contents.add("To the south the sky darkens above a menacing woods.");
-        mainPage.story.contents.add("<br>");
-        mainPage.story.contents.add("And to the southwest you see more wilderness and a series of rock formations.");
-        mainPage.story.contents.add("<br>");
-        mainPage.story.contents.add("You need to remember so you can find your way back... \uD83D\uDED7 MYLEE'S ELEVATOR is by the purple flowers.");
-        mainPage.story.contents.add("</color>");
-        mainPage.story.contents.add("<get-validated-input action Listen+Chase Bunnies>");
-        mainPage.story.contents.add("<br>");
-        mainPage.story.contents.add("<subpage-display Navigation Footer>");
-        mainPage.story.contents.add("<second-page>");
-        mainPage.story.contents.add("<image wilderness1 left /assets/images/wilderness1.jpg>");
-        wilderness1.pages.put("main", mainPage);
-        listenSubpage = new Story();
-        listenSubpage.contents.add("<goto-page Listen>");
-        mainPage.subpages.put("INPUT action=Listen", listenSubpage);
-        chaseBunniesSubpage = new Story();
-        chaseBunniesSubpage.contents.add("<goto-page Chase Bunnies>");
-        mainPage.subpages.put("INPUT action=Chase Bunnies", chaseBunniesSubpage);
-        
-        listenPage = new Page();
-        listenPage.previousPageName = "main";
-        listenPage.story.contents.add("<color 79+47+79>You hear birds singing and perhaps some insects.  There is also a slight breeze.  These are the typical sounds of nature.");
-        listenPage.story.contents.add("<br>");
-        listenPage.story.contents.add("Oh the great outdoors!");
-        listenPage.story.contents.add("</color>");
-        listenPage.story.contents.add("<second-page>");
-        listenPage.story.contents.add("<image wilderness1 left /assets/images/wilderness1.jpg>");
-        wilderness1.pages.put("Listen", listenPage);
-        
         chaseBunniesPage = new Page();
         chaseBunniesPage.previousPageName = "main";
         chaseBunniesPage.story.contents.add("<color 79+47+79>Seems like an unimportant thing to do but nevertheless you try to chase some of the bunnies.");
@@ -2071,6 +2036,7 @@ public class Application extends app.view.BaseView {
         troubleBunniesSubpage.contents.add("<image bionic-bunny left /assets/images/bionic-bunny.jpg>");
         chaseBunniesPage.subpages.put("Trouble", troubleBunniesSubpage);
         wilderness1.pages.put("Chase Bunnies", chaseBunniesPage);
+        */
         
         Scene toadstoolCircle = new Scene();
         toadstoolCircle.color = new Color(184, 115, 51);
@@ -2081,49 +2047,59 @@ public class Application extends app.view.BaseView {
         toadstoolCircle.x = 3;
         toadstoolCircle.y = 1;
         chapter1.scenes.put("MAGIC RING OF TOADSTOOLS", toadstoolCircle);
+
+        sceneDecoration = new TextDecoration();
+        sceneDecoration.color = toadstoolCircle.color;
+        
+        SubpageDisplay shmebulockMainRedirect = new SubpageDisplay("Shmebulock main");
+        shmebulockMainRedirect.condition = new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true);
+        SubpageDisplay twinMainRedirect = new SubpageDisplay("twin main");
+        twinMainRedirect.condition = new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", false);
         
         mainPage = new Page();
-        mainPage.story.contents.add("<subpage-display Scene Header>");
-        mainPage.story.contents.add("<color 184+115+51>");
-        mainPage.story.contents.add("This is an enchanted place of giant mushrooms.");
-        mainPage.story.contents.add("<br>");
-        mainPage.story.contents.add("<subpage-display condition=\"player=Shmebulock\" SHMEBULOCK main><subpage-display condition=\"player!=Shmebulock\" twin main>");
+        mainPage.story.controls.add(new SubpageDisplay("Scene Header"));
+        mainPage.story.controls.add(new SubpageDisplay("Navigation Footer"));
+        text1 = new app.Text(new Texts(List.of("This is an enchanted place of giant mushrooms.",
+                new LineSeparator())), sceneDecoration);
+        mainPage.story.controls.add(new Scribe(List.of(new Label("par1", List.of(text1)))));
+        mainPage.story.controls.add(shmebulockMainRedirect);
+        mainPage.story.controls.add(twinMainRedirect);
         toadstoolCircle.pages.put("main", mainPage);
-        Story shmebulockMainStory = new Story();
-        shmebulockMainStory.contents.add("Flying faeries spin in a dizzying circle before you, magnifying the power of the Ring of Toadstools!  They're your guardians.  They show wayward travelers a peaceful vision to keep them from finding your house.");
-        shmebulockMainStory.contents.add("<br>");
-        shmebulockMainStory.contents.add("You walk through the circle and see the magic door that will transport you to your hidden house.");
-        shmebulockMainStory.contents.add("</color>");
-        shmebulockMainStory.contents.add("<get-validated-input action Listen+Open Door>");
-        shmebulockMainStory.contents.add("<br>");
-        shmebulockMainStory.contents.add("<subpage-display Navigation Footer>");
-        shmebulockMainStory.contents.add("<second-page>");
-        shmebulockMainStory.contents.add("<image magic-door center /assets/images/magic-door.jpg>");
-        shmebulockMainStory.contents.add("<second-page>");
-        shmebulockMainStory.contents.add("<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>");
-        shmebulockMainStory.contents.add("<image toadstool left /assets/images/toadstool.png>");
-        mainPage.subpages.put("SHMEBULOCK main", shmebulockMainStory);
-        Story twinMainStory = new Story();        
-        twinMainStory.contents.add("Flying faeries spin in a dizzying circle before you, magnifying the power of the Ring of Toadstools!  They show you a magical vision of Mylee and her brother Big Chung.  Before things went wrong, that is.");
-        twinMainStory.contents.add("<br>");
-        twinMainStory.contents.add("This vision is a still scene.  You can not interact with it.  However, a simple wooden sign stands before it all.");
-        twinMainStory.contents.add("<br>");
-        twinMainStory.contents.add("On this sign reads a cryptic message:");
-        twinMainStory.contents.add("<br>");
-        twinMainStory.contents.add("<i>Speaketh the name");
-        twinMainStory.contents.add("Of the spirit that dwelleth herein");
-        twinMainStory.contents.add("And be gifted with a ring of magick</i>");
-        twinMainStory.contents.add("</color>");
-        twinMainStory.contents.add("<get-validated-input action Listen+Speak Name>");
-        twinMainStory.contents.add("<br>");
-        twinMainStory.contents.add("<subpage-display Navigation Footer>");
-        twinMainStory.contents.add("<second-page>");
-        twinMainStory.contents.add("<image ring-of-toadstools left /assets/images/ring-of-toadstools.jpg>");
-        twinMainStory.contents.add("<second-page>");
-        twinMainStory.contents.add("<image frame left /assets/images/frame.png>");
-        twinMainStory.contents.add("<second-page>");
-        twinMainStory.contents.add("<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><image wooden-sign center /assets/images/wooden-sign.png>");
-        mainPage.subpages.put("twin main", twinMainStory);
+        
+        Story shmebulockMain = new Story();
+        text1 = new app.Text(new Texts(List.of("Flying faeries spin in a dizzying circle before you, magnifying the power of the Ring of Toadstools!  They're your guardians.  They show wayward travelers a peaceful vision to keep them from finding your house.", new LineSeparator(),
+                new LineSeparator(),
+                "You walk through the circle and see the magic door that will transport you to your hidden house.", new LineSeparator(),
+                new LineSeparator())), sceneDecoration);
+        shmebulockMain.controls.add(new Scribe(List.of(new Label("par1", List.of(text1)), new ValidatedVariablePrompt("action", List.of("Listen", "Open Door")))));
+        shmebulockMain.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/toadstool.png"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        shmebulockMain.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/magic-door.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        mainPage.subpages.put("Shmebulock main", shmebulockMain);
+        
+        TextDecoration signDecoration = new TextDecoration();
+        signDecoration.style = FontStyle.ITALIC;
+        Story twinMain = new Story();
+        text1 = new app.Text(new Texts(List.of("Flying faeries spin in a dizzying circle before you, magnifying the power of the Ring of Toadstools!  They show you a magical vision of Mylee and her brother Big Chung.  Before things went wrong, that is.", new LineSeparator(),
+                new LineSeparator(),
+                "This vision is a still scene.  You can not interact with it.  However, a simple wooden sign stands before it all.", new LineSeparator(),
+                new LineSeparator(),
+                "On this sign reads a cryptic message:", new LineSeparator(),
+                new LineSeparator())), sceneDecoration);
+        text2 = new app.Text(new Texts(List.of("Speaketh the name", new LineSeparator(),
+                "Of the spirit that dwelleth herein", new LineSeparator(),
+                "And ring of tame", new LineSeparator(),
+                "Shall you most assuredly win", new LineSeparator(),
+                new LineSeparator())), signDecoration);
+        twinMain.controls.add(new Scribe(List.of(new Label("par1", List.of(text1, text2)), new ValidatedVariablePrompt("action", List.of("Listen", "Speak Name")))));
+        twinMain.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/ring-of-toadstools.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        twinMain.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/frame.png"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        twinMain.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/wooden-sign.png"), new Layout(new RelativeCoordinates(0.0, 0.9), HorizontalAlignment.CENTER, VerticalAlignment.BOTTOM)));
+        mainPage.subpages.put("twin main", twinMain);
+        
+        listenSubpage = new Story();
+        listenSubpage.controls.add(new PageGoto("Listen"));
+        mainPage.subpages.put("INPUT action=Listen", listenSubpage);
+        /*
         listenSubpage = new Story();
         listenSubpage.contents.add("<goto-page condition=\"player!=Shmebulock\" Listen>");
         listenSubpage.contents.add("<goto-page condition=\"player=Shmebulock\" Shmebulock Listen>");
@@ -2285,32 +2261,40 @@ public class Application extends app.view.BaseView {
         glowRingOfTamingSubpage.contents.add("<play-sound /assets/sounds/ring-of-taming.wav false>");
         glowRingOfTamingSubpage.contents.add("You look down at your ring and it glows with power.");
         shmebulockPage.subpages.put("Glow Ring Of Taming", glowRingOfTamingSubpage);
+        */
         
         Scene giannisDen = new Scene();
         giannisDen.color = new Color(0, 0, 0);
         giannisDen.firstPageName = "main";
         giannisDen.stopOtherSounds = true;
         giannisDen.soundFileName = "/assets/sounds/giannis-den.wav";
-        giannisDen.symbol = "\uD83D\uDC08\u200D\u2B1B";
+        giannisDen.symbol = "\uD83E\uDEA8 \uD83D\uDD73\uFE0F"; // Rock and hole (for cave)
         giannisDen.x = 1;
         giannisDen.y = 2;
         chapter1.scenes.put("GIANNI'S DEN", giannisDen);
         
+        sceneDecoration = new TextDecoration();
+        sceneDecoration.color = giannisDen.color;
+        
         mainPage = new Page();
-        mainPage.story.contents.add("<subpage-display Scene Header>");
-        mainPage.story.contents.add("<color 0+0+0><variable-set gianni-photo-landscape false><variable-set gianni-photo-portrait false>");
-        mainPage.story.contents.add("You come across a massive cave.  After climbing inside you're able to pick out some detail.");
-        mainPage.story.contents.add("<br>");
-        mainPage.story.contents.add("The walls of the cave are strong, making this a fortified location.  A heat vent goes straight down, possibly into the very core of the earth.  And at the back of the chamber are electric lights and what appears to be... living quarters?");
-        mainPage.story.contents.add("<br>");
-        mainPage.story.contents.add("Do you dare expore further to discover what might be living here?");
-        mainPage.story.contents.add("</color>");
-        mainPage.story.contents.add("<get-validated-input action Listen+Explore Living Quarters>");
-        mainPage.story.contents.add("<br>");
-        mainPage.story.contents.add("<subpage-display Navigation Footer>");
-        mainPage.story.contents.add("<second-page>");
-        mainPage.story.contents.add("<image giannis-den center /assets/images/giannis-den.jpg>");
+        mainPage.story.controls.add(new SubpageDisplay("Scene Header"));
+        mainPage.story.controls.add(new SubpageDisplay("Navigation Footer"));
+        text1 = new app.Text(new Texts(List.of("You come across a massive cave.  After climbing inside you're able to pick out some detail.", new LineSeparator(),
+                new LineSeparator(),
+                "The walls of the cave are strong, making this a fortified location.  A heat vent goes straight down, possibly into the very core of the earth.  And at the back of the chamber are electric lights and what appears to be... living quarters?", new LineSeparator(),
+                new LineSeparator(),
+                "Do you dare expore further to discover what might be living here?", new LineSeparator(),
+                new LineSeparator())), sceneDecoration);
+        mainPage.story.controls.add(new VariableSet("gianni-photo-landscape", "false"));
+        mainPage.story.controls.add(new VariableSet("gianni-photo-portrait", "false"));
+        mainPage.story.controls.add(new Scribe(List.of(new Label("par1", List.of(text1)), new ValidatedVariablePrompt("action", List.of("Listen", "Explore Living Quarters")))));
+        mainPage.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/giannis-den.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));        
         giannisDen.pages.put("main", mainPage);
+        
+        listenSubpage = new Story();
+        listenSubpage.controls.add(new PageGoto("Listen"));
+        mainPage.subpages.put("INPUT action=Listen", listenSubpage);
+        /*
         listenSubpage = new Story();
         listenSubpage.contents.add("<goto-page Listen>");
         mainPage.subpages.put("INPUT action=Listen", listenSubpage);
@@ -2408,30 +2392,32 @@ public class Application extends app.view.BaseView {
         Story zaraWeaponSubpage = new Story();
         zaraWeaponSubpage.contents.add("<inventory-add true Cat-apult>You now have a <inventory Cat-apult>!</color>");
         tameGianniPage.subpages.put("Zara Weapon", zaraWeaponSubpage);
+        */
         
         Scene woods = new Scene();
         woods.color = new Color(85, 85, 85);
         woods.firstPageName = "main";
         woods.stopOtherSounds = true;
         woods.soundFileName = "/assets/sounds/woods.mp3";
-        //woods.symbol = "\uD83E\uDEBE";  // Branchless tree is new with Unicode v16.0 (2024) and is only supported in recent versions of Java
-        woods.symbol = "\uD83E\uDD89";
+        woods.symbol = "\uD83E\uDEBE";  // Branchless tree is new with Unicode v16.0 (2024) and is only supported in recent versions of Java
         woods.x = 2;
         woods.y = 2;
         chapter1.scenes.put("WOODS", woods);
         
+        sceneDecoration = new TextDecoration();
+        sceneDecoration.color = woods.color;
+        
         mainPage = new Page();
-        mainPage.story.contents.add("<second-page>");
-        mainPage.story.contents.add("<image woods center /assets/images/woods.png>");
-        mainPage.story.contents.add("<first-page>");
-        mainPage.story.contents.add("<subpage-display Scene Header>");
-        mainPage.story.contents.add("<color 85+85+85>");
-        mainPage.story.contents.add("You find yourself in the middle of a dark woods.");
-        mainPage.story.contents.add("<br>");
-        mainPage.story.contents.add("<random Missed+Almost+Dead>");
-        mainPage.story.contents.add("</color>");
+        mainPage.story.controls.add(new SubpageDisplay("Scene Header"));
+        mainPage.story.controls.add(new SubpageDisplay("Navigation Footer"));
+        text1 = new app.Text(new Texts(List.of("You find yourself in the middle of a dark woods.", new LineSeparator(),
+                new LineSeparator())), sceneDecoration);
+        mainPage.story.controls.add(new Scribe(List.of(new Label("par1", List.of(text1)))));
+        mainPage.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/woods.png"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        mainPage.story.controls.add(new RandomSubpage(List.of("Missed", "Almost", "Dead")));
         woods.pages.put("main", mainPage);
         
+        /*
         listenSubpage = new Story();
         listenSubpage.contents.add("<goto-page Listen>");
         mainPage.subpages.put("INPUT action=Listen", listenSubpage);
@@ -2485,32 +2471,34 @@ public class Application extends app.view.BaseView {
         deadPage.story.contents.add("<color 85+85+85>Too late.</color>");
         deadPage.story.contents.add("<br>");
         woods.pages.put("Dead", deadPage);
+        */
         
         Scene mountFluff = new Scene();
         mountFluff.color = new Color(255, 255, 255);
         mountFluff.firstPageName = "main";
         mountFluff.stopOtherSounds = true;
         mountFluff.soundFileName = "/assets/sounds/wind.mp3";
-        mountFluff.symbol = "\uD83C\uDFD4";
+        mountFluff.symbol = "\uD83C\uDFD4\uFE0F";
         mountFluff.x = 3;
         mountFluff.y = 2;
         chapter1.scenes.put("MOUNT FLUFF", mountFluff);
         
+        sceneDecoration = new TextDecoration();
+        sceneDecoration.color = mountFluff.color;
+        
         mainPage = new Page();
-        mainPage.story.contents.add("<subpage-display Scene Header>");
-        mainPage.story.contents.add("<color 0+0+0>");
-        mainPage.story.contents.add("You come upon the base of a giant snowy mountain that is so tall you can't even see the top.");
-        mainPage.story.contents.add("<br>");
-        mainPage.story.contents.add("Ahead is what appears to be the second floor of a ski lodge peeking up over a hill.  A mysterious black cat exits the lodge and surveys the landscape as she prepares to depart towards the west.");
-        mainPage.story.contents.add("<br>");
-        mainPage.story.contents.add("It may be wise to seek shelter inside the ski lodge.");
-        mainPage.story.contents.add("</b></color>");
-        mainPage.story.contents.add("<get-validated-input action Listen+Enter Ski Lodge>");
-        mainPage.story.contents.add("<br>");
-        mainPage.story.contents.add("<subpage-display Navigation Footer>");
-        mainPage.story.contents.add("<second-page>");
-        mainPage.story.contents.add("<image mount-fluff center /assets/images/mount-fluff.jpg>");
+        mainPage.story.controls.add(new SubpageDisplay("Scene Header"));
+        mainPage.story.controls.add(new SubpageDisplay("Navigation Footer"));
+        text1 = new app.Text(new Texts(List.of("You come upon the base of a giant snowy mountain that is so tall you can't even see the top.", new LineSeparator(),
+                new LineSeparator(),
+                "Ahead is what appears to be the second floor of a ski lodge peeking up over a hill.  A mysterious black cat exits the lodge and surveys the landscape as she prepares to depart towards the west.", new LineSeparator(),
+                new LineSeparator(),
+                "It may be wise to seek shelter inside the ski lodge.", new LineSeparator(),
+                new LineSeparator())), sceneDecoration);
+        mainPage.story.controls.add(new Scribe(List.of(new Label("par1", List.of(text1)), new ValidatedVariablePrompt("action", List.of("Listen", "Enter Ski Lodge")))));
+        mainPage.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/mount-fluff.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         mountFluff.pages.put("main", mainPage);
+        /*
         listenSubpage = new Story();
         listenSubpage.contents.add("<goto-page Listen>");
         mainPage.subpages.put("INPUT action=Listen", listenSubpage);
@@ -2712,6 +2700,7 @@ public class Application extends app.view.BaseView {
         correctMagicalAnswerPage.story.contents.add("<second-page>");
         correctMagicalAnswerPage.story.contents.add("<image fluff2 center /assets/images/fluff2.jpg>");
         mountFluff.pages.put("Correct Magical Answer", correctMagicalAnswerPage);
+        */
         
         // TODO - Split once for each player and display button based on whether player has item in inventory and if not, disable if player doesn't have gold and needs gold
         Scene mysteryRoom = new Scene();
@@ -2724,6 +2713,25 @@ public class Application extends app.view.BaseView {
         mysteryRoom.y = 3;
         chapter1.scenes.put("MYSTERY ROOM", mysteryRoom);
         
+        sceneDecoration = new TextDecoration();
+        sceneDecoration.color = mysteryRoom.color;
+        
+        SubpageDisplay shmebulockRedirect = new SubpageDisplay("Shmebulock Subpage");
+        shmebulockRedirect.condition = new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true);        
+        SubpageDisplay greysonRedirect = new SubpageDisplay("Greyson Subpage");
+        greysonRedirect.condition = new Condition(new Variable("player"), Condition.Operator.EQUALS, "Greyson", true);
+        SubpageDisplay zaraRedirect = new SubpageDisplay("Zara Subpage");
+        zaraRedirect.condition = new Condition(new Variable("player"), Condition.Operator.EQUALS, "Zara", true);
+
+        mainPage = new Page();
+        mainPage.story.controls.add(new SubpageDisplay("Scene Header"));
+        mainPage.story.controls.add(new SubpageDisplay("Navigation Footer"));
+        mainPage.story.controls.add(shmebulockRedirect);
+        mainPage.story.controls.add(greysonRedirect);
+        mainPage.story.controls.add(zaraRedirect);
+        mysteryRoom.pages.put("main", mainPage);
+        
+        /*
         mainPage = new Page();
         mainPage.story.contents.add("<subpage-display condition=\"player=Shmebulock\" Shmebulock Subpage>");
         mainPage.story.contents.add("<play-sound condition=\"player=Greyson\" /assets/sounds/grey.mp3 true>");
@@ -2880,6 +2888,7 @@ public class Application extends app.view.BaseView {
         zaraHasItemSubpage.contents.add("<second-page>");
         zaraHasItemSubpage.contents.add("<image store center /assets/images/store.jpg>");
         mainPage.subpages.put("Zara Has Item Subpage", zaraHasItemSubpage);
+        */
         
         Scene castle = new Scene();
         castle.color = new Color(171, 145, 68);
@@ -2891,22 +2900,41 @@ public class Application extends app.view.BaseView {
         castle.y = 3;
         chapter1.scenes.put("CASTLE", castle);
         
-        mainPage = new Page();
-        mainPage.story.contents.add("<subpage-display Scene Header>");
-        mainPage.story.contents.add("<first-page><color 171+145+68><br><br><br>");
-        mainPage.story.contents.add("What a magnificent castle!  You step inside and explore the castle but no one is home.  Perhaps the royal court fled because of Big Chung?");
-        mainPage.story.contents.add("<br>");
-        mainPage.story.contents.add("<if condition=\"inventory-has Gold!=true\" You see beautiful gold coins scattered around the maze-like interior.  They lead up to a chest overflowing with gold coins.  Will you take the gold?><if condition=\"inventory-has Gold=true\" Such an empty place!>");
-        mainPage.story.contents.add("<br>");
-        mainPage.story.contents.add("<get-validated-input condition=\"inventory-has Gold!=true\" action Listen+Take Gold><get-validated-input condition=\"inventory-has Gold=true\" action Listen>");
-        mainPage.story.contents.add("<subpage-display Navigation Footer>");
-        mainPage.story.contents.add("</color>");
-        mainPage.story.contents.add("<second-page>");
-        mainPage.story.contents.add("<image castle-interior center /assets/images/castle-interior.jpg>");
-        mainPage.story.contents.add("<second-page><br><br><br><br><br><br><br><br><br><br><br><br>");
-        mainPage.story.contents.add("<image condition=\"inventory-has Gold!=true\" gold center /assets/images/gold.png>");
-        castle.pages.put("main", mainPage);
+        sceneDecoration = new TextDecoration();
+        sceneDecoration.color = castle.color;
         
+        SubpageDisplay castleHasGoldRedirect = new SubpageDisplay("Castle has gold");
+        castleHasGoldRedirect.condition = new Condition(new InventoryHas("Gold"), Condition.Operator.EQUALS, "true", true);
+        SubpageDisplay castleNoGoldRedirect = new SubpageDisplay("Castle no gold");
+        castleNoGoldRedirect.condition = new Condition(new InventoryHas("Gold"), Condition.Operator.EQUALS, "true", false);
+        
+        mainPage = new Page();
+        mainPage.story.controls.add(new SubpageDisplay("Scene Header"));
+        mainPage.story.controls.add(new SubpageDisplay("Navigation Footer"));
+        mainPage.story.controls.add(castleHasGoldRedirect);
+        mainPage.story.controls.add(castleNoGoldRedirect);
+        castle.pages.put("main", mainPage);
+
+        Story castleHasGold = new Story();
+        text1 = new app.Text(new Texts(List.of("What a magnificent castle!  You step inside and explore the castle but no one is home.  Perhaps the royal court fled because of Big Chung?", new LineSeparator(),
+                new LineSeparator(),
+                "You see beautiful gold coins scattered around the maze-like interior.  They lead up to a chest overflowing with gold coins.  Will you take the gold?", new LineSeparator(),
+                new LineSeparator())), sceneDecoration);
+        castleHasGold.controls.add(new Scribe(List.of(new Label("par1", List.of(text1)), new ValidatedVariablePrompt("action", List.of("Listen", "Take Gold")))));
+        castleHasGold.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/castle-interior.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        castleHasGold.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/gold.png"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        mainPage.subpages.put("Castle has gold", castleHasGold);
+
+        Story castleNoGold = new Story();
+        text1 = new app.Text(new Texts(List.of("What a magnificent castle!  You step inside and explore the castle but no one is home.  Perhaps the royal court fled because of Big Chung?", new LineSeparator(),
+                new LineSeparator(),
+                "Such an empty place!", new LineSeparator(),
+                new LineSeparator())), sceneDecoration);
+        castleNoGold.controls.add(new Scribe(List.of(new Label("par1", List.of(text1)), new ValidatedVariablePrompt("action", List.of("Listen")))));
+        castleNoGold.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/castle-interior.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        mainPage.subpages.put("Castle no gold", castleNoGold);
+        
+        /*
         listenSubpage = new Story();
         listenSubpage.contents.add("<goto-page Listen>");
         mainPage.subpages.put("INPUT action=Listen", listenSubpage);
@@ -2925,17 +2953,19 @@ public class Application extends app.view.BaseView {
         takeGoldSubpage.contents.add("<inventory-add true Gold>");
         takeGoldSubpage.contents.add("<page-refresh>");
         mainPage.subpages.put("INPUT action=Take Gold", takeGoldSubpage);
+        */
         
         Scene dragonsDen = new Scene();
         dragonsDen.color = new Color(139, 0, 0);
         dragonsDen.firstPageName = "main";
         dragonsDen.stopOtherSounds = true;
         dragonsDen.soundFileName = "/assets/sounds/dragons-den.mp3";
-        dragonsDen.symbol = "\uD83D\uDC09";
+        dragonsDen.symbol = "\uD83E\uDEA8 \uD83D\uDD73\uFE0F"; // Rock and hole (for cave)
         dragonsDen.x = 3;
         dragonsDen.y = 3;
         chapter1.scenes.put("DRAGON'S DEN", dragonsDen);
         
+        /*        
         mainPage = new Page();
         mainPage.story.contents.add("<subpage-display Scene Header>");
         mainPage.story.contents.add("<stop-sound condition=\"variable is-dragon-defeated=true\" /assets/sounds/dragons-den.mp3><color 139+0+0>");
