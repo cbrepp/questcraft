@@ -9,13 +9,11 @@ import app.controller.JavaFXApplication;
 import app.node.BaseDecoratedNode;
 import java.util.logging.Level;
 import javafx.geometry.Insets;
-import javafx.scene.Scene;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.stage.Stage;
 
 /**
  *
@@ -24,7 +22,7 @@ import javafx.stage.Stage;
 public class JavaFXPopupWindow extends BaseJavaFXNode {
     
     public JavaFXPopupWindow(app.node.PopupWindow node, BaseDecoratedNode parent, String viewName, BaseController controller) {
-        super(node, new StackPane(), parent, viewName, controller);
+        super(node, new Pane(), parent, viewName, controller);
     }
     
     @Override
@@ -32,7 +30,7 @@ public class JavaFXPopupWindow extends BaseJavaFXNode {
         logger.log(Level.INFO, "Entered");
         
         app.node.PopupWindow node = (app.node.PopupWindow) this.node;
-        StackPane controllerNode = (StackPane) this.controllerNode;
+        Pane controllerNode = (Pane) this.controllerNode;
         
         Color fxBackgroundColor;
         if (node.backgroundColor == null) {

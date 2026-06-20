@@ -269,6 +269,7 @@ public class Quest extends app.view.BaseView {
             loadingVideo.file = this.book.animationFileName;
             loadingVideo.eventListener = this;
             loadingVideo.eventName = LOADING_COMPLETE;
+            loadingVideo.enableSkip = true;
             this.appController.addNode(this.name, this.name, loadingVideo, new Layout(new RelativeCoordinates(0.0, 0.0), HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
             
             Act firstAct = book.acts.get(this.book.firstActName);
@@ -467,9 +468,11 @@ public class Quest extends app.view.BaseView {
             
             Grid mapGrid = this.map.getGrid(true);
             mapGrid.name = MINI_MAP_GRID_NAME;
+            mapGrid.scaleX = 1.0;
+            mapGrid.scaleY = 1.0;
             this.appController.addNode(this.name, mapWindow.name, mapGrid, new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
             
-            this.appController.setTimer(REMOVE_MINI_MAP, 2, this);
+            this.appController.setTimer(REMOVE_MINI_MAP, 1, this);
         }
     }
     

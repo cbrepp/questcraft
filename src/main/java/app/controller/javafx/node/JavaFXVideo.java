@@ -43,8 +43,6 @@ public class JavaFXVideo extends BaseJavaFXNode implements BaseCompositeNode, Ev
     public void configure() {
         logger.log(Level.INFO, "Entered");
         
-        // TODO - This control should be some sort of a container so that a button can overlay for "Skip"
-        
         app.node.Video node = (app.node.Video) this.node;
         Pane controllerNode = (Pane) this.controllerNode;
         
@@ -80,7 +78,6 @@ public class JavaFXVideo extends BaseJavaFXNode implements BaseCompositeNode, Ev
             if (node.eventListener != null) {
                 this.mediaPlayer.setOnEndOfMedia(() -> {
                     logger.log(Level.INFO, "Video complete: name={0}", node.name);
-                    //controllerNode.getChildren().remove(skipButton);
                     node.eventListener.onEvent(finalEventname, node.name);
                 });
             }
@@ -100,9 +97,11 @@ public class JavaFXVideo extends BaseJavaFXNode implements BaseCompositeNode, Ev
                 controllerNode.setPrefHeight(newBounds.getHeight());
                 this.scaleNode(controllerNode);
                 JavaFXApplication.positionNode((Pane) this.parent.controllerNode, node, this.layout, controllerNode);
-                BaseDecoratedNode buttonDecoratedNode = ((JavaFXApplication) this.controller).getDecoratedNode(this.viewName, this.node.name + "/skip");
-                if (buttonDecoratedNode != null) {
-                    JavaFXApplication.positionNode((Pane) this.controllerNode, buttonDecoratedNode.node, this.buttonLayout, (Node) buttonDecoratedNode.controllerNode);
+                if (node.enableSkip) {
+                    BaseDecoratedNode buttonDecoratedNode = ((JavaFXApplication) this.controller).getDecoratedNode(this.viewName, this.node.name + "/skip");
+                    if (buttonDecoratedNode != null) {
+                        JavaFXApplication.positionNode((Pane) this.controllerNode, buttonDecoratedNode.node, this.buttonLayout, (Node) buttonDecoratedNode.controllerNode);
+                    }
                 }
             }
         });
@@ -111,6 +110,9 @@ public class JavaFXVideo extends BaseJavaFXNode implements BaseCompositeNode, Ev
     @Override
     public Map<? extends BaseNode, Layout> getChildren() {
         Map<BaseNode, Layout> children = new LinkedHashMap();
+        if (!((app.node.Video) this.node).enableSkip) {
+            return children;
+        }
         app.node.Button skipButton = new app.node.Button(this.node.name + "/skip");
         skipButton.backgroundColor = new app.color.Color(app.color.Color.BLACK, 0.5);
         skipButton.eventListener = this;

@@ -10,6 +10,7 @@ import app.color.RGBColor;
 public class Video extends BaseNode {
     
     public EventListener eventListener;
+    public Boolean enableSkip = false;
     public Object eventName; // Default (null) is the video's name
     public String file;
     public Boolean loop = false;

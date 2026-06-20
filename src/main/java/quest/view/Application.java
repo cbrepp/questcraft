@@ -1068,6 +1068,7 @@ public class Application extends app.view.BaseView {
         quest.node.Video illustrationVideo = new quest.node.Video("elevator doors opening", "/assets/videos/elevator-doors.mp4", "on elevator doors open");
         illustrationVideo.scaleX = 0.95;
         illustrationVideo.scaleY = 0.95;
+        illustrationVideo.enableSkip = true; // User can't continue until video completes so enable skipping the video
         enterElevator.controls.add(new Illustrate(illustrationVideo, new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         page3.subpages.put("INPUT action=Go to Elevator", enterElevator);
 
@@ -1952,7 +1953,7 @@ public class Application extends app.view.BaseView {
         mainPage = new Page();
         mainPage.story.controls.add(new SubpageDisplay("Scene Header"));
         mainPage.story.controls.add(new SubpageDisplay("Navigation Footer"));
-        text1 = new app.Text(new Texts(List.of("You see a meadow full of purple flowers.  The sun is shining brightly and cute bunnies scamper around you.  A wide, well-traveled dirt path splits out in all directions.", new LineSeparator(),
+        text1 = new app.Text(new Texts(List.of("You are standing in a meadow full of purple flowers.  The sun is shining brightly and cute bunnies scamper around you.  A wide, well-traveled dirt path splits out in all directions.", new LineSeparator(),
                 new LineSeparator(),
                 "In the southeast a mighty mountain range borders the world.  It stretches to a central point where a mountain appears to climb so high that it quite possibly goes up into outer space.", new LineSeparator(),
                 new LineSeparator(),

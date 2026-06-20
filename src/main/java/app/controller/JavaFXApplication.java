@@ -162,7 +162,6 @@ import javafx.scene.layout.BackgroundRepeat;
 import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
-import javafx.scene.media.MediaView;
 import javafx.scene.text.FontSmoothingType;
 import javafx.scene.text.TextBoundsType;
 import javafx.stage.Stage;
@@ -179,7 +178,7 @@ public class JavaFXApplication extends BaseController {
     public static Map<String, JsonObject> EMOJI_MAP;
     public static Image EMOJI_SHEET;
     public static final boolean IS_JPRO = (System.getProperty("jpro.version") != null);
-    public static List<String> TIMER_EVENTS = new ArrayList();
+    public static Map<String, Timeline> TIMER_EVENTS = new HashMap();
 
     public DelegateApplication delegateApp;
     public final Lock audioLock = new ReentrantLock();
@@ -3241,15 +3240,15 @@ public class JavaFXApplication extends BaseController {
     @Override
     public void setTimer(String name, double seconds, EventListener listener) {
         logger.log(Level.INFO, "Entered: name={0}, seconds={1}, listener={2}", new Object[]{name, seconds, listener});
-        if (TIMER_EVENTS.contains(name)) {
+        if (TIMER_EVENTS.containsKey(name)) {
             logger.log(Level.INFO, "Timer already exists for {0}", name);
             return;
         }
         Timeline timeline = new Timeline();
-        TIMER_EVENTS.add(name);
+        TIMER_EVENTS.put(name, timeline);
         KeyFrame keyFrame = new KeyFrame(Duration.seconds(seconds), (ActionEvent event) -> {
             logger.log(Level.INFO, "Timer elapsed: name={0}, seconds={1}, listener={2}", new Object[]{name, seconds, listener});
-            if (!TIMER_EVENTS.contains(name)) {
+            if (!TIMER_EVENTS.containsKey(name)) {
                 logger.log(Level.INFO, "Timer was already removed");
                 return;
             }
@@ -3266,10 +3265,16 @@ public class JavaFXApplication extends BaseController {
     @Override
     public void removeTimer(String name) {
         logger.log(Level.INFO, "Entered: name={0}", name);
-        if (!TIMER_EVENTS.contains(name)) {
+        if (!TIMER_EVENTS.containsKey(name)) {
             logger.log(Level.INFO, "Timer was already removed");
         } else {
+            Timeline timeline = TIMER_EVENTS.get(name);
             TIMER_EVENTS.remove(name);
+            if (timeline != null) {
+                timeline.stop();
+                timeline = null; // Ensure garbage collection
+                logger.log(Level.INFO, "Stopped timer");
+            }
             logger.log(Level.INFO, "Removed timer");
         }
         // TODO - Could store the timeline and call timeline.stop();

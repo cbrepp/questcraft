@@ -61,11 +61,23 @@ public class SceneMap extends app.view.BaseView implements EventListener {
         this.quest.addListener(Quest.PLAYER_DIRECTION, this);
     }
     
+    public boolean isSceneAdjacentToPlayer(int x, int y) {
+        if ((this.quest.playerX == null) || (this.quest.playerY == null)) {
+            return false;
+        }
+                
+        int xDiff = Math.abs(x - this.quest.playerX);
+        int yDiff = Math.abs(y - this.quest.playerY);
+        boolean isAdjacent = ((xDiff + yDiff) <= 1);
+        
+        return isAdjacent;
+    }
+    
     public Grid getGrid(Boolean mini) {
         logger.log(Level.INFO, "Entered: mini={0}", mini);
         
         Act act = this.quest.book.acts.get(this.quest.currentAct);
-        int minX = 0, maxX = 0, minY = 0, maxY = 0;
+        Integer minX = null, maxX = null, minY = null, maxY = null;
         
         // Parse each scene in the current act to get the dimensions of the map
         for (String sceneName : act.scenes.keySet()) {
@@ -75,29 +87,53 @@ public class SceneMap extends app.view.BaseView implements EventListener {
                 continue;
             }
             
-            if (scene.x < minX) {
+            // For the mini map, only show the scenes that are immediately adjacent to the player
+            if ((mini) && (!this.isSceneAdjacentToPlayer(scene.x, scene.y))) {
+                continue;
+            }
+            
+            logger.log(Level.INFO, "Evaluating boundaries: Reviewing scene {0} at ({1}, {2})", new Object[]{sceneName, scene.x, scene.y});
+            
+            if ((minX == null) || (scene.x < minX)) {
                 minX = scene.x;
+                logger.log(Level.INFO, "Evaluating boundaries: Scene has minimum X");
             }
-            if (scene.x > maxX) {
+            if ((maxX == null) || (scene.x > maxX)) {
                 maxX = scene.x;
+                logger.log(Level.INFO, "Evaluating boundaries: Scene has maximum X");
             }
-            if (scene.y < minY) {
-                minY = scene.x;
+            if ((minY == null) || (scene.y < minY)) {
+                minY = scene.y;
+                logger.log(Level.INFO, "Evaluating boundaries: Scene has minimum Y");
             }
-            if (scene.y > maxY) {
+            if ((maxY == null) || (scene.y > maxY)) {
                 maxY = scene.y;
+                logger.log(Level.INFO, "Evaluating boundaries: Scene has maximum Y");
             }
         }
         
-        int mapWidth = maxX - minX + 1;
-        int mapHeight = maxY - minY + 1;
+        int mapWidth = 0;
+        int mapHeight = 0;
+        if ((minX != null) && (minY != null)) {
+            mapWidth = maxX - minX + 1;
+            mapHeight = maxY - minY + 1;
+        } else {
+            logger.log(Level.INFO, "Map does not have dimensions!");
+            return null;
+        }
 
         // Sort each scene by its coordinates
+        logger.log(Level.INFO, "Sorting {0}x{1} map", new Object[]{mapWidth, mapHeight});
         String[][] sortedScenes = new String[mapWidth][mapHeight];
         for (String sceneName : act.scenes.keySet()) {
             Scene scene = act.scenes.get(sceneName);
             if ((scene.x != null) && (scene.y != null)) {
+                // For the mini map, only show the scenes that are immediately adjacent to the player
+                if ((mini) && (!this.isSceneAdjacentToPlayer(scene.x, scene.y))) {
+                    continue;
+                }
                 sortedScenes[scene.x - minX][scene.y - minY] = sceneName;
+                logger.log(Level.INFO, "Sorted {0} into ({1}, {2})", new Object[]{sceneName, scene.x - minX, scene.y - minY});
             }
         }
         
@@ -120,6 +156,9 @@ public class SceneMap extends app.view.BaseView implements EventListener {
         int emptyCellCount = 0;
         for (int y = 0; y < mapHeight; y++) {
             for (int x = 0; x < gridControl.columns; x++) {
+                int realX = x + minX;
+                int realY = y + minY;                
+                
                 if ((!mini) && (x == mapWidth)) {
                     if (y == 0) {
                         // The last column is reserved for the compass
@@ -148,7 +187,7 @@ public class SceneMap extends app.view.BaseView implements EventListener {
                     sceneName = "EMPTY SCENE " + emptyCellCount;
                     logger.log(Level.INFO, "Nothing to add to {0}, {1}", new Object[]{x, y});
                 } else {
-                    if ((this.quest.playerX != null) && (this.quest.playerX == x) && (this.quest.playerY != null) && (this.quest.playerY == y)) {
+                    if ((this.quest.playerX != null) && (this.quest.playerX == realX) && (this.quest.playerY != null) && (this.quest.playerY == realY)) {
                         if (this.quest.getPlayerDirection().toUpperCase().equals(Quest.DIRECTION_NORTH)) {
                             logger.log(Level.INFO, "Adding NORTH direction label");
                             Label directionLabel = new Label("direction", "\u2B06", twiceAsBig);
@@ -208,7 +247,9 @@ public class SceneMap extends app.view.BaseView implements EventListener {
         logger.log(Level.INFO, "Entered");
         this.appController.clearScreen(this.name);
         Grid gridControl = this.getGrid(false);
-        this.appController.addNode(this.name, this.name, gridControl, new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
+        if (gridControl != null) {
+            this.appController.addNode(this.name, this.name, gridControl, new Layout(HorizontalAlignment.CENTER, VerticalAlignment.CENTER));
+        }
     }
 
 }
