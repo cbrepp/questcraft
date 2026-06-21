@@ -900,7 +900,7 @@ public class Application extends app.view.BaseView {
         playerGreysonSubpage.controls.add(new VariableSet("player-mylee-nickname", "kid"));
         playerGreysonSubpage.controls.add(new VariableSet("mylee-fandom", "And I definitely wouldn't want to if I could.  You humans are just too weird."));
         playerGreysonSubpage.controls.add(new VariableSet("mylee-reaction", "Weird"));
-        playerGreysonSubpage.controls.add(new VariableSet("twin-was", "win was"));
+        playerGreysonSubpage.controls.add(new VariableSet("twin-was", "twin was"));
         playerGreysonSubpage.controls.add(new VariableSet("why-is-that", "Why is that?"));
         playerGreysonSubpage.controls.add(new VariableSet("eat-twin", "He's going to eat Zara?!"));
         playerGreysonSubpage.controls.add(new VariableSet("thats-horrible", "That's horrible!!!"));
@@ -965,12 +965,28 @@ public class Application extends app.view.BaseView {
         effectList = new ArrayList();
         effectList.add(glowEffect);
         ValidatedVariableSpinner spinput = new ValidatedVariableSpinner("difficulty", List.of("Easy", "Normal", "Hard"));
-        spinput.defaultValue = "Normal";
+        spinput.defaultValue = "Easy";
         spinput.effects.add(glowEffect);
+        spinput.eventName = "difficulty";
         inputSubpage = new Story();
         inputSubpage.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("Select Difficulty:", new LineSeparator(), new LineSeparator(), "  "))), spinput)));
-        inputSubpage.controls.add(new Illustrate(new Image("select difficulty image", "/assets/images/difficulty.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        inputSubpage.controls.add(new Illustrate(new Image("select difficulty image", "/assets/images/difficulty-easy.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         page1.subpages.put("input", inputSubpage);
+        
+        Story onEasyDifficulty = new Story();
+        onEasyDifficulty.controls.add((new NodeRemove("select difficulty image")));
+        onEasyDifficulty.controls.add(new Illustrate(new Image("select difficulty image", "/assets/images/difficulty-easy.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        page1.subpages.put("INPUT difficulty=Easy", onEasyDifficulty);
+        
+        Story onNormalDifficulty = new Story();
+        onNormalDifficulty.controls.add((new NodeRemove("select difficulty image")));
+        onNormalDifficulty.controls.add(new Illustrate(new Image("select difficulty image", "/assets/images/difficulty-normal.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        page1.subpages.put("INPUT difficulty=Normal", onNormalDifficulty);
+        
+        Story onHardDifficulty = new Story();
+        onHardDifficulty.controls.add((new NodeRemove("select difficulty image")));
+        onHardDifficulty.controls.add(new Illustrate(new Image("select difficulty image", "/assets/images/difficulty-hard.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
+        page1.subpages.put("INPUT difficulty=Hard", onHardDifficulty);
         
         glowEffect = new Glow(MAGIC_ACCENT_COLOR);
         effectList = new ArrayList();
@@ -1033,7 +1049,7 @@ public class Application extends app.view.BaseView {
                 new LineSeparator(),
                 new Variable("twin-with-symbol"), ": \"", new Variable("player"), " he got ", new If("us", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "me"), "!!!  A big black cat got ", new If("us", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "me"), "!!!\"", new LineSeparator(),
                 new LineSeparator(),
-                "You set down the game controller you were holding (and what a shame, you were about to beat the Ender Dragon) and run toward the sound of your ", new Variable("twin-voice"), " just in time to see the door to the leprechaun closet in the back bedroom slam shut.  You run to the closet door, open it, and what you see next takes your breath away..."))))));
+                "You set down the game controller you were holding (and what a shame, you were about to beat the Ender Dragon) and run toward the sound of your ", new Variable("twin-voice"), " just in time to see the door to the leprechaun closet in ", new If("the back", new Condition(new Variable("player"), Condition.Operator.EQUALS, "Shmebulock", true), "your"), " bedroom slam shut.  You run to the closet door, open it, and what you see next takes your breath away..."))))));
         page1.story.controls.add(new Illustrate(new Image("illustration image", "/assets/images/mystery-door.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("1", page1);
 
@@ -1050,7 +1066,7 @@ public class Application extends app.view.BaseView {
         page3.previousPageName = "2";
         page3.hideNextButton = true;
         input = new ValidatedVariablePrompt("action", List.of("Go to Elevator"));
-        input.effectsButtons.put("Open Doors and Step Inside", effectList);
+        input.effectsButtons.put("Go to Elevator", effectList);
         page3.story.controls.add(new Scribe(List.of(new Label("par1", new Texts(List.of("You are now standing on the surface of a dark cloud floating high up in the sky.  You look around and see nothing but the strange and wonderful heavens, the dark sky, swirling purple mist... and... what appear to be elevator doors in the middle of the cloud.", new LineSeparator(),
                 new LineSeparator(),
                 "To continue your journey it seems you must go through the elevator.  But... is it safe?.", new LineSeparator(),
@@ -1282,19 +1298,27 @@ public class Application extends app.view.BaseView {
         page11.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/myles-elevator.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("11", page11);
         
+        input = new ValidatedVariablePrompt("action", List.of("Leave Elevator"));
+        input.effectsButtons.put("Leave Elevator", effectList);
+        
         Page page12 = new Page();
         page12.previousPageName = "5";
+        page12.hideNextButton = true;
         text1 = new app.Text(new Texts(List.of(new PlayerSymbol(), " YOU: \"", new Variable("mylee-prompt"), "\"", new LineSeparator(),
                 new LineSeparator(),
                 "\uD83D\uDC08\u200D\u2B1B MYLEE: \"Nothing else, huh.  I'll open the magic elevator doors for you.  Just march on out and start exploring the first level.  Remember: Don't die.  And... bring me back some ")));
         text2 = new quest.text.InventoryItem("Gold");
         text3 = new app.Text(new Texts(List.of("!!!\"", new LineSeparator(),
                 new LineSeparator(),
-                "Mylee flips the elevator switch and the doors open.  You walk out and find that you're no longer on the cloud...")));
-        page12.story.controls.add(new Scribe(List.of(new Label("par1", List.of(text1, text2, text3)))));
+                "Mylee stands (or rather, lays) at the ready to flip the elevator switch and let you out.", new LineSeparator(), new LineSeparator())));
+        page12.story.controls.add(new Scribe(List.of(new Label("par1", List.of(text1, text2, text3)), input)));
         // TODO - Generate an AI image of the elevator doors open and the faint mist of magic beyond
         page12.story.controls.add(new Illustrate(new Image("illustration image 1", "/assets/images/myles-elevator-gold.jpg"), new Layout(null, HorizontalAlignment.CENTER, VerticalAlignment.CENTER)));
         introScene.pages.put("12", page12);
+        
+        Story leaveElevator = new Story();
+        leaveElevator.controls.add(new ActDisplay("Chapter 1"));
+        page12.subpages.put("INPUT action=Leave Elevator", leaveElevator);
         
         Act chapter1 = new Act();
         chapter1.firstSceneName = "Chapter";
@@ -1356,7 +1380,7 @@ public class Application extends app.view.BaseView {
         Scene chapterScene = new Scene();
         chapterScene.firstPageName = "1";
         chapterScene.hidePageHeaders = true;
-        chapterScene.nextSceneName = "WILDERNESS 1";
+        chapterScene.nextSceneName = "MEADOWS";
         chapterScene.stopOtherSounds = true;
         chapterScene.soundFileName = "/assets/sounds/elevator-open.mp3";
         chapterScene.soundRepeats = false;
@@ -1849,7 +1873,7 @@ public class Application extends app.view.BaseView {
         wilderness2.symbol = "\uD83C\uDF33";
         wilderness2.x = 1;
         wilderness2.y = 1;
-        chapter1.scenes.put("WILDERNESS 2", wilderness2);
+        chapter1.scenes.put("WILDERNESS", wilderness2);
         
         sceneDecoration = new TextDecoration();
         sceneDecoration.color = wilderness2.color;
@@ -1945,7 +1969,7 @@ public class Application extends app.view.BaseView {
         wilderness1.symbol = "\uD83E\uDEBB";
         wilderness1.x = 2;
         wilderness1.y = 1;
-        chapter1.scenes.put("WILDERNESS 1", wilderness1);
+        chapter1.scenes.put("MEADOWS", wilderness1);
 
         sceneDecoration = new TextDecoration();
         sceneDecoration.color = wilderness1.color;
@@ -2271,7 +2295,7 @@ public class Application extends app.view.BaseView {
         giannisDen.symbol = "\uD83E\uDEA8 \uD83D\uDD73\uFE0F"; // Rock and hole (for cave)
         giannisDen.x = 1;
         giannisDen.y = 2;
-        chapter1.scenes.put("GIANNI'S DEN", giannisDen);
+        chapter1.scenes.put("SECRET CAVE 1", giannisDen);
         
         sceneDecoration = new TextDecoration();
         sceneDecoration.color = giannisDen.color;
@@ -2963,7 +2987,7 @@ public class Application extends app.view.BaseView {
         dragonsDen.symbol = "\uD83E\uDEA8 \uD83D\uDD73\uFE0F"; // Rock and hole (for cave)
         dragonsDen.x = 3;
         dragonsDen.y = 3;
-        chapter1.scenes.put("DRAGON'S DEN", dragonsDen);
+        chapter1.scenes.put("SECRET CAVE 2", dragonsDen);
         
         /*        
         mainPage = new Page();

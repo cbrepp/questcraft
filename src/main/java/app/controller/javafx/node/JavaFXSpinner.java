@@ -15,6 +15,7 @@ import app.node.BaseDecoratedNode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -152,6 +153,30 @@ public class JavaFXSpinner extends BaseJavaFXNode {
             eventName = node.eventName.toString();
         }
         
+        if (defaultValue != null) {
+            String finalDefaultValue = defaultValue;
+            Platform.runLater(() -> {
+                int currentIndex = values.indexOf(finalDefaultValue);
+                if (currentIndex == 0) {
+                    // If we are at the very first item, fade the left arrow
+                    Node decrementBtn = controllerNode.lookup(".decrement-arrow-button");
+                    if (decrementBtn != null) {
+                        decrementBtn.setOpacity(0.3); // Looks faded/disabled
+                    } else {
+                        logger.log(Level.WARNING, "Decrement button does not exist after layout pass delay");
+                    }
+                } else if (currentIndex == values.size() - 1) {
+                    // If we are at the very last item, fade the right arrow
+                    Node incrementBtn = controllerNode.lookup(".increment-arrow-button");
+                    if (incrementBtn != null) {
+                        incrementBtn.setOpacity(0.3); // Looks faded/disabled
+                    } else {
+                        logger.log(Level.WARNING, "Increment button does not exist after layout pass delay");
+                    }
+                }
+            });
+        }
+        
         // setOnAction updates the only event handler and thus is safe to call many times without needing to remove the previous handler
         controllerNode.valueProperty().addListener((obs, oldValue, newValue) -> {
             logger.log(Level.INFO, "Value selected: name={0}, oldValue={1}, newValue={2}", new Object[]{node.name, oldValue, newValue});
@@ -171,12 +196,11 @@ public class JavaFXSpinner extends BaseJavaFXNode {
                     incrementBtn.setOpacity(1.0);
                     decrementBtn.setOpacity(1.0);
 
-                    // If we are at the very first item (e.g., APPRENTICE), fade the left arrow
                     if (currentIndex == 0) {
+                        // If we are at the very first item, fade the left arrow
                         decrementBtn.setOpacity(0.3); // Looks faded/disabled
-                    } 
-                    // If we are at the very last item (e.g., MYTHIC), fade the right arrow
-                    else if (currentIndex == values.size() - 1) {
+                    } else if (currentIndex == values.size() - 1) {
+                        // If we are at the very last item, fade the right arrow
                         incrementBtn.setOpacity(0.3); // Looks faded/disabled
                     }
                 }

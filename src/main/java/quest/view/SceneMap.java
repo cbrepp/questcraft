@@ -137,11 +137,16 @@ public class SceneMap extends app.view.BaseView implements EventListener {
             }
         }
         
+        TextDecoration smallItalics = new TextDecoration();
+        smallItalics.style = FontStyle.ITALIC;
+        smallItalics.pixelSize = Quest.DEFAULT_FONT_SIZE - 2;
         TextDecoration normalSize = new TextDecoration();
         normalSize.style = FontStyle.BOLD;
         normalSize.pixelSize = Quest.DEFAULT_FONT_SIZE;
         TextDecoration twiceAsBig = new TextDecoration();
         twiceAsBig.pixelSize = Quest.DEFAULT_FONT_SIZE * 2;
+
+        List<String> observedActScenes = this.quest.observedScenes.get(this.quest.currentAct);
         
         // Populate the grid cells using the sorted cells
         Grid gridControl = new Grid("scene map grid");
@@ -156,8 +161,8 @@ public class SceneMap extends app.view.BaseView implements EventListener {
         int emptyCellCount = 0;
         for (int y = 0; y < mapHeight; y++) {
             for (int x = 0; x < gridControl.columns; x++) {
-                int realX = x + minX;
-                int realY = y + minY;                
+                int sceneX = x + minX;
+                int sceneY = y + minY;                
                 
                 if ((!mini) && (x == mapWidth)) {
                     if (y == 0) {
@@ -167,6 +172,25 @@ public class SceneMap extends app.view.BaseView implements EventListener {
                         Image imageControl = new Image(COMPASS + " image");
                         imageControl.file = "/assets/images/compass-small.png";
                         itemGroup.nodes.put(imageControl, null);
+                        gridControl.cells.add(itemGroup);
+                    } else if (y == 1) {
+                        int observedSceneCount = 0;
+                        for (String observedSceneName : observedActScenes) {
+                            Scene observedScene = act.scenes.get(observedSceneName);
+                            if ((observedScene != null) && (observedScene.x != null) && (observedScene.y != null)) {
+                                observedSceneCount++;
+                            }
+                        }
+                        String explorationInfoText;
+                        if (observedSceneCount == 1) {
+                            explorationInfoText = "\u2139\uFE0F Discovered 1 location";
+                        } else {
+                            explorationInfoText = "\u2139\uFE0F Discovered " + observedSceneCount + " locations";
+                        }
+                        Group itemGroup = new VerticalGroup("exploration-info");
+                        itemGroup.borderWidth = 0;
+                        Label explorationInfo = new Label("exploration-info-text", explorationInfoText, smallItalics);
+                        itemGroup.nodes.put(explorationInfo, null);
                         gridControl.cells.add(itemGroup);
                     } else {
                         emptyCellCount++;   // TODO - This is ugly
@@ -181,13 +205,12 @@ public class SceneMap extends app.view.BaseView implements EventListener {
                 Group itemGroup = new VerticalGroup(sceneName);
                 itemGroup.borderWidth = 0;
                 itemGroup.name = "cell " + x + "" + y;
-                List<String> observedActScenes = this.quest.observedScenes.get(this.quest.currentAct);
                 if (sceneName == null) {
                     emptyCellCount++;   // TODO - This is ugly
                     sceneName = "EMPTY SCENE " + emptyCellCount;
                     logger.log(Level.INFO, "Nothing to add to {0}, {1}", new Object[]{x, y});
                 } else {
-                    if ((this.quest.playerX != null) && (this.quest.playerX == realX) && (this.quest.playerY != null) && (this.quest.playerY == realY)) {
+                    if ((this.quest.playerX != null) && (this.quest.playerX == sceneX) && (this.quest.playerY != null) && (this.quest.playerY == sceneY)) {
                         if (this.quest.getPlayerDirection().toUpperCase().equals(Quest.DIRECTION_NORTH)) {
                             logger.log(Level.INFO, "Adding NORTH direction label");
                             Label directionLabel = new Label("direction", "\u2B06", twiceAsBig);

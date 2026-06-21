@@ -47,8 +47,10 @@ import quest.view.Quest;
  * crash.wav - "This is a sound of a heavy hard resonant impact metal used for heavy crashing and for a knockout sound for robots battling out against each other.  One of the sounds belongs to Halleck.  Enjoy using this sfx and credit me and Halleck when using this!" by Artninja (https://freesound.org/people/Artninja/sounds/703595/)
  * death.mp3 - Dramatic Scene Character Death Separation Melancholy Sadness (https://freesound.org/people/UNIVERSFIELD/sounds/697083/)
  * designer.jpg - "Digital, Binary Code, Abstract royalty-free stock illustration. Free for use & download." by wastedgeneration (https://pixabay.com/illustrations/digital-binary-code-abstract-8280790/)
- * difficulty.jpg - AI generated difficulty screen with a drago by Mr. Chris and Grok
- * difficulty-magical.jpg - "Journey, Wizard, Magic royalty-free stock illustration. Free for use & download." by betidraws (https://pixabay.com/illustrations/journey-wizard-magic-sorcerer-trip-9543980/)
+ * difficulty-easy.jpg - AI generated difficulty screen dragon taunting by Mr. Chris and Grok
+ * difficulty-hard.jpg - AI generated difficulty screen dragon challenging by Mr. Chris and Grok
+ * difficulty-normal.jpg - AI generated difficulty screen dragon enraged by Mr. Chris and Grok
+ * difficulty-magical.jpg - AI generated difficulty screen dragon fearful by Mr. Chris and Grok
  * dragon.mp3 - The Roar of a 5-Headed Dragon (https://freesound.org/people/bevibeldesign/sounds/366095/)
  * dragon.mp4 - AI image of a dragon by Mr. Chris and Grok
  * dragon.png, dragon-red.png, and dragon-inverted.png - "Comodo, Lizard, Dragon royalty-free stock illustration. Free for use & download." by alex_fox25 (https://pixabay.com/illustrations/comodo-lizard-dragon-7014193/)
