@@ -13,6 +13,7 @@ public class Button extends BaseNode {
     public Integer borderWidth; // Default (null) is no borders
     public EventListener eventListener;
     public Object eventName; // Default (null) is the button's name
+    public Boolean expand = false; // Default (null) is to not group infinitely in width and height
     public Boolean isEnabled = true;
     public Boolean isMultiUse = true;
     public KeyboardKey keyBinding; // Default (null) is no keyboard binding

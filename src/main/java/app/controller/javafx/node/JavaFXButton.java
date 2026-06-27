@@ -177,6 +177,12 @@ public class JavaFXButton extends BaseJavaFXNode {
             });
         }
         
+        if (node.expand) {
+            controllerNode.setMaxWidth(Double.MAX_VALUE);
+            controllerNode.setMaxHeight(Double.MAX_VALUE);
+            controllerNode.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+        }
+        
         // Handle scaling
         
         double parentWidth;

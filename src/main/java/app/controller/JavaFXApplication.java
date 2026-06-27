@@ -145,14 +145,24 @@ import javax.imageio.metadata.IIOMetadata;
 import org.w3c.dom.NamedNodeMap;
 import app.view.Animation;
 import app.view.BaseSplashView;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.stream.Stream;
 import javafx.animation.Interpolator;
 import javafx.animation.TranslateTransition;
 import javafx.beans.binding.DoubleBinding;
 import javafx.geometry.Orientation;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
+import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Separator;
@@ -352,7 +362,7 @@ public class JavaFXApplication extends BaseController {
         Pane content = (Pane) decoratedContent.controllerNode;
         
         Coordinates imageDimensions;
-        if (view.backgroundImage != null) {
+        if ((view.backgroundImage != null) && (view.backgroundRepeat != null) && (!view.backgroundRepeat)) {
             imageDimensions = getDimensions(view.backgroundImage);
         } else {
             imageDimensions = getDimensions(this.parentView.backgroundImage);
@@ -396,14 +406,14 @@ public class JavaFXApplication extends BaseController {
         scrollPane.setCache(false);
         
         // Configure the background
-        Coordinates dimensions = new Coordinates(1280, 793);
+        Coordinates dimensions = new Coordinates(1280, 793); // TODO - This should NOT be hard-coded
         Background background = null;
-        if (view.backgroundImage != null) {
-            System.out.println("JavaFXApplication: addView: name=" + view.name + ", using background image " + view.backgroundImage);
+        if ((view.backgroundImage != null) && (view.backgroundRepeat != null) && (!view.backgroundRepeat)) {
+            logger.log(Level.INFO, "name={0}, using background image {1}", new Object[]{view.name, view.backgroundImage});
             Image image = loadImage(view.backgroundImage);
             dimensions.x = imageDimensions.x;
             dimensions.y = imageDimensions.y;
-
+            
             BackgroundImage backgroundImage = new BackgroundImage(
                 image,
                 BackgroundRepeat.NO_REPEAT, // Repeat in X direction
@@ -427,8 +437,25 @@ public class JavaFXApplication extends BaseController {
             background = new Background(Collections.singletonList(backgroundFill), Collections.singletonList(backgroundImage));
             content.setBackground(background);
             content.setPrefSize(dimensions.x, dimensions.y);
+        } else if ((view.backgroundImage != null) && (view.backgroundRepeat != null) && (view.backgroundRepeat)) {
+            logger.log(Level.INFO, "name={0}, using tiled background image {1}", new Object[]{view.name, view.backgroundImage});
+            Image image = loadImage(view.backgroundImage);
+            dimensions.x = imageDimensions.x;
+            dimensions.y = imageDimensions.y;
+            
+            BackgroundImage backgroundImage = new BackgroundImage(
+                image,
+                BackgroundRepeat.REPEAT, // Repeat in X direction
+                BackgroundRepeat.REPEAT, // Repeat in Y direction
+                BackgroundPosition.DEFAULT,   // Position of the image
+                new BackgroundSize(image.getWidth(), image.getHeight(), false, false, false, false)
+            );
+            
+            background = new Background(backgroundImage);
+            content.setBackground(background);
+            content.setPrefSize(dimensions.x, dimensions.y);
         } else if (view.backgroundColor != null) {
-            System.out.println("JavaFXApplication: addView: name=" + view.name + ", using background color " + view.backgroundColor);
+            logger.log(Level.INFO, "name={0}, using background color {1}", new Object[]{view.name, view.backgroundColor});
             Color backgroundColor = getFxColor(view.backgroundColor);
             BackgroundFill backgroundFill = new BackgroundFill(backgroundColor, CornerRadii.EMPTY, Insets.EMPTY);
             background = new Background(backgroundFill);
@@ -636,6 +663,10 @@ public class JavaFXApplication extends BaseController {
         String parentName = decoratedNode.parent.node.name;
         BaseDecoratedNode decoratedParentNode = this.getDecoratedNode(viewName, parentName);
         Object fxParentNode = decoratedParentNode.controllerNode;
+        
+        if (fxParentNode instanceof ScrollPane sp) {
+            fxParentNode = sp.getContent();
+        }
 
         // TODO - This is ugly.  Parent nodes do not have a base type (Parent) with a public getChildren() method so each parent class needs to be handled.
         Class<?> parentControlClass = fxParentNode.getClass();
@@ -1260,6 +1291,8 @@ public class JavaFXApplication extends BaseController {
         // TODO - Move each dialog to its own separate handler method
         if (dialogClass.equals(app.dialog.FileSelection.class)) {
             newFileSelection((app.dialog.FileSelection) dialog);
+        } else if (dialogClass.equals(app.dialog.InternalFileSelection.class)) {
+            newInternalFileSelection((app.dialog.InternalFileSelection) dialog);
         } else if (dialogClass.equals(app.dialog.Alert.class)) {
             newAlert((app.dialog.Alert) dialog);
         } else {
@@ -1340,6 +1373,84 @@ public class JavaFXApplication extends BaseController {
 
             alert.showAndWait();
         });
+    }
+    
+    public static List<String> getAllInternalFiles(String basePath) {
+        logger.log(Level.INFO, "Entered: basePath={0}", basePath);
+        
+        List<String> filePaths = new ArrayList();
+        
+        try {
+            // Locate the anchor resource URL on the classpath
+            URL url = JavaFXApplication.class.getResource(basePath);
+            if (url == null) {
+                logger.log(Level.WARNING, "Base folder not found!");
+                return filePaths;
+            }
+
+            URI uri = url.toURI();
+            
+            // Handle JAR distribution environment vs Local IDE execution
+            if ("jar".equals(uri.getScheme())) {
+                // Open a virtual NIO FileSystem for the target ZIP/JAR archive
+                try (FileSystem fileSystem = FileSystems.newFileSystem(uri, Collections.emptyMap())) {
+                    Path pathInsideJar = fileSystem.getPath(basePath);
+                    scanPathRecursively(pathInsideJar, filePaths, basePath);
+                }
+            } else {
+                // Local IDE Execution (uses standard file system paths)
+                Path localPath = Paths.get(uri);
+                scanPathRecursively(localPath, filePaths, localPath.toString());
+            }
+            
+        } catch (URISyntaxException | IOException e) {
+            logger.log(Level.SEVERE, "ERROR: {0}", e);
+        }
+
+        return filePaths;
+    }
+
+    public static void scanPathRecursively(Path rootPath, List<String> fileList, String baseIdentifier) throws IOException {
+        // Files.walk completely traverses all subfolders automatically (File Walk With Me...)
+        try (Stream<Path> walkStream = Files.walk(rootPath)) {
+            walkStream
+                .filter(Files::isRegularFile) // Skip empty folder nodes
+                .forEach(path -> {
+                    // Normalize backslashes (Windows) to forward slashes for universal classpath reading
+                    String generalizedPath = path.toString().replace("\\", "/");
+                    
+                    // Extract the relative fragment following the baseline folder anchor
+                    int anchorIndex = generalizedPath.indexOf(baseIdentifier + "/");
+                    if (anchorIndex != -1) {
+                        String cleanRelativePath = generalizedPath.substring(anchorIndex + (baseIdentifier + "/").length());
+                        fileList.add(cleanRelativePath);
+                    }
+                });
+        }
+    }
+    
+    public void newInternalFileSelection(app.dialog.InternalFileSelection dialog) {
+        logger.log(Level.INFO, "Entered: dialog={0}", dialog);
+        
+        List<String> internalFiles = this.getAllInternalFiles(dialog.path);
+
+        ChoiceDialog<String> fileChooser = new ChoiceDialog<>(internalFiles.get(0), internalFiles);
+        fileChooser.setTitle(dialog.title);
+        fileChooser.setHeaderText("Select a resource from the available files below");
+        fileChooser.setContentText("Available files:");
+        fileChooser.initOwner((Stage) this.parentDecoratedNode.controllerNode);
+        if (dialog.emoji != null) {
+            fileChooser.setGraphic(stringToTextFlow(dialog.emoji, null, null, null));
+        }
+
+        Optional<String> selectedFile = fileChooser.showAndWait();
+
+        if (selectedFile != null) {
+            logger.log(Level.INFO, "File selected: path={0}", selectedFile);
+            dialog.eventListener.onEvent(dialog.eventName, selectedFile.orElse(""));
+        } else {
+            logger.log(Level.INFO, "No file was selected");
+        }
     }
 
     public void newFileSelection(app.dialog.FileSelection dialog) {
@@ -1568,6 +1679,7 @@ public class JavaFXApplication extends BaseController {
         return scrollPane;
     }
 
+    /*
     public FlowPane newInputField(app.node.InputField node, FlowPane fxInputField, RGBColor offsetColor) {
         logger.log(Level.INFO, "Entered: node={0}, fxInputField={1}, offsetColor={2}", new Object[]{node, fxInputField, offsetColor});
 
@@ -1609,6 +1721,7 @@ public class JavaFXApplication extends BaseController {
 
         return fxInputField;
     }
+    */
 
     public Region newSeparator(app.node.Separator node, Separator fxSeparator) {
         logger.log(Level.INFO, "Entered: node={0}, fxSpacer={1}", new Object[]{node, fxSeparator});
@@ -2319,17 +2432,7 @@ public class JavaFXApplication extends BaseController {
                 JavaFXGrid decoratedParentGrid = (JavaFXGrid) decoratedParentNode;
                 decoratedParentGrid.advanceNextCell();
                 Coordinates currentCell = decoratedParentGrid.getCurrentCell();
-                for (Node gridChildNode : grid.getChildren()) {
-                    Integer nodeCol = GridPane.getColumnIndex(gridChildNode);
-                    Integer nodeRow = GridPane.getRowIndex(gridChildNode);
-
-                    if ((nodeCol != null) && (nodeRow != null) && (nodeCol == currentCell.x) && (nodeRow == currentCell.y)) {
-                        if (gridChildNode instanceof StackPane sp) {
-                            sp.getChildren().add(fxNode);
-                            break;
-                        }
-                    }
-                }
+                ((GridPane) decoratedParentGrid.controllerNode).add(fxNode, currentCell.x, currentCell.y);
             } else if (fxParent instanceof Dialog dialog) {
                 logger.log(Level.INFO, "Adding node to dialog");
                 dialog.getDialogPane().setContent(fxNode);
@@ -2467,6 +2570,10 @@ public class JavaFXApplication extends BaseController {
                 }
                 this.publishNode(viewName, node.name, childNode, childLayout, childDecoratedNode);
             }
+        }
+        
+        if (decoratedParentNode != null) {
+            decoratedParentNode.onChildAdded(decoratedNode);
         }
     }
 

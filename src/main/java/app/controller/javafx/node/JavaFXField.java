@@ -22,6 +22,7 @@ import javafx.scene.layout.BorderStroke;
 import javafx.scene.layout.BorderStrokeStyle;
 import javafx.scene.layout.BorderWidths;
 import javafx.scene.layout.CornerRadii;
+import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.scene.text.FontSmoothingType;
 import javafx.scene.text.Text;
@@ -58,6 +59,10 @@ public class JavaFXField extends BaseJavaFXNode {
         if (node.displayLength != null) {
             controllerNode.setPrefColumnCount(node.displayLength);
         }
+        
+        controllerNode.setMinWidth(0);
+        controllerNode.setPrefWidth(Region.USE_COMPUTED_SIZE);
+        controllerNode.setMaxWidth(Double.MAX_VALUE); 
         
         TextFormatter<String> textFormatter = new TextFormatter<>(change -> {
             if (node.isUpperCase) {

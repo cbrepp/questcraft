@@ -150,7 +150,7 @@ public class SceneMap extends app.view.BaseView implements EventListener {
         
         // Populate the grid cells using the sorted cells
         Grid gridControl = new Grid("scene map grid");
-        gridControl.borderPadding = 0;
+        gridControl.borderPadding = 10;
         gridControl.columns = mapWidth;
         if (!mini) {
             gridControl.columns++;

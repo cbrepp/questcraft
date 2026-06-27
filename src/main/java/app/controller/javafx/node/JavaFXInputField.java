@@ -1,5 +1,6 @@
 package app.controller.javafx.node;
 
+import app.EventListener;
 import app.Layout;
 import app.color.DecoratedOffsetColor;
 import app.color.OffsetColor;
@@ -30,6 +31,8 @@ import javafx.scene.paint.Color;
  */
 public class JavaFXInputField extends BaseJavaFXNode implements BaseCompositeNode {
     
+    public EventListener internalEventListener;
+    
     public JavaFXInputField(app.node.InputField node, BaseDecoratedNode parent, String viewName, BaseController controller) {
         super(node, new FlowPane(), parent, viewName, controller);
     }
@@ -59,7 +62,7 @@ public class JavaFXInputField extends BaseJavaFXNode implements BaseCompositeNod
         
         // TODO - This is an interesting way to subscribe to the button click and raise the main event, passing the entered text
         final FlowPane finalFxInputField = controllerNode;
-        node.internalEventListener = (String eventName, Object eventValue) -> {
+        this.internalEventListener = (String eventName, Object eventValue) -> {
             String enteredText = "";
             for (Node child : finalFxInputField.getChildren()) {
                 if (child instanceof TextField field) {
@@ -126,7 +129,7 @@ public class JavaFXInputField extends BaseJavaFXNode implements BaseCompositeNod
             button.borderWidth = inputField.buttonBorderWidth;
         }
         button.effects = inputField.buttonEffects;
-        button.eventListener = inputField.internalEventListener;
+        button.eventListener = this.internalEventListener;
         
         // Button defers to parent's node's event listener
         button.eventName = inputField.name;
@@ -139,7 +142,9 @@ public class JavaFXInputField extends BaseJavaFXNode implements BaseCompositeNod
         }
         button.textColor = inputField.textColor;
         button.textFont = inputField.textFont;
-        children.put(button, null);
+        if (button.text != null) {
+            children.put(button, null);
+        }
 
         return children;
     }

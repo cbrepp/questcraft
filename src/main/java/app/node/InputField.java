@@ -23,7 +23,6 @@ public class InputField extends BaseNode {
     public List<BaseEffect> fieldEffects;
     public Group group; // TODO - The group's collection is meaningless... need to decouple its styling from the collection
     public Object initialValue;
-    public EventListener internalEventListener; // TODO - This shouldn't be public everywhere
     public Boolean isEnabled = true;
     public Boolean isMultiUse = true;
     public Boolean isUpperCase = false; // Default (false) is don't force upper case

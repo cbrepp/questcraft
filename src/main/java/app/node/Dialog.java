@@ -16,6 +16,7 @@ public class Dialog extends BaseNode {
     public EventListener eventListener;
     public Object eventName; // Default (null) is the button's name
     public String headerText;
+    public Double relativeSize;
     public String title;
     
     public Dialog (String name) {

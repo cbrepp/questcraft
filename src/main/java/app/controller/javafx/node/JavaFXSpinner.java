@@ -165,7 +165,8 @@ public class JavaFXSpinner extends BaseJavaFXNode {
                     } else {
                         logger.log(Level.WARNING, "Decrement button does not exist after layout pass delay");
                     }
-                } else if (currentIndex == values.size() - 1) {
+                }
+                if (currentIndex == values.size() - 1) {
                     // If we are at the very last item, fade the right arrow
                     Node incrementBtn = controllerNode.lookup(".increment-arrow-button");
                     if (incrementBtn != null) {

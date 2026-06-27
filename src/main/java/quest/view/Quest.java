@@ -277,10 +277,6 @@ public class Quest extends app.view.BaseView {
             if (!firstScene.soundFileName.equals("")) {
                 this.appController.playSound(firstScene.soundFileName, true);
             }
-            if (this.book.preloadEmojisDuringAnimation) {
-                // TODO - This isn't a thing
-                //this.appController.loadEmojiData();
-            }
         }
         
         // Start book (if not waiting for the animation to complete and the LOADING_COMPLETE event to be raised)

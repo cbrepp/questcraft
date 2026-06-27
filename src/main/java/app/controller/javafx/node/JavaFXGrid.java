@@ -1,7 +1,12 @@
 package app.controller.javafx.node;
 
 import app.Coordinates;
+import app.HorizontalAlignment;
+import static app.HorizontalAlignment.CENTER;
+import static app.HorizontalAlignment.LEFT;
+import static app.HorizontalAlignment.RIGHT;
 import app.Layout;
+import app.VerticalAlignment;
 import app.color.DecoratedOffsetColor;
 import app.color.OffsetColor;
 import app.color.RGBColor;
@@ -12,13 +17,14 @@ import app.node.BaseCompositeNode;
 import app.node.BaseDecoratedNode;
 import app.node.BaseNode;
 import app.node.Grid;
-import app.node.Group;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import javafx.geometry.HPos;
 import javafx.geometry.Insets;
+import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ComboBoxBase;
@@ -39,6 +45,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 
 /**
  *
@@ -115,9 +122,9 @@ public class JavaFXGrid extends BaseJavaFXNode implements BaseCompositeNode {
         }
         
         // Configure inner cell padding
-        Insets cellPadding = null;
         if (node.padding > 0) {
-            cellPadding = new Insets(node.padding);
+            Insets cellPadding = new Insets(node.padding);
+            controllerNode.setPadding(cellPadding);
         }
         
         // Configure dimensions
@@ -140,66 +147,32 @@ public class JavaFXGrid extends BaseJavaFXNode implements BaseCompositeNode {
             controllerNode.getRowConstraints().add(row);
         }
         
-        // Allow columns to expand as much as they can
-        int columnWidth = (int) Math.floor(100 / node.columns);
-        for (int i = 0; i < node.columns; i++) {
-            ColumnConstraints column = new ColumnConstraints();
-            column.setPercentWidth(columnWidth);
-            column.setHgrow(Priority.ALWAYS);
-            controllerNode.getColumnConstraints().add(column);
-        }
-
-        logger.log(Level.INFO, "cells={0}, columns={1}, rows={2}", new Object[]{cellCount, node.columns, rows});
-        
-        int currentRow = 1;
-        int currentColumn = 0;        
-        for (app.node.Group cellGroup : node.cells) {
-            logger.log(Level.INFO, "Adding cell {0}", cellGroup.name);
-            
-            StackPane cell = new StackPane();
-            GridPane.setHgrow(cell, Priority.ALWAYS);
-            GridPane.setVgrow(cell, Priority.ALWAYS);
-            cell.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE); // Set node to expand to fill the cell (optional)
-            
-            if (cellGroup.backgroundColor == null) {
-                cell.setBackground(Background.EMPTY); // Transparent
-            } else {
-                if (cellGroup.backgroundColor instanceof OffsetColor primitiveOffsetColor) {
-                    cellGroup.backgroundColor = new DecoratedOffsetColor(primitiveOffsetColor, this.parent);
+        if ((node.columnWidths == null) || (node.columnWidths.isEmpty())) {
+            // Allow columns to expand as much as they can
+            int columnWidth = (int) Math.floor(100 / node.columns);
+            for (int i = 0; i < node.columns; i++) {
+                ColumnConstraints column = new ColumnConstraints();
+                column.setPercentWidth(columnWidth);
+                if (node.expandCells) {
+                    column.setHgrow(Priority.ALWAYS);
                 }
-                BackgroundFill cellFill = new BackgroundFill(getFxColor(cellGroup.backgroundColor), CornerRadii.EMPTY, Insets.EMPTY);
-                Background background = new Background(cellFill);
-                cell.setBackground(background);
+                controllerNode.getColumnConstraints().add(column);
+                column.setFillWidth(node.expandCells);
             }
-            
-            if (node.showBorders) {
-                cell.setBorder(new Border(stroke));
-            }
-            
-            if (node.padding > 0) {
-                cell.setPadding(cellPadding);
-            }
-
-            currentColumn++;
-            if (currentColumn > node.columns) {
-                currentRow++;
-                currentColumn = 1;
-            }
-            
-            // TODO - Need:
-            //              app.node.Grid
-            //              app.node.StackPane
-            //              This method needs to use publishNode() to establish the grid, then, for each grid.cells cell let publishNode iterate the list like the other collections, passing the grid as the parent
-            //              
-            //this.registerNode(viewName, decoratedNode, parentName, layout);
-            //this.namedFXNodes.get(viewName).put(cellGroup.name + " cell", cell); // TODO - Make a StackPane constructor for this
-            //this.addNode(viewName, cellGroup.name + " cell", cellGroup, null);
-
-            //Pane box = newGroup(viewName, cellGroup, genericOffsetColor);
-            //cell.getChildren().add(box);
-            
-            controllerNode.add(cell, currentColumn - 1, currentRow - 1);
+        } else {
+            for (int i = 0; i < node.columns; i++) {
+                ColumnConstraints column = new ColumnConstraints();
+                Double columnWidth = node.columnWidths.get(i) * 100;
+                column.setPercentWidth(columnWidth);
+                controllerNode.getColumnConstraints().add(column);
+                if (node.expandCells) {
+                    column.setHgrow(Priority.NEVER);
+                }
+                column.setFillWidth(node.expandCells);
+            }            
         }
+        
+        logger.log(Level.INFO, "cells={0}, columns={1}, rows={2}", new Object[]{cellCount, node.columns, rows});
         
         this.scaleNode(controllerNode);
     }
@@ -229,30 +202,23 @@ public class JavaFXGrid extends BaseJavaFXNode implements BaseCompositeNode {
         
         for (Node gridChild : gp.getChildren()) {
             logger.log(Level.INFO, "Processing grid child");
-            if (gridChild instanceof StackPane pane) {
-                logger.log(Level.INFO, "Processing stack pane");
-                for (Node paneChild : pane.getChildren()) {
-                    logger.log(Level.INFO, "Processing inner pane");
-                    if (paneChild instanceof Pane innerPane) {
-                        for (Node innerPaneChild : innerPane.getChildren()) {
-                            logger.log(Level.INFO, "Processing inner pane child");
-                            if (innerPaneChild instanceof Spinner spinner) {
-                                logger.log(Level.INFO, "Processing spinner");
-                                result.add((String) spinner.getValue());
-                            } else if (innerPaneChild instanceof ComboBoxBase cb) {
-                                logger.log(Level.INFO, "Processing combo box");
-                                result.add((String) cb.getValue());
-                            } else if (innerPaneChild instanceof ChoiceBox cb) {
-                                logger.log(Level.INFO, "Processing choice box");
-                                result.add((String) cb.getValue());
-                            } else if (innerPaneChild instanceof Label) {
-                                logger.log(Level.INFO, "Skipping label");
-                            } else {
-                                logger.log(Level.WARNING, "Unsupported inner pane child type : {0}", innerPaneChild.getClass().getSimpleName());
-                            }
-                        }
+            if (gridChild instanceof VBox box) {
+                logger.log(Level.INFO, "Processing box");
+                for (Node boxChild : box.getChildren()) {
+                    logger.log(Level.INFO, "Processing box child");
+                    if (boxChild instanceof Spinner spinner) {
+                        logger.log(Level.INFO, "Processing spinner");
+                        result.add((String) spinner.getValue());
+                    } else if (boxChild instanceof ComboBoxBase cb) {
+                        logger.log(Level.INFO, "Processing combo box");
+                        result.add((String) cb.getValue());
+                    } else if (boxChild instanceof ChoiceBox cb) {
+                        logger.log(Level.INFO, "Processing choice box");
+                        result.add((String) cb.getValue());
+                    } else if (boxChild instanceof Label) {
+                        logger.log(Level.INFO, "Skipping label");
                     } else {
-                        logger.log(Level.WARNING, "Unsupported stack pane child type : {0}", paneChild.getClass().getSimpleName());
+                        logger.log(Level.WARNING, "Unsupported box child type : {0}", box.getClass().getSimpleName());
                     }
                 }
             } else {
@@ -265,12 +231,53 @@ public class JavaFXGrid extends BaseJavaFXNode implements BaseCompositeNode {
     
     @Override
     public Map<? extends BaseNode, Layout> getChildren() {
-        Map<Group, Layout> children = new LinkedHashMap();
+        Map<BaseNode, Layout> children = new LinkedHashMap();
         app.node.Grid grid = (app.node.Grid) this.node;
-        for (Group cell : grid.cells) {
+        for (BaseNode cell : grid.cells) {
             children.put(cell, null);
         }
         return children;
+    }
+    
+    @Override
+    public void onChildAdded(BaseDecoratedNode childDecoratedNode) {
+        Node newChildNode = (Node) childDecoratedNode.controllerNode;
+        Grid node = (Grid) this.node;
+        GridPane controllerNode = (GridPane) this.controllerNode;
+        for (Node gridChildNode : controllerNode.getChildren()) {
+            if (!gridChildNode.equals(newChildNode)) {
+                continue;
+            }
+            Integer nodeCol = GridPane.getColumnIndex(gridChildNode);
+            if (node.columnHAlignments != null) {
+                HorizontalAlignment alignment = node.columnHAlignments.get(nodeCol);
+                if (alignment != null) {
+                    logger.log(Level.INFO, "Setting H alignment for column {0} to {1}", new Object[]{nodeCol, alignment});
+                    switch (alignment) {
+                        case LEFT -> GridPane.setHalignment(newChildNode, HPos.LEFT);
+                        case CENTER -> GridPane.setHalignment(newChildNode, HPos.CENTER);
+                        case RIGHT -> GridPane.setHalignment(newChildNode, HPos.RIGHT);
+                        default -> {
+                            logger.log(Level.WARNING, "Unsupported H alignment {}", alignment);
+                        }
+                    }
+                }
+            }
+            if (node.columnVAlignments != null) {
+                VerticalAlignment alignment = node.columnVAlignments.get(nodeCol);
+                if (alignment != null) {
+                    logger.log(Level.INFO, "Setting V alignment for column {0} to {1}", new Object[]{nodeCol, alignment});
+                    switch (alignment) {
+                        case TOP -> GridPane.setValignment(newChildNode, VPos.TOP);
+                        case CENTER -> GridPane.setValignment(newChildNode, VPos.CENTER);
+                        case BOTTOM -> GridPane.setValignment(newChildNode, VPos.BOTTOM);
+                        default -> {
+                            logger.log(Level.WARNING, "Unsupported V alignment {}", alignment);
+                        }
+                    }
+                }
+            }
+        }
     }
     
 }

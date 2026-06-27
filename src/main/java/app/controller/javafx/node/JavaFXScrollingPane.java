@@ -61,6 +61,7 @@ public class JavaFXScrollingPane extends BaseJavaFXNode {
         controllerNode.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         controllerNode.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         controllerNode.setFitToWidth(true);
+        controllerNode.setFitToHeight(true);
         Color fxBackgroundColor;
         if (node.backgroundColor == null) {
             fxBackgroundColor = Color.TRANSPARENT;
@@ -70,12 +71,12 @@ public class JavaFXScrollingPane extends BaseJavaFXNode {
             }
             fxBackgroundColor = getFxColor(node.backgroundColor);
         }
-        controllerNode.setBackground(new Background(new BackgroundFill(
+        fxPane.setBackground(new Background(new BackgroundFill(
             fxBackgroundColor,
             CornerRadii.EMPTY, 
             Insets.EMPTY      // To prevent blurry text
         )));
-        controllerNode.setPadding(Insets.EMPTY);
+        fxPane.setPadding(Insets.EMPTY);
         controllerNode.getStyleClass().add("edge-to-edge"); // Removes the border
         controllerNode.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
         controllerNode.setCache(false);

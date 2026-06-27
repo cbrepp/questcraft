@@ -42,8 +42,12 @@ public class JavaFXDialog extends BaseJavaFXNode implements BaseCompositeNode {
         controllerNode.initOwner(parentStage);
         controllerNode.setTitle(node.title);
         controllerNode.setHeaderText(node.headerText);
-        controllerNode.getDialogPane().setPrefWidth(parentStage.getWidth() * 0.75);
-        controllerNode.getDialogPane().setPrefHeight(parentStage.getHeight() * 0.75);
+        Double relativeSize = node.relativeSize;
+        if (relativeSize == null) {
+            relativeSize = 0.75;
+        }
+        controllerNode.getDialogPane().setPrefWidth(parentStage.getWidth() * relativeSize);
+        controllerNode.getDialogPane().setPrefHeight(parentStage.getHeight() * relativeSize);
         
         ButtonType saveButtonType = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
         controllerNode.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
@@ -88,7 +92,7 @@ public class JavaFXDialog extends BaseJavaFXNode implements BaseCompositeNode {
         
         app.node.Dialog dialog = (app.node.Dialog) this.node;
         
-        List<Group> labeledChildren = new ArrayList();
+        List<BaseNode> labeledChildren = new ArrayList();
         for (BaseNode node : dialog.children.keySet()) {
             Layout layout = dialog.children.get(node);
             Group childrenGroup = new VerticalGroup(node.name + " group");

@@ -124,14 +124,13 @@ public class Inventory extends app.view.BaseView implements EventListener {
         
         Grid gridControl = new Grid("inventory grid");
         gridControl.borderPadding = 5;
-        gridControl.cornerRadii = 10; // Rounded corners
         gridControl.columns = 0;
         gridControl.listener = this;
         gridControl.padding = 5;
-        gridControl.showBorders = true;
+        gridControl.showBorders = false;
         for (String key : this.quest.book.inventory.keySet()) {
-            Group itemGroup = new VerticalGroup(key + " group");
-            itemGroup.borderWidth = 0;
+            VerticalGroup itemGroup = new VerticalGroup(key + " group");
+            itemGroup.cornerRadii = 10; // Rounded cell corners
             
             InventoryItem bookItem = this.quest.book.inventory.get(key);
 
@@ -147,6 +146,7 @@ public class Inventory extends app.view.BaseView implements EventListener {
             InventoryItem questItem = this.quest.inventory.get(key);
             if (questItem != null) {
                 System.out.println("Inventory: render: Item in quest inventory: " + key + ", is new?=" + questItem.isNew);
+                itemGroup.borderWidth = 1;
 
                 if (questItem.isNew) {
                     // Show new items in the quest inventory as yellow, then show as transparent for subsequent inventory views
@@ -159,6 +159,7 @@ public class Inventory extends app.view.BaseView implements EventListener {
                 itemGroup.nodes.put(countControl, null);
             } else {
                 System.out.println("Inventory: render: Item NOT in quest inventory: " + key);
+                itemGroup.borderWidth = 0;
                 itemGroup.backgroundColor = Color.DARK_GRAY;
                 linkControl.isEnabled = activateInventory;
             }

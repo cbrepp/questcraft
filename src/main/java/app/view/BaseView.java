@@ -18,6 +18,7 @@ public class BaseView extends Pane implements EventListener {
     
     public Boolean addTextArea;
     public String backgroundImage;
+    public Boolean backgroundRepeat = false;
     public String className;
     public List<String> emojis;
     public String iconFileName;

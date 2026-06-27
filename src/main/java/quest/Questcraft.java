@@ -244,6 +244,7 @@ public class Questcraft extends app.view.BaseView {
                     this.appController.addView(this.highScores);
                 }
                 this.craftingTable = new CraftingTable(CRAFTING_TABLE);
+                this.craftingTable.book = questBook;
                 this.appController.addView(this.craftingTable);
                 this.appController.displayView(Quest.quest);
             }

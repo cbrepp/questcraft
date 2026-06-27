@@ -11,6 +11,7 @@ import java.util.List;
  */
 public class Label extends BaseNode {
     
+    public HorizontalAlignment alignment;
     public AntiAliasMethod antiAliasMethod; // Default (null) is text
     public RGBColor backgroundColor; // Default (null) is transparent
     public RGBColor borderColor; // Default (null) is either black or white depending on which color would best offset the background

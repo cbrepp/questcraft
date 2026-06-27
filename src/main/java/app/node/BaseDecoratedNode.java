@@ -24,4 +24,6 @@ public abstract class BaseDecoratedNode {
     
     public abstract void configure();
     
+    public void onChildAdded(BaseDecoratedNode childDecoratedNode) {}
+    
 }

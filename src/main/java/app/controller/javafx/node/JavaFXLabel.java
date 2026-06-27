@@ -22,6 +22,7 @@ import javafx.scene.layout.BorderWidths;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.paint.Color;
 import javafx.scene.text.FontSmoothingType;
+import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextFlow;
 
 /**
@@ -125,6 +126,17 @@ public class JavaFXLabel extends BaseJavaFXNode {
                 fxBorderColor = getFxColor(offsetColor);
             }
             controllerNode.setBorder(new Border(new BorderStroke(fxBorderColor, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(node.borderWidth))));
+        }
+        
+        if (node.alignment != null) {
+            switch (node.alignment) {
+                case LEFT -> controllerNode.setTextAlignment(TextAlignment.LEFT);
+                case CENTER -> controllerNode.setTextAlignment(TextAlignment.CENTER);
+                case RIGHT -> controllerNode.setTextAlignment(TextAlignment.RIGHT);
+                default -> {
+                    logger.log(Level.WARNING, "Unsupported H alignment {}", node.alignment);
+                }
+            }
         }
         
         this.scaleNode(controllerNode);

@@ -18,6 +18,7 @@ import static app.controller.BaseController.NODE_TRANSITIONED_EVENT;
 import static app.controller.BaseController.logger;
 import app.dialog.Alert;
 import app.dialog.FileSelection;
+import app.dialog.InternalFileSelection;
 import app.node.BaseNode;
 import app.node.Button;
 import app.node.ComboBox;
@@ -34,13 +35,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -261,31 +262,41 @@ public class Application extends app.view.BaseView {
             } case QUIT_EVENT -> {
                 this.appController.close();
             } case SELECT_EVENT -> {
+                /*
                 FileSelection fs = new FileSelection("Select Quest");
                 fs.eventListener = this;
                 fs.eventName = FILE_EVENT;
                 fs.extensionFilters.add("*.quest");
                 fs.initialFolder = "/home/repp/Documents/quests/";
+                */
+                InternalFileSelection fs = new InternalFileSelection("Select Quest");
+                fs.emoji = "\uD83E\uDE84";
+                fs.eventListener = this;
+                fs.eventName = FILE_EVENT;
+                fs.title = "Select Quest";
+                fs.path = "/assets/quests";
                 this.appController.newDialog(fs);
             } case FILE_EVENT -> {
-                String fileName = (String) eventValue;
+                if (!eventValue.equals("")) {
+                    String fileName = (String) eventValue;
 
-                this.appController.stopAllSounds();
-                this.bookFile = deserializeBook(fileName);
+                    this.appController.stopAllSounds();
+                    this.bookFile = deserializeBook(fileName);
 
-                // Display "Now Playing" info
-                this.appController.removeNode(this.name, "now playing");
-                Object text = "Now Playing..." + System.lineSeparator() + this.bookFile.title + System.lineSeparator() + "by " + this.bookFile.author + System.lineSeparator() + this.bookFile.updateDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.getDefault()));
-                TextDecoration decoration = new TextDecoration();
-                decoration.pixelSize = 26.0;
-                decoration.color = MAGIC_COLOR;
-                decoration.font = NORMAL_FONT;
-                decoration.style = FontStyle.BOLD;
-                Label nowPlayingLabel = new Label("now playing", text, decoration);
-                nowPlayingLabel.backgroundColor = new Color(Color.WHITE, 0.5);
-                this.appController.addNode(this.name, this.name, nowPlayingLabel, new Layout(new RelativeCoordinates(0.0, (this.quitButton.getBounds().coordinates.y + (this.quitButton.getBounds().height * 4))), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
+                    // Display "Now Playing" info
+                    this.appController.removeNode(this.name, "now playing");
+                    Object text = "Now Playing..." + System.lineSeparator() + this.bookFile.title + System.lineSeparator() + "by " + this.bookFile.author + System.lineSeparator() + this.bookFile.updateDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.getDefault()));
+                    TextDecoration decoration = new TextDecoration();
+                    decoration.pixelSize = 26.0;
+                    decoration.color = MAGIC_COLOR;
+                    decoration.font = NORMAL_FONT;
+                    decoration.style = FontStyle.BOLD;
+                    Label nowPlayingLabel = new Label("now playing", text, decoration);
+                    nowPlayingLabel.backgroundColor = new Color(Color.WHITE, 0.5);
+                    this.appController.addNode(this.name, this.name, nowPlayingLabel, new Layout(new RelativeCoordinates(0.0, (this.quitButton.getBounds().coordinates.y + (this.quitButton.getBounds().height * 4))), HorizontalAlignment.CENTER, VerticalAlignment.TOP));
 
-                this.publishEvent("book", bookFile);                
+                    this.publishEvent("book", bookFile);                
+                }
             } default -> System.err.println("Application: onEvent: Unsupported event");
         }
     }
@@ -421,6 +432,26 @@ public class Application extends app.view.BaseView {
     public Book deserializeBook(String fileName) {
         System.out.println("Application: deserializeBook");
         
+        String absolutePath = "/assets/quests/" + fileName;
+        
+        Book bf = null;
+        try (InputStream resourceStream = Application.class.getResourceAsStream(absolutePath)) {
+            
+            if (resourceStream == null) {
+                logger.log(Level.WARNING, "Serialized asset resource not found!");
+                return bf;
+            }
+
+            try (ObjectInputStream objectStream = new ObjectInputStream(resourceStream)) {                
+                bf = (Book) objectStream.readObject();
+                return bf;
+            }
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Failed to read or unpack internal serialized object structure: {0}", e);
+            return bf;
+        }
+        
+        /*
         Book bf = null;
         FileInputStream file;
         try {
@@ -442,6 +473,7 @@ public class Application extends app.view.BaseView {
         }
         
         return bf;
+        */
     }
     
     // TODO - Just a temporary helper method to get the book going.  Eventually the Crafting Table should be used for this purpose.
@@ -657,11 +689,10 @@ public class Application extends app.view.BaseView {
         
         Book book = new Book();
         book.animationFileName = "/assets/videos/dragon.mp4";
-        book.preloadEmojisDuringAnimation = true;
         book.author = "R. W. Chung";
         book.firstActName = "Opening";
         book.title = "TWIN QUEST: Destroyer of Worlds";
-        book.updateDate = LocalDate.now();    
+        book.updateDate = LocalDate.now();
         book.inventory = new LinkedHashMap<>();
         
         // Inventory items are added in alphabetical order
